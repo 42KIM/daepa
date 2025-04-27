@@ -1,7 +1,7 @@
 export default function Home() {
   return (
     <div>
-      <h1>브리더스 룸</h1>
+      <h1>This is Petmily</h1>
     </div>
   );
 }
