@@ -1,7 +1,9 @@
+import Page from "@/components/Page";
+
 export default function Home() {
   return (
-    <div>
+    <Page>
       <h1>This is Petmily</h1>
-    </div>
+    </Page>
   );
 }
