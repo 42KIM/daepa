@@ -3,7 +3,9 @@ export default function BrLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  <div id="br-page" className="mx-auto min-h-screen bg-blue-50">
-    {children}
-  </div>;
+  return (
+    <div id="br-page" className="mx-auto min-h-screen">
+      {children}
+    </div>
+  );
 }
