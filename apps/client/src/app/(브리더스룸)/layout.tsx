@@ -1,11 +1,18 @@
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "./components/AppSidebar";
+
 export default function BrLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div id="br-page" className="mx-auto min-h-screen">
-      {children}
-    </div>
+    <>
+      <AppSidebar />
+      <main className="min-h-screen w-full p-2">
+        <SidebarTrigger />
+        {children}
+      </main>
+    </>
   );
 }

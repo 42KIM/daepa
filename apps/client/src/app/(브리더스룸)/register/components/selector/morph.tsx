@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import BottomSheet from "@/components/common/BottomSheet";
-import { MORPH_LIST_BY_SPECIES } from "../../constants";
+import { MORPH_LIST_BY_SPECIES } from "../../../constants";
 
 interface MorphSelectorProps {
   isOpen: boolean;
