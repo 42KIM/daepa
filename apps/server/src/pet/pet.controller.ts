@@ -1,13 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Post,
 } from '@nestjs/common';
-import { CreatePetDto } from './pet.dto';
+import { CreatePetDto, UpdatePetDto } from './pet.dto';
 import { PetService } from './pet.service';
 import { nanoid } from 'nanoid';
 
@@ -92,5 +94,20 @@ export class PetController {
         throw error;
       }
     }
+  }
+
+  // 펫 정보 수정
+  @Patch()
+  async update(
+    @Body()
+    updatePetDto: UpdatePetDto,
+  ) {
+    return await this.petService.updatePet(updatePetDto);
+  }
+
+  // 펫 정보 삭제
+  @Delete()
+  async delete(@Body('petId') petId: string) {
+    return await this.petService.deletePet(petId);
   }
 }

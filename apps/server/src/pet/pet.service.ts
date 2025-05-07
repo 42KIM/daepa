@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PetEntity } from './pet.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePetDto } from './pet.dto';
+import { CreatePetDto, UpdatePetDto } from './pet.dto';
 import { plainToInstance } from 'class-transformer';
+
 @Injectable()
 export class PetService {
   constructor(
@@ -27,5 +28,16 @@ export class PetService {
   // 반려동물 조회
   async getPet(petId: string): Promise<PetEntity | null> {
     return await this.petRepository.findOneBy({ pet_id: petId });
+  }
+
+  // 반려동물 수정
+  async updatePet(updatePetDto: UpdatePetDto): Promise<UpdateResult> {
+    const { petId, ...updateData } = updatePetDto;
+    return await this.petRepository.update({ pet_id: petId }, updateData);
+  }
+
+  // 반려동물 삭제
+  async deletePet(petId: string): Promise<DeleteResult> {
+    return await this.petRepository.delete({ pet_id: petId });
   }
 }
