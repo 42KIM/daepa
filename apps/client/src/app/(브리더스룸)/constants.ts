@@ -1,7 +1,6 @@
-import { Home, Inbox } from "lucide-react";
+import { DollarSign, Egg, Heart, Home, Inbox } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
 import { FOOD } from "@/types/pet";
-import { BadgeProps } from "@mui/material";
 
 export const USER_NAME = "낸시";
 
@@ -184,6 +183,21 @@ export const SIDEBAR_ITEMS = [
     title: "개체 등록",
     url: "/register",
     icon: Inbox,
+  },
+  {
+    title: "해칭룸",
+    url: "/hatching",
+    icon: Egg,
+  },
+  {
+    title: "메이팅룸",
+    url: "/mating",
+    icon: Heart,
+  },
+  {
+    title: "분양룸",
+    url: "/sales",
+    icon: DollarSign,
   },
 ];
 
