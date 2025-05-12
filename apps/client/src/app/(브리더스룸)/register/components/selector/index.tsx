@@ -4,8 +4,8 @@ import BottomSheet from "@/components/common/BottomSheet";
 
 interface SelectorProps {
   isOpen: boolean;
-  onClose: () => void;
-  onSelect: (value: string) => void;
+  onCloseAction: () => void;
+  onSelectAction: (value: string) => void;
   title?: string;
   currentValue?: string;
   selectList: string[];
@@ -35,14 +35,14 @@ const SelectButton = ({
 
 export default function Selector({
   isOpen,
-  onClose,
-  onSelect,
+  onCloseAction,
+  onSelectAction,
   title,
   currentValue,
   selectList,
 }: SelectorProps) {
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose}>
+    <BottomSheet isOpen={isOpen} onClose={onCloseAction}>
       <div className="space-y-4">
         {title && <h2 className="pl-4 text-xl font-bold">{title}</h2>}
         <div className="flex max-h-[60vh] min-h-[200px] flex-col gap-1 overflow-y-auto">
@@ -51,7 +51,7 @@ export default function Selector({
               key={item}
               item={item}
               isSelected={currentValue === item}
-              onClick={() => onSelect(item)}
+              onClick={() => onSelectAction(item)}
             />
           ))}
         </div>

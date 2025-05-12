@@ -1,5 +1,5 @@
 export interface PetSummaryDto {
-  pet_id: number;
+  petId: number;
   name: string;
   owner: any;
   morphs: string[];
@@ -22,7 +22,7 @@ export interface PetSalesDto {
 export type FOOD = "판게아 인섹트" | "귀뚜라미" | "누에" | "지렙 인섹트";
 
 export interface Pet {
-  pet_id: string;
+  petId: string;
   name: string; // 이름
   owner: any; // TODO: 주인 정보
   species: string; // 종

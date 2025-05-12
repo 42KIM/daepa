@@ -205,9 +205,9 @@ export const columns: ColumnDef<Pet>[] = [
     header: TABLE_HEADER.mother,
     cell: ({ row }) => {
       const mother = row.original.mother;
-      return mother?.pet_id ? (
+      return mother?.petId ? (
         <Button variant="ghost" asChild>
-          <Link href={`/detail/${mother.pet_id}`}>{mother.name}</Link>
+          <Link href={`/detail/${mother.petId}`}>{mother.name}</Link>
         </Button>
       ) : (
         <span>-</span>
@@ -219,9 +219,9 @@ export const columns: ColumnDef<Pet>[] = [
     header: TABLE_HEADER.father,
     cell: ({ row }) => {
       const father = row.original.father;
-      return father?.pet_id ? (
+      return father?.petId ? (
         <Button variant="ghost" asChild>
-          <Link href={`/detail/${father.pet_id}`}>{father.name}</Link>
+          <Link href={`/detail/${father.petId}`}>{father.name}</Link>
         </Button>
       ) : (
         <span>-</span>
@@ -300,7 +300,7 @@ export const columns: ColumnDef<Pet>[] = [
       return mating?.pair ? (
         <Button variant="ghost" asChild>
           {mating.pair.map((pet) => (
-            <Link key={pet.pet_id} href={`/detail/${pet.pet_id}`}>
+            <Link key={pet.petId} href={`/detail/${pet.petId}`}>
               {pet.name}
             </Link>
           ))}
@@ -351,7 +351,7 @@ export const columns: ColumnDef<Pet>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(pet.pet_id.toString())}>
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(pet.petId.toString())}>
               복사
             </DropdownMenuItem>
             <DropdownMenuSeparator />

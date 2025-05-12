@@ -7,7 +7,7 @@ const NumberField = ({
   value,
 }: {
   inputClassName: string;
-  field: FormStep["fields"];
+  field: FormStep["field"];
   value: string;
 }) => {
   const { formData, setFormData } = useFormStore();

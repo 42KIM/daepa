@@ -26,11 +26,27 @@ const PetDetail = ({ pet }: PetDetailProps) => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{pet.name}</h1>
-        <Button variant="outline" asChild>
-          <Link href="/pet">목록으로</Link>
-        </Button>
+      <div className="mb-6">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">{pet.name}</h1>
+            <div className="flex flex-wrap gap-1">
+              {pet.morphs?.map((morph) => (
+                <Badge key={morph} className="bg-yellow-500 text-sm text-black">
+                  {morph}
+                </Badge>
+              ))}
+              {pet.traits?.map((trait) => (
+                <Badge key={trait} className="text-sm text-black text-yellow-100">
+                  {trait}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <Button variant="outline" asChild>
+            <Link href="/pet">목록으로</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -48,29 +64,8 @@ const PetDetail = ({ pet }: PetDetailProps) => {
               label="성별"
               value={GENDER_KOREAN_INFO[pet.sex as keyof typeof GENDER_KOREAN_INFO]}
             />
-            {/* <InfoItem label="크기" value={pet.size} /> */}
             <InfoItem label="무게" value={`${pet.weight}g`} />
             <InfoItem label="생년월일" value={formatDate(pet.birthdate || "")} />
-            <InfoItem
-              label="모프"
-              value={
-                <div className="flex flex-wrap gap-1">
-                  {pet.morphs?.map((morph) => <Badge key={morph}>{morph}</Badge>)}
-                </div>
-              }
-            />
-            <InfoItem
-              label="특징"
-              value={
-                <div className="flex flex-wrap gap-1">
-                  {pet.traits?.map((trait) => (
-                    <Badge key={trait} variant="outline">
-                      {trait}
-                    </Badge>
-                  ))}
-                </div>
-              }
-            />
           </CardContent>
         </Card>
 
@@ -108,8 +103,8 @@ const PetDetail = ({ pet }: PetDetailProps) => {
                 pet.mating?.pair ? (
                   <div className="flex gap-2">
                     {pet.mating.pair.map((pair) => (
-                      <Button key={pair.pet_id} variant="ghost" asChild>
-                        <Link href={`/pet/${pair.pet_id}`}>{pair.name}</Link>
+                      <Button key={pair.petId} variant="ghost" asChild>
+                        <Link href={`/pet/${pair.petId}`}>{pair.name}</Link>
                       </Button>
                     ))}
                   </div>
@@ -136,7 +131,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
               value={
                 pet.mother ? (
                   <Button variant="ghost" asChild>
-                    <Link href={`/pet/${pet.mother.pet_id}`}>{pet.mother.name}</Link>
+                    <Link href={`/pet/${pet.mother.petId}`}>{pet.mother.name}</Link>
                   </Button>
                 ) : (
                   "-"
@@ -148,7 +143,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
               value={
                 pet.father ? (
                   <Button variant="ghost" asChild>
-                    <Link href={`/pet/${pet.father.pet_id}`}>{pet.father.name}</Link>
+                    <Link href={`/pet/${pet.father.petId}`}>{pet.father.name}</Link>
                   </Button>
                 ) : (
                   "-"

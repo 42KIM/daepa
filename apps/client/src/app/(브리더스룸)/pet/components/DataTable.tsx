@@ -101,7 +101,7 @@ export const DataTable = ({ columns, data }: DataTableProps) => {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer"
-                  onClick={(e) => handleRowClick({ e, id: row.original.pet_id })}
+                  onClick={(e) => handleRowClick({ e, id: row.original.petId })}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

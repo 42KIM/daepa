@@ -1,37 +1,28 @@
 import { DollarSign, Egg, Heart, Home, Inbox } from "lucide-react";
-import { FormStep, SelectorConfig } from "./register/types";
+import { FieldName, FormStep, SelectorConfig } from "./register/types";
 import { FOOD } from "@/types/pet";
 
 export const USER_NAME = "낸시";
 
 export const REGISTER_PAGE = {
-  FIRST: 0,
-  SECOND: 1,
+  FIRST: 1,
+  SECOND: 2,
 };
 
 export const FORM_STEPS: FormStep[] = [
   {
-    title: "종",
-    fields: {
-      name: "species",
+    title: "성별",
+    field: {
+      name: "gender",
       type: "select",
-      required: true,
-      placeholder: "종을 선택해주세요",
-      validation: (value) => value.length > 0,
-    },
-  },
-  {
-    title: "모프",
-    fields: {
-      name: "morph",
-      type: "morph",
+      placeholder: "성별을 선택해주세요",
       required: true,
       validation: (value) => value.length > 0,
     },
   },
   {
     title: "크기",
-    fields: {
+    field: {
       name: "size",
       type: "select",
       placeholder: "크기를 선택해주세요",
@@ -40,12 +31,22 @@ export const FORM_STEPS: FormStep[] = [
     },
   },
   {
-    title: "성별",
-    fields: {
-      name: "gender",
-      type: "select",
-      placeholder: "성별을 선택해주세요",
+    title: "모프",
+    field: {
+      name: "morph",
+      type: "multipleSelect",
+      placeholder: "모프를 선택해주세요",
       required: true,
+      validation: (value) => value.length > 0,
+    },
+  },
+  {
+    title: "종",
+    field: {
+      name: "species",
+      type: "select",
+      required: true,
+      placeholder: "종을 선택해주세요",
       validation: (value) => value.length > 0,
     },
   },
@@ -54,7 +55,7 @@ export const FORM_STEPS: FormStep[] = [
 export const OPTION_STEPS: FormStep[] = [
   {
     title: "사진",
-    fields: {
+    field: {
       name: "photo",
       type: "file",
       required: true,
@@ -63,7 +64,7 @@ export const OPTION_STEPS: FormStep[] = [
   },
   {
     title: "부모 개체 정보",
-    fields: {
+    field: {
       name: "parentSearch",
       type: "parentSearch",
       required: true,
@@ -72,7 +73,7 @@ export const OPTION_STEPS: FormStep[] = [
   },
   {
     title: "해칭일",
-    fields: {
+    field: {
       name: "hatchingDate",
       type: "date",
       required: true,
@@ -81,7 +82,7 @@ export const OPTION_STEPS: FormStep[] = [
   },
   {
     title: "체중",
-    fields: {
+    field: {
       name: "weight",
       type: "number",
       required: true,
@@ -90,7 +91,7 @@ export const OPTION_STEPS: FormStep[] = [
   },
   {
     title: "개체 이름/관리번호",
-    fields: {
+    field: {
       name: "name",
       type: "text",
       required: true,
@@ -99,7 +100,7 @@ export const OPTION_STEPS: FormStep[] = [
   },
   {
     title: "상세 설명",
-    fields: {
+    field: {
       name: "description",
       type: "textarea",
       required: false,
@@ -158,7 +159,7 @@ export const TABLE_HEADER = {
   saleInfo: "판매 상태",
 };
 
-export const SELECTOR_CONFIGS: Record<string, SelectorConfig> = {
+export const SELECTOR_CONFIGS: Record<FieldName, SelectorConfig> = {
   species: {
     title: "종 선택",
     selectList: ["레오파드 게코", "크레스티드 게코"],
@@ -181,7 +182,7 @@ export const SIDEBAR_ITEMS = [
   },
   {
     title: "개체 등록",
-    url: "/register",
+    url: "/register/1",
     icon: Inbox,
   },
   {

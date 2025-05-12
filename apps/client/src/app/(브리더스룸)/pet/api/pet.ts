@@ -3,10 +3,27 @@ import { Pet, CreatePetDto } from "@/types/pet";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
+export type GetAllPetResponse = {
+  data: Pet[];
+  meta: {
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    page: number;
+    itemPerPage: number;
+    totalCount: number;
+    totalPage: number;
+  };
+};
+
 export const petApi = {
   // 펫 목록 조회
-  getAll: async (): Promise<Pet[]> => {
-    const response = await axios.get(`${API_URL}/v1/pet`);
+  getAll: async (page = 1, itemPerPage = 10): Promise<GetAllPetResponse> => {
+    const response = await axios.get(`${API_URL}/v1/pet`, {
+      params: {
+        page,
+        itemPerPage,
+      },
+    });
     return response.data;
   },
 
