@@ -43,15 +43,15 @@ const PetDetail = ({ pet }: PetDetailProps) => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="perspective-1000">
+      <div className="perspective-[2000px]">
         <div
-          className={`transform-style-3d relative mx-auto h-[600px] w-full max-w-[400px] cursor-pointer transition-transform duration-300 ${
-            isFlipped ? "rotate-y-180" : ""
+          className={`relative mx-auto h-[600px] w-full max-w-[400px] cursor-pointer transition-transform duration-300 [transform-style:preserve-3d] ${
+            isFlipped ? "[transform:rotateY(180deg)]" : ""
           }`}
           onClick={() => setIsFlipped(!isFlipped)}
         >
           {/* 카드 앞면 */}
-          <div className="backface-hidden absolute h-full w-full">
+          <div className="absolute h-full w-full [-webkit-backface-visibility:hidden] [backface-visibility:hidden] [transform:rotateY(0deg)]">
             <div className="relative h-full overflow-hidden rounded-lg border-4 border-gray-300 bg-white shadow-xl">
               {/* 이미지 컨테이너 */}
               <motion.div
@@ -216,7 +216,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
           </div>
 
           {/* 카드 뒷면 */}
-          <div className="backface-hidden rotate-y-180 absolute h-full w-full">
+          <div className="absolute h-full w-full [-webkit-backface-visibility:hidden] [backface-visibility:hidden] [transform:rotateY(180deg)]">
             <div className="h-full overflow-auto rounded-lg border-4 border-gray-300 bg-white p-4 shadow-xl">
               {/* 사육 정보 */}
               <div className="mb-6">
