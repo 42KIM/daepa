@@ -45,7 +45,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
     <div className="container mx-auto p-6">
       <div className="perspective-1000">
         <div
-          className={`transform-style-3d relative mx-auto h-[600px] w-full max-w-[400px] cursor-pointer transition-transform duration-700 ${
+          className={`transform-style-3d relative mx-auto h-[600px] w-full max-w-[400px] cursor-pointer transition-transform duration-300 ${
             isFlipped ? "rotate-y-180" : ""
           }`}
           onClick={() => setIsFlipped(!isFlipped)}
