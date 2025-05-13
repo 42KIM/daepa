@@ -13,9 +13,10 @@ import {
   GENDER_KOREAN_INFO,
   SPECIES_KOREAN_INFO,
 } from "../../constants";
-import { FOOD, Pet } from "@/types/pet";
+import { FOOD, Pet, PetSummaryDto } from "@/types/pet";
 import { motion, AnimatePresence } from "framer-motion";
-import { Expand, Shrink } from "lucide-react";
+import { Expand, Search, Shrink } from "lucide-react";
+import ParentLink from "../components/ParentLink";
 
 interface PetDetailProps {
   pet: Pet;
@@ -43,6 +44,10 @@ const PetDetail = ({ pet }: PetDetailProps) => {
 
   return (
     <div className="container mx-auto p-6">
+      {/* 힌트 텍스트 추가 */}
+      <div className="flex items-center justify-center gap-2 text-gray-500">
+        <span className="animate-bounce text-sm"> 👇 카드를 탭하여 상세 정보 보기</span>
+      </div>
       <div className="perspective-[2000px]">
         <div
           className={`relative mx-auto h-[600px] w-full max-w-[400px] cursor-pointer transition-transform duration-300 [transform-style:preserve-3d] ${
@@ -271,37 +276,15 @@ const PetDetail = ({ pet }: PetDetailProps) => {
 
               {/* 혈통 정보 */}
               <div className="mb-6 border-t pt-4">
-                <h2 className="mb-3 text-xl font-bold">혈통 정보</h2>
+                <h2 className="mb-3 text-xl font-bold dark:text-white">혈통 정보</h2>
                 <div className="grid grid-cols-2 gap-4">
-                  <InfoItem
-                    label="어미"
-                    value={
-                      pet.mother ? (
-                        <Button variant="link" asChild className="p-0">
-                          <Link href={`/pet/${pet.mother.petId}`}>{pet.mother.name}</Link>
-                        </Button>
-                      ) : (
-                        "-"
-                      )
-                    }
-                  />
-                  <InfoItem
-                    label="부"
-                    value={
-                      pet.father ? (
-                        <Button variant="link" asChild className="p-0">
-                          <Link href={`/pet/${pet.father.petId}`}>{pet.father.name}</Link>
-                        </Button>
-                      ) : (
-                        "-"
-                      )
-                    }
-                  />
+                  <ParentLink parent={pet.father} label="부" />
+                  <ParentLink parent={pet.mother} label="모" />
                 </div>
               </div>
 
               {/* 메모 */}
-              <div className="border-t pt-4">
+              <div className="border-t pb-20 pt-4">
                 <h2 className="mb-3 text-xl font-bold">메모</h2>
                 <p className="whitespace-pre-wrap rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-600/50 dark:text-white">
                   {pet.desc || "-"}
@@ -309,11 +292,6 @@ const PetDetail = ({ pet }: PetDetailProps) => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* 힌트 텍스트 추가 */}
-        <div className="mt-4 flex items-center justify-center gap-2 text-gray-500">
-          <span className="animate-bounce text-sm">👆 카드를 탭하여 상세 정보 보기</span>
         </div>
       </div>
     </div>

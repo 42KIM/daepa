@@ -1,10 +1,10 @@
 export interface PetSummaryDto {
-  petId: number;
+  petId: string;
   name: string;
   owner: any;
   morphs: string[];
-  traits?: string[];
-  sex: string;
+  traits: string[];
+  sex: "M" | "F" | "N";
   photo?: any;
 }
 

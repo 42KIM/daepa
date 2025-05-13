@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useFormStore } from "../../store/form";
 import SearchIcon from "@mui/icons-material/Search";
-import ParentSearchSelector from "../selector/parent";
+import ParentSearchSelector from "../../../components/ParentSearchSelector";
 
 const SearchButton = ({ label, openSelector }: { label: string; openSelector: () => void }) => {
   const buttonStyle =
