@@ -52,7 +52,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
         >
           {/* 카드 앞면 */}
           <div className="absolute h-full w-full [-webkit-backface-visibility:hidden] [backface-visibility:hidden] [transform:rotateY(0deg)]">
-            <div className="relative h-full overflow-hidden rounded-lg border-4 border-gray-300 bg-white shadow-xl">
+            <div className="relative h-full overflow-hidden rounded-lg border-4 border-gray-300 bg-white shadow-xl dark:bg-[#18181B]">
               {/* 이미지 컨테이너 */}
               <motion.div
                 animate={{
@@ -156,7 +156,11 @@ const PetDetail = ({ pet }: PetDetailProps) => {
 
                 <div className="mb-4 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <h1 className="shrink-0 text-3xl font-bold">{pet.name}</h1>
+                    <h1
+                      className={`shrink-0 text-3xl font-bold ${!isExpanded && "dark:text-white"}`}
+                    >
+                      {pet.name}
+                    </h1>
                     <div className="scrollbar-hide overflow-x-auto">
                       <div className="flex gap-1">
                         {pet.morphs?.map((morph) => (
@@ -176,24 +180,42 @@ const PetDetail = ({ pet }: PetDetailProps) => {
 
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                   <div>
-                    <p className={isExpanded ? "text-gray-300" : "text-gray-500"}>종</p>
-                    <p className="font-bold">
+                    <p
+                      className={isExpanded ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}
+                    >
+                      종
+                    </p>
+                    <p className={`font-bold ${!isExpanded && "dark:text-white"}`}>
                       {SPECIES_KOREAN_INFO[pet.species as keyof typeof SPECIES_KOREAN_INFO]}
                     </p>
                   </div>
                   <div>
-                    <p className={isExpanded ? "text-gray-300" : "text-gray-500"}>성별</p>
-                    <p className="font-bold">
+                    <p
+                      className={isExpanded ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}
+                    >
+                      성별
+                    </p>
+                    <p className={`font-bold ${!isExpanded && "dark:text-white"}`}>
                       {GENDER_KOREAN_INFO[pet.sex as keyof typeof GENDER_KOREAN_INFO]}
                     </p>
                   </div>
                   <div>
-                    <p className={isExpanded ? "text-gray-300" : "text-gray-500"}>무게</p>
-                    <p className="font-bold">{pet.weight}g</p>
+                    <p
+                      className={isExpanded ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}
+                    >
+                      무게
+                    </p>
+                    <p className={`font-bold ${!isExpanded && "dark:text-white"}`}>{pet.weight}g</p>
                   </div>
                   <div>
-                    <p className={isExpanded ? "text-gray-300" : "text-gray-500"}>생년월일</p>
-                    <p className="font-bold">{formatDate(pet.birthdate || "")}</p>
+                    <p
+                      className={isExpanded ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}
+                    >
+                      생년월일
+                    </p>
+                    <p className={`font-bold ${!isExpanded && "dark:text-white"}`}>
+                      {formatDate(pet.birthdate || "")}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -203,7 +225,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-white/80 backdrop-blur-sm"
+                  className="bg-white/80 backdrop-blur-sm dark:bg-gray-600/50 dark:text-white dark:hover:bg-gray-800/80"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsExpanded(!isExpanded);
@@ -217,7 +239,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
 
           {/* 카드 뒷면 */}
           <div className="absolute h-full w-full [-webkit-backface-visibility:hidden] [backface-visibility:hidden] [transform:rotateY(180deg)]">
-            <div className="h-full overflow-auto rounded-lg border-4 border-gray-300 bg-white p-4 shadow-xl">
+            <div className="h-full overflow-auto rounded-lg border-4 border-gray-300 bg-white p-4 shadow-xl dark:bg-[#18181B]">
               {/* 사육 정보 */}
               <div className="mb-6">
                 <h2 className="mb-3 text-xl font-bold">사육 정보</h2>
@@ -281,12 +303,17 @@ const PetDetail = ({ pet }: PetDetailProps) => {
               {/* 메모 */}
               <div className="border-t pt-4">
                 <h2 className="mb-3 text-xl font-bold">메모</h2>
-                <p className="whitespace-pre-wrap rounded-lg bg-gray-50 p-3 text-sm">
+                <p className="whitespace-pre-wrap rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-600/50 dark:text-white">
                   {pet.desc || "-"}
                 </p>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* 힌트 텍스트 추가 */}
+        <div className="mt-4 flex items-center justify-center gap-2 text-gray-500">
+          <span className="animate-bounce text-sm">👆 카드를 탭하여 상세 정보 보기</span>
         </div>
       </div>
     </div>
