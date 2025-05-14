@@ -74,4 +74,28 @@ export class PetService {
     const pet = await this.petRepository.findOneBy({ pet_id: petId });
     return plainToInstance(PetSummaryDto, pet);
   }
+
+  async updateParentId({
+    petId,
+    parentId,
+    target,
+  }: {
+    petId: string;
+    parentId: string;
+    target: 'father' | 'mother';
+  }): Promise<void> {
+    const fieldName = target === 'father' ? 'father_id' : 'mother_id';
+    await this.petRepository.update(
+      { pet_id: petId },
+      { [fieldName]: parentId },
+    );
+  }
+
+  async deleteParent(
+    petId: string,
+    target: 'father' | 'mother',
+  ): Promise<void> {
+    const fieldName = target === 'father' ? 'father_id' : 'mother_id';
+    await this.petRepository.update({ pet_id: petId }, { [fieldName]: null });
+  }
 }
