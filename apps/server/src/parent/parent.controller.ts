@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post } from '@nestjs/common';
 import { PetService } from 'src/pet/pet.service';
 import { DeleteParentDto, UpdateParentDto } from './parent.dto';
 
@@ -7,7 +7,7 @@ export class ParentController {
   constructor(private readonly petService: PetService) {}
 
   // TODO: 본인 개체 권한 확인
-  @Post(':petId')
+  @Post('/update/:petId')
   async createParent(
     @Param('petId') petId: string,
     @Body() updateParentDto: UpdateParentDto,
@@ -23,7 +23,7 @@ export class ParentController {
     };
   }
 
-  @Delete(':petId')
+  @Post('/delete/:petId')
   async deleteParent(
     @Param('petId') petId: string,
     @Body() deleteParentDto: DeleteParentDto,

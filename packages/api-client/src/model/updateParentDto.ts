@@ -5,7 +5,11 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { UpdateParentDtoTarget } from "./updateParentDtoTarget";
 
 export interface UpdateParentDto {
-  [key: string]: unknown;
+  /** 부모 ID */
+  parentId: string;
+  /** 부모 구분 */
+  target: UpdateParentDtoTarget;
 }

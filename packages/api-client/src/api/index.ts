@@ -56,7 +56,11 @@ export const parentControllerCreateParent = <TData = AxiosResponse<void>>(
   updateParentDto: UpdateParentDto,
   options?: AxiosRequestConfig,
 ): Promise<TData> => {
-  return axios.post(`http://localhost:4000/api/v1/parent/${petId}`, updateParentDto, options);
+  return axios.post(
+    `http://localhost:4000/api/v1/parent/update/${petId}`,
+    updateParentDto,
+    options,
+  );
 };
 
 export const parentControllerDeleteParent = <TData = AxiosResponse<void>>(
@@ -64,10 +68,11 @@ export const parentControllerDeleteParent = <TData = AxiosResponse<void>>(
   deleteParentDto: DeleteParentDto,
   options?: AxiosRequestConfig,
 ): Promise<TData> => {
-  return axios.delete(`http://localhost:4000/api/v1/parent/${petId}`, {
-    data: deleteParentDto,
-    ...options,
-  });
+  return axios.post(
+    `http://localhost:4000/api/v1/parent/delete/${petId}`,
+    deleteParentDto,
+    options,
+  );
 };
 
 export type PetControllerFindAllResult = AxiosResponse<PetDto[]>;
@@ -237,7 +242,7 @@ export const getParentControllerCreateParentMockHandler = (
     | void
     | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
 ) => {
-  return http.post("*/api/v1/parent/:petId", async (info) => {
+  return http.post("*/api/v1/parent/update/:petId", async (info) => {
     await delay(1000);
     if (typeof overrideResponse === "function") {
       await overrideResponse(info);
@@ -249,14 +254,14 @@ export const getParentControllerCreateParentMockHandler = (
 export const getParentControllerDeleteParentMockHandler = (
   overrideResponse?:
     | void
-    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
 ) => {
-  return http.delete("*/api/v1/parent/:petId", async (info) => {
+  return http.post("*/api/v1/parent/delete/:petId", async (info) => {
     await delay(1000);
     if (typeof overrideResponse === "function") {
       await overrideResponse(info);
     }
-    return new HttpResponse(null, { status: 200 });
+    return new HttpResponse(null, { status: 201 });
   });
 };
 export const getProjectDaepaAPIMock = () => [
