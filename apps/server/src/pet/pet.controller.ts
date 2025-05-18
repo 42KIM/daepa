@@ -11,7 +11,7 @@ import {
   Query,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreatePetDto, PetDto, UpdatePetDto } from './pet.dto';
+import { CreatePetDto, PetDto, PetSummaryDto, UpdatePetDto } from './pet.dto';
 import { PetService } from './pet.service';
 import { nanoid } from 'nanoid';
 import { PetEntity } from './pet.entity';
@@ -49,11 +49,11 @@ export class PetController {
     status: 200,
     description: '펫 목록 조회 성공',
     isArray: true,
-    type: PetDto,
+    type: PageDto<PetSummaryDto>,
   })
   async findAll(
     @Query() pageOptionsDto: PageOptionsDto,
-  ): Promise<PageDto<PetEntity>> {
+  ): Promise<PageDto<PetSummaryDto>> {
     return await this.petService.getAllPets(pageOptionsDto);
   }
 
