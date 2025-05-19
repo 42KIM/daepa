@@ -32,6 +32,6 @@ export class BrPetController {
   async findAll(
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<PetDto>> {
-    return this.petService.getAllPets(pageOptionsDto);
+    return this.petService.getPetListFull(pageOptionsDto);
   }
 }

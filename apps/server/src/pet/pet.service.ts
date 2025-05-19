@@ -21,7 +21,10 @@ export class PetService {
     return await this.petRepository.save(petData);
   }
 
-  async getAllPets(pageOptionsDto: PageOptionsDto): Promise<PageDto<PetDto>> {
+  async getPetList<T extends PetDto | PetSummaryDto>(
+    pageOptionsDto: PageOptionsDto,
+    dtoClass: new () => T,
+  ): Promise<PageDto<T>> {
     const queryBuilder = this.petRepository.createQueryBuilder('pet');
 
     queryBuilder
@@ -32,33 +35,23 @@ export class PetService {
     const totalCount = await queryBuilder.getCount();
     const { entities } = await queryBuilder.getRawAndEntities();
     const petList = entities.map((entity) => instanceToPlain(entity));
-    const petSummaryDtos = petList.map((pet) => plainToInstance(PetDto, pet));
+    const petDtos = petList.map((pet) => plainToInstance(dtoClass, pet));
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
-    return new PageDto(petSummaryDtos, pageMetaDto);
+    return new PageDto(petDtos, pageMetaDto);
   }
 
-  async getAllPetsSummary(
+  async getPetListFull(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<PetDto>> {
+    return this.getPetList<PetDto>(pageOptionsDto, PetDto);
+  }
+
+  async getPetListSummary(
     pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<PetSummaryDto>> {
-    const queryBuilder = this.petRepository.createQueryBuilder('pet');
-
-    queryBuilder
-      .orderBy('pet.id', pageOptionsDto.order)
-      .skip(pageOptionsDto.skip)
-      .take(pageOptionsDto.itemPerPage);
-
-    const totalCount = await queryBuilder.getCount();
-    const { entities } = await queryBuilder.getRawAndEntities();
-    const petList = entities.map((entity) => instanceToPlain(entity));
-    const petSummaryDtos = petList.map((pet) =>
-      plainToInstance(PetSummaryDto, pet),
-    );
-
-    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
-
-    return new PageDto(petSummaryDtos, pageMetaDto);
+    return this.getPetList<PetSummaryDto>(pageOptionsDto, PetSummaryDto);
   }
 
   async getPet(petId: string): Promise<PetDto | null> {

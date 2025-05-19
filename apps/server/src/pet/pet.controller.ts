@@ -63,7 +63,7 @@ export class PetController {
   async findAll(
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<PetSummaryDto>> {
-    return await this.petService.getAllPetsSummary(pageOptionsDto);
+    return await this.petService.getPetListSummary(pageOptionsDto);
   }
 
   @Get(':petId')
