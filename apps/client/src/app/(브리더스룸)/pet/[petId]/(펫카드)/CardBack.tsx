@@ -226,7 +226,12 @@ const CardBack = ({ pet, setIsFlipped }: CardBackProps) => {
 
         {/* 하단 고정 버튼 영역 */}
         <div className="fixed bottom-0 left-0 right-0 flex justify-between bg-transparent p-4">
-          <Button variant="destructive" size="sm" onClick={handleDelete} className="text-white">
+          <Button
+            className="cursor-pointer bg-red-600 opacity-50 hover:opacity-100"
+            variant="destructive"
+            size="sm"
+            onClick={handleDelete}
+          >
             개체 삭제
           </Button>
 
