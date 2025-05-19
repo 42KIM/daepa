@@ -46,7 +46,8 @@ class UserNotificationDto {
     example: 'XXXXXXXX',
   })
   @IsString()
-  targetId: string;
+  @IsOptional()
+  targetId?: string;
 
   @ApiProperty({
     description: '알림 상태',
