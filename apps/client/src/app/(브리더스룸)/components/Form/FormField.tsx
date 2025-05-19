@@ -76,16 +76,31 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
           />
         </div>
       );
-    case "textarea":
+    case "textarea": {
+      const maxLength = 600;
+      const currentLength = (value as string)?.length || 0;
+
       return (
-        <textarea
-          className={`w-full rounded-xl bg-gray-100 p-4 text-left text-[18px] focus:outline-none focus:ring-0 dark:bg-gray-600/50 dark:text-white`}
-          rows={4}
-          value={value || ""}
-          onChange={(e) => handleChange({ type: field.name, value: e.target.value })}
-          disabled={disabled}
-        />
+        <div className="relative">
+          <textarea
+            className={`min-h-[160px] w-full rounded-xl bg-gray-100 p-4 text-left text-[18px] focus:outline-none focus:ring-0 dark:bg-gray-600/50 dark:text-white`}
+            value={value || ""}
+            maxLength={maxLength}
+            onChange={(e) => handleChange({ type: field.name, value: e.target.value })}
+            disabled={disabled}
+            style={{ height: "auto" }}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = "auto";
+              target.style.height = `${target.scrollHeight}px`;
+            }}
+          />
+          <div className="absolute bottom-4 right-4 text-sm text-gray-500">
+            {currentLength}/{maxLength}
+          </div>
+        </div>
       );
+    }
     case "select":
       return (
         <button
@@ -115,7 +130,7 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
               value.length > 0 &&
               value.map((item) => (
                 <div
-                  className={`mb-2 flex items-center gap-2 rounded-full bg-[#1A56B3] pb-1 pl-3 pr-3 pt-1 text-[#D9E1EC]`}
+                  className={`mb-2 flex items-center gap-2 rounded-full bg-[#1A56B3] pb-1 pl-3 pr-3 pt-1 font-semibold text-[#D9E1EC]`}
                   key={item}
                 >
                   <span>{item}</span>
