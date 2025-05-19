@@ -21,7 +21,25 @@ export class PetService {
     return await this.petRepository.save(petData);
   }
 
-  async getAllPets(
+  async getAllPets(pageOptionsDto: PageOptionsDto): Promise<PageDto<PetDto>> {
+    const queryBuilder = this.petRepository.createQueryBuilder('pet');
+
+    queryBuilder
+      .orderBy('pet.id', pageOptionsDto.order)
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.itemPerPage);
+
+    const totalCount = await queryBuilder.getCount();
+    const { entities } = await queryBuilder.getRawAndEntities();
+    const petList = entities.map((entity) => instanceToPlain(entity));
+    const petSummaryDtos = petList.map((pet) => plainToInstance(PetDto, pet));
+
+    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+
+    return new PageDto(petSummaryDtos, pageMetaDto);
+  }
+
+  async getAllPetsSummary(
     pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<PetSummaryDto>> {
     const queryBuilder = this.petRepository.createQueryBuilder('pet');
@@ -37,7 +55,6 @@ export class PetService {
     const petSummaryDtos = petList.map((pet) =>
       plainToInstance(PetSummaryDto, pet),
     );
-    console.log('petSummaryDtos', petSummaryDtos);
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
