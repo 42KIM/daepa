@@ -37,3 +37,6 @@ export * from "./userNotificationControllerFindAllOrder";
 export * from "./userNotificationControllerFindAllParams";
 export * from "./userNotificationDto";
 export * from "./userNotificationDtoDetailJson";
+export * from "./brPetControllerFindAll200";
+export * from "./brPetControllerFindAllOrder";
+export * from "./brPetControllerFindAllParams";
