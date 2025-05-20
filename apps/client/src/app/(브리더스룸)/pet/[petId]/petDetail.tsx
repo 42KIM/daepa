@@ -69,10 +69,10 @@ const PetDetail = ({ pet }: PetDetailProps) => {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-[500px] px-4">
+    <div className="mx-auto w-full max-w-[700px] px-4">
       <div
         ref={containerRef}
-        className="scrollbar-hide relative h-[600px] w-full overflow-y-auto scroll-smooth rounded-lg border-4 border-gray-300 bg-white shadow-xl [-ms-overflow-style:'none'] [scrollbar-width:none] dark:bg-[#18181B] [&::-webkit-scrollbar]:hidden"
+        className="scrollbar-hide relative h-[600px] w-full overflow-y-auto scroll-smooth rounded-lg border-gray-300 bg-white shadow-xl [-ms-overflow-style:'none'] [scrollbar-width:none] dark:bg-[#18181B] [&::-webkit-scrollbar]:hidden"
       >
         <div className="flex flex-col">
           <div className="h-[700px] shrink-0">
