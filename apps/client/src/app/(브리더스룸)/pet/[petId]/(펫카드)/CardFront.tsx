@@ -148,7 +148,7 @@ const CardFront = ({ pet }: { pet: PetDto }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm dark:text-white">
           <div>
             <p className={isExpanded ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}>종</p>
             <div>{SPECIES_KOREAN_INFO[pet.species]}</div>

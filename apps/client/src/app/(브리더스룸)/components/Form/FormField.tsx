@@ -23,7 +23,7 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
 
   const error = errors[name];
   const inputClassName = cn(
-    `text-[20px] w-full h-9 pr-1 text-left focus:outline-none focus:ring-0 text-gray-400 dark:text-gray-400
+    `text-[16px] w-full h-9 pr-1 text-left focus:outline-none focus:ring-0 text-gray-400 dark:text-gray-400
     transition-all duration-300 ease-in-out`,
     !disabled && "border-b-[1.2px] border-b-gray-200 focus:border-b-[2px] focus:border-[#1A56B3]",
     error && "border-b-red-500",
