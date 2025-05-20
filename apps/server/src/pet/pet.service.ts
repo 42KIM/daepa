@@ -21,9 +21,10 @@ export class PetService {
     return await this.petRepository.save(petData);
   }
 
-  async getAllPets(
+  async getPetList<T extends PetDto | PetSummaryDto>(
     pageOptionsDto: PageOptionsDto,
-  ): Promise<PageDto<PetSummaryDto>> {
+    dtoClass: new () => T,
+  ): Promise<PageDto<T>> {
     const queryBuilder = this.petRepository.createQueryBuilder('pet');
 
     queryBuilder
@@ -34,14 +35,23 @@ export class PetService {
     const totalCount = await queryBuilder.getCount();
     const { entities } = await queryBuilder.getRawAndEntities();
     const petList = entities.map((entity) => instanceToPlain(entity));
-    const petSummaryDtos = petList.map((pet) =>
-      plainToInstance(PetSummaryDto, pet),
-    );
-    console.log('petSummaryDtos', petSummaryDtos);
+    const petDtos = petList.map((pet) => plainToInstance(dtoClass, pet));
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
-    return new PageDto(petSummaryDtos, pageMetaDto);
+    return new PageDto(petDtos, pageMetaDto);
+  }
+
+  async getPetListFull(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<PetDto>> {
+    return this.getPetList<PetDto>(pageOptionsDto, PetDto);
+  }
+
+  async getPetListSummary(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<PetSummaryDto>> {
+    return this.getPetList<PetSummaryDto>(pageOptionsDto, PetSummaryDto);
   }
 
   async getPet(petId: string): Promise<PetDto | null> {

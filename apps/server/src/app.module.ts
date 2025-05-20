@@ -11,6 +11,7 @@ import { ParentController } from './parent/parent.controller';
 import { UserNotificationEntity } from './user_notification/user_notification.entity';
 import { UserNotificationService } from './user_notification/user_notification.service';
 import { UserNotificationController } from './user_notification/user_notification.controller';
+import { BrPetController } from './pet/br/br.pet.controller';
 
 const ENTITIES = [PetEntity, UserNotificationEntity];
 
@@ -37,6 +38,7 @@ const ENTITIES = [PetEntity, UserNotificationEntity];
     PetController,
     ParentController,
     UserNotificationController,
+    BrPetController,
   ],
   providers: [AppService, PetService, UserNotificationService],
 })

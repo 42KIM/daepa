@@ -61,7 +61,7 @@ export class PetEntity {
   mother_id?: string; // 모 개체 id
 
   @Expose({ name: 'desc' })
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 500, nullable: true })
   desc?: string; // 소개말
 
   @Expose({ name: 'createdAt' })
