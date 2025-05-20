@@ -1,14 +1,39 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ParentService } from './parent.service';
 import {
   CreateParentDto,
   DeleteParentDto,
+  FindParentDto,
+  ParentDto,
   UpdateParentDto,
 } from './parent.dto';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('/v1/parent')
 export class ParentController {
   constructor(private readonly parentService: ParentService) {}
+
+  @Get('/:petId')
+  @ApiResponse({
+    status: 200,
+    description: '부모 관계 조회 성공',
+    type: ParentDto,
+  })
+  async findParent(
+    @Param('petId') petId: string,
+    @Query() findParentDto: FindParentDto,
+  ) {
+    return await this.parentService.findOne(petId, findParentDto);
+  }
 
   // TODO: 본인 개체 권한 확인
   @Post('/:petId')

@@ -5,11 +5,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Expose } from 'class-transformer';
+import { Expose, Exclude } from 'class-transformer';
 import { PARENT_STATUS, PARENT_ROLE } from './parent.constant';
 
 @Entity({ name: 'parents' })
 export class ParentEntity {
+  @Exclude()
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -25,8 +26,8 @@ export class ParentEntity {
   role: PARENT_ROLE;
 
   @Column({
-    nullable: true,
     default: 'pending',
+    nullable: true,
   })
   status: PARENT_STATUS;
 

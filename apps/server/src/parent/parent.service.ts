@@ -5,8 +5,11 @@ import { Repository } from 'typeorm';
 import {
   CreateParentDto,
   DeleteParentDto,
+  FindParentDto,
+  ParentDto,
   UpdateParentDto,
 } from './parent.dto';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ParentService {
@@ -14,6 +17,27 @@ export class ParentService {
     @InjectRepository(ParentEntity)
     private readonly parentRepository: Repository<ParentEntity>,
   ) {}
+
+  async findOne(petId: string, findParentDto: FindParentDto) {
+    const parentEntity = await this.parentRepository.findOne({
+      select: ['parent_id', 'role', 'status'],
+      where: {
+        pet_id: petId,
+        role: findParentDto.role,
+        status: findParentDto.status,
+      },
+      order: {
+        created_at: 'DESC',
+      },
+    });
+
+    if (!parentEntity) {
+      return null;
+    }
+
+    const parent = instanceToPlain(parentEntity);
+    return plainToInstance(ParentDto, parent);
+  }
 
   async createParent(petId: string, createParentDto: CreateParentDto) {
     // TODO: parent 성별 검증
