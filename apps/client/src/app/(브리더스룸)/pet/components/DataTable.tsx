@@ -22,17 +22,23 @@ import {
 import { SearchFilter } from "./SearchFilter";
 import { Pagination } from "./Pagination";
 import useTableStore from "../store/table";
-import { Pet } from "@/types/pet";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Add from "@mui/icons-material/Add";
+import { PetDto } from "@repo/api-client";
 
-interface DataTableProps {
-  columns: ColumnDef<Pet, unknown>[];
-  data: Pet[];
+interface DataTableProps<TData> {
+  columns: ColumnDef<TData>[];
+  data: TData[];
+  pagination: {
+    page: number;
+    setPage: (page: number) => void;
+    totalPage?: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
+  };
 }
-
-export const DataTable = ({ columns, data }: DataTableProps) => {
+export const DataTable = ({ columns, data, pagination }: DataTableProps<PetDto>) => {
   const {
     sorting,
     columnFilters,
@@ -124,7 +130,7 @@ export const DataTable = ({ columns, data }: DataTableProps) => {
           </Table>
         </div>
 
-        <Pagination table={table} />
+        <Pagination table={table} pagination={pagination} />
       </div>
 
       <Button
