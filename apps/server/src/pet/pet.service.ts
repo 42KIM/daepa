@@ -132,15 +132,15 @@ export class PetService {
     petId: string,
     role: PARENT_ROLE,
   ): Promise<Partial<ParentDto> | null> {
-    const father = await this.parentService.findOne(petId, {
+    const parent = await this.parentService.findOne(petId, {
       role,
     });
-    if (!father) return null;
+    if (!parent) return null;
 
-    const parentSummary = await this.getPetSummary(father.parentId);
+    const parentSummary = await this.getPetSummary(parent.parentId);
     return {
       ...parentSummary,
-      status: father.status,
+      status: parent.status,
     };
   }
 
