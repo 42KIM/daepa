@@ -8,8 +8,9 @@ export class ParentDto {
   @IsNotEmpty()
   parentId: string;
 
-  @ApiProperty({ description: '부모 구분' })
+  @ApiProperty({ description: '부모 구분', enum: PARENT_ROLE })
   @IsNotEmpty()
+  @IsEnum(PARENT_ROLE)
   role: PARENT_ROLE;
 
   @ApiProperty({
@@ -29,6 +30,7 @@ export class ParentDto {
 export class FindParentDto extends PickType(ParentDto, ['role']) {
   @ApiProperty({ description: '부모 구분' })
   @IsNotEmpty()
+  @IsEnum(PARENT_ROLE)
   role: PARENT_ROLE;
 }
 
@@ -38,8 +40,9 @@ export class CreateParentDto {
   @IsNotEmpty()
   parentId: string;
 
-  @ApiProperty({ description: '부모 구분' })
+  @ApiProperty({ description: '부모 구분', enum: PARENT_ROLE })
   @IsNotEmpty()
+  @IsEnum(PARENT_ROLE)
   role: PARENT_ROLE;
 }
 

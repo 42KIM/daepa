@@ -69,11 +69,11 @@ export class PetService {
 
     const petListFullWithParent = await Promise.all(
       data.map(async (pet) => {
-        const father = await this.getParent(pet.petId, 'father');
+        const father = await this.getParent(pet.petId, PARENT_ROLE.FATHER);
         if (father) {
           pet.father = plainToInstance(PetParentDto, father);
         }
-        const mother = await this.getParent(pet.petId, 'mother');
+        const mother = await this.getParent(pet.petId, PARENT_ROLE.MOTHER);
         if (mother) {
           pet.mother = plainToInstance(PetParentDto, mother);
         }
@@ -103,10 +103,10 @@ export class PetService {
     const pet = instanceToPlain(petEntity);
 
     if (typeof pet.petId === 'string') {
-      pet.father = await this.getParent(pet.petId, 'father');
+      pet.father = await this.getParent(pet.petId, PARENT_ROLE.FATHER);
     }
     if (typeof pet.petId === 'string') {
-      pet.mother = await this.getParent(pet.petId, 'mother');
+      pet.mother = await this.getParent(pet.petId, PARENT_ROLE.MOTHER);
     }
 
     const petDto = plainToInstance(PetDto, pet);
@@ -167,13 +167,13 @@ export class PetService {
     if (fatherId) {
       await this.parentService.createParent(petId, {
         parentId: fatherId,
-        role: 'father',
+        role: PARENT_ROLE.FATHER,
       });
     }
     if (motherId) {
       await this.parentService.createParent(petId, {
         parentId: motherId,
-        role: 'mother',
+        role: PARENT_ROLE.MOTHER,
       });
     }
   }

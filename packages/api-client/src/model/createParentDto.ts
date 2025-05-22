@@ -5,10 +5,11 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { CreateParentDtoRole } from "./createParentDtoRole";
 
 export interface CreateParentDto {
   /** 부모 ID */
   parentId: string;
   /** 부모 구분 */
-  role: string;
+  role: CreateParentDtoRole;
 }

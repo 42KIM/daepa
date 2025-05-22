@@ -50,3 +50,6 @@ export * from "./userNotificationControllerFindAllOrder";
 export * from "./userNotificationControllerFindAllParams";
 export * from "./userNotificationDto";
 export * from "./userNotificationDtoDetailJson";
+export * from "./createParentDtoRole";
+export * from "./parentControllerFindParentRole";
+export * from "./parentDtoRole";

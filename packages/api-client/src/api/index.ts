@@ -293,7 +293,7 @@ export const getParentControllerFindParentResponseMock = (
   overrideResponse: Partial<ParentDto> = {},
 ): ParentDto => ({
   parentId: faker.string.alpha(20),
-  role: faker.string.alpha(20),
+  role: faker.helpers.arrayElement(["father", "mother"] as const),
   status: faker.helpers.arrayElement([
     "pending",
     "approved",

@@ -5,13 +5,14 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { ParentDtoRole } from "./parentDtoRole";
 import type { ParentDtoStatus } from "./parentDtoStatus";
 
 export interface ParentDto {
   /** 부모 ID */
   parentId: string;
   /** 부모 구분 */
-  role: string;
+  role: ParentDtoRole;
   /** 부모 관계 상태
       - pending: 승인 대기 중
       - approved: 부모 승인됨
