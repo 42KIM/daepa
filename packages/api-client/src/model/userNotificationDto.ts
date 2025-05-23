@@ -5,6 +5,8 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { UserNotificationDtoType } from "./userNotificationDtoType";
+import type { UserNotificationDtoStatus } from "./userNotificationDtoStatus";
 import type { UserNotificationDtoDetailJson } from "./userNotificationDtoDetailJson";
 
 export interface UserNotificationDto {
@@ -13,11 +15,14 @@ export interface UserNotificationDto {
   /** 알림 수신 유저 아이디 */
   receiverId: string;
   /** 알림 타입 */
-  type: string;
+  type: UserNotificationDtoType;
   /** 알림 대상 이벤트 아이디 ex) 부모 개체 아이디, 댓글 아이디 등 */
   targetId?: string;
-  /** 알림 상태 */
-  status: string;
+  /** 알림 상태
+      - unread: 읽지 않음
+      - read: 읽음
+      - deleted: 삭제 */
+  status: UserNotificationDtoStatus;
   /** 알림 상세 정보 JSON */
   detailJson: UserNotificationDtoDetailJson;
   /** 알림 생성 시간 */

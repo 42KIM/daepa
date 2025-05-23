@@ -7,7 +7,7 @@
  */
 import type { PetParentDtoSpecies } from "./petParentDtoSpecies";
 import type { PetParentDtoSex } from "./petParentDtoSex";
-
+import { ParentDtoStatus } from "./parentDtoStatus";
 export interface PetParentDto {
   /** 펫 아이디 */
   petId?: string;
@@ -24,5 +24,5 @@ export interface PetParentDto {
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: PetParentDtoSex;
   /** 부모 관계 상태 */
-  status: string;
+  status: ParentDtoStatus;
 }

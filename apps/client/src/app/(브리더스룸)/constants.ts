@@ -1,4 +1,4 @@
-import { DollarSign, Egg, Heart, Home, Inbox } from "lucide-react";
+import { Bell, DollarSign, Egg, Heart, Home, Inbox } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
 import { FOOD } from "@/types/pet";
 
@@ -236,20 +236,25 @@ export const SIDEBAR_ITEMS = [
     icon: Inbox,
   },
   {
-    title: "해칭룸",
-    url: "/hatching",
-    icon: Egg,
+    title: "알림",
+    url: "/noti",
+    icon: Bell,
   },
-  {
-    title: "메이팅룸",
-    url: "/mating",
-    icon: Heart,
-  },
-  {
-    title: "분양룸",
-    url: "/sales",
-    icon: DollarSign,
-  },
+  // {
+  //   title: "해칭룸",
+  //   url: "/hatching",
+  //   icon: Egg,
+  // },
+  // {
+  //   title: "메이팅룸",
+  //   url: "/mating",
+  //   icon: Heart,
+  // },
+  // {
+  //   title: "분양룸",
+  //   url: "/sales",
+  //   icon: DollarSign,
+  // },
 ];
 
 export const FOOD_BADGE_COLORS: Record<FOOD, string> = {
@@ -264,4 +269,9 @@ export const FOOD_BADGE_TEXT_COLORS: Record<FOOD, string> = {
   귀뚜라미: "text-gray-900",
   누에: "text-yellow-900",
   "지렙 인섹트": "text-blue-900",
+};
+
+export const NOTIFICATION_TYPE = {
+  parent_request: "부모 연동 요청",
+  system: "시스템 알림",
 };

@@ -5,10 +5,14 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { UpdateUserNotificationDtoStatus } from "./updateUserNotificationDtoStatus";
 
 export interface UpdateUserNotificationDto {
   /** 알림 아이디 */
   id: number;
-  /** 알림 상태 */
-  status: string;
+  /** 알림 상태
+      - unread: 읽지 않음
+      - read: 읽음
+      - deleted: 삭제 */
+  status: UpdateUserNotificationDtoStatus;
 }

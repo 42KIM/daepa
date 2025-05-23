@@ -56,3 +56,8 @@ export interface CreatePetDto {
   mating?: PetMatingDto;
   sales?: PetSalesDto;
 }
+
+export type PetDetailJson = {
+  targetPet: PetSummaryDto & { message: string };
+  requestPet: PetSummaryDto;
+};

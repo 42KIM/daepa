@@ -1,8 +1,12 @@
-export type PARENT_ROLE = 'father' | 'mother';
+export enum PARENT_ROLE {
+  FATHER = 'father',
+  MOTHER = 'mother',
+}
 
-export type PARENT_STATUS =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'deleted'
-  | 'cancelled';
+export enum PARENT_STATUS {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  DELETED = 'deleted',
+  CANCELLED = 'cancelled',
+}

@@ -5,10 +5,11 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { ParentControllerFindParentRole } from "./parentControllerFindParentRole";
 
 export type ParentControllerFindParentParams = {
   /**
    * 부모 구분
    */
-  role: string;
+  role: ParentControllerFindParentRole;
 };

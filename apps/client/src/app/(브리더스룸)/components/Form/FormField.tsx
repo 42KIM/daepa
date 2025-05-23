@@ -43,7 +43,7 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
     case "file":
       return <FileField />;
     case "number":
-      return (
+      return !disabled && value ? (
         <NumberField
           disabled={disabled}
           inputClassName={inputClassName}
@@ -51,6 +51,8 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
           value={value || ""}
           setValue={handleChange}
         />
+      ) : (
+        <div className="h-9 w-full text-left text-gray-400">-</div>
       );
     case "parentSearch":
       return (
@@ -82,7 +84,7 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
       const currentLength = (value as string)?.length || 0;
 
       return (
-        <div className="relative">
+        <div className="relative pt-2">
           <textarea
             className={`min-h-[160px] w-full rounded-xl bg-gray-100 p-4 text-left text-[18px] focus:outline-none focus:ring-0 dark:bg-gray-600/50 dark:text-white`}
             value={value || ""}

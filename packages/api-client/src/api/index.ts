@@ -293,8 +293,14 @@ export const getParentControllerFindParentResponseMock = (
   overrideResponse: Partial<ParentDto> = {},
 ): ParentDto => ({
   parentId: faker.string.alpha(20),
-  role: faker.string.alpha(20),
-  status: faker.string.alpha(20),
+  role: faker.helpers.arrayElement(["father", "mother"] as const),
+  status: faker.helpers.arrayElement([
+    "pending",
+    "approved",
+    "rejected",
+    "deleted",
+    "cancelled",
+  ] as const),
   ...overrideResponse,
 });
 
@@ -304,9 +310,16 @@ export const getUserNotificationControllerFindAllResponseMock = (
   data: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     id: faker.number.int({ min: undefined, max: undefined }),
     receiverId: faker.string.alpha(20),
-    type: faker.string.alpha(20),
+    type: faker.helpers.arrayElement([
+      "parent_request",
+      "parent_accept",
+      "parent_reject",
+      "owner_transfer",
+      "owner_accept",
+      "owner_reject",
+    ] as const),
     targetId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-    status: faker.string.alpha(20),
+    status: faker.helpers.arrayElement(["read", "unread", "deleted"] as const),
     detailJson: {},
     createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,

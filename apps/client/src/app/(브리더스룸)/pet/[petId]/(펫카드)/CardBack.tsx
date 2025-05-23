@@ -13,18 +13,25 @@ import {
   petControllerDelete,
   parentControllerDeleteParent,
   parentControllerCreateParent,
+  userNotificationControllerCreate,
+  CreateUserNotificationDto,
+  UserNotificationDtoType,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import Dialog from "@/app/(브리더스룸)/components/Form/Dialog";
 import { useMutation } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import useParentLinkStore from "../../store/parentLink";
 interface CardBackProps {
   pet: PetSummaryDto;
 }
 
 const CardBack = ({ pet }: CardBackProps) => {
   const { formData, errors, setFormData } = useFormStore();
+  const { selectedParent, setSelectedParent } = useParentLinkStore();
+
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const { mutate: mutateDeletePet } = useMutation({
@@ -34,21 +41,38 @@ const CardBack = ({ pet }: CardBackProps) => {
 
       toast.success("펫이 삭제되었습니다.");
     },
+    onError: () => {
+      toast.error("펫 삭제에 실패했습니다.");
+    },
   });
 
   const { mutate: mutateDeleteParent } = useMutation({
-    mutationFn: ({ target }: { target: "father" | "mother" }) =>
+    mutationFn: ({ parentId }: { parentId: string }) =>
       parentControllerDeleteParent(pet.petId, {
-        target,
+        parentId,
       }),
   });
 
   const { mutate: mutateRequestParent } = useMutation({
-    mutationFn: ({ parentId, target }: { parentId: string; target: "father" | "mother" }) =>
-      parentControllerCreateParent(parentId, {
+    mutationFn: ({ parentId, role }: { parentId: string; role: "father" | "mother" }) =>
+      parentControllerCreateParent(pet.petId, {
         parentId,
-        target,
+        role,
       }),
+    onSuccess: () => {
+      toast.success("부모 연동 요청이 완료되었습니다.");
+      const role = selectedParent?.sex === "M" ? "father" : "mother";
+      setFormData((prev) => ({ ...prev, [role]: { ...selectedParent, status: "pending" } }));
+      setSelectedParent(null);
+    },
+    onError: () => {
+      toast.error("부모 연동 요청에 실패했습니다.");
+      setSelectedParent(null);
+    },
+  });
+
+  const { mutate: mutateSendNotification } = useMutation({
+    mutationFn: (data: CreateUserNotificationDto) => userNotificationControllerCreate(data),
   });
 
   useEffect(() => {
@@ -89,14 +113,36 @@ const CardBack = ({ pet }: CardBackProps) => {
     }
   };
 
-  const handleParentSelect = (label: "father" | "mother", value: PetSummaryDto) => {
+  const handleParentSelect = (
+    role: "father" | "mother",
+    value: PetSummaryDto & { message: string },
+  ) => {
     try {
-      mutateRequestParent({ parentId: value.petId, target: label });
-      setFormData((prev) => ({ ...prev, [label]: value }));
+      setSelectedParent({
+        ...value,
+        // 요청을 보낸 펫의 데이터
+        status: "pending",
+      });
 
-      toast.success("부모 연동 요청이 완료되었습니다.");
-    } catch {
-      toast.error("부모 연동 요청에 실패했습니다.");
+      // 부모 연동 요청
+      // 부모 연동 요청
+      mutateRequestParent({ parentId: value.petId, role });
+      const notificationData: CreateUserNotificationDto = {
+        receiverId: "ZUCOPIA",
+        // TODO: 로그인 기능 붙인 후 수정
+        // receiverId: value.ownerId,
+        type: UserNotificationDtoType.parent_request,
+        targetId: pet.petId,
+        detailJson: JSON.stringify({
+          targetPet: value,
+          requestPet: pet,
+        }),
+      };
+
+      // //  부모 연동 요청 알림 보내기
+      mutateSendNotification(notificationData);
+    } catch (error) {
+      console.error("Failed to send notification:", error);
     }
   };
 
@@ -105,8 +151,8 @@ const CardBack = ({ pet }: CardBackProps) => {
       if (!pet.petId) return;
 
       mutateDeletePet(pet.petId);
-    } catch {
-      toast.error("펫 삭제에 실패했습니다.");
+    } catch (error) {
+      console.error("Failed to delete pet:", error);
     }
   };
 
@@ -128,7 +174,7 @@ const CardBack = ({ pet }: CardBackProps) => {
   const handleUnlink = (label: "father" | "mother") => {
     try {
       if (!formData[label]?.petId) return;
-      mutateDeleteParent({ target: label });
+      mutateDeleteParent({ parentId: formData[label]?.petId });
 
       toast.success("부모 연동 해제가 완료되었습니다.");
       setFormData((prev) => ({ ...prev, [label]: null }));
@@ -206,6 +252,7 @@ const CardBack = ({ pet }: CardBackProps) => {
                     <InfoItem
                       key={step.field.name}
                       label={step.title}
+                      className={step.field.type === "textarea" ? "" : "flex items-center gap-4"}
                       value={
                         <FormField
                           field={step.field}
@@ -234,8 +281,16 @@ const CardBack = ({ pet }: CardBackProps) => {
   );
 };
 
-const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="flex items-center gap-4 py-1">
+const InfoItem = ({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={cn("py-1", className)}>
     <dt className="min-w-[80px] shrink-0 text-[16px] text-gray-500">{label}</dt>
     <dd className="flex-1">{value}</dd>
   </div>
