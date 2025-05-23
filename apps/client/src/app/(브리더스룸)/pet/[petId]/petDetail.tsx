@@ -9,9 +9,10 @@ import { ChevronDown } from "lucide-react";
 
 interface PetDetailProps {
   pet: PetDto;
+  qrCodeDataUrl: string;
 }
 
-const PetDetail = ({ pet }: PetDetailProps) => {
+const PetDetail = ({ pet, qrCodeDataUrl }: PetDetailProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
 
@@ -83,7 +84,7 @@ const PetDetail = ({ pet }: PetDetailProps) => {
       >
         <div className="flex flex-col">
           <div className="h-[700px] shrink-0">
-            <CardFront pet={pet} />
+            <CardFront pet={pet} qrCodeDataUrl={qrCodeDataUrl} />
           </div>
           <div className="h-[700px] shrink-0 pt-6">
             <CardBack pet={pet} />

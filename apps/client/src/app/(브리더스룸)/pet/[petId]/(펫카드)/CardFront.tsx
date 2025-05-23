@@ -8,7 +8,7 @@ import { Expand, Shrink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-const CardFront = ({ pet }: { pet: PetDto }) => {
+const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl: string }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragStart, setDragStart] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -97,6 +97,14 @@ const CardFront = ({ pet }: { pet: PetDto }) => {
               <span className="text-sm font-semibold italic">브리더</span>
             </div>
           </div>
+
+          <Image
+            src={qrCodeDataUrl}
+            alt="Pet QR Code"
+            className="absolute right-0 z-10"
+            width={60}
+            height={60}
+          />
         </motion.div>
       </motion.div>
 
