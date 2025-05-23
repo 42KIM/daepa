@@ -33,7 +33,7 @@ const NotiButton = () => {
   const isNotiPage = pathname === "/noti";
 
   const { data: notifications } = useQuery({
-    queryKey: ["notification"],
+    queryKey: [userNotificationControllerFindAll.name],
     queryFn: () => userNotificationControllerFindAll(),
     select: (response) => response.data.data,
   });
