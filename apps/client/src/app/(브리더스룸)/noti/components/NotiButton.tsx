@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { userNotificationControllerFindAll } from "@repo/api-client";
+import { userNotificationControllerFindAll, UserNotificationDtoStatus } from "@repo/api-client";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import Link from "next/link";
@@ -35,11 +35,12 @@ const NotiButton = () => {
     select: (response) => response.data.data,
   });
 
-  const unreadCount = notifications?.filter((n) => n.status === "UNREAD").length || 0;
+  const unreadCount =
+    notifications?.filter((n) => n.status === UserNotificationDtoStatus.unread).length || 0;
   const hasNotification = unreadCount > 0;
 
   const recentNotifications = notifications
-    ?.filter((n) => n.status === "UNREAD")
+    ?.filter((n) => n.status === UserNotificationDtoStatus.unread)
     .slice(0, 4)
     .map((n) => ({
       title: NOTIFICATION_TYPE[n.type as keyof typeof NOTIFICATION_TYPE],

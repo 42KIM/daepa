@@ -1,5 +1,9 @@
 import { cn } from "@/lib/utils";
-import { UpdateUserNotificationDto, UserNotificationDto } from "@repo/api-client";
+import {
+  UpdateUserNotificationDto,
+  UserNotificationDto,
+  UserNotificationDtoStatus,
+} from "@repo/api-client";
 import { formatDistanceToNow } from "date-fns";
 import { useNotiStore } from "../store/noti";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,10 +22,10 @@ const NotiList = ({
   const handleItemClick = (item: UserNotificationDto) => {
     setSelected(item);
     // NOTE: 테스트 코드
-    // return handleUpdate({ id: item.id, status: "UNREAD" });
+    // return handleUpdate({ id: item.id, status: UserNotificationDtoStatus.read });
 
-    if (item.status === "UNREAD") {
-      handleUpdate({ id: item.id, status: "READ" });
+    if (item.status === UserNotificationDtoStatus.unread) {
+      handleUpdate({ id: item.id, status: UserNotificationDtoStatus.read });
     }
   };
 
@@ -41,7 +45,7 @@ const NotiList = ({
               <div className="flex items-center">
                 <div className="flex items-center gap-2">
                   <div className="font-semibold">{item.targetId}</div>
-                  {item.status === "UNREAD" && (
+                  {item.status === UserNotificationDtoStatus.unread && (
                     <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )}
                 </div>

@@ -7,6 +7,7 @@ import {
   UpdateUserNotificationDto,
   userNotificationControllerFindAll,
   userNotificationControllerUpdate,
+  UserNotificationDtoStatus,
 } from "@repo/api-client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,9 @@ export default function NotificationsPage() {
     onMutate: async (newData) => {
       // 낙관적 업데이트
       setItems((prev) =>
-        prev.map((item) => (item.id === newData.id ? { ...item, status: "READ" } : item)),
+        prev.map((item) =>
+          item.id === newData.id ? { ...item, status: UserNotificationDtoStatus.read } : item,
+        ),
       );
     },
     onError: () => {
@@ -83,7 +86,9 @@ export default function NotificationsPage() {
           </TabsContent>
           <TabsContent value="unread" className="m-0">
             <NotiList
-              items={items?.filter((item) => item.status === "UNREAD") ?? []}
+              items={
+                items?.filter((item) => item.status === UserNotificationDtoStatus.unread) ?? []
+              }
               handleUpdate={updateNotification}
             />
           </TabsContent>

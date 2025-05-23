@@ -16,6 +16,8 @@ import {
   userNotificationControllerCreate,
   CreateUserNotificationDto,
   petControllerFindOne,
+  UserNotificationDtoStatus,
+  UserNotificationDtoType,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -120,9 +122,9 @@ const CardBack = ({ pet }: CardBackProps) => {
 
       const notificationData: CreateUserNotificationDto = {
         receiverId: value.ownerId,
-        type: "PARENT_REQUEST",
+        type: UserNotificationDtoType.parent_request,
         targetId: value.petId,
-        status: "UNREAD",
+        status: UserNotificationDtoStatus.unread,
         detailJson: JSON.stringify({
           message: value.message ?? "",
         }),
