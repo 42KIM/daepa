@@ -163,13 +163,13 @@ const CardFront = ({ pet }: { pet: PetDto }) => {
             <p className={isExpanded ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}>
               무게
             </p>
-            <div>{`${pet.weight}g`}</div>
+            <div>{pet.weight ? `${pet.weight}g` : "-"}</div>
           </div>
           <div>
             <p className={isExpanded ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}>
               생년월일
             </p>
-            <div>{pet.birthdate ? formatDate(pet.birthdate || "") : "-"}</div>
+            <div>{pet.birthdate ? formatDate(pet.birthdate ?? "") : "-"}</div>
           </div>
         </div>
       </motion.div>

@@ -43,7 +43,7 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
     case "file":
       return <FileField />;
     case "number":
-      return (
+      return !disabled && value ? (
         <NumberField
           disabled={disabled}
           inputClassName={inputClassName}
@@ -51,6 +51,8 @@ export const FormField = ({ field, formData, errors, disabled, handleChange }: F
           value={value || ""}
           setValue={handleChange}
         />
+      ) : (
+        <div className="h-9 w-full text-left text-gray-400">-</div>
       );
     case "parentSearch":
       return (

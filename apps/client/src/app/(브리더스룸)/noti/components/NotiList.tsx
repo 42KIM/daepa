@@ -37,8 +37,8 @@ const NotiList = ({
           <button
             key={item.id}
             className={cn(
-              "hover:bg-accent flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all",
-              selected?.id === item.id && "bg-muted",
+              "hover:bg-accent flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md",
+              selected?.id === item.id && "bg-blue-50",
             )}
             onClick={() => handleItemClick(item)}
           >

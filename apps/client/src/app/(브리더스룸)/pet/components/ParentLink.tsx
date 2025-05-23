@@ -5,7 +5,7 @@ import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../components/ParentSearchSelector";
 import { Button } from "@/components/ui/button";
 import Dialog from "../../components/Form/Dialog";
-import { PetParentDto } from "@repo/api-client";
+import { ParentDtoStatus, PetParentDto } from "@repo/api-client";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,6 @@ const ParentLink = ({
   onSelect: (item: PetParentDto & { message: string }) => void;
   onUnlink: () => void;
 }) => {
-  console.log("🚀 ~ data:", data);
   const deleteParent = () => {
     if (!data?.petId) return;
 
@@ -57,7 +56,9 @@ const ParentLink = ({
               "rounded-full font-semibold text-gray-100",
             )}
           >
-            {data?.status === "approved" && <BadgeCheck className="h-4 w-4 text-gray-100" />}
+            {data?.status === ParentDtoStatus.approved && (
+              <BadgeCheck className="h-4 w-4 text-gray-100" />
+            )}
 
             {STATUS_MAP[data?.status].label}
           </Badge>

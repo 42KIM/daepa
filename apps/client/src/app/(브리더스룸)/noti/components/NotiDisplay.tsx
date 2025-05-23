@@ -14,9 +14,11 @@ import {
   parentControllerUpdateParentStatus,
   ParentDtoStatus,
   UpdateParentDto,
+  UpdateParentDtoUpdateStatus,
   UserNotificationDtoType,
 } from "@repo/api-client";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export function NotiDisplay() {
   const { selected: item } = useNotiStore();
@@ -24,13 +26,20 @@ export function NotiDisplay() {
   const { mutate: updateParentStatus } = useMutation({
     mutationFn: ({ petId, data }: { petId: string; data: UpdateParentDto }) =>
       parentControllerUpdateParentStatus(petId, data),
+    onSuccess: () => {
+      toast.success("부모 연동 요청이 수락되었습니다.");
+    },
+    onError: () => {
+      toast.error("부모 연동 요청 수락에 실패했습니다.");
+    },
   });
 
   const handleUpdate = (status: ParentDtoStatus) => {
-    if (!item?.targetId) return;
+    if (!item?.detailJson.requestPet.petId || !item?.detailJson.targetPet.petId) return;
+
     updateParentStatus({
-      petId: item.targetId,
-      data: { parentId: item.targetId, updateStatus: status },
+      petId: item.detailJson.requestPet.petId,
+      data: { parentId: item.detailJson.targetPet.petId, updateStatus: status },
     });
   };
 
@@ -53,7 +62,8 @@ export function NotiDisplay() {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    handleUpdate("rejected");
+                    handleUpdate(UpdateParentDtoUpdateStatus.rejected);
+                    // TODO: 거절 notification 보내기
                   }}
                   variant="outline"
                   size="sm"
@@ -64,7 +74,7 @@ export function NotiDisplay() {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    handleUpdate("approved");
+                    handleUpdate(UpdateParentDtoUpdateStatus.approved);
                   }}
                   size="sm"
                   className="ml-auto"
@@ -91,7 +101,7 @@ export function NotiDisplay() {
                     <TooltipTrigger asChild>
                       <Link
                         href={`/pet/${item.detailJson.targetPet.petId}`}
-                        className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-1 py-0.5 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-400 dark:hover:bg-blue-900"
+                        className="inline-flex items-center gap-1 rounded-md bg-sky-100 py-0.5 pl-2 pr-1 text-sky-600 hover:bg-sky-200 dark:bg-sky-900/50 dark:text-sky-400 dark:hover:bg-sky-900"
                       >
                         {item.detailJson.targetPet.name}
                         <ArrowUpRight className="h-3 w-3" />
@@ -131,7 +141,7 @@ export function NotiDisplay() {
           {/* 광고 배너 형태의 링크 */}
           <Link
             href={`/pet/${item.detailJson.requestPet.petId}`}
-            className="bg-card hover:bg-accent group mx-4 mt-4 flex items-center justify-between rounded-lg border p-3 shadow-sm transition-colors"
+            className="group mx-4 mt-4 flex items-center justify-between rounded-lg bg-blue-100 p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:bg-blue-200 hover:shadow-md"
           >
             <div className="flex items-center gap-3">
               {item.detailJson.requestPet.photo ? (
@@ -145,7 +155,7 @@ export function NotiDisplay() {
                   />
                 </div>
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-50 dark:bg-blue-900">
                   <span className="text-lg">🔗</span>
                 </div>
               )}
