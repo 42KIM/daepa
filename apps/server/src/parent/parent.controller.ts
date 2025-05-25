@@ -4,14 +4,12 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { ParentService } from './parent.service';
 import {
   CreateParentDto,
-  DeleteParentDto,
   FindParentDto,
   ParentDto,
   UpdateParentDto,
@@ -48,24 +46,27 @@ export class ParentController {
     };
   }
 
-  @Patch('/:petId')
-  async updateParentStatus(
-    @Param('petId') petId: string,
+  @Post('/update/:relationId')
+  async updateParentRequest(
+    @Param('relationId') relationId: string,
     @Body() updateParentDto: UpdateParentDto,
   ) {
-    await this.parentService.updateParentStatus(petId, updateParentDto);
+    const userId = 'ZUCOPIA';
+    const { message } = await this.parentService.updateParentStatus({
+      myId: userId,
+      relationId: Number(relationId),
+      updateParentDto,
+    });
     return {
       success: true,
-      message: '부모 관계가 정상적으로 수정되었습니다.',
+      message,
     };
   }
 
-  @Delete('/:petId')
-  async deleteParent(
-    @Param('petId') petId: string,
-    @Body() deleteParentDto: DeleteParentDto,
-  ) {
-    await this.parentService.deleteParent(petId, deleteParentDto);
+  @Delete('delete/:relationId')
+  async deleteParent(@Param('relationId') relationId: string) {
+    // TODO: 상대방한테도 알림을 줄 것 인가?
+    await this.parentService.deleteParent(Number(relationId));
     return {
       success: true,
       message: '부모 관계가 정상적으로 삭제되었습니다.',

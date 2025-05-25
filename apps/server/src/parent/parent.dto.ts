@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -9,6 +10,11 @@ import { ApiProperty, PickType } from '@nestjs/swagger';
 import { PARENT_ROLE, PARENT_STATUS } from './parent.constant';
 
 export class ParentDto {
+  @ApiProperty({ description: '부모 관계 테이블 row id' })
+  @IsNumber()
+  @IsNotEmpty()
+  relationId: number;
+
   @ApiProperty({ description: '부모 ID' })
   @IsString()
   @IsNotEmpty()
@@ -67,25 +73,16 @@ export class CreateParentDto {
 }
 
 export class UpdateParentDto {
-  @ApiProperty({ description: '부모 ID' })
-  @IsString()
-  @IsNotEmpty()
-  parentId: string;
-
   @ApiProperty({
-    description: '변경할 상태',
+    description: '업데이트 할 부모 관계 상태',
     enum: PARENT_STATUS,
   })
   @IsEnum(PARENT_STATUS)
   @IsNotEmpty()
-  updateStatus: PARENT_STATUS;
-}
+  status: PARENT_STATUS;
 
-export class DeleteParentDto {
-  @ApiProperty({
-    description: '부모 ID',
-  })
+  @ApiProperty({ description: '상대방 유저 ID' })
   @IsString()
   @IsNotEmpty()
-  parentId: string;
+  opponentId: string;
 }

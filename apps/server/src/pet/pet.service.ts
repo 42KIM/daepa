@@ -14,6 +14,7 @@ import { PetDto } from './pet.dto';
 import { ParentService } from 'src/parent/parent.service';
 import { ParentDto } from 'src/parent/parent.dto';
 import { PARENT_ROLE } from 'src/parent/parent.constant';
+import { UserDto } from 'src/user/user.dto';
 
 @Injectable()
 export class PetService {
@@ -169,6 +170,7 @@ export class PetService {
     const parentPetSummary = await this.getPetSummary(parentInfo.parentId);
     return {
       ...parentPetSummary,
+      relationId: parentInfo.relationId,
       status: parentInfo.status,
     };
   }
@@ -182,5 +184,15 @@ export class PetService {
         'users',
         'users.user_id = pets.owner_id',
       );
+  }
+
+  async getPetOwnerId(petId: string): Promise<string | null> {
+    const result = await this.petRepository
+      .createQueryBuilder('pets')
+      .select('pets.owner_id')
+      .where('pets.pet_id = :petId', { petId })
+      .getOne();
+
+    return result?.owner_id || null;
   }
 }
