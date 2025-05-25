@@ -30,7 +30,7 @@ export class PetService {
     const petData = plainToInstance(PetEntity, inputPetData);
     await this.petRepository.insert(petData);
 
-    await this.registerParent({
+    await this.createParentInfo({
       petId: inputPetData.petId,
       fatherId: inputPetData.fatherId,
       motherId: inputPetData.motherId,
@@ -119,7 +119,7 @@ export class PetService {
 
     await this.petRepository.update({ pet_id: petId }, updateData);
 
-    await this.registerParent({
+    await this.createParentInfo({
       petId,
       fatherId,
       motherId,
@@ -156,7 +156,7 @@ export class PetService {
     };
   }
 
-  private async registerParent({
+  private async createParentInfo({
     petId,
     fatherId,
     motherId,
