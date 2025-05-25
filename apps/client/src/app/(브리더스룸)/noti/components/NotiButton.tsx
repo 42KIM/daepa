@@ -33,7 +33,7 @@ const NotiButton = () => {
   const isNotiPage = pathname === "/noti";
 
   const { data: notifications } = useQuery({
-    queryKey: ["notification"],
+    queryKey: [userNotificationControllerFindAll.name],
     queryFn: () => userNotificationControllerFindAll(),
     select: (response) => response.data.data,
   });
@@ -62,7 +62,7 @@ const NotiButton = () => {
               fill={hasNotification ? "currentColor" : "none"}
             />
             {hasNotification && (
-              <span className="absolute -right-2 top-0 flex h-4 w-4 translate-y-[-25%] items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+              <span className="absolute -right-2 top-0 flex h-4 w-4 -translate-y-[25%] items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
                 {unreadCount}
               </span>
             )}

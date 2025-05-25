@@ -22,7 +22,7 @@ export default function NotificationsPage() {
   const [items, setItems] = useState<UserNotificationDto[]>([]);
 
   const { data: notification } = useQuery({
-    queryKey: ["notification"],
+    queryKey: [userNotificationControllerFindAll.name],
     queryFn: () => userNotificationControllerFindAll(),
     select: (response) => response.data.data,
   });

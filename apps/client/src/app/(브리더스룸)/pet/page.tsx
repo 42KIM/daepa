@@ -13,7 +13,7 @@ export default function PetPage() {
   const itemPerPage = 10;
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ["pets"],
+    queryKey: [brPetControllerFindAll.name],
     queryFn: ({ pageParam = 1 }) =>
       brPetControllerFindAll({
         page: pageParam,
