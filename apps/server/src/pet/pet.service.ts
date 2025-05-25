@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { PetEntity } from './pet.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +20,7 @@ export class PetService {
   constructor(
     @InjectRepository(PetEntity)
     private readonly petRepository: Repository<PetEntity>,
+    @Inject(forwardRef(() => ParentService))
     private readonly parentService: ParentService,
   ) {}
 
@@ -129,7 +130,7 @@ export class PetService {
     return await this.petRepository.delete({ pet_id: petId });
   }
 
-  private async getPetSummary(petId: string): Promise<PetSummaryDto | null> {
+  async getPetSummary(petId: string): Promise<PetSummaryDto | null> {
     const petEntity = await this.petRepository.findOneBy({ pet_id: petId });
     if (!petEntity) {
       return null;
