@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { PetEntity } from './pet.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +20,7 @@ export class PetService {
   constructor(
     @InjectRepository(PetEntity)
     private readonly petRepository: Repository<PetEntity>,
+    @Inject(forwardRef(() => ParentService))
     private readonly parentService: ParentService,
   ) {}
 
@@ -29,21 +30,28 @@ export class PetService {
     const petData = plainToInstance(PetEntity, inputPetData);
     await this.petRepository.insert(petData);
 
-    await this.registerParent({
-      petId: inputPetData.petId,
-      fatherId: inputPetData.fatherId,
-      motherId: inputPetData.motherId,
-    });
+    if (inputPetData.father) {
+      await this.parentService.createParent(
+        inputPetData.petId,
+        inputPetData.father,
+      );
+    }
+    if (inputPetData.mother) {
+      await this.parentService.createParent(
+        inputPetData.petId,
+        inputPetData.mother,
+      );
+    }
   }
 
   async getPetList<T extends PetDto | PetSummaryDto>(
     pageOptionsDto: PageOptionsDto,
     dtoClass: new () => T,
   ): Promise<{ data: T[]; pageMeta: PageMetaDto }> {
-    const queryBuilder = this.petRepository.createQueryBuilder('pet');
+    const queryBuilder = this.createPetWithOwnerQueryBuilder();
 
     queryBuilder
-      .orderBy('pet.id', pageOptionsDto.order)
+      .orderBy('pets.id', pageOptionsDto.order)
       .skip(pageOptionsDto.skip)
       .take(pageOptionsDto.itemPerPage);
 
@@ -95,7 +103,11 @@ export class PetService {
   }
 
   async getPet(petId: string): Promise<PetDto | null> {
-    const petEntity = await this.petRepository.findOneBy({ pet_id: petId });
+    const queryBuilder = this.createPetWithOwnerQueryBuilder();
+    const petEntity = await queryBuilder
+      .where('pets.pet_id = :petId', { petId })
+      .getOne();
+
     if (!petEntity) {
       return null;
     }
@@ -114,28 +126,34 @@ export class PetService {
   }
 
   async updatePet(petId: string, updatePetDto: UpdatePetDto): Promise<void> {
-    const { fatherId, motherId, ...updateData } = updatePetDto;
+    const { father, mother, ...updateData } = updatePetDto;
 
     await this.petRepository.update({ pet_id: petId }, updateData);
 
-    await this.registerParent({
-      petId,
-      fatherId,
-      motherId,
-    });
+    if (father) {
+      await this.parentService.createParent(petId, father);
+    }
+    if (mother) {
+      await this.parentService.createParent(petId, mother);
+    }
   }
 
   async deletePet(petId: string): Promise<DeleteResult> {
     return await this.petRepository.delete({ pet_id: petId });
   }
 
-  private async getPetSummary(petId: string): Promise<PetSummaryDto | null> {
-    const petEntity = await this.petRepository.findOneBy({ pet_id: petId });
+  async getPetSummary(petId: string): Promise<PetSummaryDto | null> {
+    const queryBuilder = this.createPetWithOwnerQueryBuilder();
+    const petEntity = await queryBuilder
+      .where('pets.pet_id = :petId', { petId })
+      .getOne();
+
     if (!petEntity) {
       return null;
     }
 
     const pet = instanceToPlain(petEntity);
+
     return plainToInstance(PetSummaryDto, pet);
   }
 
@@ -143,38 +161,26 @@ export class PetService {
     petId: string,
     role: PARENT_ROLE,
   ): Promise<Partial<ParentDto> | null> {
-    const parent = await this.parentService.findOne(petId, {
+    const parentInfo = await this.parentService.findOne(petId, {
       role,
     });
-    if (!parent) return null;
+    if (!parentInfo) return null;
 
-    const parentSummary = await this.getPetSummary(parent.parentId);
+    const parentPetSummary = await this.getPetSummary(parentInfo.parentId);
     return {
-      ...parentSummary,
-      status: parent.status,
+      ...parentPetSummary,
+      status: parentInfo.status,
     };
   }
 
-  private async registerParent({
-    petId,
-    fatherId,
-    motherId,
-  }: {
-    petId: string;
-    fatherId?: string;
-    motherId?: string;
-  }): Promise<void> {
-    if (fatherId) {
-      await this.parentService.createParent(petId, {
-        parentId: fatherId,
-        role: PARENT_ROLE.FATHER,
-      });
-    }
-    if (motherId) {
-      await this.parentService.createParent(petId, {
-        parentId: motherId,
-        role: PARENT_ROLE.MOTHER,
-      });
-    }
+  private createPetWithOwnerQueryBuilder() {
+    return this.petRepository
+      .createQueryBuilder('pets')
+      .leftJoinAndMapOne(
+        'pets.owner',
+        'users',
+        'users',
+        'users.user_id = pets.owner_id',
+      );
   }
 }

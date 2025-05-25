@@ -22,6 +22,10 @@ export class ParentEntity {
   @Column()
   parent_id: string;
 
+  @Expose({ name: 'isMyPet' })
+  @Column()
+  is_my_pet: boolean;
+
   @Column({
     type: 'enum',
     enum: PARENT_ROLE,
