@@ -75,17 +75,6 @@ export class ParentService {
     }
   }
 
-  async approveParentRequest(relationId: number) {
-    await this.parentRepository.update(
-      {
-        id: relationId,
-      },
-      {
-        status: PARENT_STATUS.APPROVED,
-      },
-    );
-  }
-
   async updateParentStatus({
     myId,
     relationId,
