@@ -73,6 +73,11 @@ export class CreateParentDto {
 }
 
 export class UpdateParentDto {
+  @ApiProperty({ description: '부모 관계 ID (parents 테이블의 id)' })
+  @IsNumber()
+  @IsNotEmpty()
+  relationId: number;
+
   @ApiProperty({
     description: '업데이트 할 부모 관계 상태',
     enum: [

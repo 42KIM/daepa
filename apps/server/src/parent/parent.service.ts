@@ -77,14 +77,12 @@ export class ParentService {
 
   async updateParentStatus({
     myId,
-    relationId,
     updateParentDto,
   }: {
     myId: string;
-    relationId: number;
     updateParentDto: UpdateParentDto;
   }) {
-    const { status, opponentId } = updateParentDto;
+    const { status, opponentId, relationId } = updateParentDto;
     await this.parentRepository.update(
       {
         id: relationId,

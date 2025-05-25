@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ParentService } from './parent.service';
 import {
   CreateParentDto,
@@ -38,21 +47,11 @@ export class ParentController {
     };
   }
 
-  @Post('/update/:relationId')
-  @ApiParam({
-    name: 'relationId',
-    description: '부모자식 관계 ID (parents 테이블의 id)',
-    type: 'string',
-    required: true,
-  })
-  async updateParentRequest(
-    @Param('relationId') relationId: string,
-    @Body() updateParentDto: UpdateParentDto,
-  ) {
+  @Patch('/update')
+  async updateParentRequest(@Body() updateParentDto: UpdateParentDto) {
     const userId = 'ZUCOPIA';
     const { message } = await this.parentService.updateParentStatus({
       myId: userId,
-      relationId: Number(relationId),
       updateParentDto,
     });
     return {
@@ -61,7 +60,7 @@ export class ParentController {
     };
   }
 
-  @Post('delete/:relationId')
+  @Delete('delete/:relationId')
   @ApiParam({
     name: 'relationId',
     description: '부모자식 관계 ID (parents 테이블의 id)',
