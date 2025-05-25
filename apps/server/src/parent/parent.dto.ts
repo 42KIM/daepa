@@ -75,7 +75,11 @@ export class CreateParentDto {
 export class UpdateParentDto {
   @ApiProperty({
     description: '업데이트 할 부모 관계 상태',
-    enum: PARENT_STATUS,
+    enum: [
+      PARENT_STATUS.APPROVED,
+      PARENT_STATUS.CANCELLED,
+      PARENT_STATUS.REJECTED,
+    ],
   })
   @IsEnum(PARENT_STATUS)
   @IsNotEmpty()

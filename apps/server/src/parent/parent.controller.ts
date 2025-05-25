@@ -14,7 +14,7 @@ import {
   ParentDto,
   UpdateParentDto,
 } from './parent.dto';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiParam } from '@nestjs/swagger';
 
 @Controller('/v1/parent')
 export class ParentController {
@@ -47,6 +47,12 @@ export class ParentController {
   }
 
   @Post('/update/:relationId')
+  @ApiParam({
+    name: 'relationId',
+    description: '부모자식 관계 ID (parents 테이블의 id)',
+    type: 'string',
+    required: true,
+  })
   async updateParentRequest(
     @Param('relationId') relationId: string,
     @Body() updateParentDto: UpdateParentDto,
@@ -64,6 +70,12 @@ export class ParentController {
   }
 
   @Delete('delete/:relationId')
+  @ApiParam({
+    name: 'relationId',
+    description: '부모자식 관계 ID (parents 테이블의 id)',
+    type: 'string',
+    required: true,
+  })
   async deleteParent(@Param('relationId') relationId: string) {
     // TODO: 상대방한테도 알림을 줄 것 인가?
     await this.parentService.deleteParent(Number(relationId));
