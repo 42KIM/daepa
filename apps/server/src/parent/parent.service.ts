@@ -103,6 +103,7 @@ export class ParentService {
       });
       return {
         message: '부모 요청을 정상적으로 승인하였습니다.',
+        // TODO: detailJson에 필요정보 담기
       };
     }
 
