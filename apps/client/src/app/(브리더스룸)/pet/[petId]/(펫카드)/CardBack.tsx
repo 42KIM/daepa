@@ -13,9 +13,6 @@ import {
   petControllerDelete,
   parentControllerDeleteParent,
   parentControllerCreateParent,
-  userNotificationControllerCreate,
-  CreateUserNotificationDto,
-  UserNotificationDtoType,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -58,14 +55,26 @@ const CardBack = ({ pet }: CardBackProps) => {
   });
 
   const { mutate: mutateRequestParent } = useMutation({
-    mutationFn: ({ parentId, role }: { parentId: string; role: "father" | "mother" }) =>
+    mutationFn: ({
+      parentId,
+      role,
+      isMyPet,
+      message,
+    }: {
+      parentId: string;
+      role: "father" | "mother";
+      isMyPet: boolean;
+      message: string;
+    }) =>
       parentControllerCreateParent(pet.petId, {
         parentId,
         role,
+        isMyPet,
+        message,
       }),
     onSuccess: () => {
       toast.success("부모 연동 요청이 완료되었습니다.");
-      const role = selectedParent?.sex === "M" ? "father" : "mother";
+      const role = selectedParent?.sex?.toString() === "M" ? "father" : "mother";
       setFormData((prev) => ({ ...prev, [role]: { ...selectedParent, status: "pending" } }));
       setSelectedParent(null);
     },
@@ -73,10 +82,6 @@ const CardBack = ({ pet }: CardBackProps) => {
       toast.error("부모 연동 요청에 실패했습니다.");
       setSelectedParent(null);
     },
-  });
-
-  const { mutate: mutateSendNotification } = useMutation({
-    mutationFn: (data: CreateUserNotificationDto) => userNotificationControllerCreate(data),
   });
 
   useEffect(() => {
@@ -90,7 +95,10 @@ const CardBack = ({ pet }: CardBackProps) => {
     ),
   ];
 
-  const handleChange = (value: { type: FieldName; value: string | string[] | PetSummaryDto }) => {
+  const handleChange = (value: {
+    type: FieldName;
+    value: string | string[] | PetSummaryDto | null;
+  }) => {
     if (!isEditing) return;
     setFormData((prev) => ({ ...prev, [value.type]: value.value }));
   };
@@ -124,27 +132,16 @@ const CardBack = ({ pet }: CardBackProps) => {
     try {
       setSelectedParent({
         ...value,
-        // 요청을 보낸 펫의 데이터
         status: "pending",
       });
 
       // 부모 연동 요청
-      // 부모 연동 요청
-      mutateRequestParent({ parentId: value.petId, role });
-      const notificationData: CreateUserNotificationDto = {
-        receiverId: "ZUCOPIA",
-        // TODO: 로그인 기능 붙인 후 수정
-        // receiverId: value.ownerId,
-        type: UserNotificationDtoType.parent_request,
-        targetId: pet.petId,
-        detailJson: JSON.stringify({
-          targetPet: value,
-          requestPet: pet,
-        }),
-      };
-
-      // //  부모 연동 요청 알림 보내기
-      mutateSendNotification(notificationData);
+      mutateRequestParent({
+        parentId: value.petId,
+        role,
+        isMyPet: value.owner.userId === pet.owner.userId,
+        message: value.message,
+      });
     } catch (error) {
       console.error("Failed to send notification:", error);
     }

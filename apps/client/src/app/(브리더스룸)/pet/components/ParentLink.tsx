@@ -5,7 +5,7 @@ import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../components/ParentSearchSelector";
 import { Button } from "@/components/ui/button";
 import Dialog from "../../components/Form/Dialog";
-import { ParentDtoStatus, PetParentDto } from "@repo/api-client";
+import { ParentDtoStatus, PetParentDto, PetSummaryDto } from "@repo/api-client";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +17,7 @@ const ParentLink = ({
 }: {
   label: "부" | "모";
   data?: PetParentDto;
-  onSelect: (item: PetParentDto & { message: string }) => void;
+  onSelect: (item: PetSummaryDto & { message: string }) => void;
   onUnlink: () => void;
 }) => {
   const deleteParent = () => {
@@ -53,7 +53,7 @@ const ParentLink = ({
           <Badge
             variant="outline"
             className={cn(
-              STATUS_MAP[data?.status].color,
+              STATUS_MAP[data?.status as keyof typeof STATUS_MAP].color,
               "rounded-full font-semibold text-gray-100",
             )}
           >
@@ -61,7 +61,7 @@ const ParentLink = ({
               <BadgeCheck className="h-4 w-4 text-gray-100" />
             )}
 
-            {STATUS_MAP[data?.status].label}
+            {STATUS_MAP[data?.status as keyof typeof STATUS_MAP].label}
           </Badge>
         )}
       </dt>

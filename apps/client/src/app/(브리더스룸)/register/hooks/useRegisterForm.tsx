@@ -67,26 +67,48 @@ export const useRegisterForm = () => {
 
   const createPet = useCallback(
     (formData: FormData) => {
-      const transformedFormData = { ...formData };
-      if (transformedFormData.sex && typeof transformedFormData.sex === "string") {
-        const genderEntry = Object.entries(GENDER_KOREAN_INFO).find(
-          ([_, koreanValue]) => koreanValue === transformedFormData.sex,
-        );
-        if (genderEntry) {
-          transformedFormData.sex = genderEntry[0];
+      try {
+        const transformedFormData = { ...formData };
+        if (transformedFormData.sex && typeof transformedFormData.sex === "string") {
+          const genderEntry = Object.entries(GENDER_KOREAN_INFO).find(
+            ([_, koreanValue]) => koreanValue === transformedFormData.sex,
+          );
+          if (genderEntry) {
+            transformedFormData.sex = genderEntry[0];
+          }
         }
+
+        const { father, mother, photo, weight, ...rest } = transformedFormData;
+
+        const requestData: CreatePetDto = {
+          ...rest,
+          ...(weight && { weight: Number(weight) }),
+          ...(father?.petId && {
+            father: {
+              parentId: father.petId,
+              role: "father",
+              // TODO: 회원가입 기능 적용 후 수정
+              // isMyPet: father.owner.userId === 내 id,
+              isMyPet: false,
+              message: father.message,
+            },
+          }),
+          ...(mother?.petId && {
+            mother: {
+              parentId: mother.petId,
+              role: "mother",
+              // TODO: 회원가입 기능 적용 후 수정
+              // isMyPet: mother.owner.userId === 내 id,
+              isMyPet: false,
+              message: mother.message,
+            },
+          }),
+        };
+
+        mutateCreatePet(requestData);
+      } catch (error) {
+        console.error("Failed to create pet:", error);
       }
-
-      const { father, mother, photo, weight, ...rest } = transformedFormData;
-
-      const requestData: CreatePetDto = {
-        ...rest,
-        ...(weight && { weight: Number(weight) }),
-        ...(father?.petId && { fatherId: father.petId }),
-        ...(mother?.petId && { motherId: mother.petId }),
-      };
-
-      mutateCreatePet(requestData);
     },
     [mutateCreatePet],
   );

@@ -7,7 +7,7 @@ import ParentLink from "../../pet/components/ParentLink";
 import { useRegisterForm } from "../../register/hooks/useRegisterForm";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
 import { toast } from "sonner";
-import { PetParentDto } from "@repo/api-client";
+import { PetSummaryDto } from "@repo/api-client";
 interface FormFieldProps {
   label?: string;
   field: FormStep["field"];
@@ -16,7 +16,7 @@ interface FormFieldProps {
   disabled?: boolean;
   handleChange: (value: {
     type: FieldName;
-    value: string | string[] | PetParentDto | null;
+    value: string | string[] | PetSummaryDto | null;
   }) => void;
 }
 
@@ -42,7 +42,7 @@ export const FormField = ({
 
   const handleSelectParent = (
     type: "father" | "mother",
-    value: PetParentDto & { message: string },
+    value: PetSummaryDto & { message: string },
   ) => {
     handleChange({ type, value });
     toast.success("부모 선택 해제가 완료되었습니다.");
