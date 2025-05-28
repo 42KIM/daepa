@@ -21,6 +21,13 @@ export class UserNotificationDto {
   id: number;
 
   @ApiProperty({
+    description: '알림 발신 유저 아이디',
+    example: 'XXXXXXXX',
+  })
+  @IsString()
+  senderId: string;
+
+  @ApiProperty({
     description: '알림 수신 유저 아이디',
     example: 'XXXXXXXX',
   })
@@ -80,6 +87,7 @@ export class UserNotificationDto {
 
 export class CreateUserNotificationDto extends OmitType(UserNotificationDto, [
   'id',
+  'senderId',
   'status',
   'createdAt',
   'updatedAt',

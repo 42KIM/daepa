@@ -12,6 +12,8 @@ import type { UserNotificationDtoDetailJson } from "./userNotificationDtoDetailJ
 export interface UserNotificationDto {
   /** 알림 아이디 */
   id: number;
+  /** 알림 발신 유저 아이디 */
+  senderId: string;
   /** 알림 수신 유저 아이디 */
   receiverId: string;
   /** 알림 타입 */
