@@ -91,6 +91,29 @@ export class EggService {
     };
   }
 
+  async getEgg(eggId: string): Promise<EggDto | null> {
+    const queryBuilder = this.createEggWithOwnerQueryBuilder();
+    const eggEntity = await queryBuilder
+      .where('eggs.egg_id = :eggId', { eggId })
+      .getOne();
+
+    if (!eggEntity) {
+      return null;
+    }
+
+    const egg = instanceToPlain(eggEntity);
+
+    if (typeof egg.eggId === 'string') {
+      egg.father = await this.getParent(egg.eggId, PARENT_ROLE.FATHER);
+    }
+    if (typeof egg.eggId === 'string') {
+      egg.mother = await this.getParent(egg.eggId, PARENT_ROLE.MOTHER);
+    }
+
+    const eggDto = plainToInstance(EggDto, egg);
+    return eggDto;
+  }
+
   private async getParent(
     eggId: string,
     role: PARENT_ROLE,

@@ -152,6 +152,13 @@ export const brPetControllerFindAll = <TData = AxiosResponse<BrPetControllerFind
   });
 };
 
+export const eggControllerFindOne = <TData = AxiosResponse<void>>(
+  eggId: string,
+  options?: AxiosRequestConfig,
+): Promise<TData> => {
+  return axios.get(`http://localhost:4000/api/v1/egg/${eggId}`, options);
+};
+
 export const eggControllerCreate = <TData = AxiosResponse<void>>(
   createEggDto: CreateEggDto,
   options?: AxiosRequestConfig,
@@ -183,6 +190,7 @@ export type UserNotificationControllerFindAllResult =
 export type UserNotificationControllerCreateResult = AxiosResponse<void>;
 export type UserNotificationControllerUpdateResult = AxiosResponse<void>;
 export type BrPetControllerFindAllResult = AxiosResponse<BrPetControllerFindAll200>;
+export type EggControllerFindOneResult = AxiosResponse<void>;
 export type EggControllerCreateResult = AxiosResponse<void>;
 export type BrEggControllerFindAllResult = AxiosResponse<BrEggControllerFindAll200>;
 
@@ -843,6 +851,20 @@ export const getBrPetControllerFindAllMockHandler = (
   });
 };
 
+export const getEggControllerFindOneMockHandler = (
+  overrideResponse?:
+    | void
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+) => {
+  return http.get("*/api/v1/egg/:eggId", async (info) => {
+    await delay(1000);
+    if (typeof overrideResponse === "function") {
+      await overrideResponse(info);
+    }
+    return new HttpResponse(null, { status: 200 });
+  });
+};
+
 export const getEggControllerCreateMockHandler = (
   overrideResponse?:
     | void
@@ -893,6 +915,7 @@ export const getProjectDaepaAPIMock = () => [
   getUserNotificationControllerCreateMockHandler(),
   getUserNotificationControllerUpdateMockHandler(),
   getBrPetControllerFindAllMockHandler(),
+  getEggControllerFindOneMockHandler(),
   getEggControllerCreateMockHandler(),
   getBrEggControllerFindAllMockHandler(),
 ];

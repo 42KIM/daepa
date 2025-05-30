@@ -1,18 +1,28 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { EggService } from './egg.service';
 import { CreateEggDto } from './egg.dto';
 import { nanoid } from 'nanoid';
 import { isMySQLError } from 'src/common/error';
+import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
 
 @Controller('/v1/egg')
+@UseInterceptors(ExcludeNilInterceptor)
 export class EggController {
   constructor(private readonly eggService: EggService) {}
+
+  @Get(':eggId')
+  async findOne(@Param('eggId') eggId: string) {
+    return await this.eggService.getEgg(eggId);
+  }
 
   @Post()
   async create(@Body() createEggDto: CreateEggDto) {
