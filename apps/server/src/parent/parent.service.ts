@@ -14,7 +14,7 @@ import {
   UpdateParentDto,
 } from './parent.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { PARENT_STATUS } from './parent.constant';
+import { PARENT_ROLE, PARENT_STATUS } from './parent.constant';
 import { PetService } from 'src/pet/pet.service';
 import {
   USER_NOTIFICATION_STATUS,
@@ -54,15 +54,34 @@ export class ParentService {
     return plainToInstance(ParentDto, parent);
   }
 
+  async findParents(petId: string) {
+    const parentEntities = await this.parentRepository.find({
+      where: {
+        pet_id: petId,
+        status: PARENT_STATUS.APPROVED,
+      },
+    });
+
+    return {
+      father: parentEntities.find(
+        (parent) => parent.role === PARENT_ROLE.FATHER,
+      ),
+      mother: parentEntities.find(
+        (parent) => parent.role === PARENT_ROLE.MOTHER,
+      ),
+    };
+  }
+
   async createParent(petId: string, createParentDto: CreateParentDto) {
     const result = await this.parentRepository.insert({
       pet_id: petId,
       parent_id: createParentDto.parentId,
       role: createParentDto.role,
       is_my_pet: createParentDto.isMyPet ?? false,
-      status: createParentDto.isMyPet
-        ? PARENT_STATUS.APPROVED
-        : PARENT_STATUS.PENDING,
+      status:
+        createParentDto.isMyPet || createParentDto.isEggToPet
+          ? PARENT_STATUS.APPROVED
+          : PARENT_STATUS.PENDING,
     });
 
     if (!createParentDto.isMyPet) {
