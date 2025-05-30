@@ -182,7 +182,8 @@ export class PetService {
         'users',
         'users',
         'users.user_id = pets.owner_id',
-      );
+      )
+      .where('pets.is_deleted = :isDeleted', { isDeleted: false });
   }
 
   async getPetOwnerId(petId: string): Promise<string | null> {

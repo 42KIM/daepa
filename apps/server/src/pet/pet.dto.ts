@@ -150,6 +150,9 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
 
   @Exclude()
   declare updatedAt?: Date;
+
+  @Exclude()
+  declare isDeleted?: boolean;
 }
 
 export class PetParentDto extends PartialType(PetSummaryDto) {
