@@ -61,3 +61,7 @@ export * from "./userNotificationDto";
 export * from "./userNotificationDtoDetailJson";
 export * from "./userNotificationDtoStatus";
 export * from "./userNotificationDtoType";
+export * from "./brEggControllerFindAll200";
+export * from "./brEggControllerFindAllOrder";
+export * from "./brEggControllerFindAllParams";
+export * from "./eggDto";

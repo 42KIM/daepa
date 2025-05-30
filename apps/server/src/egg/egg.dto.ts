@@ -98,6 +98,12 @@ export class EggDto extends EggBaseDto {
   @IsOptional()
   @IsObject()
   mother?: PetParentDto;
+
+  @Exclude()
+  declare createdAt?: Date;
+
+  @Exclude()
+  declare updatedAt?: Date;
 }
 
 export class CreateEggDto extends OmitType(EggBaseDto, [

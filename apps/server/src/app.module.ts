@@ -19,6 +19,7 @@ import { UserService } from './user/user.service';
 import { EggEntity } from './egg/egg.entity';
 import { EggController } from './egg/egg.controller';
 import { EggService } from './egg/egg.service';
+import { BrEggController } from './egg/br/br.egg.controller';
 
 const ENTITIES = [
   UserEntity,
@@ -53,6 +54,7 @@ const ENTITIES = [
     UserNotificationController,
     BrPetController,
     EggController,
+    BrEggController,
   ],
   providers: [
     AppService,
