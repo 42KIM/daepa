@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
 import { CreateParentDto } from 'src/parent/parent.dto';
@@ -78,6 +78,32 @@ export class EggBaseDto {
   @IsOptional()
   @IsString()
   petId?: string;
+}
+
+export class EggSummaryDto extends PickType(EggBaseDto, [
+  'eggId',
+  'name',
+  'owner',
+  'layingDate',
+  'clutch',
+]) {
+  @Exclude()
+  declare clutchOrder?: number;
+
+  @Exclude()
+  declare hatchingDate?: number;
+
+  @Exclude()
+  declare petId?: string;
+
+  @Exclude()
+  declare desc?: string;
+
+  @Exclude()
+  declare createdAt?: Date;
+
+  @Exclude()
+  declare updatedAt?: Date;
 }
 
 export class EggDto extends EggBaseDto {

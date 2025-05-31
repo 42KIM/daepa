@@ -6,6 +6,7 @@ import {
   CreateEggDto,
   CreateEggHatchDto,
   EggDto,
+  EggSummaryDto,
   UpdateEggDto,
 } from './egg.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
@@ -124,6 +125,22 @@ export class EggService {
     const eggDto = plainToInstance(EggDto, egg);
 
     return eggDto;
+  }
+
+  async getEggSummary(eggId: string): Promise<EggSummaryDto | null> {
+    const queryBuilder = this.createEggWithOwnerQueryBuilder();
+    const eggEntity = await queryBuilder
+      .where('eggs.egg_id = :eggId', { eggId })
+      .getOne();
+
+    if (!eggEntity) {
+      return null;
+    }
+
+    const egg = instanceToPlain(eggEntity);
+    const eggSummaryDto = plainToInstance(EggSummaryDto, egg);
+
+    return eggSummaryDto;
   }
 
   async updateEgg(eggId: string, updateEggDto: UpdateEggDto): Promise<void> {

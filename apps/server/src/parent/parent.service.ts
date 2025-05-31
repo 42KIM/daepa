@@ -21,6 +21,7 @@ import {
   USER_NOTIFICATION_TYPE,
 } from 'src/user_notification/user_notification.constant';
 import { UserNotificationService } from 'src/user_notification/user_notification.service';
+import { EggService } from 'src/egg/egg.service';
 
 @Injectable()
 export class ParentService {
@@ -29,6 +30,8 @@ export class ParentService {
     private readonly parentRepository: Repository<ParentEntity>,
     @Inject(forwardRef(() => PetService))
     private readonly petService: PetService,
+    @Inject(forwardRef(() => EggService))
+    private readonly eggService: EggService,
     private readonly userNotificationService: UserNotificationService,
   ) {}
 
@@ -181,13 +184,17 @@ export class ParentService {
     senderPetId,
     receiverPetId,
     message,
+    isEgg,
   }: {
     relationId: number;
     senderPetId: string;
     receiverPetId: string;
     message?: string;
+    isEgg?: boolean;
   }) {
-    const senderPetSummary = await this.petService.getPetSummary(senderPetId);
+    const senderPetSummary = isEgg
+      ? await this.eggService.getEgg(senderPetId)
+      : await this.petService.getPetSummary(senderPetId);
     if (!senderPetSummary) {
       throw new NotFoundException(
         'Sender pet(id: ' + senderPetId + ') not found',
