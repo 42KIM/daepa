@@ -6,10 +6,15 @@
  * OpenAPI spec version: 1.0
  */
 
+export * from "./brEggControllerFindAll200";
+export * from "./brEggControllerFindAllOrder";
+export * from "./brEggControllerFindAllParams";
 export * from "./brPetControllerFindAll200";
 export * from "./brPetControllerFindAllOrder";
 export * from "./brPetControllerFindAllParams";
 export * from "./createEggDto";
+export * from "./createEggHatchDto";
+export * from "./createEggHatchDtoSpecies";
 export * from "./createParentDto";
 export * from "./createParentDtoRole";
 export * from "./createPetDto";
@@ -20,6 +25,7 @@ export * from "./createUserNotificationDtoDetailJson";
 export * from "./createUserNotificationDtoType";
 export * from "./deleteParentDto";
 export * from "./deleteParentDtoTarget";
+export * from "./eggDto";
 export * from "./pageDto";
 export * from "./pageDtoDataItem";
 export * from "./pageMetaDto";
@@ -43,6 +49,7 @@ export * from "./petParentDtoSpecies";
 export * from "./petSummaryDto";
 export * from "./petSummaryDtoSex";
 export * from "./petSummaryDtoSpecies";
+export * from "./updateEggDto";
 export * from "./updateParentDto";
 export * from "./updateParentDtoStatus";
 export * from "./updateParentDtoTarget";
@@ -61,7 +68,3 @@ export * from "./userNotificationDto";
 export * from "./userNotificationDtoDetailJson";
 export * from "./userNotificationDtoStatus";
 export * from "./userNotificationDtoType";
-export * from "./brEggControllerFindAll200";
-export * from "./brEggControllerFindAllOrder";
-export * from "./brEggControllerFindAllParams";
-export * from "./eggDto";

@@ -11,19 +11,21 @@ import type { PetParentDtoSex } from "./petParentDtoSex";
 
 export interface PetParentDto {
   /** 펫 아이디 */
-  petId?: string;
+  petId: string;
   /** 펫 주인 정보 */
-  owner?: UserDto;
+  owner: UserDto;
   /** 펫 이름 */
-  name?: string;
+  name: string;
   /** 펫 종 */
-  species?: PetParentDtoSpecies;
+  species: PetParentDtoSpecies;
   /** 펫 모프 */
   morphs?: string[];
   /** 펫 형질 */
   traits?: string[];
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: PetParentDtoSex;
+  /** 부모 관계 테이블 row id */
+  relationId: number;
   /** 부모 관계 상태 */
   status: string;
 }
