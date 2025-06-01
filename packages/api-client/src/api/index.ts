@@ -384,7 +384,6 @@ export const getParentControllerFindParentResponseMock = (
     "deleted",
     "cancelled",
   ] as const),
-  isMyPet: faker.datatype.boolean(),
   ...overrideResponse,
 });
 

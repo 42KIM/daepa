@@ -56,7 +56,8 @@ export class EggController {
     @Param('eggId') eggId: string,
     @Body() updateEggDto: UpdateEggDto,
   ) {
-    await this.eggService.updateEgg(eggId, updateEggDto);
+    const tempOwnerId = 'ADMIN';
+    await this.eggService.updateEgg(tempOwnerId, eggId, updateEggDto);
     return {
       success: true,
       message: '알 수정이 완료되었습니다. eggId: ' + eggId,

@@ -1,5 +1,4 @@
 import {
-  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -37,12 +36,6 @@ export class ParentDto {
   @IsNotEmpty()
   @IsEnum(PARENT_STATUS)
   status: PARENT_STATUS;
-
-  @ApiProperty({
-    description: '본인 소유 펫 여부',
-  })
-  @IsBoolean()
-  isMyPet: boolean;
 }
 
 export class FindParentDto extends PickType(ParentDto, ['role']) {
@@ -62,15 +55,6 @@ export class CreateParentDto {
   @IsNotEmpty()
   @IsEnum(PARENT_ROLE)
   role: PARENT_ROLE;
-
-  @ApiProperty({
-    description: '본인 소유 펫 여부',
-    required: false,
-    default: false,
-  })
-  @IsBoolean()
-  @IsOptional()
-  isMyPet?: boolean;
 
   @ApiProperty({ description: '부모 관계 요청 메시지', required: false })
   @IsString()
