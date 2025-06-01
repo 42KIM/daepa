@@ -14,6 +14,7 @@ export type FieldName =
   | "photos"
   | "father"
   | "mother"
+  | "clutchCount"
   | "clutchOrder"
   | "clutch"
   | "parents"
@@ -51,7 +52,7 @@ export interface FormData {
   petId?: string;
   ownerId?: string;
   clutch?: number;
-  clutchOrder?: number;
+  clutchCount?: number;
   layingDate?: string;
 }
 

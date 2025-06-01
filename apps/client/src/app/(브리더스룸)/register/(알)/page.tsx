@@ -22,16 +22,14 @@ type FormData = {
   father?: CreateParentDto & { petId: string; name: string };
   mother?: CreateParentDto & { petId: string; name: string };
   clutch?: number;
-  clutchOrder: number;
-  name: string;
+  clutchCount: number;
   desc?: string;
 };
 
 const EggRegisterPage = () => {
   const [formData, setFormData] = useState<FormData>({
     layingDate: "",
-    clutchOrder: 0,
-    name: "",
+    clutchCount: 0,
   });
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -98,23 +96,13 @@ const EggRegisterPage = () => {
           },
         }),
         clutch: Number(formData.clutch),
-        clutchOrder: Number(formData.clutchOrder),
+        clutchCount: Number(formData.clutchCount),
         desc: formData.desc,
-        name: formData.name ?? "",
       });
       return;
     }
 
     setStep(step + 1);
-
-    if (step >= 3) {
-      setFormData((prev) => ({
-        ...prev,
-        name: `${formData.father?.name ?? "@"}x${formData.mother?.name ?? "@"}(${
-          formData.clutch ?? "@"
-        }-${formData.clutchOrder ?? "@"})`,
-      }));
-    }
   };
 
   return (
@@ -168,8 +156,8 @@ const StepIndicator = ({ steps, formData }: { steps: FormStep[]; formData: FormD
         return !!formData.layingDate;
       case "parents":
         return !!(formData.father || formData.mother);
-      case "clutchOrder":
-        return !!formData.clutchOrder;
+      case "clutchCount":
+        return !!formData.clutchCount;
       case "clutch":
         return !!formData.clutch;
       case "name":

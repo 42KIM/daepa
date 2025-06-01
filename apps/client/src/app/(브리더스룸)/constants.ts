@@ -142,20 +142,20 @@ export const EGG_REGISTER_STEPS: FormStep[] = [
       required: false,
     },
   },
-  {
-    title: "이름/관리번호",
-    field: {
-      name: "name",
-      type: "text",
-      required: true,
-      placeholder: "개체 이름/관리번호를 입력해주세요",
-      validation: (value) => value.length > 0,
-    },
-  },
+  // {
+  //   title: "이름/관리번호",
+  //   field: {
+  //     name: "name",
+  //     type: "text",
+  //     required: true,
+  //     placeholder: "개체 이름/관리번호를 입력해주세요",
+  //     validation: (value) => value.length > 0,
+  //   },
+  // },
   {
     title: "수량",
     field: {
-      name: "clutchOrder",
+      name: "clutchCount",
       type: "number",
       unit: "개",
       required: true,
@@ -196,6 +196,60 @@ export const EGG_REGISTER_STEPS: FormStep[] = [
     },
   },
 ];
+
+export const EGG_EDIT_STEPS: FormStep[] = [
+  // {
+  //   title: "이름/관리번호",
+  //   field: {
+  //     name: "name",
+  //     type: "text",
+  //     required: true,
+  //     placeholder: "개체 이름/관리번호를 입력해주세요",
+  //     validation: (value) => value.length > 0,
+  //   },
+  // },
+  {
+    title: "해칭일",
+    field: {
+      name: "layingDate",
+      type: "date",
+      required: true,
+      placeholder: "해칭일을 입력해주세요",
+      validation: (value) => value.length > 0,
+    },
+  },
+  {
+    title: "차수",
+    field: {
+      name: "clutch",
+      type: "number",
+      unit: "차",
+      required: false,
+      placeholder: "차수를 입력해주세요",
+      validation: (value) => !isNaN(Number(value)) && Number(value) > 0,
+    },
+  },
+  {
+    title: "수량",
+    field: {
+      name: "clutchOrder",
+      type: "number",
+      unit: "개",
+      required: true,
+      placeholder: "수량을 입력해주세요",
+      validation: (value) => !isNaN(Number(value)) && Number(value) > 0,
+    },
+  },
+  {
+    title: "상세 설명",
+    field: {
+      name: "desc",
+      type: "textarea",
+      required: false,
+    },
+  },
+];
+
 export const MORPH_LIST_BY_SPECIES: Record<keyof typeof SPECIES_KOREAN_INFO, string[]> = {
   CR: [
     "노멀",

@@ -19,6 +19,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useState } from "react";
+import { brEggControllerFindAll } from "@repo/api-client";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { TreeView } from "../components/TreeView";
 const chartData = [
   { month: "1월", desktop: 186 },
   { month: "2월", desktop: 305 },
@@ -53,8 +56,34 @@ const HatchingPage = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [month, setMonth] = useState<Date>(new Date());
 
+  const itemPerPage = 10;
+
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: [brEggControllerFindAll.name],
+    queryFn: ({ pageParam = 1 }) =>
+      brEggControllerFindAll({
+        page: pageParam,
+        itemPerPage,
+        order: "DESC",
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.data.meta.hasNextPage) {
+        return lastPage.data.meta.page + 1;
+      }
+      return undefined;
+    },
+    select: (data) => data.pages.flatMap((page) => page.data.data),
+  });
+
   return (
     <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {data?.map((egg) => {
+          return <TreeView key={egg.eggId} node={egg} />;
+        })}
+      </div>
+
       <div className="flex justify-center">
         <Calendar
           mode="single"

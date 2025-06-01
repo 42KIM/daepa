@@ -19,10 +19,10 @@ import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import Dialog from "@/app/(브리더스룸)/components/Form/Dialog";
 import { useMutation } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
 import useParentLinkStore from "../../store/parentLink";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 interface CardBackProps {
   pet: PetSummaryDto;
 }
@@ -299,22 +299,5 @@ const CardBack = ({ pet }: CardBackProps) => {
     </div>
   );
 };
-
-const InfoItem = ({
-  label,
-  value,
-  className,
-}: {
-  label: string;
-  value: React.ReactNode;
-  className?: string;
-}) => (
-  <div className={cn("py-1", className)}>
-    <dt className="flex max-h-[36px] min-w-[80px] shrink-0 items-center text-[16px] text-gray-500">
-      {label}
-    </dt>
-    <dd className="flex-1">{value}</dd>
-  </div>
-);
 
 export default CardBack;
