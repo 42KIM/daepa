@@ -37,7 +37,7 @@ export class ParentService {
 
   async findOne(petId: string, findParentDto: FindParentDto) {
     const parentEntity = await this.parentRepository.findOne({
-      select: ['id', 'parent_id', 'role', 'status', 'is_my_pet'],
+      select: ['id', 'parent_id', 'role', 'status'],
       where: {
         pet_id: petId,
         role: findParentDto.role,

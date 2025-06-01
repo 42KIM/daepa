@@ -197,12 +197,6 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
   })
   @IsString()
   status: PARENT_STATUS;
-
-  @ApiProperty({
-    description: '본인 소유 펫 여부',
-  })
-  @IsBoolean()
-  isMyPet: boolean;
 }
 
 export class PetDto extends PetBaseDto {
