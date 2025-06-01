@@ -549,6 +549,7 @@ export const getEggControllerFindOneResponseMock = (
       role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
     },
   },
+  species: {},
   layingDate: faker.number.int({ min: undefined, max: undefined }),
   clutch: faker.helpers.arrayElement([
     faker.number.int({ min: undefined, max: undefined }),
@@ -641,6 +642,7 @@ export const getBrEggControllerFindAllResponseMock = (
         role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
       },
     },
+    species: {},
     layingDate: faker.number.int({ min: undefined, max: undefined }),
     clutch: faker.helpers.arrayElement([
       faker.number.int({ min: undefined, max: undefined }),
