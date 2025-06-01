@@ -25,13 +25,16 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { formatDateToYYYYMMDD } from "@/lib/utils";
 
+type EggDetailDto = Omit<EggDto, "layingDate"> & {
+  layingDate: string;
+};
 interface EggDetailProps {
-  egg: EggDto;
+  egg: EggDetailDto;
 }
 
 const EggDetail = ({ egg }: EggDetailProps) => {
   const router = useRouter();
-  const [formData, setFormData] = useState<EggDto>(egg);
+  const [formData, setFormData] = useState<EggDetailDto>(egg);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
