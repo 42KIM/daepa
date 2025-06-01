@@ -1,7 +1,14 @@
 import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { CreateParentDto } from 'src/parent/parent.dto';
+import { PET_SPECIES } from 'src/pet/pet.constants';
 import { CreatePetDto, PetParentDto } from 'src/pet/pet.dto';
 import { UserDto } from 'src/user/user.dto';
 
@@ -18,6 +25,14 @@ export class EggBaseDto {
   })
   @IsObject()
   owner: UserDto;
+
+  @ApiProperty({
+    description: '알 종',
+    example: '크레스티드게코',
+  })
+  @IsString()
+  @IsEnum(PET_SPECIES)
+  species: keyof typeof PET_SPECIES;
 
   @ApiProperty({
     description: '산란일(yyyyMMdd)',
@@ -78,6 +93,7 @@ export class EggBaseDto {
 
 export class EggSummaryDto extends PickType(EggBaseDto, [
   'eggId',
+  'species',
   'name',
   'owner',
   'layingDate',
@@ -198,6 +214,7 @@ export class UpdateEggDto extends PartialType(
 }
 
 export class CreateEggHatchDto extends OmitType(CreatePetDto, [
+  'species',
   'growth',
   'sex',
   'father',

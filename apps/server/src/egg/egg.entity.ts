@@ -1,4 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
+import { PET_SPECIES } from 'src/pet/pet.constants';
 import {
   Column,
   CreateDateColumn,
@@ -25,6 +26,9 @@ export class EggEntity {
   @Expose({ name: 'ownerId' })
   @Column()
   owner_id: string;
+
+  @Column({ type: 'enum', enum: PET_SPECIES })
+  species: keyof typeof PET_SPECIES; // 종
 
   @Expose({ name: 'layingDate' })
   @Column()

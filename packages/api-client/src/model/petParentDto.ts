@@ -28,6 +28,4 @@ export interface PetParentDto {
   relationId: number;
   /** 부모 관계 상태 */
   status: string;
-  /** 본인 소유 펫 여부 */
-  isMyPet: boolean;
 }

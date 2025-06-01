@@ -1,12 +1,10 @@
 import {
   IsArray,
-  IsDateString,
   IsString,
   IsEnum,
   IsNumber,
   IsObject,
   IsOptional,
-  IsBoolean,
 } from 'class-validator';
 import { PET_SEX, PET_SPECIES } from './pet.constants';
 import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
@@ -197,12 +195,6 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
   })
   @IsString()
   status: PARENT_STATUS;
-
-  @ApiProperty({
-    description: '본인 소유 펫 여부',
-  })
-  @IsBoolean()
-  isMyPet: boolean;
 }
 
 export class PetDto extends PetBaseDto {

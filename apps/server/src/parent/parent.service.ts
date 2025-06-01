@@ -37,7 +37,7 @@ export class ParentService {
 
   async findOne(petId: string, findParentDto: FindParentDto) {
     const parentEntity = await this.parentRepository.findOne({
-      select: ['id', 'parent_id', 'role', 'status', 'is_my_pet'],
+      select: ['id', 'parent_id', 'role', 'status'],
       where: {
         pet_id: petId,
         role: findParentDto.role,
@@ -76,24 +76,29 @@ export class ParentService {
   }
 
   async createParent(
+    userId: string,
     petId: string,
     createParentDto: CreateParentDto,
     createOptions: {
       isEgg?: boolean;
-      isDirectApprove?: boolean; // 부모 요청을 skip하고 바로 관계 생성 시
+      isDirectApprove?: boolean; // 부모 요청을 skip하고 바로 approved 상태로 생성
     },
   ) {
+    const parentOwnerId = await this.petService.getPetOwnerId(petId);
+    const isMyPet = parentOwnerId === userId;
+
     const result = await this.parentRepository.insert({
       pet_id: petId,
       parent_id: createParentDto.parentId,
       role: createParentDto.role,
-      is_my_pet: createParentDto.isMyPet ?? false,
-      status: createOptions.isDirectApprove
-        ? PARENT_STATUS.APPROVED
-        : PARENT_STATUS.PENDING,
+      is_my_pet: isMyPet,
+      status:
+        isMyPet || createOptions.isDirectApprove
+          ? PARENT_STATUS.APPROVED
+          : PARENT_STATUS.PENDING,
     });
 
-    if (!createParentDto.isMyPet) {
+    if (!isMyPet) {
       await this.createParentRequestNotification({
         relationId: result.identifiers[0].id as number,
         senderPetId: petId,

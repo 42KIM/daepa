@@ -86,16 +86,24 @@ export class EggService {
         await this.eggRepository.insert(eggEntity);
 
         if (father) {
-          await this.parentService.createParent(eggId, father, {
-            isDirectApprove: !!father.isMyPet,
-            isEgg: true,
-          });
+          await this.parentService.createParent(
+            inputEggData.ownerId,
+            eggId,
+            father,
+            {
+              isEgg: true,
+            },
+          );
         }
         if (mother) {
-          await this.parentService.createParent(eggId, mother, {
-            isDirectApprove: !!mother.isMyPet,
-            isEgg: true,
-          });
+          await this.parentService.createParent(
+            inputEggData.ownerId,
+            eggId,
+            mother,
+            {
+              isEgg: true,
+            },
+          );
         }
 
         createdEggs.push({ eggId });
@@ -208,7 +216,11 @@ export class EggService {
     return eggSummaryDto;
   }
 
-  async updateEgg(eggId: string, updateEggDto: UpdateEggDto): Promise<void> {
+  async updateEgg(
+    userId: string,
+    eggId: string,
+    updateEggDto: UpdateEggDto,
+  ): Promise<void> {
     const { father, mother, ...updateData } = updateEggDto;
 
     await this.eggRepository.update(
@@ -217,14 +229,12 @@ export class EggService {
     );
 
     if (father) {
-      await this.parentService.createParent(eggId, father, {
-        isDirectApprove: !!father.isMyPet,
+      await this.parentService.createParent(userId, eggId, father, {
         isEgg: true,
       });
     }
     if (mother) {
-      await this.parentService.createParent(eggId, mother, {
-        isDirectApprove: !!mother.isMyPet,
+      await this.parentService.createParent(userId, eggId, mother, {
         isEgg: true,
       });
     }
@@ -241,33 +251,42 @@ export class EggService {
   ): Promise<{ petId: string }> {
     const { father, mother } = await this.parentService.findParents(eggId);
 
+    const egg = await this.getEgg(eggId);
+    if (!egg) {
+      throw new HttpException(
+        { statusCode: HttpStatus.NOT_FOUND, message: '알을 찾을 수 없습니다.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     const { petId } = await this.petService.createPet({
       ...createEggHatchDto,
       growth: '베이비',
       sex: 'N',
       ownerId,
+      species: egg.species,
     });
 
     if (father) {
       await this.parentService.createParent(
+        ownerId,
         petId,
         {
           parentId: father.parent_id,
           role: PARENT_ROLE.FATHER,
-          isMyPet: father.is_my_pet,
         },
         {
-          isDirectApprove: true,
+          isDirectApprove: true, // 알 상태에서 이미 부모의 승인을 받은 케이스. 추가적인 승인 미필요
         },
       );
     }
     if (mother) {
       await this.parentService.createParent(
+        ownerId,
         petId,
         {
           parentId: mother.parent_id,
           role: PARENT_ROLE.MOTHER,
-          isMyPet: mother.is_my_pet,
         },
         {
           isDirectApprove: true,

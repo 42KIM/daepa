@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { UserDto } from "./userDto";
+import type { EggDtoSpecies } from "./eggDtoSpecies";
 import type { PetParentDto } from "./petParentDto";
 
 export interface EggDto {
@@ -13,6 +14,8 @@ export interface EggDto {
   eggId: string;
   /** 알 주인 정보 */
   owner: UserDto;
+  /** 알 종 */
+  species: EggDtoSpecies;
   /** 산란일(yyyyMMdd) */
   layingDate: number;
   /** 차수(클러치) */
