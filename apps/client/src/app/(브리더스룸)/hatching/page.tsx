@@ -22,6 +22,7 @@ import { useState } from "react";
 import { brEggControllerFindAll } from "@repo/api-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { TreeView } from "../components/TreeView";
+import { ScrollArea } from "@/components/ui/scroll-area";
 const chartData = [
   { month: "1월", desktop: 186 },
   { month: "2월", desktop: 305 },
@@ -45,11 +46,11 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const eggCounts = {
-  "2025-05-01": 10,
-  "2025-05-02": 20,
-  "2025-05-03": 30,
-  "2025-05-04": 40,
-  "2025-05-05": 50,
+  "2025-05-01": 2,
+  "2025-05-02": 3,
+  "2025-05-03": 2,
+  "2025-05-04": 4,
+  "2025-05-05": 6,
 };
 
 const HatchingPage = () => {
@@ -79,22 +80,22 @@ const HatchingPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {data?.map((egg) => {
-          return <TreeView key={egg.eggId} node={egg} />;
-        })}
-      </div>
-
-      <div className="flex justify-center">
+      <div className="flex gap-4">
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
+          onSelect={(day) => setDate(day as Date)}
           month={month}
           onMonthChange={setMonth}
           className="rounded-xl border shadow"
           eggCounts={eggCounts}
         />
+
+        <ScrollArea className="flex w-full gap-2 rounded-xl border p-2 shadow">
+          {data?.map((egg) => {
+            return <TreeView key={egg.eggId} node={egg} />;
+          })}
+        </ScrollArea>
       </div>
       <Card>
         <CardHeader>
@@ -116,7 +117,7 @@ const HatchingPage = () => {
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
+                tickFormatter={(value: string) => value.slice(0, 3)}
               />
               <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
               <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8}>

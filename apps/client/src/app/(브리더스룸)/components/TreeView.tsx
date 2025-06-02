@@ -7,7 +7,7 @@ export const TreeView = ({ node }: { node: EggDto }) => {
 
   return (
     <button
-      className="hover:bg-accent flex cursor-pointer flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md"
+      className="hover:bg-accent mb-2 flex w-full cursor-pointer flex-col items-start gap-2 rounded-xl border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md"
       onClick={() => {
         router.push(`/egg/${node.eggId}`);
       }}
