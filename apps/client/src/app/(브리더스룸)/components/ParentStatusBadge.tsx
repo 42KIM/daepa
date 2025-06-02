@@ -11,6 +11,7 @@ const ParentStatusBadge = ({ status, isMyPet }: { status: ParentDtoStatus; isMyP
       className={cn(
         STATUS_MAP[status as keyof typeof STATUS_MAP].color,
         "rounded-full font-semibold text-gray-100",
+        isMyPet && "bg-blue-500",
       )}
     >
       {isMyPet ? (

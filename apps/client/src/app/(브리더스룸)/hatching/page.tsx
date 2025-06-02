@@ -18,11 +18,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { brEggControllerFindAll } from "@repo/api-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { TreeView } from "../components/TreeView";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useInView } from "react-intersection-observer";
+import Loading from "@/components/common/Loading";
 const chartData = [
   { month: "1월", desktop: 186 },
   { month: "2월", desktop: 305 },
@@ -56,10 +58,10 @@ const eggCounts = {
 const HatchingPage = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [month, setMonth] = useState<Date>(new Date());
-
+  const { ref, inView } = useInView();
   const itemPerPage = 10;
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: [brEggControllerFindAll.name],
     queryFn: ({ pageParam = 1 }) =>
       brEggControllerFindAll({
@@ -78,6 +80,12 @@ const HatchingPage = () => {
       data.pages.flatMap((page) => page.data.data).filter((item) => !item.hatchedPetId),
   });
 
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
@@ -91,10 +99,21 @@ const HatchingPage = () => {
           eggCounts={eggCounts}
         />
 
-        <ScrollArea className="flex w-full gap-2 rounded-xl border p-2 shadow">
+        <ScrollArea className="flex h-[416px] w-full gap-2 rounded-xl border p-2 shadow">
           {data?.map((egg) => {
             return <TreeView key={egg.eggId} node={egg} />;
           })}
+          {hasNextPage && (
+            <div ref={ref} className="h-20 text-center">
+              {isFetchingNextPage ? (
+                <div className="flex items-center justify-center">
+                  <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
+                </div>
+              ) : (
+                <Loading />
+              )}
+            </div>
+          )}
         </ScrollArea>
       </div>
       <Card>

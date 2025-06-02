@@ -8,6 +8,8 @@ import Dialog from "../../components/Form/Dialog";
 import { PetParentDto, PetSummaryDto } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import ParentStatusBadge from "../../components/ParentStatusBadge";
+import { Badge } from "@/components/ui/badge";
+import { usePathname } from "next/navigation";
 
 const ParentLink = ({
   label,
@@ -19,9 +21,11 @@ const ParentLink = ({
   label: "부" | "모";
   currentPetOwnerId?: string;
   data?: PetParentDto;
-  onSelect: (item: PetSummaryDto & { message: string }) => void;
+  onSelect: (item: PetSummaryDto & { message?: string }) => void;
   onUnlink: () => void;
 }) => {
+  const pathname = usePathname();
+  const isRegisterPage = pathname.includes("register");
   const deleteParent = () => {
     if (!data?.petId) return;
 
@@ -61,6 +65,15 @@ const ParentLink = ({
 
       {data?.petId ? (
         <div className="group relative block h-full w-full transition-opacity hover:opacity-95">
+          {!data?.status && data.owner.userId === currentPetOwnerId && (
+            <Badge
+              variant="outline"
+              className="absolute left-1 top-1 z-10 bg-blue-50 text-xs font-bold"
+            >
+              My
+            </Badge>
+          )}
+
           <Button
             variant="ghost"
             size="sm"
@@ -70,7 +83,14 @@ const ParentLink = ({
             <X className="h-4 w-4 text-white" />
           </Button>
 
-          <Link href={`/pet/${data.petId}`} className="flex flex-col items-center gap-2">
+          <Link
+            href={`/pet/${data.petId}`}
+            passHref={false}
+            onClick={(e) => {
+              if (isRegisterPage) e.preventDefault();
+            }}
+            className="flex flex-col items-center gap-2"
+          >
             <div className="relative aspect-square w-full overflow-hidden rounded-lg">
               <Image
                 src={data.photo || "/default-pet-image.png"}

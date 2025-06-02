@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ko } from "date-fns/locale";
 import { NOTIFICATION_TYPE } from "@/app/(브리더스룸)/constants";
 import { Badge } from "@/components/ui/badge";
+import Loading from "@/components/common/Loading";
 
 interface NotiListProps {
   items: UserNotificationDto[];
@@ -104,7 +105,7 @@ const NotiList = ({
                 <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
               </div>
             ) : (
-              "더 불러오는 중..."
+              <Loading />
             )}
           </div>
         )}

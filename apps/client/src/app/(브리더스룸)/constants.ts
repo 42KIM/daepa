@@ -375,7 +375,7 @@ export const SIDEBAR_ITEMS = [
   },
   {
     title: "알 등록",
-    url: "/register",
+    url: "/register/egg",
     icon: Egg,
   },
   {

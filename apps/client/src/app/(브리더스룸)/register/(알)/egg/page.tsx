@@ -1,22 +1,23 @@
 "use client";
 
-import { EGG_REGISTER_STEPS, USER_NAME } from "../../constants";
+import { EGG_REGISTER_STEPS, USER_NAME } from "../../../constants";
 import {
   CreateEggDto,
   CreateParentDto,
   eggControllerCreate,
   PetSummaryDto,
 } from "@repo/api-client";
-import { FormField } from "../../components/Form/FormField";
+import { FormField } from "../../../components/Form/FormField";
 import { useState } from "react";
-import { FieldName, FormErrors, FormStep } from "../types";
-import FloatingButton from "../../components/FloatingButton";
+
 import { cn, formatDateToYYYYMMDD } from "@/lib/utils";
 import { Check, InfoIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+import { FieldName, FormErrors, FormStep } from "../../types";
+import FloatingButton from "@/app/(브리더스룸)/components/FloatingButton";
 type FormData = {
   species: null | string;
   layingDate: string;

@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Add from "@mui/icons-material/Add";
 import { PetDto } from "@repo/api-client";
+import Loading from "@/components/common/Loading";
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -129,7 +130,7 @@ export const DataTable = ({
                             <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
                           </div>
                         ) : (
-                          "더 불러오는 중..."
+                          <Loading />
                         )}
                       </TableCell>
                     </TableRow>
