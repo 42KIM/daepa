@@ -8,6 +8,8 @@ import { PetSummaryDto } from "@repo/api-client";
 import { ChevronRight, Send } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { petControllerFindAll } from "@repo/api-client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PetItem from "./PetItem";
 
 interface ParentSearchProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface ParentSearchProps {
   onExit: () => void;
 }
 
+const currentUserId = "ZUCOPIA";
 export default function ParentSearchSelector({
   isOpen,
   sex = "F",
@@ -65,7 +68,7 @@ export default function ParentSearchSelector({
 
   const renderHeader = () => (
     <div className="sticky -top-[12px] z-20 bg-white pb-4 pt-4 dark:bg-[#18181B]">
-      <div className="flex items-center gap-2 pl-2">
+      <div className="flex items-center gap-2 pb-2 pl-4">
         <button
           onClick={() => step === 2 && setStep(1)}
           className={`text-lg font-bold ${step === 2 ? "text-gray-400 hover:text-gray-700" : ""}`}
@@ -81,11 +84,11 @@ export default function ParentSearchSelector({
       </div>
 
       {step === 1 && (
-        <div className="px-2 py-4">
+        <div className="px-2">
           <input
             type="text"
             placeholder="부모 개체를 검색하세요"
-            className="w-full rounded-xl border border-gray-200 p-3 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-gray-200 p-3 focus:border-gray-500 focus:outline-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -96,51 +99,44 @@ export default function ParentSearchSelector({
 
   const renderStep1 = () => (
     <div className="h-full overflow-y-auto px-2">
-      <div className="mb-10 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-        {searchResults?.map((item) => (
-          <button
-            key={item.petId}
-            type="button"
-            className="group flex cursor-pointer flex-col rounded-xl p-2 text-left"
-            onClick={() => handlePetSelect(item)}
+      <Tabs defaultValue="my" className="w-full">
+        <TabsList className="grid h-12 w-full grid-cols-2 rounded-full p-1">
+          <TabsTrigger
+            value="my"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-base text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
           >
-            <div className="flex w-full flex-col items-center gap-1">
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-                <Image
-                  src={"/default-pet-image.png"}
-                  alt={item.name}
-                  fill
-                  className="object-cover transition-opacity"
-                />
-              </div>
-              <div className="flex w-full flex-col items-center gap-1">
-                <div className="relative">
-                  <span className="relative font-semibold after:absolute after:-bottom-[1px] after:left-1 after:h-[12px] after:w-full after:bg-transparent after:opacity-40 after:content-[''] group-hover:after:bg-[#247DFE]">
-                    {item.name}
-                  </span>
-                </div>
-                <div className="flex flex-wrap justify-center gap-1">
-                  {item.morphs?.map((morph) => (
-                    <Badge key={morph} className="bg-blue-800 text-black text-white">
-                      {morph}
-                    </Badge>
-                  ))}
+            내 개체
+          </TabsTrigger>
+          <TabsTrigger
+            value="others"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-base text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
+          >
+            타인의 개체
+          </TabsTrigger>
+        </TabsList>
 
-                  {item.traits?.map((trait) => (
-                    <Badge
-                      variant="outline"
-                      key={trait}
-                      className="bg-white text-black dark:bg-blue-100"
-                    >
-                      {trait}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
+        <TabsContent value="my">
+          {/* 내 개체 목록 */}
+          <div className="mb-10 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+            {searchResults
+              ?.filter((pet) => pet.owner.userId === currentUserId)
+              .map((pet) => (
+                <PetItem key={pet.petId} item={pet} handlePetSelect={handlePetSelect} />
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="others">
+          {/* 타인의 개체 목록 */}
+          <div className="mb-10 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+            {searchResults
+              ?.filter((pet) => pet.owner.userId !== currentUserId)
+              .map((pet) => (
+                <PetItem key={pet.petId} item={pet} handlePetSelect={handlePetSelect} />
+              ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 
