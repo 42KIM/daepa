@@ -30,7 +30,7 @@ const AnimatedBell = styled(Bell)`
 
 const NotiButton = () => {
   const pathname = usePathname();
-  const isNotiPage = pathname === "/noti";
+  const isNotiPage = pathname.includes("noti");
 
   const { data: notifications } = useQuery({
     queryKey: [userNotificationControllerFindAll.name],

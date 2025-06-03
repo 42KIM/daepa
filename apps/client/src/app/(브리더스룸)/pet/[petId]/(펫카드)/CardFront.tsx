@@ -12,12 +12,16 @@ type PetDetailDto = Omit<PetDto, "birthdate"> & {
   birthdate?: string;
 };
 
-const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDetailDto; qrCodeDataUrl: string }) => {
+const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDetailDto; qrCodeDataUrl?: string }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragStart, setDragStart] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const allImages = pet.photos || [];
+  const allImages = pet.photos || [
+    "/default-pet-image.png",
+    "/default-pet-image_1.png",
+    "/default-pet-image_2.png",
+  ];
 
   const changeImage = (direction: "prev" | "next") => {
     if (direction === "prev") {
@@ -102,13 +106,15 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDetailDto; qrCodeDataUrl: s
             </div>
           </div>
 
-          <Image
-            src={qrCodeDataUrl}
-            alt="Pet QR Code"
-            className="absolute right-0 z-10"
-            width={60}
-            height={60}
-          />
+          {qrCodeDataUrl && (
+            <Image
+              src={qrCodeDataUrl}
+              alt="Pet QR Code"
+              className="absolute right-0 z-10"
+              width={60}
+              height={60}
+            />
+          )}
         </motion.div>
       </motion.div>
 

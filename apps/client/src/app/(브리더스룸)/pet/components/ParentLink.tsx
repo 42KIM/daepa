@@ -15,21 +15,23 @@ const ParentLink = ({
   label,
   currentPetOwnerId = "",
   data,
+  editable = true,
   onSelect,
   onUnlink,
 }: {
   label: "부" | "모";
   currentPetOwnerId?: string;
   data?: PetParentDto;
-  onSelect: (item: PetSummaryDto & { message?: string }) => void;
-  onUnlink: () => void;
+  editable?: boolean;
+  onSelect?: (item: PetSummaryDto & { message?: string }) => void;
+  onUnlink?: () => void;
 }) => {
   const pathname = usePathname();
   const isRegisterPage = pathname.includes("register");
   const deleteParent = () => {
     if (!data?.petId) return;
 
-    onUnlink();
+    onUnlink?.();
   };
 
   const handleUnlink = (e: React.MouseEvent) => {
@@ -74,19 +76,22 @@ const ParentLink = ({
             </Badge>
           )}
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute right-1 top-1 z-10 h-6 w-6 rounded-full bg-black/50 p-0 hover:bg-black/70"
-            onClick={handleUnlink}
-          >
-            <X className="h-4 w-4 text-white" />
-          </Button>
+          {editable && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 z-10 h-6 w-6 rounded-full bg-black/50 p-0 hover:bg-black/70"
+              onClick={handleUnlink}
+            >
+              <X className="h-4 w-4 text-white" />
+            </Button>
+          )}
 
           <Link
             href={`/pet/${data.petId}`}
             passHref={false}
             onClick={(e) => {
+              e.stopPropagation();
               if (isRegisterPage) e.preventDefault();
             }}
             className="flex flex-col items-center gap-2"
@@ -115,6 +120,7 @@ const ParentLink = ({
             className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg bg-gray-100 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
             onClick={(e) => {
               e.stopPropagation();
+              if (!editable) return;
 
               overlay.open(({ isOpen, close, unmount }) => (
                 <ParentSearchSelector
@@ -122,7 +128,7 @@ const ParentLink = ({
                   onClose={close}
                   onSelect={(item) => {
                     close();
-                    onSelect(item);
+                    onSelect?.(item);
                   }}
                   sex={label === "부" ? "M" : "F"}
                   onExit={unmount}
@@ -130,7 +136,11 @@ const ParentLink = ({
               ));
             }}
           >
-            <Search className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-gray-400" />
+            {editable ? (
+              <Search className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-gray-400" />
+            ) : (
+              <div className="text-center text-sm text-gray-400">미등록</div>
+            )}
           </button>
         </div>
       )}

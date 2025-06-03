@@ -1,4 +1,4 @@
-import { Bell, Bubbles, Egg, Home, Inbox } from "lucide-react";
+import { Bell, Bubbles, Egg, Film, Home, Inbox } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
 import { FOOD } from "@/types/pet";
 import { UserNotificationDtoType } from "@repo/api-client";
@@ -12,12 +12,12 @@ export const REGISTER_PAGE = {
 
 export const FORM_STEPS: FormStep[] = [
   {
-    title: "개체 이름/관리번호",
+    title: "개체 이름 /관리번호",
     field: {
       name: "name",
       type: "text",
       required: true,
-      placeholder: "개체 이름/관리번호를 입력해주세요",
+      placeholder: "개체 이름 /관리번호를 입력해주세요",
       validation: (value) => value.length > 0,
     },
   },
@@ -392,6 +392,11 @@ export const SIDEBAR_ITEMS = [
     title: "해칭룸",
     url: "/hatching",
     icon: Bubbles,
+  },
+  {
+    title: "쇼츠",
+    url: "/shorts",
+    icon: Film,
   },
   // {
   //   title: "메이팅룸",
