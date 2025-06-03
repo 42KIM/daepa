@@ -19,18 +19,27 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import LinkButton from "../../components/LinkButton";
+import { NOTIFICATION_TYPE } from "../../constants";
+import { Badge } from "@/components/ui/badge";
+import { AxiosError, AxiosResponse } from "axios";
 
 export function NotiDisplay() {
   const { selected: item } = useNotiStore();
 
-  const { mutate: updateParentStatus } = useMutation({
+  const { mutate: updateParentStatus } = useMutation<
+    AxiosResponse<{ success: boolean; message: string }>,
+    AxiosError,
+    UpdateParentDto
+  >({
     mutationFn: ({ relationId, status, opponentId }: UpdateParentDto) =>
       parentControllerUpdateParentRequest({ relationId, status, opponentId }),
-    onSuccess: () => {
-      toast.success("부모 연동 요청이 수락되었습니다.");
+    onSuccess: (res) => {
+      if (res?.data?.success) {
+        toast.success(res?.data?.message ?? "부모 연동 상태가 변경되었습니다.");
+      }
     },
     onError: () => {
-      toast.error("부모 연동 요청 수락에 실패했습니다.");
+      toast.error("부모 연동 상태 변경에 실패했습니다.");
     },
   });
 
@@ -94,9 +103,12 @@ export function NotiDisplay() {
             <div className="flex items-start gap-4 text-sm">
               <Avatar>
                 <AvatarImage alt="보내는 사람" />
-                <AvatarFallback>A</AvatarFallback>
+                <AvatarFallback>{item?.detailJson?.senderPet?.eggId ? "🐣" : "A"}</AvatarFallback>
               </Avatar>
               <div className="grid gap-1">
+                <Badge variant="outline" className="text-xs font-medium">
+                  {NOTIFICATION_TYPE[item.type as keyof typeof NOTIFICATION_TYPE]}
+                </Badge>{" "}
                 <div className="font-semibold">
                   <LinkButton
                     href={`/pet/${item.detailJson?.receiverPet?.petId}`}
@@ -111,7 +123,6 @@ export function NotiDisplay() {
                   <span className="text-sky-600 dark:text-sky-400">
                     {item.detailJson?.receiverPet?.sex === "M" ? "부" : "모"}
                   </span>{" "}
-                  연동 요청
                 </div>
               </div>
             </div>
