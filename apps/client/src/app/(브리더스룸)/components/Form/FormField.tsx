@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FieldName, FormData, FormErrors, FormStep } from "../../register/types";
+import { FieldName, FormErrors, FormStep } from "../../register/types";
 import FileField from "./FileField";
 import NumberField from "./NumberField";
 import Close from "@mui/icons-material/Close";
@@ -7,9 +7,11 @@ import ParentLink from "../../pet/components/ParentLink";
 import { useRegisterForm } from "../../register/hooks/useRegisterForm";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
 import { toast } from "sonner";
-import { PetSummaryDto } from "@repo/api-client";
 import { InfoIcon } from "lucide-react";
 import { useSelect } from "../../register/hooks/useSelect";
+import { FormData } from "../../register/store/form";
+import { PetParentDtoWithMessage } from "../../pet/store/parentLink";
+import { usePathname } from "next/navigation";
 interface FormFieldProps {
   label?: string;
   field: FormStep["field"];
@@ -18,7 +20,7 @@ interface FormFieldProps {
   disabled?: boolean;
   handleChange: (value: {
     type: FieldName;
-    value: string | string[] | PetSummaryDto | null;
+    value: string | string[] | PetParentDtoWithMessage | null;
   }) => void;
 }
 
@@ -33,7 +35,8 @@ export const FormField = ({
   const { handleMultipleSelect } = useRegisterForm();
   const { handleSelect } = useSelect();
   const { name, placeholder, type } = field;
-  const value = formData[name];
+  const value = formData[name as keyof FormData];
+  const isRegister = usePathname().includes("register");
 
   const error = errors?.[name];
   const inputClassName = cn(
@@ -43,10 +46,7 @@ export const FormField = ({
     error && "border-b-red-500",
   );
 
-  const handleSelectParent = (
-    type: "father" | "mother",
-    value: PetSummaryDto & { message: string },
-  ) => {
+  const handleSelectParent = (type: "father" | "mother", value: PetParentDtoWithMessage) => {
     handleChange({ type, value });
     toast.success("부모 선택이 완료되었습니다.");
   };
@@ -86,7 +86,7 @@ export const FormField = ({
                 handleUnlink("father");
               }}
               // TODO: 로그인/회원가입 후 현재 유저 아이디 전달
-              currentPetOwnerId={"ZUCOPIA"}
+              currentPetOwnerId={"ADMIN"}
             />
             <ParentLink
               label="모"
@@ -98,12 +98,12 @@ export const FormField = ({
                 handleUnlink("mother");
               }}
               // TODO: 로그인/회원가입 후 현재 유저 아이디 전달
-              currentPetOwnerId={"ZUCOPIA"}
+              currentPetOwnerId={"ADMIN"}
             />
           </div>
         );
       case "textarea": {
-        const maxLength = 600;
+        const maxLength = 500;
         const currentLength = (value as string)?.length || 0;
 
         return (
@@ -134,13 +134,18 @@ export const FormField = ({
           <button
             className={cn(inputClassName, `${value && "text-black"}`)}
             disabled={disabled}
-            onClick={() =>
+            onClick={() => {
+              if (!isRegister && name === "species") {
+                toast.error("종은 변경할 수 없습니다.");
+                return;
+              }
+
               handleSelect({
                 type: name,
                 value: value as string,
                 handleNext: handleChange,
-              })
-            }
+              });
+            }}
           >
             {name === "sex"
               ? (GENDER_KOREAN_INFO[value as string as keyof typeof GENDER_KOREAN_INFO] ??

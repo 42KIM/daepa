@@ -13,19 +13,20 @@ import {
   petControllerDelete,
   parentControllerDeleteParent,
   parentControllerCreateParent,
+  PetDto,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import Dialog from "@/app/(브리더스룸)/components/Form/Dialog";
 import { useMutation } from "@tanstack/react-query";
-import useParentLinkStore from "../../store/parentLink";
+import useParentLinkStore, { PetParentDtoWithMessage } from "../../store/parentLink";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import { cn, formatDateToYYYYMMDD } from "@/lib/utils";
 interface CardBackProps {
-  pet: PetSummaryDto;
+  pet: PetDto;
 }
 
 const CardBack = ({ pet }: CardBackProps) => {
@@ -57,18 +58,15 @@ const CardBack = ({ pet }: CardBackProps) => {
     mutationFn: ({
       parentId,
       role,
-      isMyPet,
       message,
     }: {
       parentId: string;
       role: "father" | "mother";
-      isMyPet: boolean;
       message: string;
     }) =>
       parentControllerCreateParent(pet.petId, {
         parentId,
         role,
-        isMyPet,
         message,
       }),
     onSuccess: () => {
@@ -106,23 +104,21 @@ const CardBack = ({ pet }: CardBackProps) => {
 
   const handleSave = async () => {
     try {
-      const {
-        petId,
-        birthdate,
-        ownerId,
-        owner,
-        isDeleted,
-        father,
-        mother,
-        weight,
-        ...restFormData
-      } = formData;
+      const { name, species, morphs, traits, growth, sex, foods, desc, petId, birthdate, weight } =
+        formData;
 
       if (!petId) return;
 
       const updateData = {
-        ...restFormData,
-        ...(birthdate && { birthdate: formatDateToYYYYMMDD(birthdate) }),
+        ...(name && { name }),
+        ...(species && { species }),
+        ...(morphs && { morphs }),
+        ...(traits && { traits }),
+        ...(growth && { growth }),
+        ...(sex && { sex }),
+        ...(foods && { foods }),
+        ...(desc && { desc }),
+        ...(birthdate && { birthdate: formatDateToYYYYMMDD(birthdate.toString()) }),
         ...(weight && { weight: Number(weight) }),
       };
 
@@ -135,10 +131,7 @@ const CardBack = ({ pet }: CardBackProps) => {
     }
   };
 
-  const handleParentSelect = (
-    role: "father" | "mother",
-    value: PetSummaryDto & { message: string },
-  ) => {
+  const handleParentSelect = (role: "father" | "mother", value: PetParentDtoWithMessage) => {
     try {
       setSelectedParent({
         ...value,
@@ -149,7 +142,6 @@ const CardBack = ({ pet }: CardBackProps) => {
       mutateRequestParent({
         parentId: value.petId,
         role,
-        isMyPet: value.owner.userId === pet.owner.userId,
         message: value.message,
       });
     } catch (error) {
