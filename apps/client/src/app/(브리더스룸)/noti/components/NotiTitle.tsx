@@ -14,7 +14,7 @@ const NotiTitle = ({
 }) => {
   const nameStyle = (sex: PetDtoSex) =>
     cn(
-      "relative font-bold after:absolute after:bottom-1 after:left-0.5 after:-z-10 after:h-[10px] after:w-full after:opacity-40",
+      "relative font-bold after:absolute after:bottom-1 after:left-0.5 after:-z-10 after:h-[70%] after:w-full after:opacity-40",
       sex === "F"
         ? "after:bg-red-400/70"
         : sex === "M"

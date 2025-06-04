@@ -30,7 +30,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const HatchingPage = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [month, setMonth] = useState<Date>(new Date());
-  const [tab, setTab] = useState<"hached" | "noHatched">("hached");
+  const [tab, setTab] = useState<"hached" | "noHatched">("noHatched");
   const { ref, inView } = useInView();
   const itemPerPage = 10;
 
@@ -83,7 +83,7 @@ const HatchingPage = () => {
             </TabsList>
           </Tabs>
           {data
-            ?.filter((egg) => (tab === "hached" ? egg.hatchedPetId : !egg.hatchedPetId))
+            ?.filter((egg) => (tab === "noHatched" ? !egg.hatchedPetId : egg.hatchedPetId))
             ?.map((egg) => <TreeView key={egg.eggId} node={egg} />)}
           {hasNextPage && (
             <div ref={ref} className="h-20 text-center">
