@@ -3,7 +3,7 @@ import { FORM_STEPS, OPTION_STEPS } from "@/app/(브리더스룸)/constants";
 import { useFormStore } from "@/app/(브리더스룸)/register/store/form";
 import { FieldName } from "@/app/(브리더스룸)/register/types";
 import { Button } from "@/components/ui/button";
-import { Edit3 } from "lucide-react";
+import { Edit3, InfoIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import ParentLink from "../../components/ParentLink";
 import {
@@ -25,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import { cn, formatDateToYYYYMMDD } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 interface CardBackProps {
   pet: PetDto;
   from: string | null;
@@ -34,8 +35,9 @@ const CardBack = ({ pet, from }: CardBackProps) => {
   const { formData, errors, setFormData, setPage } = useFormStore();
   const { selectedParent, setSelectedParent } = useParentLinkStore();
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(from === "egg");
   const [isPublic, setIsPublic] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   const router = useRouter();
   const { mutate: mutateDeletePet } = useMutation({
@@ -84,10 +86,14 @@ const CardBack = ({ pet, from }: CardBackProps) => {
   });
 
   useEffect(() => {
-    if (from === "egg") {
-      setIsEditing(true);
+    if (from !== "egg") return;
+
+    if (formData.name && formData.morphs && formData.birthdate) {
+      setIsTooltipOpen(false);
+    } else {
+      setIsTooltipOpen(true);
     }
-  }, [from]);
+  }, [formData, from]);
 
   useEffect(() => {
     setFormData(pet);
@@ -100,11 +106,6 @@ const CardBack = ({ pet, from }: CardBackProps) => {
       ["traits", "foods", "birthdate", "weight", "name", "desc"].includes(step.field.name),
     ),
   ];
-
-  const highlightField = (fieldName: string) => {
-    if (from !== "egg") return false;
-    return ["birthdate", "name", "morphs"].includes(fieldName);
-  };
 
   const handleChange = (value: {
     type: FieldName;
@@ -140,8 +141,6 @@ const CardBack = ({ pet, from }: CardBackProps) => {
     } catch (error) {
       console.error("Failed to update pet:", error);
       toast.error("펫 정보 수정에 실패했습니다.");
-    } finally {
-      router.push(`/pet/${pet.petId}`);
     }
   };
 
@@ -247,35 +246,31 @@ const CardBack = ({ pet, from }: CardBackProps) => {
           <div>
             <div className="mb-2 flex items-center gap-1">
               <h2 className="text-xl font-bold">사육 정보</h2>
-
-              {/* 수정 버튼 */}
-              <div className="sticky top-0 z-10 flex justify-end bg-white p-2 dark:bg-[#18181B]">
-                {!isEditing && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => {
-                      setIsEditing(true);
-                    }}
-                  >
-                    <Edit3 />
-                  </Button>
-                )}
-              </div>
+              {isTooltipOpen && (
+                <Tooltip open>
+                  <TooltipTrigger>
+                    <InfoIcon className="mr-1 h-4 w-4 text-red-500" />
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>
+                      <span className="font-bold">모프, 이름, 생년월일 </span>은 알에서 부화한
+                      개체의 필수 정보입니다.
+                      <br />
+                      수정 후 저장하여 해칭을 완료해주세요.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
 
             <div className="space-y-4">
               <div>
                 {visibleFields.map((step) => {
-                  const shouldHighlight = highlightField(step.field.name);
-
                   return (
                     <InfoItem
                       key={step.field.name}
                       label={step.title}
                       className={step.field.type === "textarea" ? "" : "flex gap-4"}
-                      shouldHighlight={shouldHighlight}
                       value={
                         <FormField
                           field={step.field}
@@ -317,9 +312,27 @@ const CardBack = ({ pet, from }: CardBackProps) => {
               </Button>
             </div>
           ) : (
-            <Button variant="destructive" size="sm" onClick={handleDelete} className="text-white">
-              삭제하기
-            </Button>
+            <div className="flex flex-1 justify-between">
+              <Button variant="destructive" size="sm" onClick={handleDelete} className="text-white">
+                삭제하기
+              </Button>
+
+              {/* 수정 버튼 */}
+              <div className="flex justify-end dark:bg-[#18181B]">
+                {!isEditing && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      setIsEditing(true);
+                    }}
+                  >
+                    <Edit3 />
+                  </Button>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>
