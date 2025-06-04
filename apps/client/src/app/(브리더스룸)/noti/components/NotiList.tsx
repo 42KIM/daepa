@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import {
   UpdateUserNotificationDto,
+  userNotificationControllerFindAll,
+  userNotificationControllerUpdate,
   UserNotificationDto,
   UserNotificationDtoStatus,
 } from "@repo/api-client";
@@ -12,23 +14,50 @@ import { NOTIFICATION_TYPE } from "@/app/(브리더스룸)/constants";
 import Loading from "@/components/common/Loading";
 import NotiTitle from "./NotiTitle";
 import { PetSummaryDto } from "@/types/pet";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
-interface NotiListProps {
-  items: UserNotificationDto[];
-  handleUpdate: (item: UpdateUserNotificationDto) => void;
-  hasMore: boolean;
-  isFetchingMore: boolean;
-  loaderRefAction: (node?: Element | null) => void;
-}
+const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
+  const [items, setItems] = useState<UserNotificationDto[]>([]);
 
-const NotiList = ({
-  items,
-  handleUpdate,
-  hasMore,
-  isFetchingMore,
-  loaderRefAction,
-}: NotiListProps) => {
   const { selected, setSelected } = useNotiStore();
+  const { ref, inView } = useInView();
+
+  const itemPerPage = 10;
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: [userNotificationControllerFindAll.name, itemPerPage],
+    queryFn: ({ pageParam = 1 }) =>
+      userNotificationControllerFindAll({
+        page: pageParam,
+        itemPerPage,
+        order: "DESC",
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.data.meta.hasNextPage) {
+        return lastPage.data.meta.page + 1;
+      }
+      return undefined;
+    },
+  });
+
+  const { mutate: updateNotification } = useMutation({
+    mutationFn: (data: UpdateUserNotificationDto) => userNotificationControllerUpdate(data),
+    onMutate: async (newData) => {
+      // 낙관적 업데이트
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === newData.id ? { ...item, status: UserNotificationDtoStatus.read } : item,
+        ),
+      );
+    },
+    onError: () => {
+      // 에러 시 원래 상태로 복구
+      setItems(items);
+    },
+  });
 
   const handleItemClick = (item: UserNotificationDto) => {
     setSelected(item);
@@ -36,9 +65,28 @@ const NotiList = ({
     // return handleUpdate({ id: item.id, status: UserNotificationDtoStatus.read });
 
     if (item.status === UserNotificationDtoStatus.unread) {
-      handleUpdate({ id: item.id, status: UserNotificationDtoStatus.read });
+      updateNotification({ id: item.id, status: UserNotificationDtoStatus.read });
     }
   };
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  useEffect(() => {
+    if (!data?.pages) return;
+    if (tab === "all") {
+      setItems(data?.pages.flatMap((page) => page.data.data) ?? []);
+    } else {
+      setItems(
+        data?.pages
+          .flatMap((page) => page.data.data)
+          ?.filter((item) => item.status === UserNotificationDtoStatus.unread) ?? [],
+      );
+    }
+  }, [data?.pages, tab]);
 
   return (
     <ScrollArea className="h-[calc(100vh-200px)]">
@@ -104,9 +152,9 @@ const NotiList = ({
         })}
 
         {/* 무한 스크롤 로더 */}
-        {hasMore && (
-          <div ref={loaderRefAction} className="h-20 text-center">
-            {isFetchingMore ? (
+        {hasNextPage && (
+          <div ref={ref} className="h-20 text-center">
+            {isFetchingNextPage ? (
               <div className="flex items-center justify-center">
                 <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
               </div>
