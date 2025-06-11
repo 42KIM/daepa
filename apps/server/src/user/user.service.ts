@@ -61,4 +61,10 @@ export class UserService {
     const user = instanceToPlain(userEntity);
     return plainToInstance(UserDto, user);
   }
+
+  async update(userId: string, userDto: Partial<UserDto>) {
+    const user = instanceToPlain(userDto);
+    const userUpdateEntity = plainToInstance(UserEntity, user);
+    await this.userRepository.update({ user_id: userId }, userUpdateEntity);
+  }
 }

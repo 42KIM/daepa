@@ -24,6 +24,8 @@ import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { KakaoStrategy } from './auth/strategies/kakao.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './auth/strategies/jwt.strategy';
+import { JwtModule } from '@nestjs/jwt';
 
 const ENTITIES = [
   UserEntity,
@@ -51,6 +53,10 @@ const ENTITIES = [
     }),
     TypeOrmModule.forFeature(ENTITIES),
     PassportModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET ?? '',
+      signOptions: { expiresIn: '1h' },
+    }),
   ],
   controllers: [
     AppController,
@@ -71,6 +77,7 @@ const ENTITIES = [
     EggService,
     AuthService,
     KakaoStrategy,
+    JwtStrategy,
   ],
 })
 export class AppModule {
