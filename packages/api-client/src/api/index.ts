@@ -36,6 +36,7 @@ import type {
   ParentDto,
   PetControllerFindAll200,
   PetDto,
+  UserDto,
   UserNotificationControllerFindAll200,
 } from "../model";
 
@@ -211,6 +212,12 @@ export const brEggControllerFindAll = <TData = AxiosResponse<BrEggControllerFind
   });
 };
 
+export const authControllerKakaoLogin = <TData = AxiosResponse<UserDto>>(
+  options?: AxiosRequestConfig,
+): Promise<TData> => {
+  return axios.get(`http://localhost:4000/api/auth/kakao`, options);
+};
+
 export type PetControllerFindAllResult = AxiosResponse<PetControllerFindAll200>;
 export type PetControllerCreateResult = AxiosResponse<void>;
 export type PetControllerFindOneResult = AxiosResponse<PetDto>;
@@ -232,6 +239,7 @@ export type EggControllerDeleteResult = AxiosResponse<void>;
 export type EggControllerCreateResult = AxiosResponse<void>;
 export type EggControllerHatchedResult = AxiosResponse<void>;
 export type BrEggControllerFindAllResult = AxiosResponse<BrEggControllerFindAll200>;
+export type AuthControllerKakaoLoginResult = AxiosResponse<UserDto>;
 
 export const getPetControllerFindAllResponseMock = (
   overrideResponse: Partial<PetControllerFindAll200> = {},
@@ -734,6 +742,15 @@ export const getBrEggControllerFindAllResponseMock = (
   ...overrideResponse,
 });
 
+export const getAuthControllerKakaoLoginResponseMock = (
+  overrideResponse: Partial<UserDto> = {},
+): UserDto => ({
+  userId: faker.string.alpha(20),
+  name: faker.string.alpha(20),
+  role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -1070,6 +1087,27 @@ export const getBrEggControllerFindAllMockHandler = (
     );
   });
 };
+
+export const getAuthControllerKakaoLoginMockHandler = (
+  overrideResponse?:
+    | UserDto
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<UserDto> | UserDto),
+) => {
+  return http.get("*/api/auth/kakao", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAuthControllerKakaoLoginResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -1091,4 +1129,5 @@ export const getProjectDaepaAPIMock = () => [
   getEggControllerCreateMockHandler(),
   getEggControllerHatchedMockHandler(),
   getBrEggControllerFindAllMockHandler(),
+  getAuthControllerKakaoLoginMockHandler(),
 ];

@@ -20,6 +20,10 @@ import { EggEntity } from './egg/egg.entity';
 import { EggController } from './egg/egg.controller';
 import { EggService } from './egg/egg.service';
 import { BrEggController } from './egg/br/br.egg.controller';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
+import { KakaoStrategy } from './auth/strategies/kakao.strategy';
+import { PassportModule } from '@nestjs/passport';
 
 const ENTITIES = [
   UserEntity,
@@ -46,6 +50,7 @@ const ENTITIES = [
       synchronize: true,
     }),
     TypeOrmModule.forFeature(ENTITIES),
+    PassportModule,
   ],
   controllers: [
     AppController,
@@ -55,6 +60,7 @@ const ENTITIES = [
     BrPetController,
     EggController,
     BrEggController,
+    AuthController,
   ],
   providers: [
     AppService,
@@ -63,6 +69,8 @@ const ENTITIES = [
     UserNotificationService,
     ParentService,
     EggService,
+    AuthService,
+    KakaoStrategy,
   ],
 })
 export class AppModule {
