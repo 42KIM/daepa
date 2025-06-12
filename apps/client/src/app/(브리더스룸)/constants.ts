@@ -411,14 +411,33 @@ export const FOOD_BADGE_TEXT_COLORS: Record<FOOD, string> = {
   "지렙 인섹트": "text-blue-900",
 };
 
-export const NOTIFICATION_TYPE: Record<UserNotificationDtoType, string> = {
-  parent_request: "부모 연동 요청",
-  parent_accept: "부모 연동 수락",
-  parent_reject: "부모 연동 거절",
-  owner_transfer: "주인 이전",
-  owner_accept: "주인 수락",
-  owner_reject: "주인 거절",
-};
+export const NOTIFICATION_TYPE: Record<UserNotificationDtoType, { label: string; color: string }> =
+  {
+    parent_request: {
+      label: "부모 연동 요청",
+      color: "bg-gray-200 text-gray-900",
+    },
+    parent_accept: {
+      label: "부모 연동 수락",
+      color: "bg-green-600",
+    },
+    parent_reject: {
+      label: "부모 연동 거절",
+      color: "bg-red-600",
+    },
+    owner_transfer: {
+      label: "주인 이전",
+      color: "bg-blue-600",
+    },
+    owner_accept: {
+      label: "주인 수락",
+      color: "bg-green-600",
+    },
+    owner_reject: {
+      label: "주인 거절",
+      color: "bg-red-600",
+    },
+  };
 
 export const STATUS_MAP = {
   pending: {
