@@ -79,17 +79,16 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
 
   useEffect(() => {
     const id = searchParams.get("id");
-    if (id && selected?.id !== Number(id)) {
-      const item = items.find((item) => item.id === Number(id));
-      if (item) {
-        setSelected(item);
-        // handleItemClick(item);
-        setTimeout(() => {
-          selectedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-      }
+    const item = items.find((item) => item.id === Number(id));
+    if (item) {
+      setSelected(item);
+      setTimeout(() => {
+        selectedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    } else {
+      setSelected(null);
     }
-  }, [searchParams, items, selected, setSelected, handleItemClick]);
+  }, [searchParams, items, selected, setSelected]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {

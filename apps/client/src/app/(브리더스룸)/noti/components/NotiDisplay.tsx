@@ -9,13 +9,14 @@ import Image from "next/image";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNotiStore } from "../store/noti";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   parentControllerUpdateParentRequest,
   PetSummaryDto,
   UpdateParentDto,
   UpdateParentDtoStatus,
   userNotificationControllerDelete,
+  userNotificationControllerFindAll,
   UserNotificationDtoType,
 } from "@repo/api-client";
 import Link from "next/link";
@@ -25,9 +26,12 @@ import { Badge } from "@/components/ui/badge";
 import { AxiosError, AxiosResponse } from "axios";
 import NotiTitle from "./NotiTitle";
 import { cn, formatDateToYYYYMMDDString } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export function NotiDisplay() {
-  const { selected: item } = useNotiStore();
+  const router = useRouter();
+  const { selected: item, setSelected } = useNotiStore();
+  const queryClient = useQueryClient();
   const receiverPet = item?.detailJson?.receiverPet as PetSummaryDto;
   const senderPet = item?.detailJson?.senderPet as PetSummaryDto;
   const isEgg = senderPet?.eggId;
@@ -45,6 +49,17 @@ export function NotiDisplay() {
           res?.data?.message ??
             `부모 연동이 ${variables.status === UpdateParentDtoStatus.approved ? "수락" : variables.status === UpdateParentDtoStatus.cancelled ? "취소" : "거절"} 되었습니다.`,
         );
+        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+
+        if (item) {
+          setSelected({
+            ...item,
+            type:
+              variables.status === UpdateParentDtoStatus.approved
+                ? UserNotificationDtoType.parent_accept
+                : UserNotificationDtoType.parent_reject,
+          });
+        }
       }
     },
     onError: () => {
@@ -62,6 +77,9 @@ export function NotiDisplay() {
     onSuccess: (res) => {
       if (res?.data?.success) {
         toast.success("알림이 삭제되었습니다.");
+
+        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+        router.push("/noti");
       }
     },
     onError: () => {
