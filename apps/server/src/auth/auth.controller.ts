@@ -82,7 +82,7 @@ export class AuthController {
     description: 'refresh token 재발급 성공',
     type: String,
   })
-  async getToken(@Req() req: Request, @Res() res: Response) {
+  async refreshToken(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken || typeof refreshToken !== 'string') {
       throw new UnauthorizedException('Refresh token이 유효하지 않습니다.');
