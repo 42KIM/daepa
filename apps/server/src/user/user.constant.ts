@@ -5,7 +5,8 @@ export const USER_ROLE = {
 } as const;
 
 export const USER_STATUS = {
-  PENDING: 'pending',
+  PENDING_REFRESH_TOKEN: 'pending_refresh_token',
+  PENDING_ACCESS_TOKEN: 'pending_access_token',
   ACTIVE: 'active',
   INACTIVE: 'inactive',
   SUSPENDED: 'suspended',

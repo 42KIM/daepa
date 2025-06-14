@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Profile, Strategy } from 'passport-kakao';
-import { OAUTH_PROVIDER } from '../auth.constants';
+import { Profile, Strategy } from 'passport-google-oauth20';
 import { AuthService } from '../auth.service';
+import { OAUTH_PROVIDER } from '../auth.constants';
 
 @Injectable()
-export class KakaoStrategy extends PassportStrategy(Strategy) {
+export class GoogleStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly authService: AuthService) {
     super({
-      clientID: process.env.KAKAO_CLIENT_ID ?? '',
-      clientSecret: process.env.KAKAO_CLIENT_SECRET ?? '',
-      callbackURL: '/api/auth/sign-in/kakao',
+      clientID: process.env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+      callbackURL: '/api/auth/sign-in/google',
+      scope: ['profile'],
     });
   }
 
@@ -22,13 +23,13 @@ export class KakaoStrategy extends PassportStrategy(Strategy) {
   ) {
     try {
       const providerInfo = {
-        provider: OAUTH_PROVIDER.KAKAO,
+        provider: OAUTH_PROVIDER.GOOGLE,
         providerId: profile.id.toString(),
       };
 
-      const user = await this.authService.validateUser(providerInfo);
+      const userId = await this.authService.validateUser(providerInfo);
 
-      done(null, user);
+      done(null, userId);
     } catch (error) {
       done(error);
     }
