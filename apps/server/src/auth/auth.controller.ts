@@ -68,20 +68,20 @@ export class AuthController {
     return res.redirect('http://localhost:3000/sign-in/auth');
   }
 
-  @Get('refresh')
+  @Get('token')
   @ApiResponse({
     status: 200,
     description: 'refresh token 재발급 성공',
     type: String,
   })
-  async refresh(@Req() req: Request, @Res() res: Response) {
+  async getToken(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken || typeof refreshToken !== 'string') {
-      throw new UnauthorizedException('유효한 refresh token이 없습니다.');
+      throw new UnauthorizedException('Refresh token이 유효하지 않습니다.');
     }
 
     const { newAccessToken, newRefreshToken } =
-      await this.authService.refreshToken(refreshToken);
+      await this.authService.getJwtAccessToken(refreshToken);
 
     if (newRefreshToken) {
       res.cookie('refreshToken', newRefreshToken, {
@@ -93,7 +93,7 @@ export class AuthController {
     }
 
     return {
-      newAccessToken,
+      accessToken: newAccessToken,
     };
   }
 }
