@@ -34,20 +34,14 @@ export class AuthController {
     const { accessToken, refreshToken } =
       await this.authService.getJwtToken(user);
 
-    // Authorization 헤더에 accessToken 설정
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1 * 60 * 60 * 1000, // 1시간
-    });
+    // TODO: access token 어떻게?
 
     // 쿠키에 refreshToken 설정
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1년
+      maxAge: 180 * 24 * 60 * 60 * 1000, // 180일
     });
 
     // TODO: 클라이언트에서 status가 pending인 경우 이름 입력으로, 아닌 경우 서비스로
