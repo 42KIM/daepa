@@ -30,7 +30,10 @@ export class UserService {
     throw new Error('Failed to generate unique userId after maximum attempts');
   }
 
-  async createUser(providerInfo: ProviderInfo) {
+  async createUser(
+    providerInfo: ProviderInfo,
+    status: (typeof USER_STATUS)[keyof typeof USER_STATUS],
+  ) {
     const { provider, providerId } = providerInfo;
 
     const userId = await this.generateUserId();
@@ -42,7 +45,7 @@ export class UserService {
       role: USER_ROLE.USER,
       provider,
       providerId,
-      status: USER_STATUS.PENDING,
+      status,
       lastLoginAt: new Date(),
     });
 

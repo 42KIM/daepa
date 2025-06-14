@@ -3,6 +3,7 @@ import { UserService } from 'src/user/user.service';
 import { ProviderInfo } from './auth.types';
 import { UserDto } from 'src/user/user.dto';
 import { JwtService } from '@nestjs/jwt';
+import { USER_STATUS } from 'src/user/user.constant';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,10 @@ export class AuthService {
     });
 
     if (!userFound) {
-      const userCreated = await this.userService.createUser(providerInfo);
+      const userCreated = await this.userService.createUser(
+        providerInfo,
+        USER_STATUS.PENDING_REFRESH_TOKEN,
+      );
       return userCreated;
     }
 
@@ -38,6 +42,18 @@ export class AuthService {
     await this.updateUserRefreshToken(user.userId, refreshToken);
 
     return { accessToken, refreshToken };
+  }
+
+  async createJwtRefreshToken(user: UserDto) {
+    const payload = { username: user.name, sub: user.userId };
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: '180d',
+      secret: process.env.JWT_REFRESH_SECRET ?? '',
+    });
+
+    await this.updateUserRefreshToken(user.userId, refreshToken);
+
+    return refreshToken;
   }
 
   async updateUserRefreshToken(
