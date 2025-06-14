@@ -6,9 +6,9 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { Request, Response } from 'express';
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/user/user.dto';
 import { OAuthAuthenticatedUser } from './auth.decorator';
