@@ -226,7 +226,7 @@ export const authControllerGoogleLogin = <TData = AxiosResponse<void>>(
 export const authControllerGetToken = <TData = AxiosResponse<string>>(
   options?: AxiosRequestConfig,
 ): Promise<TData> => {
-  return axios.get(`http://localhost:4000/api/auth/token`, options);
+  return axios.get(`http://localhost:4000/api/auth/refresh`, options);
 };
 
 export type PetControllerFindAllResult = AxiosResponse<PetControllerFindAll200>;
@@ -1322,7 +1322,7 @@ export const getAuthControllerGetTokenMockHandler = (
     | string
     | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<string> | string),
 ) => {
-  return http.get("*/api/auth/token", async (info) => {
+  return http.get("*/api/auth/refresh", async (info) => {
     await delay(1000);
 
     return new HttpResponse(

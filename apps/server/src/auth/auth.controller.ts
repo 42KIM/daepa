@@ -76,7 +76,7 @@ export class AuthController {
     );
   }
 
-  @Get('token')
+  @Get('refresh')
   @ApiResponse({
     status: 200,
     description: 'refresh token 재발급 성공',
@@ -89,7 +89,7 @@ export class AuthController {
     }
 
     const { newAccessToken, newRefreshToken } =
-      await this.authService.getJwtAccessToken(refreshToken);
+      await this.authService.refresh(refreshToken);
 
     if (newRefreshToken) {
       res.cookie('refreshToken', newRefreshToken, {
@@ -101,7 +101,7 @@ export class AuthController {
     }
 
     return {
-      accessToken: newAccessToken,
+      token: newAccessToken,
     };
   }
 }
