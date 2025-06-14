@@ -30,7 +30,6 @@ import { format } from "date-fns";
 
 const HatchingPage = () => {
   const [date, setDate] = useState<Date>(new Date());
-  const [month, setMonth] = useState<Date>(new Date());
   const [tab, setTab] = useState<"hached" | "noHatched">("noHatched");
   const { ref, inView } = useInView();
   const itemPerPage = 10;
@@ -68,8 +67,6 @@ const HatchingPage = () => {
           mode="single"
           selected={date}
           onSelect={(day) => setDate(day as Date)}
-          month={month}
-          onMonthChange={setMonth}
           className="rounded-xl border shadow"
           eggCounts={eggCounts}
         />
@@ -94,7 +91,7 @@ const HatchingPage = () => {
             ?.map((egg) => <TreeView key={egg.eggId} node={egg} />)}
           {hasNextPage && (
             <div ref={ref} className="h-20 text-center">
-              {isFetchingNextPage || isPending ? (
+              {isFetchingNextPage ? (
                 <div className="flex items-center justify-center">
                   <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
                 </div>

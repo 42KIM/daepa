@@ -13,9 +13,9 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   eggCounts = {} as Record<string, number>,
-  onMonthChange,
   ...props
 }: React.ComponentProps<typeof DayPicker> & { eggCounts?: Record<string, number> }) {
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(new Date());
   const koreanWeekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
   const currentYear = new Date().getFullYear();
@@ -25,6 +25,8 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      month={currentMonth}
+      onMonthChange={setCurrentMonth}
       formatters={{
         formatWeekdayName: (date) => koreanWeekdays[date.getDay()],
       }}
@@ -100,7 +102,7 @@ function Calendar({
                   value={year.toString()}
                   onValueChange={(newYear) => {
                     const newDate = new Date(parseInt(newYear), month - 1);
-                    onMonthChange?.(newDate);
+                    setCurrentMonth(newDate);
                   }}
                 >
                   <SelectTrigger className="w-[100px]">
@@ -119,7 +121,7 @@ function Calendar({
                   value={month.toString()}
                   onValueChange={(newMonth) => {
                     const newDate = new Date(year, parseInt(newMonth) - 1);
-                    onMonthChange?.(newDate);
+                    setCurrentMonth(newDate);
                   }}
                 >
                   <SelectTrigger className="w-[100px]">
@@ -139,7 +141,7 @@ function Calendar({
                 <button
                   onClick={() => {
                     const newDate = new Date(year, month - 2);
-                    onMonthChange?.(newDate);
+                    setCurrentMonth(newDate);
                   }}
                   disabled={isMinMonth}
                   className={cn(
@@ -157,7 +159,7 @@ function Calendar({
                 <button
                   onClick={() => {
                     const newDate = new Date(year, month);
-                    onMonthChange?.(newDate);
+                    setCurrentMonth(newDate);
                   }}
                   disabled={isMaxMonth}
                   className={cn(
