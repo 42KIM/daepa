@@ -217,6 +217,18 @@ export const authControllerKakaoLogin = <TData = AxiosResponse<unknown>>(
   return axios.get(`http://localhost:4000/api/auth/sign-in/kakao`, options);
 };
 
+export const authControllerGoogleLogin = <TData = AxiosResponse<void>>(
+  options?: AxiosRequestConfig,
+): Promise<TData> => {
+  return axios.get(`http://localhost:4000/api/auth/sign-in/google`, options);
+};
+
+export const authControllerGetToken = <TData = AxiosResponse<string>>(
+  options?: AxiosRequestConfig,
+): Promise<TData> => {
+  return axios.get(`http://localhost:4000/api/auth/token`, options);
+};
+
 export type PetControllerFindAllResult = AxiosResponse<PetControllerFindAll200>;
 export type PetControllerCreateResult = AxiosResponse<void>;
 export type PetControllerFindOneResult = AxiosResponse<PetDto>;
@@ -239,6 +251,8 @@ export type EggControllerCreateResult = AxiosResponse<void>;
 export type EggControllerHatchedResult = AxiosResponse<void>;
 export type BrEggControllerFindAllResult = AxiosResponse<BrEggControllerFindAll200>;
 export type AuthControllerKakaoLoginResult = AxiosResponse<unknown>;
+export type AuthControllerGoogleLoginResult = AxiosResponse<void>;
+export type AuthControllerGetTokenResult = AxiosResponse<string>;
 
 export const getPetControllerFindAllResponseMock = (
   overrideResponse: Partial<PetControllerFindAll200> = {},
@@ -255,7 +269,8 @@ export const getPetControllerFindAllResponseMock = (
         refreshToken: faker.string.alpha(20),
         refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
         status: faker.helpers.arrayElement([
-          "pending",
+          "pending_refresh_token",
+          "pending_access_token",
           "active",
           "inactive",
           "suspended",
@@ -307,7 +322,8 @@ export const getPetControllerFindOneResponseMock = (
       refreshToken: faker.string.alpha(20),
       refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
       status: faker.helpers.arrayElement([
-        "pending",
+        "pending_refresh_token",
+        "pending_access_token",
         "active",
         "inactive",
         "suspended",
@@ -363,7 +379,8 @@ export const getPetControllerFindOneResponseMock = (
             refreshToken: faker.string.alpha(20),
             refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
             status: faker.helpers.arrayElement([
-              "pending",
+              "pending_refresh_token",
+              "pending_access_token",
               "active",
               "inactive",
               "suspended",
@@ -409,7 +426,8 @@ export const getPetControllerFindOneResponseMock = (
             refreshToken: faker.string.alpha(20),
             refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
             status: faker.helpers.arrayElement([
-              "pending",
+              "pending_refresh_token",
+              "pending_access_token",
               "active",
               "inactive",
               "suspended",
@@ -507,7 +525,8 @@ export const getBrPetControllerFindAllResponseMock = (
         refreshToken: faker.string.alpha(20),
         refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
         status: faker.helpers.arrayElement([
-          "pending",
+          "pending_refresh_token",
+          "pending_access_token",
           "active",
           "inactive",
           "suspended",
@@ -563,7 +582,8 @@ export const getBrPetControllerFindAllResponseMock = (
               refreshToken: faker.string.alpha(20),
               refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
               status: faker.helpers.arrayElement([
-                "pending",
+                "pending_refresh_token",
+                "pending_access_token",
                 "active",
                 "inactive",
                 "suspended",
@@ -609,7 +629,8 @@ export const getBrPetControllerFindAllResponseMock = (
               refreshToken: faker.string.alpha(20),
               refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
               status: faker.helpers.arrayElement([
-                "pending",
+                "pending_refresh_token",
+                "pending_access_token",
                 "active",
                 "inactive",
                 "suspended",
@@ -667,7 +688,8 @@ export const getEggControllerFindOneResponseMock = (
       refreshToken: faker.string.alpha(20),
       refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
       status: faker.helpers.arrayElement([
-        "pending",
+        "pending_refresh_token",
+        "pending_access_token",
         "active",
         "inactive",
         "suspended",
@@ -702,7 +724,8 @@ export const getEggControllerFindOneResponseMock = (
             refreshToken: faker.string.alpha(20),
             refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
             status: faker.helpers.arrayElement([
-              "pending",
+              "pending_refresh_token",
+              "pending_access_token",
               "active",
               "inactive",
               "suspended",
@@ -748,7 +771,8 @@ export const getEggControllerFindOneResponseMock = (
             refreshToken: faker.string.alpha(20),
             refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
             status: faker.helpers.arrayElement([
-              "pending",
+              "pending_refresh_token",
+              "pending_access_token",
               "active",
               "inactive",
               "suspended",
@@ -798,7 +822,8 @@ export const getBrEggControllerFindAllResponseMock = (
         refreshToken: faker.string.alpha(20),
         refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
         status: faker.helpers.arrayElement([
-          "pending",
+          "pending_refresh_token",
+          "pending_access_token",
           "active",
           "inactive",
           "suspended",
@@ -833,7 +858,8 @@ export const getBrEggControllerFindAllResponseMock = (
               refreshToken: faker.string.alpha(20),
               refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
               status: faker.helpers.arrayElement([
-                "pending",
+                "pending_refresh_token",
+                "pending_access_token",
                 "active",
                 "inactive",
                 "suspended",
@@ -879,7 +905,8 @@ export const getBrEggControllerFindAllResponseMock = (
               refreshToken: faker.string.alpha(20),
               refreshTokenExpiresAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
               status: faker.helpers.arrayElement([
-                "pending",
+                "pending_refresh_token",
+                "pending_access_token",
                 "active",
                 "inactive",
                 "suspended",
@@ -922,6 +949,8 @@ export const getBrEggControllerFindAllResponseMock = (
   },
   ...overrideResponse,
 });
+
+export const getAuthControllerGetTokenResponseMock = (): string => faker.word.sample();
 
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
@@ -1273,6 +1302,41 @@ export const getAuthControllerKakaoLoginMockHandler = (
     return new HttpResponse(null, { status: 200 });
   });
 };
+
+export const getAuthControllerGoogleLoginMockHandler = (
+  overrideResponse?:
+    | void
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+) => {
+  return http.get("*/api/auth/sign-in/google", async (info) => {
+    await delay(1000);
+    if (typeof overrideResponse === "function") {
+      await overrideResponse(info);
+    }
+    return new HttpResponse(null, { status: 200 });
+  });
+};
+
+export const getAuthControllerGetTokenMockHandler = (
+  overrideResponse?:
+    | string
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<string> | string),
+) => {
+  return http.get("*/api/auth/token", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAuthControllerGetTokenResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -1295,4 +1359,6 @@ export const getProjectDaepaAPIMock = () => [
   getEggControllerHatchedMockHandler(),
   getBrEggControllerFindAllMockHandler(),
   getAuthControllerKakaoLoginMockHandler(),
+  getAuthControllerGoogleLoginMockHandler(),
+  getAuthControllerGetTokenMockHandler(),
 ];
