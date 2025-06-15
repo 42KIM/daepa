@@ -25,9 +25,11 @@ class UserBaseDto {
 
   @ApiProperty({
     description: 'Oauth 제공자',
+    enum: OAUTH_PROVIDER,
+    'x-enumNames': Object.keys(OAUTH_PROVIDER),
   })
   @IsEnum(OAUTH_PROVIDER)
-  provider: (typeof OAUTH_PROVIDER)[keyof typeof OAUTH_PROVIDER];
+  provider: OAUTH_PROVIDER;
 
   @ApiProperty({
     description: 'Oauth 제공자 ID',

@@ -36,7 +36,7 @@ export class UserEntity {
     type: 'enum',
     enum: OAUTH_PROVIDER,
   })
-  provider: (typeof OAUTH_PROVIDER)[keyof typeof OAUTH_PROVIDER];
+  provider: OAUTH_PROVIDER;
 
   @Expose({ name: 'providerId' })
   @Column()
