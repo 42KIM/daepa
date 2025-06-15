@@ -57,6 +57,7 @@ export class UserNotificationDto {
       - read: 읽음
       - deleted: 삭제`,
     enum: USER_NOTIFICATION_STATUS,
+    'x-enumNames': Object.keys(USER_NOTIFICATION_STATUS),
   })
   @IsEnum(USER_NOTIFICATION_STATUS)
   @IsOptional()
