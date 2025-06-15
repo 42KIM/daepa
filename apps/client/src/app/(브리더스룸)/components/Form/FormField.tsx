@@ -28,7 +28,7 @@ export const FormField = ({
   label,
   field,
   formData,
-  errors = {},
+  errors,
   disabled,
   handleChange,
   handleMultipleSelect,

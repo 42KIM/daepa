@@ -30,6 +30,7 @@ import FloatingButton from "../components/FloatingButton";
 import { AxiosError } from "axios";
 import Loading from "@/components/common/Loading";
 import { format } from "date-fns";
+import Link from "next/link";
 
 type EggDetailDto = Omit<EggDto, "layingDate"> & {
   layingDate: string;
@@ -221,14 +222,16 @@ const EggDetail = ({ egg }: EggDetailProps) => {
                   해칭이 완료되었습니다
                 </span>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 rounded-xl border-blue-200 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/30"
-                onClick={() => router.push(`/pet/${egg.hatchedPetId}`)}
-              >
-                펫 상세보기
-              </Button>
+              <Link href={`/pet/${egg.hatchedPetId}`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 rounded-xl border-blue-200 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                  onClick={() => router.push(`/pet/${egg.hatchedPetId}`)}
+                >
+                  펫 상세보기
+                </Button>
+              </Link>
             </div>
           )}
 

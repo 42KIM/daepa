@@ -4,9 +4,11 @@ export const AXIOS_INSTANCE = Axios.create({ baseURL: "http://localhost:4000" })
 
 // 요청 인터셉터 추가
 AXIOS_INSTANCE.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
