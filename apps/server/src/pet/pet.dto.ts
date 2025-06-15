@@ -37,10 +37,12 @@ export class PetBaseDto {
   @ApiProperty({
     description: '펫 종',
     example: '크레스티드게코',
+    enum: PET_SPECIES,
+    'x-enumNames': Object.keys(PET_SPECIES),
   })
   @IsString()
   @IsEnum(PET_SPECIES)
-  species: keyof typeof PET_SPECIES;
+  species: PET_SPECIES;
 
   @ApiProperty({
     description: '펫 모프',
@@ -186,9 +188,11 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
     description: '펫 종',
     example: '크레스티드게코',
     required: true,
+    enum: PET_SPECIES,
+    'x-enumNames': Object.keys(PET_SPECIES),
   })
   @IsEnum(PET_SPECIES)
-  species: keyof typeof PET_SPECIES;
+  species: PET_SPECIES;
 
   @ApiProperty({
     description: '부모 관계 상태',

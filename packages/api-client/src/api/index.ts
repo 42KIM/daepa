@@ -282,7 +282,7 @@ export const getPetControllerFindAllResponseMock = (
       },
     },
     name: faker.string.alpha(20),
-    species: {},
+    species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
     morphs: faker.helpers.arrayElement([
       Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
         faker.string.alpha(20),
@@ -335,7 +335,7 @@ export const getPetControllerFindOneResponseMock = (
     },
   },
   name: faker.string.alpha(20),
-  species: {},
+  species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
   morphs: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
       faker.string.alpha(20),
@@ -392,7 +392,7 @@ export const getPetControllerFindOneResponseMock = (
           },
         },
         name: faker.string.alpha(20),
-        species: {},
+        species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
         morphs: faker.helpers.arrayElement([
           Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
             faker.string.alpha(20),
@@ -439,7 +439,7 @@ export const getPetControllerFindOneResponseMock = (
           },
         },
         name: faker.string.alpha(20),
-        species: {},
+        species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
         morphs: faker.helpers.arrayElement([
           Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
             faker.string.alpha(20),
@@ -538,7 +538,7 @@ export const getBrPetControllerFindAllResponseMock = (
       },
     },
     name: faker.string.alpha(20),
-    species: {},
+    species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
     morphs: faker.helpers.arrayElement([
       Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
         faker.string.alpha(20),
@@ -595,7 +595,7 @@ export const getBrPetControllerFindAllResponseMock = (
             },
           },
           name: faker.string.alpha(20),
-          species: {},
+          species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
           morphs: faker.helpers.arrayElement([
             Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
               faker.string.alpha(20),
@@ -642,7 +642,7 @@ export const getBrPetControllerFindAllResponseMock = (
             },
           },
           name: faker.string.alpha(20),
-          species: {},
+          species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
           morphs: faker.helpers.arrayElement([
             Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
               faker.string.alpha(20),
@@ -700,7 +700,7 @@ export const getEggControllerFindOneResponseMock = (
       updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
     },
   },
-  species: {},
+  species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
   layingDate: faker.number.int({ min: undefined, max: undefined }),
   clutch: faker.helpers.arrayElement([
     faker.number.int({ min: undefined, max: undefined }),
@@ -737,7 +737,7 @@ export const getEggControllerFindOneResponseMock = (
           },
         },
         name: faker.string.alpha(20),
-        species: {},
+        species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
         morphs: faker.helpers.arrayElement([
           Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
             faker.string.alpha(20),
@@ -784,7 +784,7 @@ export const getEggControllerFindOneResponseMock = (
           },
         },
         name: faker.string.alpha(20),
-        species: {},
+        species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
         morphs: faker.helpers.arrayElement([
           Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
             faker.string.alpha(20),
@@ -835,7 +835,7 @@ export const getBrEggControllerFindAllResponseMock = (
           updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
         },
       },
-      species: {},
+      species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
       layingDate: faker.number.int({ min: undefined, max: undefined }),
       clutch: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
@@ -872,7 +872,7 @@ export const getBrEggControllerFindAllResponseMock = (
               },
             },
             name: faker.string.alpha(20),
-            species: {},
+            species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
             morphs: faker.helpers.arrayElement([
               Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                 () => faker.string.alpha(20),
@@ -919,7 +919,7 @@ export const getBrEggControllerFindAllResponseMock = (
               },
             },
             name: faker.string.alpha(20),
-            species: {},
+            species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
             morphs: faker.helpers.arrayElement([
               Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                 () => faker.string.alpha(20),

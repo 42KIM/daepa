@@ -29,7 +29,7 @@ export class PetEntity {
   name: string; // 이름
 
   @Column({ type: 'enum', enum: PET_SPECIES })
-  species: keyof typeof PET_SPECIES; // 종
+  species: PET_SPECIES; // 종
 
   @Column('json', { nullable: true })
   morphs?: string[]; // 모프
