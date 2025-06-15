@@ -77,6 +77,7 @@ export class CreateParentDto {
   @ApiProperty({
     description: '펫인지 알인지 여부',
     enum: CHILD_TYPE,
+    'x-enumNames': Object.keys(CHILD_TYPE),
     required: false,
   })
   @IsOptional()
