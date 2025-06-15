@@ -37,6 +37,7 @@ export class UserNotificationDto {
   @ApiProperty({
     description: '알림 타입',
     enum: USER_NOTIFICATION_TYPE,
+    'x-enumNames': Object.keys(USER_NOTIFICATION_TYPE),
   })
   @IsEnum(USER_NOTIFICATION_TYPE)
   type: USER_NOTIFICATION_TYPE;
