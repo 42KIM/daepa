@@ -107,7 +107,7 @@ export const useRegisterForm = ({
       setFormData(newFormData);
 
       if (
-        (["father", "mother"].includes(type) && isEggRegister && step < formStep.length - 1) ||
+        (!["father", "mother"].includes(type) && isEggRegister && step < formStep.length - 1) ||
         (!isEggRegister && Number(funnel) === REGISTER_PAGE.FIRST && step <= formStep.length - 1)
       ) {
         goNext(newFormData);
