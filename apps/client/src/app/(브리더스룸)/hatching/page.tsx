@@ -216,10 +216,15 @@ const HatchingPage = () => {
               <Bar
                 dataKey="notHatched"
                 stackId="a"
-                fill="var(--color-notHatched)"
+                fill="oklch(86.9% 0.022 252.894)"
                 radius={[0, 0, 8, 8]}
               />
-              <Bar dataKey="hatched" stackId="a" fill="var(--color-hatched)" radius={[8, 8, 0, 0]}>
+              <Bar
+                dataKey="hatched"
+                stackId="a"
+                fill="oklch(44.6% 0.043 257.281)"
+                radius={[8, 8, 0, 0]}
+              >
                 <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
               </Bar>
             </BarChart>
