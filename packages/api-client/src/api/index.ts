@@ -48,7 +48,7 @@ export const petControllerFindAll = (params?: PetControllerFindAllParams) => {
 };
 
 export const petControllerCreate = (createPetDto: CreatePetDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/pet`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -64,7 +64,7 @@ export const petControllerFindOne = (petId: string) => {
 };
 
 export const petControllerUpdate = (petId: string, updatePetDto: UpdatePetDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/pet/${petId}`,
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -360,6 +360,14 @@ export const getPetControllerFindAllResponseMock = (
   ...overrideResponse,
 });
 
+export const getPetControllerCreateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindOneResponseMock = (
   overrideResponse: Partial<PetDto> = {},
 ): PetDto => ({
@@ -517,6 +525,14 @@ export const getPetControllerFindOneResponseMock = (
     },
     undefined,
   ]),
+  ...overrideResponse,
+});
+
+export const getPetControllerUpdateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
   ...overrideResponse,
 });
 
@@ -1096,15 +1112,24 @@ export const getPetControllerFindAllMockHandler = (
 
 export const getPetControllerCreateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.post("*/api/v1/pet", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 201 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetControllerCreateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
@@ -1131,15 +1156,24 @@ export const getPetControllerFindOneMockHandler = (
 
 export const getPetControllerUpdateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.patch("*/api/v1/pet/:petId", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetControllerUpdateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
