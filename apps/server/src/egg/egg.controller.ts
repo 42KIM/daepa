@@ -17,6 +17,7 @@ import {
 } from './egg.dto';
 import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
 import { ApiResponse } from '@nestjs/swagger';
+import { CommonResponseDto } from 'src/common/response.dto';
 
 @Controller('/v1/egg')
 @UseInterceptors(ExcludeNilInterceptor)
@@ -34,6 +35,11 @@ export class EggController {
   }
 
   @Post()
+  @ApiResponse({
+    status: 200,
+    description: '알 등록 성공',
+    type: CommonResponseDto,
+  })
   async create(@Body() createEggDto: CreateEggDto) {
     // TODO: userId를 ownerId로 사용
     const tempOwnerId = 'ADMIN';
@@ -52,6 +58,11 @@ export class EggController {
   }
 
   @Patch(':eggId')
+  @ApiResponse({
+    status: 200,
+    description: '알 수정 성공',
+    type: CommonResponseDto,
+  })
   async update(
     @Param('eggId') eggId: string,
     @Body() updateEggDto: UpdateEggDto,
@@ -65,6 +76,11 @@ export class EggController {
   }
 
   @Delete(':eggId')
+  @ApiResponse({
+    status: 200,
+    description: '알 삭제 성공',
+    type: CommonResponseDto,
+  })
   async delete(@Param('eggId') eggId: string) {
     await this.eggService.deleteEgg(eggId);
     return {
