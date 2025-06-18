@@ -9,7 +9,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { EggService } from './egg.service';
-import { CreateEggDto, EggDto, UpdateEggDto } from './egg.dto';
+import {
+  CreateEggDto,
+  EggDto,
+  HatchedResponseDto,
+  UpdateEggDto,
+} from './egg.dto';
 import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
 import { ApiResponse } from '@nestjs/swagger';
 
@@ -69,6 +74,11 @@ export class EggController {
   }
 
   @Get(':eggId/hatched')
+  @ApiResponse({
+    status: 200,
+    description: '알 펫 전환 성공',
+    type: HatchedResponseDto,
+  })
   async hatched(@Param('eggId') eggId: string) {
     const tempOwnerId = 'ADMIN';
     const { petId } = await this.eggService.convertEggToPet(eggId, tempOwnerId);

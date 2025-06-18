@@ -30,6 +30,7 @@ import type {
   BrEggControllerFindAll200,
   BrPetControllerFindAll200,
   EggDto,
+  HatchedResponseDto,
   ParentDto,
   PetControllerFindAll200,
   PetDto,
@@ -197,7 +198,7 @@ export const eggControllerCreate = (createEggDto: CreateEggDto) => {
 };
 
 export const eggControllerHatched = (eggId: string) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<HatchedResponseDto>({
     url: `http://localhost:4000/api/v1/egg/${eggId}/hatched`,
     method: "GET",
   });
@@ -872,6 +873,15 @@ export const getEggControllerFindOneResponseMock = (
   ...overrideResponse,
 });
 
+export const getEggControllerHatchedResponseMock = (
+  overrideResponse: Partial<HatchedResponseDto> = {},
+): HatchedResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  hatchedPetId: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getBrEggControllerFindAllResponseMock = (): BrEggControllerFindAll200 => ({
   [faker.string.alphanumeric(5)]: Array.from(
     { length: faker.number.int({ min: 1, max: 10 }) },
@@ -1314,15 +1324,24 @@ export const getEggControllerCreateMockHandler = (
 
 export const getEggControllerHatchedMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    | HatchedResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<HatchedResponseDto> | HatchedResponseDto),
 ) => {
   return http.get("*/api/v1/egg/:eggId/hatched", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getEggControllerHatchedResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 

@@ -31,6 +31,7 @@ export * from "./deleteParentDtoTarget";
 export * from "./deleteUserNotificationDto";
 export * from "./eggDto";
 export * from "./eggDtoSpecies";
+export * from "./hatchedResponseDto";
 export * from "./pageDto";
 export * from "./pageDtoDataItem";
 export * from "./pageMetaDto";
