@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { CommonResponseDto } from 'src/common/response.dto';
 import { CreateParentDto } from 'src/parent/parent.dto';
 import { PET_SPECIES } from 'src/pet/pet.constants';
 import { PetParentDto } from 'src/pet/pet.dto';
@@ -197,4 +198,13 @@ export class UpdateEggDto extends PartialType(
   @IsOptional()
   @IsObject()
   mother?: CreateParentDto;
+}
+
+export class HatchedResponseDto extends CommonResponseDto {
+  @ApiProperty({
+    description: '해당 알이 펫으로 전환된 펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @IsString()
+  hatchedPetId: string;
 }

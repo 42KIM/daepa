@@ -17,6 +17,7 @@ import {
   UserNotificationDto,
 } from './user_notification.dto';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { CommonResponseDto } from 'src/common/response.dto';
 
 @Controller('/v1/user-notification')
 export class UserNotificationController {
@@ -50,6 +51,11 @@ export class UserNotificationController {
   }
 
   @Post()
+  @ApiResponse({
+    status: 200,
+    description: '알림이 생성되었습니다.',
+    type: CommonResponseDto,
+  })
   async create(@Body() createUserNotificationDto: CreateUserNotificationDto) {
     // TODO: 유저 토큰으로부터 senderId 획득
     const senderId = 'ADMIN';
@@ -64,6 +70,11 @@ export class UserNotificationController {
   }
 
   @Patch()
+  @ApiResponse({
+    status: 200,
+    description: '알림 상태가 변경되었습니다.',
+    type: CommonResponseDto,
+  })
   async update(@Body() updateUserNotificationDto: UpdateUserNotificationDto) {
     // TODO: 유저 토큰으로부터 senderId 획득
     const senderId = 'ADMIN';
@@ -80,7 +91,8 @@ export class UserNotificationController {
   @Delete()
   @ApiResponse({
     status: 200,
-    description: '알림을 논리적으로 삭제합니다 (is_deleted = true)',
+    description: '알림이 삭제되었습니다.',
+    type: CommonResponseDto,
   })
   async delete(@Body() deleteUserNotificationDto: DeleteUserNotificationDto) {
     // TODO: 권한 체크

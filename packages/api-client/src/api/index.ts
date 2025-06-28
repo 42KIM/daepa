@@ -29,7 +29,9 @@ import { HttpResponse, delay, http } from "msw";
 import type {
   BrEggControllerFindAll200,
   BrPetControllerFindAll200,
+  CommonResponseDto,
   EggDto,
+  HatchedResponseDto,
   ParentDto,
   PetControllerFindAll200,
   PetDto,
@@ -46,7 +48,7 @@ export const petControllerFindAll = (params?: PetControllerFindAllParams) => {
 };
 
 export const petControllerCreate = (createPetDto: CreatePetDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/pet`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -62,7 +64,7 @@ export const petControllerFindOne = (petId: string) => {
 };
 
 export const petControllerUpdate = (petId: string, updatePetDto: UpdatePetDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/pet/${petId}`,
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -89,7 +91,7 @@ export const parentControllerFindParent = (
 };
 
 export const parentControllerCreateParent = (petId: string, createParentDto: CreateParentDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/parent/${petId}`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -98,7 +100,7 @@ export const parentControllerCreateParent = (petId: string, createParentDto: Cre
 };
 
 export const parentControllerUpdateParentRequest = (updateParentDto: UpdateParentDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/parent/update`,
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -107,7 +109,7 @@ export const parentControllerUpdateParentRequest = (updateParentDto: UpdateParen
 };
 
 export const parentControllerDeleteParent = (relationId: number) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/parent/delete/${relationId}`,
     method: "DELETE",
   });
@@ -126,7 +128,7 @@ export const userNotificationControllerFindAll = (
 export const userNotificationControllerCreate = (
   createUserNotificationDto: CreateUserNotificationDto,
 ) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/user-notification`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -137,7 +139,7 @@ export const userNotificationControllerCreate = (
 export const userNotificationControllerUpdate = (
   updateUserNotificationDto: UpdateUserNotificationDto,
 ) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/user-notification`,
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -148,7 +150,7 @@ export const userNotificationControllerUpdate = (
 export const userNotificationControllerDelete = (
   deleteUserNotificationDto: DeleteUserNotificationDto,
 ) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/user-notification`,
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
@@ -172,7 +174,7 @@ export const eggControllerFindOne = (eggId: string) => {
 };
 
 export const eggControllerUpdate = (eggId: string, updateEggDto: UpdateEggDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/egg/${eggId}`,
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -181,14 +183,14 @@ export const eggControllerUpdate = (eggId: string, updateEggDto: UpdateEggDto) =
 };
 
 export const eggControllerDelete = (eggId: string) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/egg/${eggId}`,
     method: "DELETE",
   });
 };
 
 export const eggControllerCreate = (createEggDto: CreateEggDto) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/egg`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -197,7 +199,7 @@ export const eggControllerCreate = (createEggDto: CreateEggDto) => {
 };
 
 export const eggControllerHatched = (eggId: string) => {
-  return useCustomInstance<void>({
+  return useCustomInstance<HatchedResponseDto>({
     url: `http://localhost:4000/api/v1/egg/${eggId}/hatched`,
     method: "GET",
   });
@@ -226,10 +228,7 @@ export const authControllerGoogleLogin = () => {
 };
 
 export const authControllerRefreshToken = () => {
-  return useCustomInstance<string>({
-    url: `http://localhost:4000/api/auth/refresh`,
-    method: "GET",
-  });
+  return useCustomInstance<void>({ url: `http://localhost:4000/api/auth/refresh`, method: "GET" });
 };
 
 export type PetControllerFindAllResult = NonNullable<
@@ -358,6 +357,14 @@ export const getPetControllerFindAllResponseMock = (
   ...overrideResponse,
 });
 
+export const getPetControllerCreateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindOneResponseMock = (
   overrideResponse: Partial<PetDto> = {},
 ): PetDto => ({
@@ -461,7 +468,13 @@ export const getPetControllerFindOneResponseMock = (
           undefined,
         ]),
         relationId: faker.number.int({ min: undefined, max: undefined }),
-        status: faker.string.alpha(20),
+        status: faker.helpers.arrayElement([
+          "pending",
+          "approved",
+          "rejected",
+          "deleted",
+          "cancelled",
+        ] as const),
       },
     },
     undefined,
@@ -510,11 +523,25 @@ export const getPetControllerFindOneResponseMock = (
           undefined,
         ]),
         relationId: faker.number.int({ min: undefined, max: undefined }),
-        status: faker.string.alpha(20),
+        status: faker.helpers.arrayElement([
+          "pending",
+          "approved",
+          "rejected",
+          "deleted",
+          "cancelled",
+        ] as const),
       },
     },
     undefined,
   ]),
+  ...overrideResponse,
+});
+
+export const getPetControllerUpdateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
   ...overrideResponse,
 });
 
@@ -531,6 +558,30 @@ export const getParentControllerFindParentResponseMock = (
     "deleted",
     "cancelled",
   ] as const),
+  ...overrideResponse,
+});
+
+export const getParentControllerCreateParentResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getParentControllerUpdateParentRequestResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getParentControllerDeleteParentResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
   ...overrideResponse,
 });
 
@@ -563,6 +614,30 @@ export const getUserNotificationControllerFindAllResponseMock = (
     hasPreviousPage: faker.datatype.boolean(),
     hasNextPage: faker.datatype.boolean(),
   },
+  ...overrideResponse,
+});
+
+export const getUserNotificationControllerCreateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getUserNotificationControllerUpdateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getUserNotificationControllerDeleteResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
   ...overrideResponse,
 });
 
@@ -670,7 +745,13 @@ export const getBrPetControllerFindAllResponseMock = (
             undefined,
           ]),
           relationId: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.string.alpha(20),
+          status: faker.helpers.arrayElement([
+            "pending",
+            "approved",
+            "rejected",
+            "deleted",
+            "cancelled",
+          ] as const),
         },
       },
       undefined,
@@ -719,7 +800,13 @@ export const getBrPetControllerFindAllResponseMock = (
             undefined,
           ]),
           relationId: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.string.alpha(20),
+          status: faker.helpers.arrayElement([
+            "pending",
+            "approved",
+            "rejected",
+            "deleted",
+            "cancelled",
+          ] as const),
         },
       },
       undefined,
@@ -815,7 +902,13 @@ export const getEggControllerFindOneResponseMock = (
           undefined,
         ]),
         relationId: faker.number.int({ min: undefined, max: undefined }),
-        status: faker.string.alpha(20),
+        status: faker.helpers.arrayElement([
+          "pending",
+          "approved",
+          "rejected",
+          "deleted",
+          "cancelled",
+        ] as const),
       },
     },
     undefined,
@@ -864,11 +957,50 @@ export const getEggControllerFindOneResponseMock = (
           undefined,
         ]),
         relationId: faker.number.int({ min: undefined, max: undefined }),
-        status: faker.string.alpha(20),
+        status: faker.helpers.arrayElement([
+          "pending",
+          "approved",
+          "rejected",
+          "deleted",
+          "cancelled",
+        ] as const),
       },
     },
     undefined,
   ]),
+  ...overrideResponse,
+});
+
+export const getEggControllerUpdateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getEggControllerDeleteResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getEggControllerCreateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getEggControllerHatchedResponseMock = (
+  overrideResponse: Partial<HatchedResponseDto> = {},
+): HatchedResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  hatchedPetId: faker.string.alpha(20),
   ...overrideResponse,
 });
 
@@ -953,7 +1085,13 @@ export const getBrEggControllerFindAllResponseMock = (): BrEggControllerFindAll2
             undefined,
           ]),
           relationId: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.string.alpha(20),
+          status: faker.helpers.arrayElement([
+            "pending",
+            "approved",
+            "rejected",
+            "deleted",
+            "cancelled",
+          ] as const),
         },
       },
       undefined,
@@ -1002,15 +1140,19 @@ export const getBrEggControllerFindAllResponseMock = (): BrEggControllerFindAll2
             undefined,
           ]),
           relationId: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.string.alpha(20),
+          status: faker.helpers.arrayElement([
+            "pending",
+            "approved",
+            "rejected",
+            "deleted",
+            "cancelled",
+          ] as const),
         },
       },
       undefined,
     ]),
   })),
 });
-
-export const getAuthControllerRefreshTokenResponseMock = (): string => faker.word.sample();
 
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
@@ -1037,15 +1179,24 @@ export const getPetControllerFindAllMockHandler = (
 
 export const getPetControllerCreateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.post("*/api/v1/pet", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 201 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetControllerCreateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
@@ -1072,15 +1223,24 @@ export const getPetControllerFindOneMockHandler = (
 
 export const getPetControllerUpdateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.patch("*/api/v1/pet/:petId", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetControllerUpdateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
@@ -1121,43 +1281,70 @@ export const getParentControllerFindParentMockHandler = (
 
 export const getParentControllerCreateParentMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.post("*/api/v1/parent/:petId", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 201 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getParentControllerCreateParentResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getParentControllerUpdateParentRequestMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.patch("*/api/v1/parent/update", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getParentControllerUpdateParentRequestResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getParentControllerDeleteParentMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.delete("*/api/v1/parent/delete/:relationId", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getParentControllerDeleteParentResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
@@ -1186,43 +1373,70 @@ export const getUserNotificationControllerFindAllMockHandler = (
 
 export const getUserNotificationControllerCreateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.post("*/api/v1/user-notification", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 201 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUserNotificationControllerCreateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getUserNotificationControllerUpdateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.patch("*/api/v1/user-notification", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUserNotificationControllerUpdateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getUserNotificationControllerDeleteMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.delete("*/api/v1/user-notification", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUserNotificationControllerDeleteResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
@@ -1272,57 +1486,93 @@ export const getEggControllerFindOneMockHandler = (
 
 export const getEggControllerUpdateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.patch("*/api/v1/egg/:eggId", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getEggControllerUpdateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getEggControllerDeleteMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.delete("*/api/v1/egg/:eggId", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getEggControllerDeleteResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getEggControllerCreateMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
   return http.post("*/api/v1/egg", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 201 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getEggControllerCreateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getEggControllerHatchedMockHandler = (
   overrideResponse?:
-    | void
-    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    | HatchedResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<HatchedResponseDto> | HatchedResponseDto),
 ) => {
   return http.get("*/api/v1/egg/:eggId/hatched", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getEggControllerHatchedResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
@@ -1379,22 +1629,15 @@ export const getAuthControllerGoogleLoginMockHandler = (
 
 export const getAuthControllerRefreshTokenMockHandler = (
   overrideResponse?:
-    | string
-    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<string> | string),
+    | void
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
 ) => {
   return http.get("*/api/auth/refresh", async (info) => {
     await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getAuthControllerRefreshTokenResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
+    if (typeof overrideResponse === "function") {
+      await overrideResponse(info);
+    }
+    return new HttpResponse(null, { status: 200 });
   });
 };
 export const getProjectDaepaAPIMock = () => [

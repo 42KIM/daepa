@@ -14,6 +14,7 @@ import { PetService } from './pet.service';
 import { PageOptionsDto, PageDto, PageMetaDto } from 'src/common/page.dto';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
+import { CommonResponseDto } from 'src/common/response.dto';
 
 @Controller('/v1/pet')
 @UseInterceptors(ExcludeNilInterceptor)
@@ -54,6 +55,11 @@ export class PetController {
   }
 
   @Post()
+  @ApiResponse({
+    status: 200,
+    description: '펫 등록이 완료되었습니다. petId: XXXXXX',
+    type: CommonResponseDto,
+  })
   async create(@Body() createPetDto: CreatePetDto) {
     // TODO: userId를 ownerId로 사용
     const tempOwnerId = 'ADMIN';
@@ -70,6 +76,11 @@ export class PetController {
   }
 
   @Patch(':petId')
+  @ApiResponse({
+    status: 200,
+    description: '펫 수정이 완료되었습니다. petId: XXXXXX',
+    type: CommonResponseDto,
+  })
   async update(
     @Param('petId') petId: string,
     @Body() updatePetDto: UpdatePetDto,
