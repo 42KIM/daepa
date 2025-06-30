@@ -12,8 +12,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService, ValidatedUser } from './auth.service';
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/user/user.dto';
-import { AuthenticatedUser, Public } from './auth.decorator';
+import { JwtUser, PassportValidatedUser, Public } from './auth.decorator';
 import { TokenResponseDto } from './auth.dto';
+import { JwtUserPayload } from './strategies/jwt.strategy';
 
 @Controller('/auth')
 export class AuthController {
@@ -28,7 +29,7 @@ export class AuthController {
     type: UserDto,
   })
   async kakaoLogin(
-    @AuthenticatedUser() validatedUser: ValidatedUser,
+    @PassportValidatedUser() validatedUser: ValidatedUser,
     @Res() res: Response,
   ) {
     if (!validatedUser) {
@@ -47,7 +48,7 @@ export class AuthController {
     });
 
     return res.redirect(
-      `http://localhost:3000/sign-in/auth?status=${validatedUser.status}`,
+      `http://localhost:3000/sign-in/auth?status=${validatedUser.userStatus}`,
     );
   }
 
@@ -60,7 +61,7 @@ export class AuthController {
     type: UserDto,
   })
   async googleLogin(
-    @AuthenticatedUser() validatedUser: ValidatedUser,
+    @PassportValidatedUser() validatedUser: ValidatedUser,
     @Res() res: Response,
   ) {
     if (!validatedUser) {
@@ -79,7 +80,7 @@ export class AuthController {
     });
 
     return res.redirect(
-      `http://localhost:3000/sign-in/auth?status=${validatedUser.status}`,
+      `http://localhost:3000/sign-in/auth?status=${validatedUser.userStatus}`,
     );
   }
 
@@ -150,10 +151,10 @@ export class AuthController {
     description: '탈퇴가 처리되었습니다.',
   })
   async deleteAccount(
-    @AuthenticatedUser() user: ValidatedUser,
+    @JwtUser() user: JwtUserPayload,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.deleteUserSoft(user.userId, user.status);
+    await this.authService.deleteUser(user.userId);
 
     res.clearCookie('refreshToken', {
       httpOnly: true,

@@ -9,6 +9,10 @@ export type JwtPayload = {
   status: 'authenticated' | 'anonymous'; // TODO: 비로그인 사용자 세션 관리 시 사용
 };
 
+export type JwtUserPayload = {
+  userId: string;
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
@@ -19,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload): { userId: string } {
+  validate(payload: JwtPayload): JwtUserPayload {
     return { userId: payload.sub };
   }
 }
