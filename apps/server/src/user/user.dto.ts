@@ -1,6 +1,12 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { USER_ROLE, USER_STATUS } from './user.constant';
-import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { OAUTH_PROVIDER } from 'src/auth/auth.constants';
 import { Exclude } from 'class-transformer';
 
@@ -24,6 +30,15 @@ class UserBaseDto {
   })
   @IsEnum(USER_ROLE)
   role: USER_ROLE;
+
+  @ApiProperty({
+    description: '사업자 여부',
+    required: false,
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isBiz?: boolean;
 
   @ApiProperty({
     description: 'Oauth 제공자',
@@ -85,6 +100,7 @@ export class UserDto extends PickType(UserBaseDto, [
   'userId',
   'name',
   'role',
+  'isBiz',
   'provider',
   'providerId',
   'refreshToken',
@@ -95,12 +111,16 @@ export class UserDto extends PickType(UserBaseDto, [
   'updatedAt',
 ]) {}
 
-export class UpdateUserNameDto extends PickType(UserBaseDto, ['name']) {}
+export class RegisterInitUserInfoDto extends PickType(UserBaseDto, [
+  'name',
+  'isBiz',
+]) {}
 
 export class UserProfileDto extends PickType(UserBaseDto, [
   'userId',
   'name',
   'role',
+  'isBiz',
   'provider',
   'status',
   'lastLoginAt',

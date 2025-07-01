@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { UserDto, UserProfileDto } from './user.dto';
+import { RegisterInitUserInfoDto, UserDto, UserProfileDto } from './user.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ProviderInfo } from 'src/auth/auth.types';
 import { USER_ROLE, USER_STATUS } from './user.constant';
@@ -79,13 +79,15 @@ export class UserService {
     }
 
     const user = instanceToPlain(userEntity);
-    console.log('plain: ', user);
-    console.log('instance: ', plainToInstance(UserProfileDto, user));
     return plainToInstance(UserProfileDto, user);
   }
 
-  async updateUserName(userId: string, name: string) {
+  async registerInitUserInfo(
+    userId: string,
+    registerInitUserInfoDto: RegisterInitUserInfoDto,
+  ) {
     try {
+      const { name, isBiz } = registerInitUserInfoDto;
       if (name.length < 2 || name.length > 15) {
         throw new HttpException(
           {
@@ -96,7 +98,10 @@ export class UserService {
         );
       }
 
-      await this.userRepository.update({ user_id: userId }, { name });
+      await this.userRepository.update(
+        { user_id: userId },
+        { name, is_biz: isBiz },
+      );
     } catch (error) {
       if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
         if (error.message.includes('UNIQUE_USER_NAME')) {
