@@ -9,13 +9,13 @@ import type {
   BrEggControllerFindAllParams,
   BrPetControllerFindAllParams,
   CreateEggDto,
+  CreateInitUserInfoDto,
   CreateParentDto,
   CreatePetDto,
   CreateUserNotificationDto,
   DeleteUserNotificationDto,
   ParentControllerFindParentParams,
   PetControllerFindAllParams,
-  RegisterInitUserInfoDto,
   UpdateEggDto,
   UpdateParentDto,
   UpdatePetDto,
@@ -258,14 +258,12 @@ export const userControllerGetUserProfile = () => {
   });
 };
 
-export const userControllerRegisterInitUserInfo = (
-  registerInitUserInfoDto: RegisterInitUserInfoDto,
-) => {
+export const userControllerCreateInitUserInfo = (createInitUserInfoDto: CreateInitUserInfoDto) => {
   return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/user/init-info`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    data: registerInitUserInfoDto,
+    data: createInitUserInfoDto,
   });
 };
 
@@ -347,8 +345,8 @@ export type AuthControllerDeleteAccountResult = NonNullable<
 export type UserControllerGetUserProfileResult = NonNullable<
   Awaited<ReturnType<typeof userControllerGetUserProfile>>
 >;
-export type UserControllerRegisterInitUserInfoResult = NonNullable<
-  Awaited<ReturnType<typeof userControllerRegisterInitUserInfo>>
+export type UserControllerCreateInitUserInfoResult = NonNullable<
+  Awaited<ReturnType<typeof userControllerCreateInitUserInfo>>
 >;
 
 export const getPetControllerFindAllResponseMock = (
@@ -361,7 +359,7 @@ export const getPetControllerFindAllResponseMock = (
         userId: faker.string.alpha(20),
         name: faker.string.alpha(20),
         role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-        isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+        isBiz: faker.datatype.boolean(),
         provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
         providerId: {},
         refreshToken: {},
@@ -425,7 +423,7 @@ export const getPetControllerFindOneResponseMock = (
       userId: faker.string.alpha(20),
       name: faker.string.alpha(20),
       role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-      isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+      isBiz: faker.datatype.boolean(),
       provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
       providerId: {},
       refreshToken: {},
@@ -485,7 +483,7 @@ export const getPetControllerFindOneResponseMock = (
             userId: faker.string.alpha(20),
             name: faker.string.alpha(20),
             role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-            isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+            isBiz: faker.datatype.boolean(),
             provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
             providerId: {},
             refreshToken: {},
@@ -541,7 +539,7 @@ export const getPetControllerFindOneResponseMock = (
             userId: faker.string.alpha(20),
             name: faker.string.alpha(20),
             role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-            isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+            isBiz: faker.datatype.boolean(),
             provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
             providerId: {},
             refreshToken: {},
@@ -705,7 +703,7 @@ export const getBrPetControllerFindAllResponseMock = (
         userId: faker.string.alpha(20),
         name: faker.string.alpha(20),
         role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-        isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+        isBiz: faker.datatype.boolean(),
         provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
         providerId: {},
         refreshToken: {},
@@ -765,7 +763,7 @@ export const getBrPetControllerFindAllResponseMock = (
               userId: faker.string.alpha(20),
               name: faker.string.alpha(20),
               role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-              isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+              isBiz: faker.datatype.boolean(),
               provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
               providerId: {},
               refreshToken: {},
@@ -821,7 +819,7 @@ export const getBrPetControllerFindAllResponseMock = (
               userId: faker.string.alpha(20),
               name: faker.string.alpha(20),
               role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-              isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+              isBiz: faker.datatype.boolean(),
               provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
               providerId: {},
               refreshToken: {},
@@ -889,7 +887,7 @@ export const getEggControllerFindOneResponseMock = (
       userId: faker.string.alpha(20),
       name: faker.string.alpha(20),
       role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-      isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+      isBiz: faker.datatype.boolean(),
       provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
       providerId: {},
       refreshToken: {},
@@ -925,7 +923,7 @@ export const getEggControllerFindOneResponseMock = (
             userId: faker.string.alpha(20),
             name: faker.string.alpha(20),
             role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-            isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+            isBiz: faker.datatype.boolean(),
             provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
             providerId: {},
             refreshToken: {},
@@ -981,7 +979,7 @@ export const getEggControllerFindOneResponseMock = (
             userId: faker.string.alpha(20),
             name: faker.string.alpha(20),
             role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-            isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+            isBiz: faker.datatype.boolean(),
             provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
             providerId: {},
             refreshToken: {},
@@ -1075,7 +1073,7 @@ export const getBrEggControllerFindAllResponseMock = (): BrEggControllerFindAll2
         userId: faker.string.alpha(20),
         name: faker.string.alpha(20),
         role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-        isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+        isBiz: faker.datatype.boolean(),
         provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
         providerId: {},
         refreshToken: {},
@@ -1111,7 +1109,7 @@ export const getBrEggControllerFindAllResponseMock = (): BrEggControllerFindAll2
               userId: faker.string.alpha(20),
               name: faker.string.alpha(20),
               role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-              isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+              isBiz: faker.datatype.boolean(),
               provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
               providerId: {},
               refreshToken: {},
@@ -1167,7 +1165,7 @@ export const getBrEggControllerFindAllResponseMock = (): BrEggControllerFindAll2
               userId: faker.string.alpha(20),
               name: faker.string.alpha(20),
               role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-              isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+              isBiz: faker.datatype.boolean(),
               provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
               providerId: {},
               refreshToken: {},
@@ -1232,7 +1230,7 @@ export const getUserControllerGetUserProfileResponseMock = (
   userId: faker.string.alpha(20),
   name: faker.string.alpha(20),
   role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-  isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  isBiz: faker.datatype.boolean(),
   provider: faker.helpers.arrayElement(["kakao", "google", "naver", "apple"] as const),
   status: faker.helpers.arrayElement([
     "pending",
@@ -1246,7 +1244,7 @@ export const getUserControllerGetUserProfileResponseMock = (
   ...overrideResponse,
 });
 
-export const getUserControllerRegisterInitUserInfoResponseMock = (
+export const getUserControllerCreateInitUserInfoResponseMock = (
   overrideResponse: Partial<CommonResponseDto> = {},
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
@@ -1801,7 +1799,7 @@ export const getUserControllerGetUserProfileMockHandler = (
   });
 };
 
-export const getUserControllerRegisterInitUserInfoMockHandler = (
+export const getUserControllerCreateInitUserInfoMockHandler = (
   overrideResponse?:
     | CommonResponseDto
     | ((
@@ -1817,7 +1815,7 @@ export const getUserControllerRegisterInitUserInfoMockHandler = (
           ? typeof overrideResponse === "function"
             ? await overrideResponse(info)
             : overrideResponse
-          : getUserControllerRegisterInitUserInfoResponseMock(),
+          : getUserControllerCreateInitUserInfoResponseMock(),
       ),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
@@ -1850,5 +1848,5 @@ export const getProjectDaepaAPIMock = () => [
   getAuthControllerSignOutMockHandler(),
   getAuthControllerDeleteAccountMockHandler(),
   getUserControllerGetUserProfileMockHandler(),
-  getUserControllerRegisterInitUserInfoMockHandler(),
+  getUserControllerCreateInitUserInfoMockHandler(),
 ];

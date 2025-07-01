@@ -17,7 +17,7 @@ export interface UserProfileDto {
   /** 회원 역할 */
   role: UserProfileDtoRole;
   /** 사업자 여부 */
-  isBiz?: boolean;
+  isBiz: boolean;
   /** Oauth 제공자 */
   provider: UserProfileDtoProvider;
   /** 유저 상태 */

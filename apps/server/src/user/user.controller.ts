@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { UserService } from './user.service';
-import { RegisterInitUserInfoDto, UserProfileDto } from './user.dto';
+import { CreateInitUserInfoDto, UserProfileDto } from './user.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { JwtUser } from 'src/auth/auth.decorator';
@@ -29,13 +29,13 @@ export class UserController {
     description: '사용자명 등록 성공',
     type: CommonResponseDto,
   })
-  async registerInitUserInfo(
+  async createInitUserInfo(
     @JwtUser() token: JwtUserPayload,
-    @Body() registerInitUserInfoDto: RegisterInitUserInfoDto,
+    @Body() createInitUserInfoDto: CreateInitUserInfoDto,
   ) {
-    await this.userService.registerInitUserInfo(
+    await this.userService.createInitUserInfo(
       token.userId,
-      registerInitUserInfoDto,
+      createInitUserInfoDto,
     );
     return {
       success: true,

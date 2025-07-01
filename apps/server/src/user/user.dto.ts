@@ -33,12 +33,10 @@ class UserBaseDto {
 
   @ApiProperty({
     description: '사업자 여부',
-    required: false,
     example: true,
   })
   @IsBoolean()
-  @IsOptional()
-  isBiz?: boolean;
+  isBiz: boolean;
 
   @ApiProperty({
     description: 'Oauth 제공자',
@@ -111,10 +109,16 @@ export class UserDto extends PickType(UserBaseDto, [
   'updatedAt',
 ]) {}
 
-export class RegisterInitUserInfoDto extends PickType(UserBaseDto, [
-  'name',
-  'isBiz',
-]) {}
+export class CreateInitUserInfoDto extends PickType(UserBaseDto, ['name']) {
+  @ApiProperty({
+    description: '사업자 여부',
+    required: false,
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isBiz?: boolean;
+}
 
 export class UserProfileDto extends PickType(UserBaseDto, [
   'userId',

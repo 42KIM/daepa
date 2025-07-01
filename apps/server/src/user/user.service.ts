@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { RegisterInitUserInfoDto, UserDto, UserProfileDto } from './user.dto';
+import { CreateInitUserInfoDto, UserDto, UserProfileDto } from './user.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ProviderInfo } from 'src/auth/auth.types';
 import { USER_ROLE, USER_STATUS } from './user.constant';
@@ -82,12 +82,12 @@ export class UserService {
     return plainToInstance(UserProfileDto, user);
   }
 
-  async registerInitUserInfo(
+  async createInitUserInfo(
     userId: string,
-    registerInitUserInfoDto: RegisterInitUserInfoDto,
+    createInitUserInfoDto: CreateInitUserInfoDto,
   ) {
     try {
-      const { name, isBiz } = registerInitUserInfoDto;
+      const { name, isBiz } = createInitUserInfoDto;
       if (name.length < 2 || name.length > 15) {
         throw new HttpException(
           {
