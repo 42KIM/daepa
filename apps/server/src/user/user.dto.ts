@@ -93,3 +93,5 @@ export class UserDto extends PickType(UserBaseDto, [
   'createdAt',
   'updatedAt',
 ]) {}
+
+export class RegisterUserNameDto extends PickType(UserBaseDto, ['name']) {}

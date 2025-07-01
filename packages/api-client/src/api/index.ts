@@ -15,6 +15,7 @@ import type {
   DeleteUserNotificationDto,
   ParentControllerFindParentParams,
   PetControllerFindAllParams,
+  RegisterUserNameDto,
   UpdateEggDto,
   UpdateParentDto,
   UpdatePetDto,
@@ -249,6 +250,18 @@ export const authControllerDeleteAccount = () => {
   });
 };
 
+export const userControllerRegisterUserName = (
+  userId: string,
+  registerUserNameDto: RegisterUserNameDto,
+) => {
+  return useCustomInstance<CommonResponseDto>({
+    url: `http://localhost:4000/api/v1/user/${userId}/name`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: registerUserNameDto,
+  });
+};
+
 export type PetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindAll>>
 >;
@@ -323,6 +336,9 @@ export type AuthControllerSignOutResult = NonNullable<
 >;
 export type AuthControllerDeleteAccountResult = NonNullable<
   Awaited<ReturnType<typeof authControllerDeleteAccount>>
+>;
+export type UserControllerRegisterUserNameResult = NonNullable<
+  Awaited<ReturnType<typeof userControllerRegisterUserName>>
 >;
 
 export const getPetControllerFindAllResponseMock = (
@@ -1187,6 +1203,14 @@ export const getAuthControllerGetTokenResponseMock = (
   ...overrideResponse,
 });
 
+export const getUserControllerRegisterUserNameResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -1710,6 +1734,29 @@ export const getAuthControllerDeleteAccountMockHandler = (
     return new HttpResponse(null, { status: 200 });
   });
 };
+
+export const getUserControllerRegisterUserNameMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.post("*/api/v1/user/:userId/name", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUserControllerRegisterUserNameResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -1736,4 +1783,5 @@ export const getProjectDaepaAPIMock = () => [
   getAuthControllerGetTokenMockHandler(),
   getAuthControllerSignOutMockHandler(),
   getAuthControllerDeleteAccountMockHandler(),
+  getUserControllerRegisterUserNameMockHandler(),
 ];
