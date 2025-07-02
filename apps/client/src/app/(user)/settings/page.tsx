@@ -80,7 +80,7 @@ const SettingsPage = () => {
                 "text-white",
               )}
             >
-              {userProfile?.isBiz ? "판매자" : "일반사용자"}
+              {userProfile?.isBiz ? "사업자" : "일반사용자"}
             </Badge>
           </div>
           <p className="text-gray-600 dark:text-gray-400">계정 및 앱 설정을 관리하세요</p>
@@ -127,7 +127,7 @@ const SettingsPage = () => {
                 />
               </div>
               <p className="text-xs text-gray-500">
-                OAuth로 가입한 계정은 이메일 변경이 제한됩니다
+                SNS 간편 로그인으로 가입한 계정은 이메일 변경이 제한됩니다
               </p>
             </div>
             {/* <Button className="w-full">정보 수정</Button> */}
@@ -200,7 +200,7 @@ const SettingsPage = () => {
             </div>
             <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
               <div>
-                <Label className="text-sm font-medium">판매자 여부</Label>
+                <Label className="text-sm font-medium">사업자 여부</Label>
               </div>
 
               <Badge

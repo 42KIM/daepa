@@ -14,18 +14,21 @@ import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { userControllerCreateInitUserInfo } from "@repo/api-client";
 
-// 닉네임 및 판매자 여부 검증 스키마
+// 닉네임 및 사업자 여부 검증 스키마
 const registerSchema = z.object({
   nickname: z
     .string()
-    .min(2, "닉네임은 2자 이상 입력해주세요.")
-    .max(10, "닉네임은 10자 이하로 입력해주세요.")
-    .regex(/^[가-힣a-zA-Z0-9]+$/, "닉네임은 한글, 영문, 숫자만 사용 가능합니다.")
+    .min(2, "닉네임/업체명은 2자 이상 입력해주세요.")
+    .max(15, "닉네임/업체명은 15자 이하로 입력해주세요.")
+    .regex(
+      /^[가-힣a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]+$/,
+      "닉네임/업체명은 한글, 영문, 숫자, 특수문자 사용 가능합니다.",
+    )
     .refine((value) => !/^\d+$/.test(value), {
-      message: "닉네임은 숫자로만 구성될 수 없습니다.",
+      message: "닉네임/업체명은 숫자로만 구성될 수 없습니다.",
     }),
   isSeller: z.boolean({
-    required_error: "판매자 여부를 선택해주세요.",
+    required_error: "사업자 여부를 선택해주세요.",
   }),
 });
 
@@ -57,7 +60,7 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      // TODO: API 호출하여 닉네임 및 판매자 여부 등록
+      // TODO: API 호출하여 닉네임 및 사업자 여부 등록
       const response = await mutateRegister({
         name: data.nickname,
         isBiz: data.isSeller,
@@ -98,19 +101,20 @@ const RegisterPage = () => {
                   htmlFor="nickname"
                   className="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  닉네임
+                  닉네임/업체명
                 </label>
                 <div className="relative">
                   <Input
                     id="nickname"
                     type="text"
-                    placeholder="닉네임을 입력해주세요"
+                    placeholder="닉네임/업체명을 입력해주세요"
                     className={cn("h-12")}
+                    maxLength={15}
                     {...register("nickname")}
                   />
                   {nickname && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                      {nickname.length}/10
+                      {nickname.length}/15
                     </div>
                   )}
                 </div>
@@ -125,15 +129,15 @@ const RegisterPage = () => {
                 {nickname && !errors.nickname && (
                   <p className="flex items-center gap-1 text-sm text-green-600">
                     <Check className="h-4 w-4" />
-                    사용 가능한 닉네임입니다
+                    사용 가능한 닉네임/업체명입니다
                   </p>
                 )}
               </div>
 
-              {/* 판매자 여부 선택 */}
+              {/* 사업자 여부 선택 */}
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  판매자 여부
+                  사업자 여부
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -158,7 +162,7 @@ const RegisterPage = () => {
                         : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500",
                     )}
                   >
-                    판매자
+                    사업자
                   </button>
                 </div>
                 {errors.isSeller && (
@@ -172,12 +176,12 @@ const RegisterPage = () => {
               {/* 닉네임 규칙 안내 */}
               <div className="space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50">
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  닉네임 규칙
+                  닉네임/업체명 규칙
                 </h4>
                 <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-                  <li>• 2~10자 사이로 입력해주세요</li>
-                  <li>• 한글, 영문, 숫자만 사용 가능합니다</li>
-                  <li>• 숫자로만 구성된 닉네임은 사용할 수 없습니다</li>
+                  <li>• 2~15자 사이로 입력해주세요</li>
+                  <li>• 한글, 영문, 숫자, 특수문자 사용 가능합니다</li>
+                  <li>• 숫자로만 구성된 닉네임/업체명은 사용할 수 없습니다</li>
                   <li>• 한 번 설정하면 변경이 어려우니 신중하게 선택해주세요</li>
                 </ul>
               </div>
