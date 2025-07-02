@@ -43,7 +43,8 @@ const HatchingPage = () => {
     from: new Date(),
     to: new Date(),
   });
-  const [tab, setTab] = useState<"hatched" | "noHatched">("noHatched");
+
+  const [tab, setTab] = useState<"all" | "hatched" | "noHatched">("all");
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   const { data: yearData } = useQuery({
@@ -144,12 +145,26 @@ const HatchingPage = () => {
         />
 
         <ScrollArea className="relative flex h-[613px] w-full gap-2 rounded-xl border p-2 shadow">
+          <div className="mb-3 rounded-xl bg-blue-100 px-3 py-2 text-center">
+            <div className="text-sm font-medium text-blue-700">
+              {dateRange?.from && dateRange?.to
+                ? dateRange.from.getTime() === dateRange.to.getTime()
+                  ? format(dateRange.from, "yyyy.MM.dd")
+                  : `${format(dateRange.from, "yyyy.MM.dd")} - ${format(dateRange.to, "yyyy.MM.dd")}`
+                : dateRange?.from
+                  ? format(dateRange.from, "yyyy.MM.dd") + " ~ "
+                  : "날짜를 선택해주세요"}
+            </div>
+          </div>
           <Tabs
             defaultValue="noHatched"
             onValueChange={(value) => setTab(value as "hatched" | "noHatched")}
             className="sticky top-0 z-10 bg-white pb-2"
           >
             <TabsList>
+              <TabsTrigger value="all">
+                전체 ({Object.values(selectedData || {}).flat().length || 0})
+              </TabsTrigger>
               <TabsTrigger value="noHatched">
                 해칭되지 않은 알 (
                 {Object.values(selectedData || {})
@@ -169,23 +184,34 @@ const HatchingPage = () => {
           {todayIsPending ? (
             <Loading />
           ) : (
-            Object.entries(selectedData || {}).map(([date, eggs]) => (
-              <div key={date} className="mb-4">
-                <h3 className="mb-2 text-sm font-medium">
-                  {format(
-                    new Date(date.slice(0, 4) + "-" + date.slice(4, 6) + "-" + date.slice(6, 8)),
-                    "yyyy년 MM월 dd일",
-                  )}
-                </h3>
-                <div className="space-y-2">
-                  {eggs
-                    .filter((egg) => (tab === "hatched" ? egg.hatchedPetId : !egg.hatchedPetId))
-                    .map((egg) => (
-                      <TreeView key={egg.eggId} node={egg} />
-                    ))}
+            Object.entries(selectedData || {})
+              .filter(([, eggs]) => {
+                const filteredEggs = eggs.filter((egg) => {
+                  if (tab === "all") return true;
+                  return tab === "hatched" ? egg.hatchedPetId : !egg.hatchedPetId;
+                });
+                return filteredEggs.length > 0;
+              })
+              .map(([date, eggs]) => (
+                <div key={date} className="mb-4">
+                  <h3 className="mb-2 text-sm font-medium">
+                    {format(
+                      new Date(date.slice(0, 4) + "-" + date.slice(4, 6) + "-" + date.slice(6, 8)),
+                      "yyyy년 MM월 dd일",
+                    )}
+                  </h3>
+                  <div className="space-y-2">
+                    {eggs
+                      .filter((egg) => {
+                        if (tab === "all") return true;
+                        return tab === "hatched" ? egg.hatchedPetId : !egg.hatchedPetId;
+                      })
+                      .map((egg) => (
+                        <TreeView key={egg.eggId} node={egg} />
+                      ))}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           )}
         </ScrollArea>
       </div>
@@ -219,7 +245,7 @@ const HatchingPage = () => {
               accessibilityLayer
               data={chartData}
               margin={{
-                top: 20,
+                top: 25,
               }}
             >
               <CartesianGrid vertical={false} />
@@ -247,10 +273,8 @@ const HatchingPage = () => {
         </CardContent>
         <CardFooter className="flex-col items-start gap-2 text-sm">
           <div className="flex gap-2 font-medium leading-none">
-            Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-          </div>
-          <div className="text-muted-foreground leading-none">
-            Showing total visitors for the last 6 months
+            <TrendingUp className="h-4 w-4" />
+            최근 1년 해칭 현황
           </div>
         </CardFooter>
       </Card>
