@@ -60,7 +60,6 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      // TODO: API 호출하여 닉네임 및 사업자 여부 등록
       const response = await mutateRegister({
         name: data.nickname,
         isBiz: data.isSeller,
@@ -68,7 +67,15 @@ const RegisterPage = () => {
 
       if (response.data.success) {
         toast.success(response.data.message);
-        router.replace("/pet");
+        const redirectUrl = localStorage.getItem("redirectUrl");
+        if (redirectUrl) {
+          localStorage.removeItem("redirectUrl");
+          window.location.href = redirectUrl;
+        } else {
+          router.replace("/pet");
+        }
+
+        toast.success("로그인에 성공했습니다.");
       }
     } catch (error) {
       console.error("회원정보 등록 실패:", error);

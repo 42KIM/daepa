@@ -23,8 +23,8 @@ AXIOS_INSTANCE.interceptors.response.use(
       if (typeof window !== "undefined") {
         localStorage.removeItem("accessToken");
         const currentPath = window.location.pathname + window.location.search;
-        const redirectUrl = encodeURIComponent(currentPath);
-        window.location.href = `/sign-in?redirectUrl=${redirectUrl}`;
+        localStorage.setItem("redirectUrl", currentPath);
+        window.location.href = "/sign-in";
       }
     }
     return Promise.reject(error);
