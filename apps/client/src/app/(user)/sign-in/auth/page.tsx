@@ -36,7 +36,7 @@ const AuthPage = () => {
       case UserDtoStatus.ACTIVE:
         if (redirectUrl) {
           localStorage.removeItem("redirectUrl");
-          window.location.href = redirectUrl;
+          router.replace(redirectUrl);
         } else {
           router.replace("/pet");
         }
