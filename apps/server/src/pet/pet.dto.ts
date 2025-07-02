@@ -10,7 +10,7 @@ import { PET_SEX, PET_SPECIES } from './pet.constants';
 import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { PARENT_STATUS } from 'src/parent/parent.constant';
-import { UserDto } from 'src/user/user.dto';
+import { UserProfilePublicDto } from 'src/user/user.dto';
 import { CreateParentDto } from 'src/parent/parent.dto';
 
 export class PetBaseDto {
@@ -25,7 +25,7 @@ export class PetBaseDto {
     description: '펫 주인 정보',
   })
   @IsObject()
-  owner: UserDto;
+  owner: UserProfilePublicDto;
 
   @ApiProperty({
     description: '펫 이름',
@@ -176,7 +176,7 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
     required: true,
   })
   @IsObject()
-  owner: UserDto;
+  owner: UserProfilePublicDto;
 
   @ApiProperty({
     description: '펫 이름',

@@ -1,4 +1,4 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { USER_ROLE, USER_STATUS } from './user.constant';
 import {
   IsBoolean,
@@ -141,4 +141,33 @@ export class UserProfileDto extends PickType(UserBaseDto, [
 
   @Exclude()
   declare updatedAt?: Date;
+}
+
+export class UserProfilePublicDto extends PickType(UserBaseDto, [
+  'userId',
+  'name',
+  'role',
+  'isBiz',
+  'status',
+]) {
+  @Exclude()
+  declare provider?: OAUTH_PROVIDER;
+
+  @Exclude()
+  declare providerId?: string | null;
+
+  @Exclude()
+  declare refreshToken?: string | null;
+
+  @Exclude()
+  declare refreshTokenExpiresAt?: Date | null;
+
+  @Exclude()
+  declare updatedAt?: Date;
+
+  @Exclude()
+  declare lastLoginAt?: Date;
+
+  @Exclude()
+  declare createdAt?: Date;
 }

@@ -213,15 +213,15 @@ export class EggService {
     const eggList = entities.map((entity) => {
       const egg = instanceToPlain(entity);
       const { parents, ...eggData } = egg;
-      const father = parents.find(
+      const father = parents?.find(
         (parent) => parent.role === PARENT_ROLE.FATHER,
       );
-      const mother = parents.find(
+      const mother = parents?.find(
         (parent) => parent.role === PARENT_ROLE.MOTHER,
       );
       return plainToInstance(EggDto, {
         ...eggData,
-        father,
+        father, // TODO: dto 타입 수정을 통해 불필요한 필드 제거하기
         mother,
       });
     });
@@ -416,7 +416,15 @@ export class EggService {
         'users',
         'users.user_id = eggs.owner_id',
       )
-      .where('eggs.is_deleted = :isDeleted', { isDeleted: false });
+      .where('eggs.is_deleted = :isDeleted', { isDeleted: false })
+      .select([
+        'eggs',
+        'users.user_id',
+        'users.name',
+        'users.role',
+        'users.is_biz',
+        'users.status',
+      ]);
   }
 
   private createEggWithOwnerAndParentQueryBuilder() {
@@ -434,6 +442,15 @@ export class EggService {
         'parents',
         'parents.pet_id = eggs.egg_id',
       )
-      .where('eggs.is_deleted = :isDeleted', { isDeleted: false });
+      .where('eggs.is_deleted = :isDeleted', { isDeleted: false })
+      .select([
+        'eggs',
+        'parents',
+        'users.user_id',
+        'users.name',
+        'users.role',
+        'users.is_biz',
+        'users.status',
+      ]);
   }
 }

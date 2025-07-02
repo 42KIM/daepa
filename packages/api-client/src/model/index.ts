@@ -95,3 +95,6 @@ export * from "./userProfileDtoIsBiz";
 export * from "./userProfileDtoProvider";
 export * from "./userProfileDtoRole";
 export * from "./userProfileDtoStatus";
+export * from "./userProfilePublicDto";
+export * from "./userProfilePublicDtoRole";
+export * from "./userProfilePublicDtoStatus";

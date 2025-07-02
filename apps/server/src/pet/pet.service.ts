@@ -258,7 +258,15 @@ export class PetService {
         'users',
         'users.user_id = pets.owner_id',
       )
-      .where('pets.is_deleted = :isDeleted', { isDeleted: false });
+      .where('pets.is_deleted = :isDeleted', { isDeleted: false })
+      .select([
+        'pets',
+        'users.user_id',
+        'users.name',
+        'users.role',
+        'users.is_biz',
+        'users.status',
+      ]);
   }
 
   async getPetOwnerId(petId: string): Promise<string | null> {
