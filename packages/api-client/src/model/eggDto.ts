@@ -5,7 +5,7 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { UserDto } from "./userDto";
+import type { UserProfilePublicDto } from "./userProfilePublicDto";
 import type { EggDtoSpecies } from "./eggDtoSpecies";
 import type { PetParentDto } from "./petParentDto";
 
@@ -13,7 +13,7 @@ export interface EggDto {
   /** 알 아이디 */
   eggId: string;
   /** 알 주인 정보 */
-  owner: UserDto;
+  owner: UserProfilePublicDto;
   /** 알 종 */
   species: EggDtoSpecies;
   /** 산란일(yyyyMMdd) */

@@ -32,6 +32,7 @@ export class UserEntity {
   })
   role: USER_ROLE;
 
+  @Expose({ name: 'isBiz' })
   @Column({ default: false })
   is_biz: boolean;
 

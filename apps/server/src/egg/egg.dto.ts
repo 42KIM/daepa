@@ -11,7 +11,7 @@ import { CommonResponseDto } from 'src/common/response.dto';
 import { CreateParentDto } from 'src/parent/parent.dto';
 import { PET_SPECIES } from 'src/pet/pet.constants';
 import { PetParentDto } from 'src/pet/pet.dto';
-import { UserDto } from 'src/user/user.dto';
+import { UserProfilePublicDto } from 'src/user/user.dto';
 
 export class EggBaseDto {
   @ApiProperty({
@@ -25,7 +25,7 @@ export class EggBaseDto {
     description: '알 주인 정보',
   })
   @IsObject()
-  owner: UserDto;
+  owner: UserProfilePublicDto;
 
   @ApiProperty({
     description: '알 종',
