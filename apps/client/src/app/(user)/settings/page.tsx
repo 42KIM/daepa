@@ -75,12 +75,12 @@ const SettingsPage = () => {
             <Badge
               className={cn(
                 userProfile?.isBiz
-                  ? "bg-blue-700 hover:bg-blue-800"
-                  : "bg-green-700 hover:bg-green-800",
+                  ? "bg-green-700 hover:bg-green-800"
+                  : "bg-blue-700 hover:bg-blue-800",
                 "text-white",
               )}
             >
-              {userProfile?.isBiz ? "사업자" : "일반사용자"}
+              {userProfile?.isBiz ? "사업자" : "일반 사용자"}
             </Badge>
           </div>
           <p className="text-gray-600 dark:text-gray-400">계정 및 앱 설정을 관리하세요</p>
@@ -121,8 +121,8 @@ const SettingsPage = () => {
                 <Image
                   src={`/${userProfile?.provider}_icon.svg`}
                   alt={userProfile?.provider ?? ""}
-                  width={18}
-                  height={18}
+                  width={24}
+                  height={24}
                   className="absolute right-4 top-1/2 -translate-y-1/2"
                 />
               </div>
@@ -204,7 +204,7 @@ const SettingsPage = () => {
               </div>
 
               <Badge
-                className={cn(userProfile?.isBiz ? "bg-blue-700" : "bg-green-700", "text-white")}
+                className={cn(userProfile?.isBiz ? "bg-green-700" : "bg-blue-700", "text-white")}
               >
                 {userProfile?.isBiz ? "사업자" : "일반 사용자"}
               </Badge>
