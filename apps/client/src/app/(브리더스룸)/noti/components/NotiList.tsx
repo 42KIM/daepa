@@ -136,7 +136,7 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
               ref={selected?.id === item.id ? selectedRef : null}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md",
-                selected?.id === item.id && "bg-blue-200",
+                selected?.id === item.id && "bg-blue-200 dark:bg-gray-800",
               )}
               onClick={() => handleItemClick(item)}
             >

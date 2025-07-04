@@ -14,12 +14,15 @@ import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { userControllerCreateInitUserInfo } from "@repo/api-client";
 
+const NICKNAME_MAX_LENGTH = 15;
+const NICKNAME_MIN_LENGTH = 2;
+
 // 닉네임 및 사업자 여부 검증 스키마
 const registerSchema = z.object({
   nickname: z
     .string()
-    .min(2, "닉네임/업체명은 2자 이상 입력해주세요.")
-    .max(15, "닉네임/업체명은 15자 이하로 입력해주세요.")
+    .min(NICKNAME_MIN_LENGTH, `닉네임/업체명은 ${NICKNAME_MIN_LENGTH}자 이상 입력해주세요.`)
+    .max(NICKNAME_MAX_LENGTH, `닉네임/업체명은 ${NICKNAME_MAX_LENGTH}자 이하로 입력해주세요.`)
     .regex(
       /^[가-힣a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]+$/,
       "닉네임/업체명은 한글, 영문, 숫자, 특수문자 사용 가능합니다.",
@@ -116,12 +119,12 @@ const RegisterPage = () => {
                     type="text"
                     placeholder="닉네임/업체명을 입력해주세요"
                     className={cn("h-12")}
-                    maxLength={15}
+                    maxLength={NICKNAME_MAX_LENGTH}
                     {...register("nickname")}
                   />
                   {nickname && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                      {nickname.length}/15
+                      {nickname.length}/{NICKNAME_MAX_LENGTH}
                     </div>
                   )}
                 </div>
@@ -186,7 +189,9 @@ const RegisterPage = () => {
                   닉네임/업체명 규칙
                 </h4>
                 <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-                  <li>• 2~15자 사이로 입력해주세요</li>
+                  <li>
+                    • {NICKNAME_MIN_LENGTH}~{NICKNAME_MAX_LENGTH}자 사이로 입력해주세요
+                  </li>
                   <li>• 한글, 영문, 숫자, 특수문자 사용 가능합니다</li>
                   <li>• 숫자로만 구성된 닉네임/업체명은 사용할 수 없습니다</li>
                   <li>• 한 번 설정하면 변경이 어려우니 신중하게 선택해주세요</li>
