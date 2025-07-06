@@ -26,34 +26,68 @@ export class AuthService {
   ) {}
 
   async validateUser(providerInfo: ProviderInfo): Promise<ValidatedUser> {
-    const { provider, providerId } = providerInfo;
+    const { email, provider, providerId } = providerInfo;
 
-    const userFound = await this.userService.findOne({
+    const oauthFound = await this.oauthService.findOne({
+      email,
       provider,
       provider_id: providerId,
     });
+    // 기존 사용자 로그인
+    if (oauthFound) {
+      const userFound = await this.userService.findOne({
+        email,
+      });
 
-    if (userFound) {
-      return {
-        userId: userFound.userId,
-        userStatus: userFound.status,
+      if (userFound) {
+        return {
+          userId: userFound.userId,
+          userStatus: userFound.status,
+        };
+      } else {
+        throw new BadRequestException(
+          'SNS 계정 정보와 사용자 정보가 일치하지 않습니다. 관리자에게 문의해주세요.',
+        );
+      }
+    }
+
+    // 새로운 OAuth 가입
+    let newOAuthUser: { userId: string; status: USER_STATUS };
+
+    const userFoundBySameEmail = await this.userService.findOne({
+      email,
+    });
+    if (userFoundBySameEmail) {
+      // 기존 동일한 이메일을 사용하는 유저가 있는 경우, 해당 유저에 OAuth 추가 연결
+      newOAuthUser = {
+        userId: userFoundBySameEmail.userId,
+        status: userFoundBySameEmail.status,
+      };
+    } else {
+      // 최초 가입
+      const newUserCreated = await this.userService.createUser(
+        providerInfo,
+        USER_STATUS.PENDING,
+      );
+      newOAuthUser = {
+        userId: newUserCreated.userId,
+        status: newUserCreated.status,
       };
     }
 
-    const isEmailExists = await this.userService.isEmailExists(
-      providerInfo.email,
-    );
-    if (isEmailExists) {
-      // TODO: 새로운 provider 정보를 기존에 존재하는 유저 정보에 연결
-    }
+    // OAuth 정보 생성 (공통 로직)
+    await this.oauthService.createOauthInfo({
+      email,
+      provider,
+      providerId,
+      userId: newOAuthUser.userId,
+    });
 
-    const userCreated = await this.userService.createUser(
-      providerInfo,
-      USER_STATUS.PENDING,
-    );
+    // TODO: 둘 중 하나라도 실패하는 경우 회원가입 안되도록 롤백 처리 필요
+
     return {
-      userId: userCreated.userId,
-      userStatus: userCreated.status,
+      userId: newOAuthUser.userId,
+      userStatus: newOAuthUser.status,
     };
   }
 
