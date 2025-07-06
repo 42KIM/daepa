@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { USER_ROLE, USER_STATUS } from './user.constant';
 import {
   IsBoolean,
@@ -22,6 +22,12 @@ class UserBaseDto {
   })
   @IsString()
   name: string;
+
+  @ApiProperty({
+    description: '회원 이메일',
+  })
+  @IsString()
+  email: string;
 
   @ApiProperty({
     description: '회원 역할',
@@ -97,6 +103,7 @@ class UserBaseDto {
 export class UserDto extends PickType(UserBaseDto, [
   'userId',
   'name',
+  'email',
   'role',
   'isBiz',
   'provider',
@@ -123,6 +130,7 @@ export class CreateInitUserInfoDto extends PickType(UserBaseDto, ['name']) {
 export class UserProfileDto extends PickType(UserBaseDto, [
   'userId',
   'name',
+  'email',
   'role',
   'isBiz',
   'provider',

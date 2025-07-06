@@ -12,6 +12,7 @@ import { OAUTH_PROVIDER } from 'src/auth/auth.constants';
 
 @Entity({ name: 'users' })
 @Index('UNIQUE_USER_ID', ['user_id'], { unique: true })
+@Index('UNIQUE_EMAIL', ['email'], { unique: true })
 @Index('UNIQUE_PROVIDER_ID', ['provider', 'provider_id'], { unique: true })
 @Index('UNIQUE_USER_NAME', ['name'], { unique: true })
 export class UserEntity {
@@ -26,6 +27,9 @@ export class UserEntity {
   @Column()
   name: string;
 
+  @Column()
+  email: string;
+
   @Column({
     type: 'enum',
     enum: USER_ROLE,
@@ -35,6 +39,10 @@ export class UserEntity {
   @Expose({ name: 'isBiz' })
   @Column({ default: false })
   is_biz: boolean;
+
+  @Expose({ name: 'oauthId' })
+  @Column({ nullable: true })
+  oauth_id: number;
 
   @Column({
     type: 'enum',

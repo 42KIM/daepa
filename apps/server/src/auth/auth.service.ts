@@ -33,20 +33,27 @@ export class AuthService {
       provider_id: providerId,
     });
 
-    if (!userFound) {
-      const userCreated = await this.userService.createUser(
-        providerInfo,
-        USER_STATUS.PENDING,
-      );
+    if (userFound) {
       return {
-        userId: userCreated.userId,
-        userStatus: userCreated.status,
+        userId: userFound.userId,
+        userStatus: userFound.status,
       };
     }
 
+    const isEmailExists = await this.userService.isEmailExists(
+      providerInfo.email,
+    );
+    if (isEmailExists) {
+      // TODO: 새로운 provider 정보를 기존에 존재하는 유저 정보에 연결
+    }
+
+    const userCreated = await this.userService.createUser(
+      providerInfo,
+      USER_STATUS.PENDING,
+    );
     return {
-      userId: userFound.userId,
-      userStatus: userFound.status,
+      userId: userCreated.userId,
+      userStatus: userCreated.status,
     };
   }
 
@@ -178,6 +185,7 @@ export class AuthService {
         refreshTokenExpiresAt: null,
       });
     } catch (error) {
+      console.error(error);
       // 토큰이 이미 만료되었거나 유효하지 않은 경우 무시
     }
   }

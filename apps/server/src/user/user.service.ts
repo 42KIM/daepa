@@ -40,7 +40,7 @@ export class UserService {
     providerInfo: ProviderInfo,
     status: (typeof USER_STATUS)[keyof typeof USER_STATUS],
   ) {
-    const { provider, providerId } = providerInfo;
+    const { email, provider, providerId } = providerInfo;
 
     const userId = await this.generateUserId();
     const pendingName = `USER_${userId}`;
@@ -48,6 +48,7 @@ export class UserService {
     const userEntity = plainToInstance(UserEntity, {
       userId,
       name: pendingName,
+      email,
       role: USER_ROLE.USER,
       provider,
       providerId,
@@ -121,6 +122,11 @@ export class UserService {
       }
       throw error;
     }
+  }
+
+  async isEmailExists(email: string): Promise<boolean> {
+    const count = await this.userRepository.count({ where: { email } });
+    return count > 0;
   }
 
   async update(userId: string, userDto: Partial<UserDto>) {
