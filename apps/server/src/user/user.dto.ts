@@ -48,8 +48,7 @@ class UserBaseDto {
   @ApiProperty({
     description: 'Oauth 제공자',
     enum: OAUTH_PROVIDER,
-    isArray: true,
-    'x-enumNames': Object.values(OAUTH_PROVIDER),
+    'x-enumNames': Object.keys(OAUTH_PROVIDER),
   })
   @IsArray()
   provider: OAUTH_PROVIDER[];
