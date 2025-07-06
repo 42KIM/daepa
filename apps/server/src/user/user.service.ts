@@ -13,12 +13,14 @@ import { ProviderInfo } from 'src/auth/auth.types';
 import { USER_ROLE, USER_STATUS } from './user.constant';
 import { nanoid } from 'nanoid';
 import { isMySQLError } from 'src/common/error';
+import { OauthService } from 'src/auth/oauth/oauth.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    private readonly oauthService: OauthService,
   ) {}
   async generateUserId() {
     const maxAttempts = 10;
@@ -71,15 +73,23 @@ export class UserService {
     return plainToInstance(UserDto, user);
   }
 
-  async findOneProfile(where: FindOptionsWhere<UserEntity>) {
-    const userEntity = await this.userRepository.findOneBy(where);
-
+  async findOneProfile(userId: string) {
+    const userEntity = await this.userRepository.findOneBy({
+      user_id: userId,
+    });
     if (!userEntity) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
+    const userProviders = await this.oauthService.findAllProvidersByEmail(
+      userEntity.email,
+    );
+
     const user = instanceToPlain(userEntity);
-    return plainToInstance(UserProfileDto, user);
+    return plainToInstance(UserProfileDto, {
+      ...user,
+      provider: userProviders,
+    });
   }
 
   async createInitUserInfo(

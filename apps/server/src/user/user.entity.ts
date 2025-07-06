@@ -13,7 +13,6 @@ import { OAUTH_PROVIDER } from 'src/auth/auth.constants';
 @Entity({ name: 'users' })
 @Index('UNIQUE_USER_ID', ['user_id'], { unique: true })
 @Index('UNIQUE_EMAIL', ['email'], { unique: true })
-@Index('UNIQUE_PROVIDER_ID', ['provider', 'provider_id'], { unique: true })
 @Index('UNIQUE_USER_NAME', ['name'], { unique: true })
 export class UserEntity {
   @Exclude()
@@ -39,16 +38,6 @@ export class UserEntity {
   @Expose({ name: 'isBiz' })
   @Column({ default: false })
   is_biz: boolean;
-
-  @Column({
-    type: 'enum',
-    enum: OAUTH_PROVIDER,
-  })
-  provider: OAUTH_PROVIDER;
-
-  @Expose({ name: 'providerId' })
-  @Column({ type: 'varchar', nullable: true })
-  provider_id: string | null;
 
   @Expose({ name: 'refreshToken' })
   @Column({ type: 'varchar', nullable: true })

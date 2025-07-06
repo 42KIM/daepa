@@ -1,6 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { USER_ROLE, USER_STATUS } from './user.constant';
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsEnum,
@@ -47,17 +48,11 @@ class UserBaseDto {
   @ApiProperty({
     description: 'Oauth 제공자',
     enum: OAUTH_PROVIDER,
-    'x-enumNames': Object.keys(OAUTH_PROVIDER),
+    isArray: true,
+    'x-enumNames': Object.values(OAUTH_PROVIDER),
   })
-  @IsEnum(OAUTH_PROVIDER)
-  provider: OAUTH_PROVIDER;
-
-  @ApiProperty({
-    description: 'Oauth 제공자 ID',
-  })
-  @IsString()
-  @IsOptional()
-  providerId?: string | null;
+  @IsArray()
+  provider: OAUTH_PROVIDER[];
 
   @ApiProperty({
     description: 'refresh token',
@@ -101,7 +96,6 @@ export class UserDto extends PickType(UserBaseDto, [
   'role',
   'isBiz',
   'provider',
-  'providerId',
   'refreshToken',
   'refreshTokenExpiresAt',
   'status',
@@ -131,9 +125,6 @@ export class UserProfileDto extends PickType(UserBaseDto, [
   'createdAt',
 ]) {
   @Exclude()
-  declare providerId?: string | null;
-
-  @Exclude()
   declare refreshToken?: string | null;
 
   @Exclude()
@@ -151,10 +142,7 @@ export class UserProfilePublicDto extends PickType(UserBaseDto, [
   'status',
 ]) {
   @Exclude()
-  declare provider?: OAUTH_PROVIDER;
-
-  @Exclude()
-  declare providerId?: string | null;
+  declare provider?: OAUTH_PROVIDER[];
 
   @Exclude()
   declare refreshToken?: string | null;

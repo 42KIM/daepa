@@ -9,6 +9,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { instanceToPlain } from 'class-transformer';
 import { plainToInstance } from 'class-transformer';
 import { OauthDto } from './oauth.dto';
+import { OAUTH_PROVIDER } from '../auth.constants';
 
 type KakaoDisconnectResponse = {
   id: number;
@@ -31,6 +32,17 @@ export class OauthService {
 
     const oauth = instanceToPlain(oauthEntity);
     return plainToInstance(OauthDto, oauth);
+  }
+
+  async findAllProvidersByEmail(email: string): Promise<OAUTH_PROVIDER[]> {
+    const oauthEntities = await this.oauthRepository.find({
+      where: {
+        email,
+      },
+      select: ['provider'],
+    });
+
+    return oauthEntities.map((oauth) => oauth.provider);
   }
 
   async createOauthInfo(providerInfo: { userId: string } & ProviderInfo) {
