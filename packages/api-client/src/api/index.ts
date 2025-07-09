@@ -445,6 +445,8 @@ export const getPetControllerFindOneResponseMock = (
     undefined,
   ]),
   growth: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  nfs: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  isPublic: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   sex: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["M", "F", "N"] as const),
     undefined,
@@ -704,6 +706,8 @@ export const getBrPetControllerFindAllResponseMock = (
       undefined,
     ]),
     growth: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+    nfs: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    isPublic: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     sex: faker.helpers.arrayElement([
       faker.helpers.arrayElement(["M", "F", "N"] as const),
       undefined,

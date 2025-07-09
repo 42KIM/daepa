@@ -22,6 +22,10 @@ export interface UpdatePetDto {
   birthdate?: number;
   /** 펫 성장단계 */
   growth?: string;
+  /** 펫 판매 여부 */
+  nfs?: boolean;
+  /** 펫 공개 여부 */
+  isPublic?: boolean;
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: UpdatePetDtoSex;
   /** 펫 몸무게(g) */
@@ -34,8 +38,4 @@ export interface UpdatePetDto {
   father?: CreateParentDto;
   /** 엄마 개체 정보 */
   mother?: CreateParentDto;
-  /** 판매 가능 여부 */
-  nfs?: boolean;
-  /** 펫 공개 여부 */
-  isPublic?: boolean;
 }
