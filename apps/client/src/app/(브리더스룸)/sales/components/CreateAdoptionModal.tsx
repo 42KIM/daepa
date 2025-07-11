@@ -22,8 +22,16 @@ import { CalendarIcon, Search, ArrowLeft, User } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { SPECIES_KOREAN_INFO } from "../../constants";
-import { adoptionControllerCreateAdoption, brPetControllerFindAll } from "@repo/api-client";
+import { SALE_STATUS_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
+import {
+  adoptionControllerCreateAdoption,
+  adoptionControllerUpdateAdoption,
+  brPetControllerFindAll,
+  CreateAdoptionDto,
+  PetDto,
+  PetDtoSaleStatus,
+  UpdateAdoptionDto,
+} from "@repo/api-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
@@ -42,19 +50,30 @@ type AdoptionFormData = z.infer<typeof adoptionSchema>;
 
 interface CreateAdoptionModalProps {
   isOpen: boolean;
+  saleStatus?: PetDtoSaleStatus;
+  pet?: PetDto;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const CreateAdoptionModal = ({ isOpen, onClose, onSuccess }: CreateAdoptionModalProps) => {
+const CreateAdoptionModal = ({
+  isOpen,
+  saleStatus,
+  pet,
+  onClose,
+  onSuccess,
+}: CreateAdoptionModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [step, setStep] = useState(1);
-  const [selectedPet, setSelectedPet] = useState<any>(null);
+  const [step, setStep] = useState(pet ? 2 : 1);
+  const [selectedPet, setSelectedPet] = useState<PetDto | null>(pet || null);
   const [searchQuery, setSearchQuery] = useState("");
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [showUserSelector, setShowUserSelector] = useState(false);
   const { ref, inView } = useInView();
   const itemPerPage = 10;
+
+  const shouldShowAdvancedFields =
+    pet && (saleStatus === "ON_RESERVATION" || saleStatus === "SOLD");
 
   const {
     data: pets,
@@ -62,6 +81,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onSuccess }: CreateAdoptionModal
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
+    enabled: !pet,
     queryKey: [brPetControllerFindAll.name],
     queryFn: ({ pageParam = 1 }) =>
       brPetControllerFindAll({
@@ -88,10 +108,11 @@ const CreateAdoptionModal = ({ isOpen, onClose, onSuccess }: CreateAdoptionModal
   const form = useForm<AdoptionFormData>({
     resolver: zodResolver(adoptionSchema),
     defaultValues: {
-      price: "",
-      memo: "",
-      location: "offline",
-      buyerId: "",
+      price: pet?.adoption?.price ? pet.adoption.price.toString() : "",
+      memo: (pet?.adoption?.memo as string) || "",
+      location: (pet?.adoption?.location as "online" | "offline") || "offline",
+      buyerId: (pet?.adoption?.buyerId as string) || "",
+      adoptionDate: pet?.adoption?.adoptionDate ? new Date(pet.adoption.adoptionDate) : undefined,
     },
   });
 
@@ -100,14 +121,31 @@ const CreateAdoptionModal = ({ isOpen, onClose, onSuccess }: CreateAdoptionModal
 
     setIsSubmitting(true);
     try {
-      await adoptionControllerCreateAdoption({
+      const newAdoptionDto = {
         petId: selectedPet.petId,
         price: data.price ? Number(data.price) : undefined,
-        adoptionDate: data.adoptionDate,
-        memo: data.memo,
-        location: data.location,
-        buyerId: data.buyerId || "ADMIN",
-      });
+        ...(data.adoptionDate && {
+          adoptionDate: data.adoptionDate.toISOString(),
+        }),
+        ...(data.memo && {
+          memo: data.memo,
+        }),
+        ...(data.location && {
+          location: data.location,
+        }),
+        ...(data.buyerId && {
+          buyerId: data.buyerId,
+        }),
+        ...(saleStatus && {
+          saleStatus: saleStatus,
+        }),
+      };
+
+      if (selectedPet.adoption?.adoptionId) {
+        await adoptionControllerUpdateAdoption(selectedPet.adoption.adoptionId, newAdoptionDto);
+      } else {
+        await adoptionControllerCreateAdoption(newAdoptionDto);
+      }
 
       onSuccess();
       handleClose();
@@ -225,118 +263,134 @@ const CreateAdoptionModal = ({ isOpen, onClose, onSuccess }: CreateAdoptionModal
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="adoptionDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>분양 날짜</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
+                {shouldShowAdvancedFields && (
+                  <FormField
+                    control={form.control}
+                    name="adoptionDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>분양 날짜</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground",
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP", { locale: ko })
+                                ) : (
+                                  <span>날짜를 선택하세요</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              defaultMonth={
+                                field.value ||
+                                (pet?.adoption?.adoptionDate
+                                  ? new Date(pet.adoption.adoptionDate)
+                                  : undefined)
+                              }
+                              disabled={(date) =>
+                                date > new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {/* 입양자 선택 - pet이 있고 saleStatus가 ON_RESERVATION 또는 SOLD인 경우에만 표시 */}
+                {shouldShowAdvancedFields && (
+                  <FormField
+                    control={form.control}
+                    name="buyerId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>입양자 선택 (선택사항)</FormLabel>
+                        <FormControl>
+                          <div className="space-y-2">
                             <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowUserSelector(!showUserSelector)}
+                              className="w-full justify-start"
                             >
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: ko })
-                              ) : (
-                                <span>날짜를 선택하세요</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              <User className="mr-2 h-4 w-4" />
+                              {field.value ? "선택된 사용자" : "사용자 선택하기"}
                             </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name="buyerId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>입양자 선택 (선택사항)</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setShowUserSelector(!showUserSelector)}
-                            className="w-full justify-start"
-                          >
-                            <User className="mr-2 h-4 w-4" />
-                            {field.value ? "선택된 사용자" : "사용자 선택하기"}
-                          </Button>
+                            {showUserSelector && (
+                              <div className="space-y-2 rounded-lg border p-3">
+                                <div className="relative">
+                                  <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                                  <Input
+                                    placeholder="사용자 이름이나 이메일로 검색..."
+                                    value={userSearchQuery}
+                                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                                    className="pl-10"
+                                  />
+                                </div>
 
-                          {showUserSelector && (
-                            <div className="space-y-2 rounded-lg border p-3">
-                              <div className="relative">
-                                <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
-                                <Input
-                                  placeholder="사용자 이름이나 이메일로 검색..."
-                                  value={userSearchQuery}
-                                  onChange={(e) => setUserSearchQuery(e.target.value)}
-                                  className="pl-10"
-                                />
+                                <ScrollArea className="h-[200px]">
+                                  <div className="space-y-2"></div>
+                                </ScrollArea>
                               </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
-                              <ScrollArea className="h-[200px]">
-                                <div className="space-y-2"></div>
-                              </ScrollArea>
-                            </div>
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>거래 방식</FormLabel>
-                      <FormControl>
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant={field.value === "offline" ? "default" : "outline"}
-                            onClick={() => field.onChange("offline")}
-                            className="flex-1"
-                          >
-                            오프라인
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={field.value === "online" ? "default" : "outline"}
-                            onClick={() => field.onChange("online")}
-                            className="flex-1"
-                          >
-                            온라인
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* 거래 방식 - pet이 있고 saleStatus가 ON_RESERVATION 또는 SOLD인 경우에만 표시 */}
+                {shouldShowAdvancedFields && (
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>거래 방식</FormLabel>
+                        <FormControl>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant={field.value === "offline" ? "default" : "outline"}
+                              onClick={() => field.onChange("offline")}
+                              className="flex-1"
+                            >
+                              오프라인
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={field.value === "online" ? "default" : "outline"}
+                              onClick={() => field.onChange("online")}
+                              className="flex-1"
+                            >
+                              온라인
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
@@ -353,12 +407,18 @@ const CreateAdoptionModal = ({ isOpen, onClose, onSuccess }: CreateAdoptionModal
                 />
 
                 <div className="flex gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    뒤로
-                  </Button>
+                  {!pet && (
+                    <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      뒤로
+                    </Button>
+                  )}
                   <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                    {isSubmitting ? "등록 중..." : "등록하기"}
+                    {isSubmitting
+                      ? "등록 중..."
+                      : selectedPet?.adoption?.adoptionId
+                        ? `${SALE_STATUS_KOREAN_INFO[saleStatus]}으로 수정`
+                        : "등록하기"}
                   </Button>
                 </div>
               </form>

@@ -18,6 +18,7 @@ import { PARENT_ROLE } from 'src/parent/parent.constant';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { isMySQLError } from 'src/common/error';
+import { AdoptionEntity } from 'src/adoption/adoption.entity';
 
 @Injectable()
 export class PetService {
@@ -28,6 +29,8 @@ export class PetService {
     private readonly petRepository: Repository<PetEntity>,
     @Inject(forwardRef(() => ParentService))
     private readonly parentService: ParentService,
+    @InjectRepository(AdoptionEntity)
+    private readonly adoptionRepository: Repository<AdoptionEntity>,
   ) {}
 
   private async generateUniquePetId(): Promise<string> {
@@ -177,6 +180,27 @@ export class PetService {
     }
     if (typeof pet.petId === 'string') {
       pet.mother = await this.getParent(pet.petId, PARENT_ROLE.MOTHER);
+    }
+
+    if (typeof pet.petId === 'string') {
+      const adoption = await this.adoptionRepository.findOne({
+        where: {
+          pet_id: pet.petId,
+          is_deleted: false,
+        },
+      });
+      if (adoption) {
+        pet.adoption = {
+          adoptionId: adoption.adoption_id,
+          price: adoption.price
+            ? Math.floor(Number(adoption.price))
+            : undefined,
+          adoptionDate: adoption.adoption_date,
+          memo: adoption.memo,
+          location: adoption.location,
+          buyerId: adoption.buyer_id,
+        };
+      }
     }
 
     const petDto = plainToInstance(PetDto, pet);

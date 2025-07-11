@@ -7,8 +7,8 @@ import {
 } from 'class-validator';
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { ADOPTION_STATUS } from './adoption.entity';
 import { UserProfilePublicDto } from '../user/user.dto';
+import { PET_SALE_STATUS } from 'src/pet/pet.constants';
 
 export class AdoptionBaseDto {
   @ApiProperty({
@@ -82,15 +82,6 @@ export class AdoptionBaseDto {
   location?: string;
 
   @ApiProperty({
-    description: '분양 상태',
-    enum: ADOPTION_STATUS,
-    example: ADOPTION_STATUS.PENDING,
-  })
-  @Expose({ name: 'status' })
-  @IsEnum(ADOPTION_STATUS)
-  status: ADOPTION_STATUS;
-
-  @ApiProperty({
     description: '생성일',
   })
   @Expose({ name: 'createdAt' })
@@ -101,6 +92,15 @@ export class AdoptionBaseDto {
   })
   @Expose({ name: 'updatedAt' })
   updatedAt: Date;
+
+  @ApiProperty({
+    description: '펫 판매 상태',
+    example: 'ON_SALE',
+    enum: PET_SALE_STATUS,
+    'x-enumNames': Object.keys(PET_SALE_STATUS),
+  })
+  @Expose({ name: 'status' })
+  status: PET_SALE_STATUS;
 }
 
 export class CreateAdoptionDto {
@@ -155,6 +155,17 @@ export class CreateAdoptionDto {
   @IsOptional()
   @IsString()
   location?: string;
+
+  @ApiProperty({
+    description: '판매 상태',
+    example: 'ON_SALE',
+    enum: PET_SALE_STATUS,
+    'x-enumNames': Object.keys(PET_SALE_STATUS),
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(PET_SALE_STATUS)
+  saleStatus?: PET_SALE_STATUS;
 }
 
 export class UpdateAdoptionDto extends PartialType(CreateAdoptionDto) {
@@ -166,15 +177,6 @@ export class UpdateAdoptionDto extends PartialType(CreateAdoptionDto) {
   @IsOptional()
   @IsString()
   buyerId?: string;
-
-  @ApiProperty({
-    description: '분양 상태',
-    enum: ADOPTION_STATUS,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(ADOPTION_STATUS)
-  status?: ADOPTION_STATUS;
 }
 
 export class AdoptionDto extends AdoptionBaseDto {}

@@ -6,7 +6,6 @@
  * OpenAPI spec version: 1.0
  */
 import type { UserProfilePublicDto } from "./userProfilePublicDto";
-import type { AdoptionDtoStatus } from "./adoptionDtoStatus";
 
 export interface AdoptionDto {
   /** 분양 ID */
@@ -25,8 +24,6 @@ export interface AdoptionDto {
   memo?: string;
   /** 거래 장소 */
   location?: string;
-  /** 분양 상태 */
-  status: AdoptionDtoStatus;
   /** 생성일 */
   createdAt: string;
   /** 수정일 */

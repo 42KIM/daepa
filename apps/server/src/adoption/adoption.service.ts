@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { ADOPTION_STATUS, AdoptionEntity } from './adoption.entity';
+import { AdoptionEntity } from './adoption.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   AdoptionDto,
@@ -18,6 +18,7 @@ import { nanoid } from 'nanoid';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { PageMetaDto, PageOptionsDto } from 'src/common/page.dto';
 import { PageDto } from 'src/common/page.dto';
+import { PET_SALE_STATUS } from 'src/pet/pet.constants';
 
 @Injectable()
 export class AdoptionService {
@@ -75,12 +76,26 @@ export class AdoptionService {
       adoptionId,
       sellerId,
       buyerId: createAdoptionDto.buyerId,
-      status: createAdoptionDto.buyerId
-        ? ADOPTION_STATUS.CONFIRMED
-        : ADOPTION_STATUS.PENDING,
     });
 
     const saveAdoption = await this.adoptionRepository.save(adoptionEntity);
+
+    if (createAdoptionDto.saleStatus) {
+      await this.petService.updatePet(sellerId, createAdoptionDto.petId, {
+        saleStatus: createAdoptionDto.saleStatus,
+      });
+    } else {
+      if (createAdoptionDto.buyerId) {
+        await this.petService.updatePet(sellerId, createAdoptionDto.petId, {
+          saleStatus: PET_SALE_STATUS.ON_RESERVATION,
+        });
+      } else {
+        await this.petService.updatePet(sellerId, createAdoptionDto.petId, {
+          saleStatus: PET_SALE_STATUS.ON_SALE,
+        });
+      }
+    }
+
     const adoption = instanceToPlain(saveAdoption);
 
     return plainToInstance(AdoptionDto, adoption);
@@ -118,9 +133,12 @@ export class AdoptionService {
     const adoptionEntities = await queryBuilder.getMany();
 
     const adoptions = instanceToPlain(adoptionEntities);
-    const adoptionSummaryDtos = adoptions.map((adoption) =>
-      plainToInstance(AdoptionSummaryDto, adoption),
-    );
+    const adoptionSummaryDtos = adoptions.map((adoption) => {
+      if (adoption.price !== undefined && adoption.price !== null) {
+        adoption.price = Math.floor(Number(adoption.price));
+      }
+      return plainToInstance(AdoptionSummaryDto, adoption);
+    });
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
@@ -167,6 +185,11 @@ export class AdoptionService {
     }
 
     const adoption = instanceToPlain(adoptionEntity);
+
+    if (adoption.price !== undefined && adoption.price !== null) {
+      adoption.price = Math.floor(Number(adoption.price));
+    }
+
     return plainToInstance(AdoptionDto, adoption);
   }
 
@@ -186,7 +209,6 @@ export class AdoptionService {
       throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
     }
 
-    // 입양자 정보가 있는 경우 사용자 존재 여부 확인
     if (updateAdoptionDto.buyerId) {
       const buyer = await this.userService.findOne({
         user_id: updateAdoptionDto.buyerId,
@@ -196,89 +218,54 @@ export class AdoptionService {
       }
     }
 
-    Object.assign(adoptionEntity, updateAdoptionDto);
-    const savedAdoption = await this.adoptionRepository.save(adoptionEntity);
-    const adoption = instanceToPlain(savedAdoption);
-
-    return plainToInstance(AdoptionDto, adoption);
-  }
-
-  async deleteAdoption(adoptionId: string): Promise<void> {
-    const adoptionEntity = await this.adoptionRepository.findOne({
-      where: { adoption_id: adoptionId, is_deleted: false },
-    });
-
-    if (!adoptionEntity) {
-      throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
+    // 기존 Entity에 업데이트할 필드들만 덮어쓰기
+    if (updateAdoptionDto.adoptionDate !== undefined) {
+      adoptionEntity.adoption_date = new Date(updateAdoptionDto.adoptionDate);
     }
-
-    adoptionEntity.is_deleted = true;
-    await this.adoptionRepository.save(adoptionEntity);
-  }
-
-  async confirmAdoption(
-    adoptionId: string,
-    buyerId: string,
-  ): Promise<AdoptionDto> {
-    const adoptionEntity = await this.adoptionRepository.findOne({
-      where: { adoption_id: adoptionId, is_deleted: false },
-    });
-
-    if (!adoptionEntity) {
-      throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
+    if (updateAdoptionDto.price !== undefined) {
+      adoptionEntity.price = updateAdoptionDto.price;
     }
-
-    if (adoptionEntity.status !== ADOPTION_STATUS.PENDING) {
-      throw new BadRequestException('대기 중인 분양만 확정할 수 있습니다.');
+    if (updateAdoptionDto.buyerId !== undefined) {
+      adoptionEntity.buyer_id = updateAdoptionDto.buyerId;
     }
-
-    adoptionEntity.buyer_id = buyerId;
-    adoptionEntity.status = ADOPTION_STATUS.CONFIRMED;
-    adoptionEntity.adoption_date = new Date();
+    if (updateAdoptionDto.memo !== undefined) {
+      adoptionEntity.memo = updateAdoptionDto.memo;
+    }
+    if (updateAdoptionDto.location !== undefined) {
+      adoptionEntity.location = updateAdoptionDto.location;
+    }
 
     const savedAdoption = await this.adoptionRepository.save(adoptionEntity);
-    const adoption = instanceToPlain(savedAdoption);
 
-    return plainToInstance(AdoptionDto, adoption);
-  }
-
-  async completeAdoption(adoptionId: string): Promise<AdoptionDto> {
-    const adoptionEntity = await this.adoptionRepository.findOne({
-      where: { adoption_id: adoptionId, is_deleted: false },
-    });
-
-    if (!adoptionEntity) {
-      throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
+    // saleStatus 로직 추가
+    if (updateAdoptionDto.saleStatus) {
+      await this.petService.updatePet(
+        adoptionEntity.seller_id,
+        adoptionEntity.pet_id,
+        {
+          saleStatus: updateAdoptionDto.saleStatus,
+        },
+      );
+    } else {
+      if (updateAdoptionDto.buyerId) {
+        await this.petService.updatePet(
+          adoptionEntity.seller_id,
+          adoptionEntity.pet_id,
+          {
+            saleStatus: PET_SALE_STATUS.ON_RESERVATION,
+          },
+        );
+      } else {
+        await this.petService.updatePet(
+          adoptionEntity.seller_id,
+          adoptionEntity.pet_id,
+          {
+            saleStatus: PET_SALE_STATUS.ON_SALE,
+          },
+        );
+      }
     }
 
-    if (adoptionEntity.status !== ADOPTION_STATUS.CONFIRMED) {
-      throw new BadRequestException('확정된 분양만 완료할 수 있습니다.');
-    }
-
-    adoptionEntity.status = ADOPTION_STATUS.COMPLETED;
-
-    const savedAdoption = await this.adoptionRepository.save(adoptionEntity);
-    const adoption = instanceToPlain(savedAdoption);
-
-    return plainToInstance(AdoptionDto, adoption);
-  }
-
-  async cancelAdoption(adoptionId: string): Promise<AdoptionDto> {
-    const adoptionEntity = await this.adoptionRepository.findOne({
-      where: { adoption_id: adoptionId, is_deleted: false },
-    });
-
-    if (!adoptionEntity) {
-      throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
-    }
-
-    if (adoptionEntity.status === ADOPTION_STATUS.COMPLETED) {
-      throw new BadRequestException('완료된 분양은 취소할 수 없습니다.');
-    }
-
-    adoptionEntity.status = ADOPTION_STATUS.CANCELLED;
-
-    const savedAdoption = await this.adoptionRepository.save(adoptionEntity);
     const adoption = instanceToPlain(savedAdoption);
 
     return plainToInstance(AdoptionDto, adoption);

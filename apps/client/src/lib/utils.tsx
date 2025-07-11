@@ -2,6 +2,8 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import QRCode from "qrcode";
 import { format, parse } from "date-fns";
+import { PetDtoSaleStatus } from "@repo/api-client";
+import { Badge } from "@/components/ui/badge";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -40,4 +42,17 @@ export const formatDateToYYYYMMDDString = (
   const parsedDate = parse(dateNumber.toString(), "yyyyMMdd", new Date());
   const formattedDate = format(parsedDate, formatType);
   return formattedDate;
+};
+
+export const getStatusBadge = (status?: PetDtoSaleStatus) => {
+  switch (status) {
+    case PetDtoSaleStatus.ON_SALE:
+      return <Badge className="bg-yellow-500">판매중</Badge>;
+    case PetDtoSaleStatus.ON_RESERVATION:
+      return <Badge className="bg-blue-500">예약중</Badge>;
+    case PetDtoSaleStatus.SOLD:
+      return <Badge className="bg-green-500">판매완료</Badge>;
+    default:
+      return <Badge variant="outline">미정</Badge>;
+  }
 };

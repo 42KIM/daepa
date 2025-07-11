@@ -251,6 +251,19 @@ export class PetDto extends PetBaseDto {
   @IsObject()
   mother?: PetParentDto;
 
+  @ApiProperty({
+    description: '분양 정보',
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  adoption?: {
+    adoptionId: string;
+    price?: number;
+    status: string;
+    adoptionDate?: Date;
+  };
+
   @Exclude()
   declare createdAt?: Date;
 

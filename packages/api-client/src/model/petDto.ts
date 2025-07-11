@@ -10,6 +10,7 @@ import type { PetDtoSpecies } from "./petDtoSpecies";
 import type { PetDtoSaleStatus } from "./petDtoSaleStatus";
 import type { PetDtoSex } from "./petDtoSex";
 import type { PetParentDto } from "./petParentDto";
+import type { PetDtoAdoption } from "./petDtoAdoption";
 
 export interface PetDto {
   /** 펫 아이디 */
@@ -31,7 +32,7 @@ export interface PetDto {
   /** 펫 판매 상태 */
   saleStatus?: PetDtoSaleStatus;
   /** 펫 공개 여부 */
-  is_public?: boolean;
+  isPublic?: boolean;
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: PetDtoSex;
   /** 펫 몸무게(g) */
@@ -44,4 +45,6 @@ export interface PetDto {
   father?: PetParentDto;
   /** 엄마 개체 정보 */
   mother?: PetParentDto;
+  /** 분양 정보 */
+  adoption?: PetDtoAdoption;
 }

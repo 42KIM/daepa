@@ -6,14 +6,10 @@ import {
   Index,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
-
-export enum ADOPTION_STATUS {
-  PENDING = 'PENDING', // 대기 중
-  CONFIRMED = 'CONFIRMED', // 확정
-  COMPLETED = 'COMPLETED', // 완료
-  CANCELLED = 'CANCELLED', // 취소
-}
+import { PetEntity } from '../pet/pet.entity';
 
 @Entity({ name: 'adoptions' })
 @Index('UNIQUE_PET_ADOPTION', ['pet_id'], { unique: true })
@@ -53,14 +49,6 @@ export class AdoptionEntity {
   @Expose({ name: 'location' })
   @Column({ type: 'varchar', length: 200, nullable: true })
   location?: string; // 거래 장소
-
-  @Expose({ name: 'status' })
-  @Column({
-    type: 'enum',
-    enum: ADOPTION_STATUS,
-    default: ADOPTION_STATUS.PENDING,
-  })
-  status: ADOPTION_STATUS;
 
   @Expose({ name: 'createdAt' })
   @CreateDateColumn()

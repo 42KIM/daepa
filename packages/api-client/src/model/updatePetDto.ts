@@ -26,7 +26,7 @@ export interface UpdatePetDto {
   /** 펫 판매 상태 */
   saleStatus?: UpdatePetDtoSaleStatus;
   /** 펫 공개 여부 */
-  is_public?: boolean;
+  isPublic?: boolean;
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: UpdatePetDtoSex;
   /** 펫 몸무게(g) */
