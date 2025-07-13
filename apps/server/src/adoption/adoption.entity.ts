@@ -6,10 +6,7 @@ import {
   Index,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
 } from 'typeorm';
-import { PetEntity } from '../pet/pet.entity';
 
 @Entity({ name: 'adoptions' })
 @Index('UNIQUE_PET_ADOPTION', ['pet_id'], { unique: true })

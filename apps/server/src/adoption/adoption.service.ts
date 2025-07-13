@@ -78,7 +78,8 @@ export class AdoptionService {
       buyerId: createAdoptionDto.buyerId,
     });
 
-    const saveAdoption = await this.adoptionRepository.save(adoptionEntity);
+    const saveAdoptionEntity =
+      await this.adoptionRepository.save(adoptionEntity);
 
     if (createAdoptionDto.saleStatus) {
       await this.petService.updatePet(sellerId, createAdoptionDto.petId, {
@@ -96,7 +97,11 @@ export class AdoptionService {
       }
     }
 
-    const adoption = instanceToPlain(saveAdoption);
+    if (createAdoptionDto.saleStatus === PET_SALE_STATUS.SOLD) {
+      await this.petService.deletePet(createAdoptionDto.petId);
+    }
+
+    const adoption = instanceToPlain(saveAdoptionEntity);
 
     return plainToInstance(AdoptionDto, adoption);
   }
@@ -264,6 +269,10 @@ export class AdoptionService {
           },
         );
       }
+    }
+
+    if (updateAdoptionDto.saleStatus === PET_SALE_STATUS.SOLD) {
+      await this.petService.deletePet(adoptionEntity.pet_id);
     }
 
     const adoption = instanceToPlain(savedAdoption);

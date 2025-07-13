@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdoptionService } from './adoption.service';
 import {
@@ -19,7 +10,6 @@ import {
 import { JwtUser } from '../auth/auth.decorator';
 import { JwtUserPayload } from '../auth/strategies/jwt.strategy';
 import { PageOptionsDto } from 'src/common/page.dto';
-import { CommonResponseDto } from '../common/response.dto';
 import { PageDto } from 'src/common/page.dto';
 
 @ApiTags('분양')

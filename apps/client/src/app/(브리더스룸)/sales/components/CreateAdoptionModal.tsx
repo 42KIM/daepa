@@ -27,10 +27,8 @@ import {
   adoptionControllerCreateAdoption,
   adoptionControllerUpdateAdoption,
   brPetControllerFindAll,
-  CreateAdoptionDto,
   PetDto,
   PetDtoSaleStatus,
-  UpdateAdoptionDto,
 } from "@repo/api-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
