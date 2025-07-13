@@ -17,12 +17,13 @@ import {
   ParentDtoRole,
   PetDtoSex,
   ParentDtoStatus,
+  petControllerFindOne,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import Dialog from "@/app/(브리더스룸)/components/Form/Dialog";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useParentLinkStore, { PetParentDtoWithMessage } from "../../store/parentLink";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -30,17 +31,25 @@ import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 interface CardBackProps {
   pet: PetDto;
   from: string | null;
 }
 
 const CardBack = ({ pet, from }: CardBackProps) => {
+  const queryClient = useQueryClient();
   const { formData, errors, setFormData, setPage } = usePetStore();
   const { selectedParent, setSelectedParent } = useParentLinkStore();
 
   const [isEditing, setIsEditing] = useState(from === "egg");
-  const [isPublic, setIsPublic] = useState(false);
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   const router = useRouter();
@@ -209,24 +218,81 @@ const CardBack = ({ pet, from }: CardBackProps) => {
     }
   };
 
-  const onToggle = () => {
-    setIsPublic(!isPublic);
+  const updatePet = async (data: UpdatePetDto, close) => {
+    try {
+      await petControllerUpdate(pet.petId, data);
+      queryClient.invalidateQueries({
+        queryKey: [petControllerFindOne.name, pet.petId],
+      });
+      toast.success("펫 정보가 변경되었습니다.");
+    } catch (error) {
+      console.error("Failed to update pet:", error);
+      toast.error("펫 정보 수정에 실패했습니다.");
+    } finally {
+      close();
+    }
+  };
+
+  const onPublicChange = () => {
+    overlay.open(({ isOpen, close, unmount }) => (
+      <Dialog
+        isOpen={isOpen}
+        onCloseAction={close}
+        onConfirmAction={() => updatePet({ isPublic: !pet.isPublic } as UpdatePetDto, close)}
+        onExit={unmount}
+        title="펫 공개 여부 변경"
+        description="펫 공개 여부를 변경하시겠습니까?"
+      />
+    ));
+  };
+
+  const onSaleStatusChange = (newStatus: string) => {
+    overlay.open(({ isOpen, close, unmount }) => (
+      <Dialog
+        isOpen={isOpen}
+        onCloseAction={close}
+        onConfirmAction={() => updatePet({ saleStatus: newStatus } as UpdatePetDto, close)}
+        onExit={unmount}
+        title="판매 상태 변경"
+        description="판매 상태를 변경하시겠습니까?"
+      />
+    ));
   };
 
   return (
     <div className="relative h-full w-full">
       <div className="h-full">
         <div className="px-6 pb-20">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="visibility"
-              className="data-[state=checked]:bg-blue-600"
-              checked={isPublic}
-              onCheckedChange={onToggle}
-            />
-            <Label htmlFor="visibility" className="text-muted-foreground text-sm">
-              다른 브리더에게 공개
-            </Label>
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              <Switch
+                id="visibility"
+                className="data-[state=checked]:bg-blue-600"
+                checked={pet.isPublic ?? false}
+                onCheckedChange={onPublicChange}
+              />
+              <Label htmlFor="visibility" className="text-muted-foreground text-sm">
+                다른 브리더에게 공개
+              </Label>
+            </div>
+
+            <Select
+              value={pet.saleStatus || "UNDEFINED"}
+              onValueChange={(value) => onSaleStatusChange(value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="UNDEFINED" disabled>
+                  미정
+                </SelectItem>
+                <SelectItem value="NFS">판매 안함</SelectItem>
+                <SelectItem value="ON_SALE">판매 중</SelectItem>
+                <SelectItem value="ON_RESERVATION">예약 중</SelectItem>
+                <SelectItem value="SOLD">판매 완료</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* 혈통 정보 */}

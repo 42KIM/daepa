@@ -5,9 +5,16 @@ import {
   IsNumber,
   IsObject,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
-import { PET_SEX, PET_SPECIES } from './pet.constants';
-import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { PET_SALE_STATUS, PET_SEX, PET_SPECIES } from './pet.constants';
+import {
+  ApiProperty,
+  OmitType,
+  PartialType,
+  PickType,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { PARENT_STATUS } from 'src/parent/parent.constant';
 import { UserProfilePublicDto } from 'src/user/user.dto';
@@ -79,6 +86,26 @@ export class PetBaseDto {
   @IsOptional()
   @IsString()
   growth?: string;
+
+  @ApiProperty({
+    description: '펫 판매 상태',
+    example: 'ON_SALE',
+    enum: PET_SALE_STATUS,
+    'x-enumNames': Object.keys(PET_SALE_STATUS),
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(PET_SALE_STATUS)
+  saleStatus?: PET_SALE_STATUS;
+
+  @ApiProperty({
+    description: '펫 공개 여부',
+    example: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
 
   @ApiProperty({
     description: '펫 성별(수컷, 암컷, 미구분)',
@@ -253,3 +280,27 @@ export class CreatePetDto extends OmitType(PetBaseDto, [
 }
 
 export class UpdatePetDto extends PartialType(CreatePetDto) {}
+
+export class ParentWithChildrenDto {
+  @ApiProperty({
+    description: '부모 펫 정보',
+    type: PetSummaryDto,
+  })
+  @IsObject()
+  parent: PetSummaryDto;
+
+  @ApiProperty({
+    description: '자식 펫 목록',
+    type: 'array',
+    items: { $ref: getSchemaPath(PetSummaryDto) },
+  })
+  @IsArray()
+  children: PetSummaryDto[];
+
+  @ApiProperty({
+    description: '자식 펫 수',
+    example: 5,
+  })
+  @IsNumber()
+  childrenCount: number;
+}
