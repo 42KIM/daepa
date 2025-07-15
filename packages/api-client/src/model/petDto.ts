@@ -10,7 +10,7 @@ import type { PetDtoSpecies } from "./petDtoSpecies";
 import type { PetDtoSaleStatus } from "./petDtoSaleStatus";
 import type { PetDtoSex } from "./petDtoSex";
 import type { PetParentDto } from "./petParentDto";
-import type { PetDtoAdoption } from "./petDtoAdoption";
+import type { PetAdoptionDto } from "./petAdoptionDto";
 
 export interface PetDto {
   /** 펫 아이디 */
@@ -46,5 +46,5 @@ export interface PetDto {
   /** 엄마 개체 정보 */
   mother?: PetParentDto;
   /** 분양 정보 */
-  adoption?: PetDtoAdoption;
+  adoption?: PetAdoptionDto;
 }

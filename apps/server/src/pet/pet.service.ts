@@ -183,22 +183,22 @@ export class PetService {
     }
 
     if (typeof pet.petId === 'string') {
-      const adoption = await this.adoptionRepository.findOne({
+      const adoptionEntity = await this.adoptionRepository.findOne({
         where: {
           pet_id: pet.petId,
           is_deleted: false,
         },
       });
-      if (adoption) {
+      if (adoptionEntity) {
         pet.adoption = {
-          adoptionId: adoption.adoption_id,
-          price: adoption.price
-            ? Math.floor(Number(adoption.price))
+          adoptionId: adoptionEntity.adoption_id,
+          price: adoptionEntity.price
+            ? Math.floor(Number(adoptionEntity.price))
             : undefined,
-          adoptionDate: adoption.adoption_date,
-          memo: adoption.memo,
-          location: adoption.location,
-          buyerId: adoption.buyer_id,
+          adoptionDate: adoptionEntity.adoption_date,
+          memo: adoptionEntity.memo,
+          location: adoptionEntity.location,
+          buyerId: adoptionEntity.buyer_id,
         };
       }
     }

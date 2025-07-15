@@ -18,7 +18,7 @@ import {
   CreateAdoptionDto,
   UpdateAdoptionDto,
   AdoptionDto,
-  AdoptionSummaryDto,
+  AdoptionWithPetDto,
 } from './adoption.dto';
 import { JwtUser } from '../auth/auth.decorator';
 import { JwtUserPayload } from '../auth/strategies/jwt.strategy';
@@ -44,7 +44,7 @@ export class AdoptionController {
   }
 
   @Get()
-  @ApiExtraModels(AdoptionSummaryDto, PageMetaDto)
+  @ApiExtraModels(AdoptionWithPetDto, PageMetaDto)
   @ApiResponse({
     status: 200,
     description: '분양 전체 리스트 조회 성공',
@@ -54,7 +54,7 @@ export class AdoptionController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: getSchemaPath(AdoptionSummaryDto) },
+          items: { $ref: getSchemaPath(AdoptionWithPetDto) },
         },
         meta: { $ref: getSchemaPath(PageMetaDto) },
       },
@@ -62,7 +62,7 @@ export class AdoptionController {
   })
   async getAllAdoptions(
     @Query() pageOptionsDto: PageOptionsDto,
-  ): Promise<PageDto<AdoptionSummaryDto>> {
+  ): Promise<PageDto<AdoptionWithPetDto>> {
     return this.adoptionService.findAll(pageOptionsDto);
   }
 

@@ -5,10 +5,10 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { AdoptionSummaryDtoStatus } from "./adoptionSummaryDtoStatus";
+import type { AdoptionWithPetDtoStatus } from "./adoptionWithPetDtoStatus";
 import type { PetDto } from "./petDto";
 
-export interface AdoptionSummaryDto {
+export interface AdoptionWithPetDto {
   /** 분양 ID */
   adoptionId: string;
   /** 펫 ID */
@@ -24,7 +24,7 @@ export interface AdoptionSummaryDto {
   /** 수정일 */
   updatedAt: string;
   /** 펫 판매 상태 */
-  status: AdoptionSummaryDtoStatus;
+  status: AdoptionWithPetDtoStatus;
   /** 펫 정보 */
   pet: PetDto;
 }

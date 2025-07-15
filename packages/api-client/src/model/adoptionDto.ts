@@ -5,8 +5,8 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { UserProfilePublicDto } from "./userProfilePublicDto";
 import type { AdoptionDtoStatus } from "./adoptionDtoStatus";
+import type { UserProfilePublicDto } from "./userProfilePublicDto";
 
 export interface AdoptionDto {
   /** 분양 ID */
@@ -17,10 +17,6 @@ export interface AdoptionDto {
   price?: number;
   /** 분양 날짜 */
   adoptionDate?: string;
-  /** 분양자 정보 */
-  seller: UserProfilePublicDto;
-  /** 입양자 정보 */
-  buyer?: UserProfilePublicDto;
   /** 메모 */
   memo?: string;
   /** 거래 장소 */
@@ -31,4 +27,8 @@ export interface AdoptionDto {
   updatedAt: string;
   /** 펫 판매 상태 */
   status: AdoptionDtoStatus;
+  /** 분양자 정보 */
+  seller: UserProfilePublicDto;
+  /** 입양자 정보 */
+  buyer?: UserProfilePublicDto;
 }

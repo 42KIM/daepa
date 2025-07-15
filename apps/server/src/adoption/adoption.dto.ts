@@ -5,7 +5,7 @@ import {
   IsDate,
   IsEnum,
 } from 'class-validator';
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { UserProfilePublicDto } from '../user/user.dto';
 import { PET_SALE_STATUS } from 'src/pet/pet.constants';
@@ -47,20 +47,6 @@ export class AdoptionBaseDto {
   @IsOptional()
   @IsDate()
   adoptionDate?: Date;
-
-  @ApiProperty({
-    description: '분양자 정보',
-  })
-  @Expose({ name: 'seller' })
-  seller: UserProfilePublicDto;
-
-  @ApiProperty({
-    description: '입양자 정보',
-    required: false,
-  })
-  @Expose({ name: 'buyer' })
-  @IsOptional()
-  buyer?: UserProfilePublicDto;
 
   @ApiProperty({
     description: '메모',
@@ -181,9 +167,32 @@ export class UpdateAdoptionDto extends PartialType(CreateAdoptionDto) {
   buyerId?: string;
 }
 
-export class AdoptionDto extends AdoptionBaseDto {}
+export class AdoptionDto extends PickType(AdoptionBaseDto, [
+  'adoptionId',
+  'petId',
+  'price',
+  'adoptionDate',
+  'memo',
+  'location',
+  'createdAt',
+  'updatedAt',
+  'status',
+] as const) {
+  @ApiProperty({
+    description: '분양자 정보',
+  })
+  @Expose({ name: 'seller' })
+  seller: UserProfilePublicDto;
 
-export class AdoptionSummaryDto extends OmitType(AdoptionBaseDto, [
+  @ApiProperty({
+    description: '입양자 정보',
+    required: false,
+  })
+  @Expose({ name: 'buyer' })
+  @IsOptional()
+  buyer?: UserProfilePublicDto;
+}
+export class AdoptionWithPetDto extends OmitType(AdoptionBaseDto, [
   'location',
 ] as const) {
   @ApiProperty({

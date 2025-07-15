@@ -9,7 +9,8 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'adoptions' })
-@Index('UNIQUE_PET_ADOPTION', ['pet_id'], { unique: true })
+@Index('UNIQUE_PET_ADOPTION', ['pet_id', 'adoption_id'], { unique: true })
+@Index('UNIQUE_ADOPTION_ID', ['adoption_id'], { unique: true })
 export class AdoptionEntity {
   @Exclude()
   @PrimaryGeneratedColumn()
@@ -23,7 +24,6 @@ export class AdoptionEntity {
   @Column()
   pet_id: string;
 
-  @Expose({ name: 'price' })
   @Column({ nullable: true })
   price?: number; // 가격
 
@@ -39,11 +39,9 @@ export class AdoptionEntity {
   @Column({ nullable: true })
   buyer_id?: string; // 입양자 ID
 
-  @Expose({ name: 'memo' })
   @Column({ type: 'text', nullable: true })
   memo?: string; // 메모
 
-  @Expose({ name: 'location' })
   @Column({ type: 'varchar', length: 200, nullable: true })
   location?: string; // 거래 장소
 

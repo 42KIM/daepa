@@ -104,7 +104,7 @@ const CreateAdoptionModal = ({
     }
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const form = useForm<AdoptionFormData>({
+  const form = useForm({
     resolver: zodResolver(adoptionSchema),
     defaultValues: {
       price: pet?.adoption?.price ? pet.adoption.price.toString() : "",
@@ -241,9 +241,10 @@ const CreateAdoptionModal = ({
           // 2단계: 분양 정보 입력
           <div>
             <div className="bg-muted mb-4 rounded-lg p-3">
-              <div className="text-sm font-medium">{selectedPet.name}</div>
+              <div className="text-sm font-medium">{selectedPet?.name}</div>
               <div className="text-muted-foreground text-sm">
-                {SPECIES_KOREAN_INFO[selectedPet.species]} | {selectedPet.owner.name}
+                {selectedPet?.species && SPECIES_KOREAN_INFO[selectedPet.species]} |{" "}
+                {selectedPet?.owner.name}
               </div>
             </div>
 
@@ -416,7 +417,7 @@ const CreateAdoptionModal = ({
                   <Button type="submit" className="flex-1" disabled={isSubmitting}>
                     {isSubmitting
                       ? "등록 중..."
-                      : selectedPet?.adoption?.adoptionId
+                      : selectedPet?.adoption?.adoptionId && saleStatus
                         ? `${SALE_STATUS_KOREAN_INFO[saleStatus]}으로 수정`
                         : "등록하기"}
                   </Button>

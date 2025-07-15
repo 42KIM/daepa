@@ -726,7 +726,20 @@ export const getPetControllerFindOneResponseMock = (
     },
     undefined,
   ]),
-  adoption: faker.helpers.arrayElement([{}, undefined]),
+  adoption: faker.helpers.arrayElement([
+    {
+      ...{
+        adoptionId: faker.string.alpha(20),
+        price: faker.number.int({ min: undefined, max: undefined }),
+        status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
+        adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
+        memo: faker.string.alpha(20),
+        location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+        buyerId: faker.string.alpha(20),
+      },
+    },
+    undefined,
+  ]),
   ...overrideResponse,
 });
 
@@ -991,7 +1004,20 @@ export const getBrPetControllerFindAllResponseMock = (
       },
       undefined,
     ]),
-    adoption: faker.helpers.arrayElement([{}, undefined]),
+    adoption: faker.helpers.arrayElement([
+      {
+        ...{
+          adoptionId: faker.string.alpha(20),
+          price: faker.number.int({ min: undefined, max: undefined }),
+          status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
+          adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
+          memo: faker.string.alpha(20),
+          location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+          buyerId: faker.string.alpha(20),
+        },
+      },
+      undefined,
+    ]),
   })),
   meta: {
     page: faker.number.int({ min: undefined, max: undefined }),
@@ -1349,6 +1375,11 @@ export const getAdoptionControllerCreateAdoptionResponseMock = (
     `${faker.date.past().toISOString().split(".")[0]}Z`,
     undefined,
   ]),
+  memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
   seller: {
     ...{
       userId: faker.string.alpha(20),
@@ -1382,11 +1413,6 @@ export const getAdoptionControllerCreateAdoptionResponseMock = (
     },
     undefined,
   ]),
-  memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-  updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-  status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
   ...overrideResponse,
 });
 
@@ -1402,39 +1428,6 @@ export const getAdoptionControllerGetAllAdoptionsResponseMock = (
     ]),
     adoptionDate: faker.helpers.arrayElement([
       `${faker.date.past().toISOString().split(".")[0]}Z`,
-      undefined,
-    ]),
-    seller: {
-      ...{
-        userId: faker.string.alpha(20),
-        name: faker.string.alpha(20),
-        role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-        isBiz: faker.datatype.boolean(),
-        status: faker.helpers.arrayElement([
-          "pending",
-          "active",
-          "inactive",
-          "suspended",
-          "deleted",
-        ] as const),
-      },
-    },
-    buyer: faker.helpers.arrayElement([
-      {
-        ...{
-          userId: faker.string.alpha(20),
-          name: faker.string.alpha(20),
-          role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-          isBiz: faker.datatype.boolean(),
-          status: faker.helpers.arrayElement([
-            "pending",
-            "active",
-            "inactive",
-            "suspended",
-            "deleted",
-          ] as const),
-        },
-      },
       undefined,
     ]),
     memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
@@ -1596,7 +1589,25 @@ export const getAdoptionControllerGetAllAdoptionsResponseMock = (
           },
           undefined,
         ]),
-        adoption: faker.helpers.arrayElement([{}, undefined]),
+        adoption: faker.helpers.arrayElement([
+          {
+            ...{
+              adoptionId: faker.string.alpha(20),
+              price: faker.number.int({ min: undefined, max: undefined }),
+              status: faker.helpers.arrayElement([
+                "NFS",
+                "ON_SALE",
+                "ON_RESERVATION",
+                "SOLD",
+              ] as const),
+              adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
+              memo: faker.string.alpha(20),
+              location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+              buyerId: faker.string.alpha(20),
+            },
+          },
+          undefined,
+        ]),
       },
     },
   })),
@@ -1624,6 +1635,11 @@ export const getAdoptionControllerGetAdoptionByAdoptionIdResponseMock = (
     `${faker.date.past().toISOString().split(".")[0]}Z`,
     undefined,
   ]),
+  memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
   seller: {
     ...{
       userId: faker.string.alpha(20),
@@ -1657,11 +1673,6 @@ export const getAdoptionControllerGetAdoptionByAdoptionIdResponseMock = (
     },
     undefined,
   ]),
-  memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-  updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-  status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
   ...overrideResponse,
 });
 
@@ -1678,6 +1689,11 @@ export const getAdoptionControllerUpdateAdoptionResponseMock = (
     `${faker.date.past().toISOString().split(".")[0]}Z`,
     undefined,
   ]),
+  memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
   seller: {
     ...{
       userId: faker.string.alpha(20),
@@ -1711,11 +1727,6 @@ export const getAdoptionControllerUpdateAdoptionResponseMock = (
     },
     undefined,
   ]),
-  memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-  updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-  status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
   ...overrideResponse,
 });
 

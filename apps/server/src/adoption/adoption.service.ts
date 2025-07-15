@@ -15,7 +15,7 @@ import {
   AdoptionDto,
   CreateAdoptionDto,
   UpdateAdoptionDto,
-  AdoptionSummaryDto,
+  AdoptionWithPetDto,
 } from './adoption.dto';
 import { PetService } from 'src/pet/pet.service';
 import { UserService } from 'src/user/user.service';
@@ -37,18 +37,56 @@ export class AdoptionService {
   ) {}
 
   private generateAdoptionId(): string {
-    return `${nanoid(8)}`;
+    return nanoid(8);
   }
 
-  private toAdoptionSummaryDto(entity: AdoptionEntity): AdoptionSummaryDto {
+  private toAdoptionSummaryDto(entity: AdoptionEntity): AdoptionWithPetDto {
     const plain = instanceToPlain(entity);
-    return plainToInstance(AdoptionSummaryDto, {
+    return plainToInstance(AdoptionWithPetDto, {
       ...plain,
       price: plain.price ? Math.floor(Number(plain.price)) : undefined,
       pet: plain.pet ? plainToInstance(PetSummaryDto, plain.pet) : undefined,
     });
   }
 
+  private async updatePetSaleStatus(
+    entityManager: EntityManager,
+    petId: string,
+    newAdoptionDto: UpdateAdoptionDto,
+  ) {
+    const saleStatus =
+      newAdoptionDto.saleStatus ||
+      (newAdoptionDto.buyerId
+        ? PET_SALE_STATUS.ON_RESERVATION
+        : PET_SALE_STATUS.ON_SALE);
+
+    await entityManager.update(
+      'pets',
+      { pet_id: petId },
+      { sale_status: saleStatus },
+    );
+
+    if (saleStatus === PET_SALE_STATUS.SOLD) {
+      await entityManager.update(
+        'pets',
+        { pet_id: petId },
+        { is_deleted: true },
+      );
+    }
+  }
+
+  private updateEntityFields<T extends object, U extends object>(
+    entity: T,
+    updateDto: U,
+    fieldMappings: Partial<Record<keyof U, (value: any) => Partial<T>>>,
+  ): void {
+    Object.entries(fieldMappings).forEach(([key, mapper]) => {
+      const value = updateDto[key as keyof U];
+      if (value !== undefined && mapper) {
+        Object.assign(entity, (mapper as (value: any) => Partial<T>)(value));
+      }
+    });
+  }
   async createAdoption(
     sellerId: string,
     createAdoptionDto: CreateAdoptionDto,
@@ -100,37 +138,11 @@ export class AdoptionService {
         adoptionEntity,
       );
 
-      // 펫 상태 업데이트를 트랜잭션 내에서 수행
-      if (createAdoptionDto.saleStatus) {
-        await entityManager.update(
-          'pets',
-          { pet_id: createAdoptionDto.petId },
-          { sale_status: createAdoptionDto.saleStatus },
-        );
-      } else {
-        if (createAdoptionDto.buyerId) {
-          await entityManager.update(
-            'pets',
-            { pet_id: createAdoptionDto.petId },
-            { sale_status: PET_SALE_STATUS.ON_RESERVATION },
-          );
-        } else {
-          await entityManager.update(
-            'pets',
-            { pet_id: createAdoptionDto.petId },
-            { sale_status: PET_SALE_STATUS.ON_SALE },
-          );
-        }
-      }
-
-      // 판매 완료된 경우 펫 삭제
-      if (createAdoptionDto.saleStatus === PET_SALE_STATUS.SOLD) {
-        await entityManager.update(
-          'pets',
-          { pet_id: createAdoptionDto.petId },
-          { is_deleted: true },
-        );
-      }
+      await this.updatePetSaleStatus(
+        entityManager,
+        createAdoptionDto.petId,
+        createAdoptionDto,
+      );
 
       const adoption = instanceToPlain(saveAdoptionEntity);
       return plainToInstance(AdoptionDto, adoption);
@@ -139,7 +151,7 @@ export class AdoptionService {
 
   async findAll(
     pageOptionsDto: PageOptionsDto,
-  ): Promise<PageDto<AdoptionSummaryDto>> {
+  ): Promise<PageDto<AdoptionWithPetDto>> {
     const queryBuilder = this.adoptionRepository
       .createQueryBuilder('adoptions')
       .leftJoinAndMapOne(
@@ -257,60 +269,30 @@ export class AdoptionService {
         }
       }
 
-      // 기존 Entity에 업데이트할 필드들만 덮어쓰기
-      if (updateAdoptionDto.adoptionDate !== undefined) {
-        adoptionEntity.adoption_date = new Date(updateAdoptionDto.adoptionDate);
-      }
-      if (updateAdoptionDto.price !== undefined) {
-        adoptionEntity.price = updateAdoptionDto.price;
-      }
-      if (updateAdoptionDto.buyerId !== undefined) {
-        adoptionEntity.buyer_id = updateAdoptionDto.buyerId;
-      }
-      if (updateAdoptionDto.memo !== undefined) {
-        adoptionEntity.memo = updateAdoptionDto.memo;
-      }
-      if (updateAdoptionDto.location !== undefined) {
-        adoptionEntity.location = updateAdoptionDto.location;
-      }
+      const fieldMappings: Partial<
+        Record<keyof UpdateAdoptionDto, (value: any) => Partial<AdoptionEntity>>
+      > = {
+        adoptionDate: (value: Date) => ({ adoption_date: new Date(value) }),
+        price: (value: number) => ({ price: value }),
+        buyerId: (value: string) => ({ buyer_id: value }),
+        memo: (value: string) => ({ memo: value }),
+        location: (value: string) => ({ location: value }),
+      };
 
-      const savedAdoption = await entityManager.save(
+      this.updateEntityFields(adoptionEntity, updateAdoptionDto, fieldMappings);
+
+      const savedAdoptionEntity = await entityManager.save(
         AdoptionEntity,
         adoptionEntity,
       );
 
-      // saleStatus 로직을 트랜잭션 내에서 수행
-      if (updateAdoptionDto.saleStatus) {
-        await entityManager.update(
-          'pets',
-          { pet_id: adoptionEntity.pet_id },
-          { sale_status: updateAdoptionDto.saleStatus },
-        );
-      } else {
-        if (updateAdoptionDto.buyerId) {
-          await entityManager.update(
-            'pets',
-            { pet_id: adoptionEntity.pet_id },
-            { sale_status: PET_SALE_STATUS.ON_RESERVATION },
-          );
-        } else {
-          await entityManager.update(
-            'pets',
-            { pet_id: adoptionEntity.pet_id },
-            { sale_status: PET_SALE_STATUS.ON_SALE },
-          );
-        }
-      }
+      await this.updatePetSaleStatus(
+        entityManager,
+        adoptionEntity.pet_id,
+        updateAdoptionDto,
+      );
 
-      if (updateAdoptionDto.saleStatus === PET_SALE_STATUS.SOLD) {
-        await entityManager.update(
-          'pets',
-          { pet_id: adoptionEntity.pet_id },
-          { is_deleted: true },
-        );
-      }
-
-      const adoption = instanceToPlain(savedAdoption);
+      const adoption = instanceToPlain(savedAdoptionEntity);
       return plainToInstance(AdoptionDto, adoption);
     });
   }
