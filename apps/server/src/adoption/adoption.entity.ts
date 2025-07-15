@@ -1,4 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
+import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -9,7 +10,6 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'adoptions' })
-@Index('UNIQUE_PET_ADOPTION', ['pet_id'], { unique: true })
 @Index('UNIQUE_ADOPTION_ID', ['adoption_id'], { unique: true })
 export class AdoptionEntity {
   @Exclude()
@@ -56,4 +56,7 @@ export class AdoptionEntity {
   @Expose({ name: 'isDeleted' })
   @Column({ default: false })
   is_deleted: boolean;
+
+  @Column({ type: 'enum', enum: ADOPTION_SALE_STATUS, nullable: true })
+  status?: ADOPTION_SALE_STATUS;
 }

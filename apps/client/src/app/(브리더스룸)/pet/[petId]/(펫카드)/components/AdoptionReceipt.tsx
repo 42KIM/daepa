@@ -17,7 +17,7 @@ const AdoptionReceipt = ({ pet }: AdoptionReceiptProps) => {
     }
   };
 
-  if (!["ON_SALE", "ON_RESERVATION", "SOLD"].includes(pet.saleStatus || "")) return null;
+  if (!["ON_SALE", "ON_RESERVATION", "SOLD"].includes(pet.adoption?.status || "")) return null;
 
   return (
     <div className="pb-4 pt-4">
@@ -40,16 +40,16 @@ const AdoptionReceipt = ({ pet }: AdoptionReceiptProps) => {
           style={{ animationDelay: "0.2s" }}
         >
           <div className="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-200">
-            {pet.saleStatus === "SOLD" && (
+            {pet.adoption?.status === "SOLD" && (
               <div className="opacity-0 transition-all duration-300 group-hover:opacity-100">
                 <span className="animate-bounce text-2xl">✨</span>
               </div>
             )}
             분양 영수증{" "}
-            {pet.saleStatus !== "SOLD" && (
+            {pet.adoption?.status !== "SOLD" && (
               <span className="text-sm font-light text-gray-600 dark:text-gray-400">(예정)</span>
             )}
-            {pet.saleStatus === "SOLD" && (
+            {pet.adoption?.status === "SOLD" && (
               <div className="opacity-0 transition-all duration-300 group-hover:opacity-100">
                 <span className="animate-bounce text-2xl">✨</span>
               </div>
@@ -91,7 +91,7 @@ const AdoptionReceipt = ({ pet }: AdoptionReceiptProps) => {
             </span>
           </div>
 
-          {["SOLD", "ON_RESERVATION"].includes(pet.saleStatus || "") && (
+          {["SOLD", "ON_RESERVATION"].includes(pet.adoption?.status || "") && (
             <div
               className={`flex justify-between ${isReceiptVisible ? "animate-fade-in-up" : ""}`}
               style={{ animationDelay: "1.0s" }}

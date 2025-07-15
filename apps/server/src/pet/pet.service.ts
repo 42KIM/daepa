@@ -108,8 +108,9 @@ export class PetService {
   async getPetList<T extends PetDto | PetSummaryDto>(
     pageOptionsDto: PageOptionsDto,
     dtoClass: new () => T,
+    userId?: string,
   ): Promise<{ data: T[]; pageMeta: PageMetaDto }> {
-    const queryBuilder = this.createPetWithOwnerQueryBuilder();
+    const queryBuilder = this.createPetWithOwnerQueryBuilder(userId);
 
     queryBuilder
       .orderBy('pets.id', pageOptionsDto.order)
@@ -118,7 +119,13 @@ export class PetService {
 
     const totalCount = await queryBuilder.getCount();
     const { entities } = await queryBuilder.getRawAndEntities();
-    const petList = entities.map((entity) => instanceToPlain(entity));
+    const petList = entities.map((entity) => {
+      const plainEntity = instanceToPlain(entity);
+      plainEntity.weight = plainEntity.weight
+        ? Number(plainEntity.weight)
+        : undefined;
+      return plainEntity;
+    });
     const petDtos = petList.map((pet) => plainToInstance(dtoClass, pet));
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
@@ -130,10 +137,12 @@ export class PetService {
 
   async getPetListFull(
     pageOptionsDto: PageOptionsDto,
+    userId: string,
   ): Promise<PageDto<PetDto>> {
     const { data, pageMeta } = await this.getPetList<PetDto>(
       pageOptionsDto,
       PetDto,
+      userId,
     );
 
     const petListFullWithParent = await Promise.all(
@@ -145,6 +154,23 @@ export class PetService {
         const mother = await this.getParent(pet.petId, PARENT_ROLE.MOTHER);
         if (mother) {
           pet.mother = plainToInstance(PetParentDto, mother);
+        }
+
+        const adoptionEntity = await this.adoptionRepository.findOne({
+          where: {
+            pet_id: pet.petId,
+            is_deleted: false,
+          },
+        });
+        if (adoptionEntity) {
+          pet.adoption = {
+            adoptionId: adoptionEntity.adoption_id,
+            price: adoptionEntity.price
+              ? Math.floor(Number(adoptionEntity.price))
+              : undefined,
+            adoptionDate: adoptionEntity.adoption_date,
+            status: adoptionEntity.status,
+          };
         }
         return pet;
       }),
@@ -197,8 +223,8 @@ export class PetService {
             : undefined,
           adoptionDate: adoptionEntity.adoption_date,
           memo: adoptionEntity.memo,
-          location: adoptionEntity.location,
           buyerId: adoptionEntity.buyer_id,
+          status: adoptionEntity.status,
         };
       }
     }
@@ -374,8 +400,8 @@ export class PetService {
     );
   }
 
-  private createPetWithOwnerQueryBuilder() {
-    return this.petRepository
+  private createPetWithOwnerQueryBuilder(userId?: string) {
+    const queryBuilder = this.petRepository
       .createQueryBuilder('pets')
       .leftJoinAndMapOne(
         'pets.owner',
@@ -392,6 +418,12 @@ export class PetService {
         'users.is_biz',
         'users.status',
       ]);
+
+    if (userId) {
+      queryBuilder.andWhere('users.user_id = :userId', { userId });
+    }
+
+    return queryBuilder;
   }
 
   async getPetOwnerId(petId: string): Promise<string | null> {

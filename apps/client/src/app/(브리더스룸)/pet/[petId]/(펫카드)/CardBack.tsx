@@ -19,6 +19,8 @@ import {
   ParentDtoStatus,
   petControllerFindOne,
   PetDtoSaleStatus,
+  adoptionControllerUpdate,
+  UpdateAdoptionDto,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -237,6 +239,20 @@ const CardBack = ({ pet, from, isWideScreen }: CardBackProps) => {
     }
   };
 
+  const updateAdoption = async (data: UpdateAdoptionDto, close: () => void) => {
+    try {
+      await adoptionControllerUpdate(pet.petId, data);
+      queryClient.invalidateQueries({
+        queryKey: [petControllerFindOne.name, pet.petId],
+      });
+      toast.success("펫 정보가 변경되었습니다.");
+    } catch (error) {
+      console.error("Failed to update pet:", error);
+      toast.error("펫 정보 수정에 실패했습니다.");
+    } finally {
+      close();
+    }
+  };
   const onPublicChange = () => {
     overlay.open(({ isOpen, close, unmount }) => (
       <Dialog
@@ -257,7 +273,7 @@ const CardBack = ({ pet, from, isWideScreen }: CardBackProps) => {
           isOpen={isOpen}
           onClose={close}
           pet={pet}
-          saleStatus={newStatus as PetDtoSaleStatus}
+          status={newStatus as PetDtoSaleStatus}
           onSuccess={() => {
             queryClient.invalidateQueries({
               queryKey: [petControllerFindOne.name, pet.petId],
@@ -271,7 +287,7 @@ const CardBack = ({ pet, from, isWideScreen }: CardBackProps) => {
         <Dialog
           isOpen={isOpen}
           onCloseAction={close}
-          onConfirmAction={() => updatePet({ saleStatus: newStatus } as UpdatePetDto, close)}
+          onConfirmAction={() => updateAdoption({ status: newStatus } as UpdateAdoptionDto, close)}
           onExit={unmount}
           title="판매 상태 변경"
           description="판매 상태를 변경하시겠습니까?"
@@ -297,9 +313,9 @@ const CardBack = ({ pet, from, isWideScreen }: CardBackProps) => {
               </Label>
             </div>
 
-            {pet.saleStatus !== "SOLD" && (
+            {pet?.adoption?.status !== "SOLD" && (
               <Select
-                value={pet.saleStatus || "UNDEFINED"}
+                value={pet?.adoption?.status || "UNDEFINED"}
                 onValueChange={(value) => onSaleStatusChange(value)}
               >
                 <SelectTrigger>
@@ -328,14 +344,14 @@ const CardBack = ({ pet, from, isWideScreen }: CardBackProps) => {
               <ParentLink
                 label="부"
                 data={formData.father}
-                currentPetOwnerId={pet.owner.userId}
+                currentPetOwnerId={pet?.owner?.userId}
                 onSelect={(item) => handleParentSelect(ParentDtoRole.FATHER, item)}
                 onUnlink={() => handleUnlink(ParentDtoRole.FATHER)}
               />
               <ParentLink
                 label="모"
                 data={formData.mother}
-                currentPetOwnerId={pet.owner.userId}
+                currentPetOwnerId={pet?.owner?.userId}
                 onSelect={(item) => handleParentSelect(ParentDtoRole.MOTHER, item)}
                 onUnlink={() => handleUnlink(ParentDtoRole.MOTHER)}
               />

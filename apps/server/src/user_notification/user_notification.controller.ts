@@ -18,6 +18,8 @@ import {
 } from './user_notification.dto';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { CommonResponseDto } from 'src/common/response.dto';
+import { JwtUser } from 'src/auth/auth.decorator';
+import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
 
 @Controller('/v1/user-notification')
 export class UserNotificationController {
@@ -42,11 +44,13 @@ export class UserNotificationController {
       },
     },
   })
-  async findAll(@Query() pageOptionsDto: PageOptionsDto) {
-    const userId = 'ZUCOPIA';
+  async findAll(
+    @Query() pageOptionsDto: PageOptionsDto,
+    @JwtUser() token: JwtUserPayload,
+  ) {
     return this.userNotificationService.getAllReceiverNotifications(
       pageOptionsDto,
-      userId,
+      token.userId,
     );
   }
 

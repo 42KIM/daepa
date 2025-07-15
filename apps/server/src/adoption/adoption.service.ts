@@ -15,7 +15,6 @@ import {
   AdoptionDto,
   CreateAdoptionDto,
   UpdateAdoptionDto,
-  AdoptionWithPetDto,
 } from './adoption.dto';
 import { PetService } from 'src/pet/pet.service';
 import { UserService } from 'src/user/user.service';
@@ -23,7 +22,7 @@ import { nanoid } from 'nanoid';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { PageMetaDto, PageOptionsDto } from 'src/common/page.dto';
 import { PageDto } from 'src/common/page.dto';
-import { PET_SALE_STATUS } from 'src/pet/pet.constants';
+import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
 import { PetSummaryDto } from 'src/pet/pet.dto';
 
 @Injectable()
@@ -40,38 +39,52 @@ export class AdoptionService {
     return nanoid(8);
   }
 
-  private toAdoptionSummaryDto(entity: AdoptionEntity): AdoptionWithPetDto {
+  private toAdoptionDto(entity: AdoptionEntity): AdoptionDto {
     const plain = instanceToPlain(entity);
-    return plainToInstance(AdoptionWithPetDto, {
+    return plainToInstance(AdoptionDto, {
       ...plain,
       price: plain.price ? Math.floor(Number(plain.price)) : undefined,
       pet: plain.pet ? plainToInstance(PetSummaryDto, plain.pet) : undefined,
     });
   }
 
-  private async updatePetSaleStatus(
+  private async updatePetStatus(
     entityManager: EntityManager,
+    adoptionId: string,
     petId: string,
     newAdoptionDto: UpdateAdoptionDto,
   ) {
-    const saleStatus =
-      newAdoptionDto.saleStatus ||
+    const status =
+      newAdoptionDto.status ||
       (newAdoptionDto.buyerId
-        ? PET_SALE_STATUS.ON_RESERVATION
-        : PET_SALE_STATUS.ON_SALE);
+        ? ADOPTION_SALE_STATUS.ON_RESERVATION
+        : ADOPTION_SALE_STATUS.ON_SALE);
 
     await entityManager.update(
-      'pets',
-      { pet_id: petId },
-      { sale_status: saleStatus },
+      'adoptions',
+      { adoption_id: adoptionId },
+      {
+        status: status,
+        buyer_id: newAdoptionDto.buyerId || null,
+      },
     );
 
-    if (saleStatus === PET_SALE_STATUS.SOLD) {
-      await entityManager.update(
-        'pets',
-        { pet_id: petId },
-        { is_deleted: true },
-      );
+    if (status === ADOPTION_SALE_STATUS.SOLD) {
+      if (newAdoptionDto.buyerId) {
+        await entityManager.update(
+          'pets',
+          { pet_id: petId },
+          {
+            owner_id: newAdoptionDto.buyerId,
+          },
+        );
+      } else {
+        await entityManager.update(
+          'pets',
+          { pet_id: petId },
+          { owner_id: null },
+        );
+      }
     }
   }
 
@@ -138,8 +151,9 @@ export class AdoptionService {
         adoptionEntity,
       );
 
-      await this.updatePetSaleStatus(
+      await this.updatePetStatus(
         entityManager,
+        adoptionId,
         createAdoptionDto.petId,
         createAdoptionDto,
       );
@@ -151,7 +165,8 @@ export class AdoptionService {
 
   async findAll(
     pageOptionsDto: PageOptionsDto,
-  ): Promise<PageDto<AdoptionWithPetDto>> {
+    userId: string,
+  ): Promise<PageDto<AdoptionDto>> {
     const queryBuilder = this.adoptionRepository
       .createQueryBuilder('adoptions')
       .leftJoinAndMapOne(
@@ -173,6 +188,7 @@ export class AdoptionService {
         'buyer.user_id = adoptions.buyer_id',
       )
       .where('adoptions.is_deleted = :isDeleted', { isDeleted: false })
+      .andWhere('adoptions.seller_id = :userId', { userId })
       .orderBy('adoptions.created_at', pageOptionsDto.order)
       .skip(pageOptionsDto.skip)
       .take(pageOptionsDto.itemPerPage);
@@ -180,13 +196,13 @@ export class AdoptionService {
     const totalCount = await queryBuilder.getCount();
     const adoptionEntities = await queryBuilder.getMany();
 
-    const adoptionSummaryDtos = adoptionEntities.map((adoption) =>
-      this.toAdoptionSummaryDto(adoption),
+    const adoptionDtos = adoptionEntities.map((adoption) =>
+      this.toAdoptionDto(adoption),
     );
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
-    return new PageDto(adoptionSummaryDtos, pageMetaDto);
+    return new PageDto(adoptionDtos, pageMetaDto);
   }
 
   async findOne(
@@ -286,8 +302,9 @@ export class AdoptionService {
         adoptionEntity,
       );
 
-      await this.updatePetSaleStatus(
+      await this.updatePetStatus(
         entityManager,
+        adoptionId,
         adoptionEntity.pet_id,
         updateAdoptionDto,
       );
