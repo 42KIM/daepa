@@ -18,6 +18,7 @@ import {
   PetDtoSex,
   ParentDtoStatus,
   petControllerFindOne,
+  PetDtoSaleStatus,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -38,13 +39,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import CreateAdoptionModal from "@/app/(브리더스룸)/adoption/components/CreateAdoptionModal";
+import AdoptionReceipt from "./components/AdoptionReceipt";
 
 interface CardBackProps {
   pet: PetDto;
   from: string | null;
+  isWideScreen: boolean;
 }
 
-const CardBack = ({ pet, from }: CardBackProps) => {
+const CardBack = ({ pet, from, isWideScreen }: CardBackProps) => {
   const queryClient = useQueryClient();
   const { formData, errors, setFormData, setPage } = usePetStore();
   const { selectedParent, setSelectedParent } = useParentLinkStore();
@@ -218,7 +222,7 @@ const CardBack = ({ pet, from }: CardBackProps) => {
     }
   };
 
-  const updatePet = async (data: UpdatePetDto, close) => {
+  const updatePet = async (data: UpdatePetDto, close: () => void) => {
     try {
       await petControllerUpdate(pet.petId, data);
       queryClient.invalidateQueries({
@@ -247,16 +251,33 @@ const CardBack = ({ pet, from }: CardBackProps) => {
   };
 
   const onSaleStatusChange = (newStatus: string) => {
-    overlay.open(({ isOpen, close, unmount }) => (
-      <Dialog
-        isOpen={isOpen}
-        onCloseAction={close}
-        onConfirmAction={() => updatePet({ saleStatus: newStatus } as UpdatePetDto, close)}
-        onExit={unmount}
-        title="판매 상태 변경"
-        description="판매 상태를 변경하시겠습니까?"
-      />
-    ));
+    if (["ON_SALE", "ON_RESERVATION", "SOLD"].includes(newStatus)) {
+      overlay.open(({ isOpen, close }) => (
+        <CreateAdoptionModal
+          isOpen={isOpen}
+          onClose={close}
+          pet={pet}
+          saleStatus={newStatus as PetDtoSaleStatus}
+          onSuccess={() => {
+            queryClient.invalidateQueries({
+              queryKey: [petControllerFindOne.name, pet.petId],
+            });
+            toast.success("판매 상태가 변경되었습니다.");
+          }}
+        />
+      ));
+    } else {
+      overlay.open(({ isOpen, close, unmount }) => (
+        <Dialog
+          isOpen={isOpen}
+          onCloseAction={close}
+          onConfirmAction={() => updatePet({ saleStatus: newStatus } as UpdatePetDto, close)}
+          onExit={unmount}
+          title="판매 상태 변경"
+          description="판매 상태를 변경하시겠습니까?"
+        />
+      ));
+    }
   };
 
   return (
@@ -276,24 +297,28 @@ const CardBack = ({ pet, from }: CardBackProps) => {
               </Label>
             </div>
 
-            <Select
-              value={pet.saleStatus || "UNDEFINED"}
-              onValueChange={(value) => onSaleStatusChange(value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="UNDEFINED" disabled>
-                  미정
-                </SelectItem>
-                <SelectItem value="NFS">판매 안함</SelectItem>
-                <SelectItem value="ON_SALE">판매 중</SelectItem>
-                <SelectItem value="ON_RESERVATION">예약 중</SelectItem>
-                <SelectItem value="SOLD">판매 완료</SelectItem>
-              </SelectContent>
-            </Select>
+            {pet.saleStatus !== "SOLD" && (
+              <Select
+                value={pet.saleStatus || "UNDEFINED"}
+                onValueChange={(value) => onSaleStatusChange(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UNDEFINED" disabled>
+                    미정
+                  </SelectItem>
+                  <SelectItem value="NFS">판매 안함</SelectItem>
+                  <SelectItem value="ON_SALE">판매 중</SelectItem>
+                  <SelectItem value="ON_RESERVATION">예약 중</SelectItem>
+                  <SelectItem value="SOLD">판매 완료</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
+
+          {!isWideScreen && <AdoptionReceipt pet={pet} />}
 
           {/* 혈통 정보 */}
           <div className="pb-4 pt-4">

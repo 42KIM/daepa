@@ -19,3 +19,8 @@ export enum PET_SALE_STATUS {
   ON_RESERVATION = 'ON_RESERVATION', // 예약 중
   SOLD = 'SOLD', // 판매 완료
 }
+
+export enum PET_ADOPTION_LOCATION {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
+}

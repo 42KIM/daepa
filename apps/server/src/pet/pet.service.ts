@@ -18,6 +18,7 @@ import { PARENT_ROLE } from 'src/parent/parent.constant';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { isMySQLError } from 'src/common/error';
+import { AdoptionEntity } from 'src/adoption/adoption.entity';
 
 @Injectable()
 export class PetService {
@@ -28,6 +29,8 @@ export class PetService {
     private readonly petRepository: Repository<PetEntity>,
     @Inject(forwardRef(() => ParentService))
     private readonly parentService: ParentService,
+    @InjectRepository(AdoptionEntity)
+    private readonly adoptionRepository: Repository<AdoptionEntity>,
   ) {}
 
   private async generateUniquePetId(): Promise<string> {
@@ -179,6 +182,27 @@ export class PetService {
       pet.mother = await this.getParent(pet.petId, PARENT_ROLE.MOTHER);
     }
 
+    if (typeof pet.petId === 'string') {
+      const adoptionEntity = await this.adoptionRepository.findOne({
+        where: {
+          pet_id: pet.petId,
+          is_deleted: false,
+        },
+      });
+      if (adoptionEntity) {
+        pet.adoption = {
+          adoptionId: adoptionEntity.adoption_id,
+          price: adoptionEntity.price
+            ? Math.floor(Number(adoptionEntity.price))
+            : undefined,
+          adoptionDate: adoptionEntity.adoption_date,
+          memo: adoptionEntity.memo,
+          location: adoptionEntity.location,
+          buyerId: adoptionEntity.buyer_id,
+        };
+      }
+    }
+
     const petDto = plainToInstance(PetDto, pet);
     return petDto;
   }
@@ -201,7 +225,9 @@ export class PetService {
   ): Promise<void> {
     const { father, mother, ...updateData } = updatePetDto;
 
-    await this.petRepository.update({ pet_id: petId }, updateData);
+    const updatePet = instanceToPlain(updateData);
+    const updatePetEntity = plainToInstance(PetEntity, updatePet);
+    await this.petRepository.update({ pet_id: petId }, updatePetEntity);
 
     if (father) {
       await this.parentService.createParent(userId, petId, father, {});

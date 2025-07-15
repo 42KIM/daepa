@@ -70,9 +70,9 @@ export class PetEntity {
 
   @Expose({ name: 'saleStatus' })
   @Column({ type: 'enum', enum: PET_SALE_STATUS, nullable: true })
-  saleStatus?: PET_SALE_STATUS;
+  sale_status?: PET_SALE_STATUS;
 
   @Expose({ name: 'isPublic' })
   @Column({ default: false })
-  isPublic?: boolean;
+  is_public?: boolean;
 }

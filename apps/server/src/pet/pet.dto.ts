@@ -7,7 +7,12 @@ import {
   IsOptional,
   IsBoolean,
 } from 'class-validator';
-import { PET_SALE_STATUS, PET_SEX, PET_SPECIES } from './pet.constants';
+import {
+  PET_ADOPTION_LOCATION,
+  PET_SALE_STATUS,
+  PET_SEX,
+  PET_SPECIES,
+} from './pet.constants';
 import {
   ApiProperty,
   OmitType,
@@ -161,9 +166,6 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   'photos',
 ]) {
   @Exclude()
-  declare birthdate?: string;
-
-  @Exclude()
   declare growth?: string;
 
   @Exclude()
@@ -232,6 +234,63 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
   status: PARENT_STATUS;
 }
 
+export class PetAdoptionDto {
+  @ApiProperty({
+    description: '분양 아이디',
+    example: 'XXXXXXXX',
+    required: true,
+  })
+  @IsString()
+  adoptionId: string;
+
+  @ApiProperty({
+    description: '분양 가격',
+    example: 100000,
+  })
+  @IsNumber()
+  price?: number;
+
+  @ApiProperty({
+    description: '분양 상태',
+    example: 'ON_SALE',
+    enum: PET_SALE_STATUS,
+    'x-enumNames': Object.keys(PET_SALE_STATUS),
+    required: true,
+  })
+  @IsEnum(PET_SALE_STATUS)
+  status: PET_SALE_STATUS;
+
+  @ApiProperty({
+    description: '분양 날짜',
+    example: '2024-01-01',
+  })
+  @IsNumber()
+  adoptionDate?: Date;
+
+  @ApiProperty({
+    description: '메모',
+    example: '대파는 혈통있는 가문 출신의 헷100% 릴리화이트 입니다',
+  })
+  @IsString()
+  memo?: string;
+
+  @ApiProperty({
+    description: '분양 위치',
+    example: 'ONLINE',
+    enum: PET_ADOPTION_LOCATION,
+    'x-enumNames': Object.keys(PET_ADOPTION_LOCATION),
+  })
+  @IsEnum(PET_ADOPTION_LOCATION)
+  location?: PET_ADOPTION_LOCATION;
+
+  @ApiProperty({
+    description: '분양 구매자 아이디',
+    example: 'XXXXXXXX',
+  })
+  @IsString()
+  buyerId?: string;
+}
+
 export class PetDto extends PetBaseDto {
   @ApiProperty({
     description: '아빠 개체 정보',
@@ -250,6 +309,14 @@ export class PetDto extends PetBaseDto {
   @IsOptional()
   @IsObject()
   mother?: PetParentDto;
+
+  @ApiProperty({
+    description: '분양 정보',
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  adoption?: PetAdoptionDto;
 
   @Exclude()
   declare createdAt?: Date;

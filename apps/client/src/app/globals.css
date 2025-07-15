@@ -71,6 +71,64 @@ body {
   }
 }
 
+/* 프린터 애니메이션 키프레임 추가 */
+@keyframes print-receipt {
+  0% {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  50% {
+    transform: translateY(-10px) scale(0.98);
+    opacity: 0.8;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes print-line {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 프린터 애니메이션 클래스 추가 */
+.animate-print-receipt {
+  animation: print-receipt 0.8s ease-out forwards;
+}
+
+.animate-print-line {
+  animation: print-line 0.4s ease-in-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out forwards;
+}
+
 :root {
   --radius: 0.5rem;
   --background: oklch(1 0 0);

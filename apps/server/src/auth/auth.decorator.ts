@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   Injectable,
   SetMetadata,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -44,5 +45,22 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     return super.canActivate(context);
+  }
+
+  handleRequest<TUser = JwtUserPayload>(
+    err: any,
+    user: TUser,
+    info: { message?: string },
+    // context: ExecutionContext,
+  ) {
+    if (['No auth token', 'jwt expired'].includes(info?.message ?? '')) {
+      throw new UnauthorizedException('ACCESS_TOKEN_INVALID');
+    }
+
+    if (err || !user) {
+      throw new UnauthorizedException();
+    }
+
+    return user;
   }
 }
