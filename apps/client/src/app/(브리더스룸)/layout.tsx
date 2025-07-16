@@ -12,14 +12,11 @@ export default function BrLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { initialize, isInitialized } = useUserStore();
+  const { initialize } = useUserStore();
 
   useEffect(() => {
-    // 브리더스룸 레이아웃 마운트 시 한 번만 초기화
-    if (!isInitialized) {
-      initialize();
-    }
-  }, [initialize, isInitialized]);
+    initialize();
+  }, [initialize]);
 
   return (
     <>
