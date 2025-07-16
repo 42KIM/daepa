@@ -79,7 +79,9 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
           </div>
 
           {/* 요청 메시지 영역 */}
-          {selectedPet?.owner?.userId !== user?.userId ? (
+          {selectedPet?.owner?.userId &&
+          user?.userId &&
+          selectedPet.owner.userId !== user.userId ? (
             <div className="space-y-2 rounded-xl">
               <div>
                 <div className="flex items-center gap-1">

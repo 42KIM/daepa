@@ -134,9 +134,7 @@ const CreateAdoptionModal = ({
         ...(data.buyerId && {
           buyerId: data.buyerId,
         }),
-        ...(status && {
-          status: status,
-        }),
+        ...(status && Object.values(AdoptionDtoStatus).includes(status) && { status }),
       };
 
       if (selectedPet.adoption?.adoptionId) {

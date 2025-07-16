@@ -60,11 +60,12 @@ export class UserNotificationController {
     description: '알림이 생성되었습니다.',
     type: CommonResponseDto,
   })
-  async create(@Body() createUserNotificationDto: CreateUserNotificationDto) {
-    // TODO: 유저 토큰으로부터 senderId 획득
-    const senderId = 'ADMIN';
+  async create(
+    @Body() createUserNotificationDto: CreateUserNotificationDto,
+    @JwtUser() token: JwtUserPayload,
+  ) {
     await this.userNotificationService.createUserNotification(
-      senderId,
+      token.userId,
       createUserNotificationDto,
     );
     return {
@@ -79,11 +80,12 @@ export class UserNotificationController {
     description: '알림 상태가 변경되었습니다.',
     type: CommonResponseDto,
   })
-  async update(@Body() updateUserNotificationDto: UpdateUserNotificationDto) {
-    // TODO: 유저 토큰으로부터 senderId 획득
-    const senderId = 'ADMIN';
+  async update(
+    @Body() updateUserNotificationDto: UpdateUserNotificationDto,
+    @JwtUser() token: JwtUserPayload,
+  ) {
     await this.userNotificationService.updateUserNotification(
-      senderId,
+      token.userId,
       updateUserNotificationDto,
     );
     return {

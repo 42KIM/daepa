@@ -108,9 +108,9 @@ export class PetController {
   async update(
     @Param('petId') petId: string,
     @Body() updatePetDto: UpdatePetDto,
+    @JwtUser() token: JwtUserPayload,
   ) {
-    const tempOwnerId = 'ADMIN';
-    await this.petService.updatePet(tempOwnerId, petId, updatePetDto);
+    await this.petService.updatePet(token.userId, petId, updatePetDto);
     return {
       success: true,
       message: '펫 수정이 완료되었습니다. petId: ' + petId,

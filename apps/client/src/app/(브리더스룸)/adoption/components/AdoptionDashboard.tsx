@@ -230,7 +230,9 @@ const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
   // 통계 카드용 데이터
   const stats = useMemo(() => {
     const totalAdoptions = statsData.length;
-    const totalRevenue = statsData.reduce((sum, adoption) => sum + (adoption.price || 0), 0);
+    const totalRevenue = statsData
+      .filter((adoption) => adoption.status === PetDtoSaleStatus.SOLD)
+      .reduce((sum, adoption) => sum + (adoption.price || 0), 0);
     const soldCount = statsData.filter(
       (adoption) => adoption.status === PetDtoSaleStatus.SOLD,
     ).length;

@@ -36,9 +36,9 @@ export class AdoptionController {
     type: AdoptionDto,
   })
   async createAdoption(
-    @JwtUser() token: JwtUserPayload,
     @Body() createAdoptionDto: CreateAdoptionDto,
-  ): Promise<AdoptionDto> {
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<{ adoptionId: string }> {
     return this.adoptionService.createAdoption(token.userId, createAdoptionDto);
   }
 
@@ -91,7 +91,7 @@ export class AdoptionController {
   async update(
     @Param('adoptionId') adoptionId: string,
     @Body() updateAdoptionDto: UpdateAdoptionDto,
-  ): Promise<AdoptionDto> {
+  ): Promise<{ adoptionId: string }> {
     return this.adoptionService.updateAdoption(adoptionId, updateAdoptionDto);
   }
 }

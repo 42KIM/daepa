@@ -22,7 +22,7 @@ export class PetEntity {
   pet_id: string;
 
   @Expose({ name: 'ownerId' })
-  @Column()
+  @Column({ nullable: true })
   owner_id: string;
 
   @Column()

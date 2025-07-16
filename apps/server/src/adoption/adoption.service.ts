@@ -50,7 +50,6 @@ export class AdoptionService {
 
   private async updatePetStatus(
     entityManager: EntityManager,
-    adoptionId: string,
     petId: string,
     newAdoptionDto: UpdateAdoptionDto,
   ) {
@@ -59,15 +58,6 @@ export class AdoptionService {
       (newAdoptionDto.buyerId
         ? ADOPTION_SALE_STATUS.ON_RESERVATION
         : ADOPTION_SALE_STATUS.ON_SALE);
-
-    await entityManager.update(
-      'adoptions',
-      { adoption_id: adoptionId },
-      {
-        status: status,
-        buyer_id: newAdoptionDto.buyerId || null,
-      },
-    );
 
     if (status === ADOPTION_SALE_STATUS.SOLD) {
       if (newAdoptionDto.buyerId) {
@@ -103,7 +93,7 @@ export class AdoptionService {
   async createAdoption(
     sellerId: string,
     createAdoptionDto: CreateAdoptionDto,
-  ): Promise<AdoptionDto> {
+  ): Promise<{ adoptionId: string }> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       // 펫 존재 여부 확인
       const pet = await this.petService.getPet(createAdoptionDto.petId);
@@ -111,10 +101,9 @@ export class AdoptionService {
         throw new NotFoundException('펫을 찾을 수 없습니다.');
       }
 
-      // 펫 소유자 확인
-      // if (pet.owner.userId !== sellerId) {
-      //   throw new BadRequestException('펫의 소유자가 아닙니다.');
-      // }
+      if (pet.owner?.userId !== sellerId) {
+        throw new BadRequestException('펫의 소유자가 아닙니다.');
+      }
 
       // 이미 분양 정보가 있는지 확인
       const existingAdoption = await entityManager.findOne(AdoptionEntity, {
@@ -146,20 +135,15 @@ export class AdoptionService {
         buyerId: createAdoptionDto.buyerId,
       });
 
-      const saveAdoptionEntity = await entityManager.save(
-        AdoptionEntity,
-        adoptionEntity,
-      );
+      await entityManager.save(AdoptionEntity, adoptionEntity);
 
       await this.updatePetStatus(
         entityManager,
-        adoptionId,
         createAdoptionDto.petId,
         createAdoptionDto,
       );
 
-      const adoption = instanceToPlain(saveAdoptionEntity);
-      return plainToInstance(AdoptionDto, adoption);
+      return { adoptionId };
     });
   }
 
@@ -266,7 +250,7 @@ export class AdoptionService {
   async updateAdoption(
     adoptionId: string,
     updateAdoptionDto: UpdateAdoptionDto,
-  ): Promise<AdoptionDto> {
+  ): Promise<{ adoptionId: string }> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       const adoptionEntity = await entityManager.findOne(AdoptionEntity, {
         where: { adoption_id: adoptionId, is_deleted: false },
@@ -293,24 +277,20 @@ export class AdoptionService {
         buyerId: (value: string) => ({ buyer_id: value }),
         memo: (value: string) => ({ memo: value }),
         location: (value: string) => ({ location: value }),
+        status: (value: ADOPTION_SALE_STATUS) => ({ status: value }),
       };
 
       this.updateEntityFields(adoptionEntity, updateAdoptionDto, fieldMappings);
 
-      const savedAdoptionEntity = await entityManager.save(
-        AdoptionEntity,
-        adoptionEntity,
-      );
+      await entityManager.save(AdoptionEntity, adoptionEntity);
 
       await this.updatePetStatus(
         entityManager,
-        adoptionId,
         adoptionEntity.pet_id,
         updateAdoptionDto,
       );
 
-      const adoption = instanceToPlain(savedAdoptionEntity);
-      return plainToInstance(AdoptionDto, adoption);
+      return { adoptionId };
     });
   }
 }

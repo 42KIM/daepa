@@ -51,8 +51,8 @@ const SelectStep = ({
             {pets
               ?.filter((pet) =>
                 tab === "my"
-                  ? pet.owner.userId === user?.userId
-                  : pet.owner.userId !== user?.userId,
+                  ? pet.owner?.userId === user?.userId
+                  : pet.owner?.userId !== user?.userId,
               )
               .map((pet) => (
                 <PetItem key={pet.petId} item={pet} handlePetSelect={handlePetSelect} />
