@@ -68,11 +68,7 @@ export class AdoptionService {
       morphs: pet.morphs,
       traits: pet.traits,
       birthdate: pet.birthdate,
-      growth: pet.growth,
       sex: pet.sex,
-      weight: pet.weight,
-      foods: pet.foods,
-      desc: pet.desc,
       owner: pet.owner,
     };
   }

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AdoptionDto, PetDtoSaleStatus } from "@repo/api-client";
+import { AdoptionDto, AdoptionDtoStatus } from "@repo/api-client";
 import { STATS_CARDS } from "../constants";
 import AdoptionCalendar from "./AdoptionCalendar";
 import MonthlyChart from "./MonthlyChart";
@@ -28,7 +28,7 @@ const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
   // 통계 카드와 분포용 데이터 (선택된 월이 있으면 해당 월, 없으면 해당 연도 전체)
   const statsData = useMemo(() => {
     return data.filter((adoption) => {
-      if (adoption.status === "NFS") return false;
+      if (adoption.status === AdoptionDtoStatus.NFS) return false;
       if (!adoption.adoptionDate) return true;
 
       const date = new Date(adoption.adoptionDate);
@@ -48,19 +48,19 @@ const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
   const stats = useMemo(() => {
     const totalAdoptions = statsData.length;
     const totalRevenue = statsData
-      .filter((adoption) => adoption.status === PetDtoSaleStatus.SOLD)
+      .filter((adoption) => adoption.status === AdoptionDtoStatus.SOLD)
       .reduce((sum, adoption) => sum + (adoption.price || 0), 0);
     const soldCount = statsData.filter(
-      (adoption) => adoption.status === PetDtoSaleStatus.SOLD,
+      (adoption) => adoption.status === AdoptionDtoStatus.SOLD,
     ).length;
     const onSaleCount = statsData.filter(
-      (adoption) => adoption.status === PetDtoSaleStatus.ON_SALE,
+      (adoption) => adoption.status === AdoptionDtoStatus.ON_SALE,
     ).length;
     const onReservationCount = statsData.filter(
-      (adoption) => adoption.status === PetDtoSaleStatus.ON_RESERVATION,
+      (adoption) => adoption.status === AdoptionDtoStatus.ON_RESERVATION,
     ).length;
     const nfsCount = statsData.filter(
-      (adoption) => adoption.status === PetDtoSaleStatus.NFS,
+      (adoption) => adoption.status === AdoptionDtoStatus.NFS,
     ).length;
 
     return {
@@ -91,13 +91,13 @@ const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
       if (date.getFullYear() === selectedYear) {
         const month = date.getMonth();
         switch (adoption.status) {
-          case PetDtoSaleStatus.SOLD:
+          case AdoptionDtoStatus.SOLD:
             monthlyData[month]!.sold++;
             break;
-          case PetDtoSaleStatus.ON_SALE:
+          case AdoptionDtoStatus.ON_SALE:
             monthlyData[month]!.onSale++;
             break;
-          case PetDtoSaleStatus.ON_RESERVATION:
+          case AdoptionDtoStatus.ON_RESERVATION:
             monthlyData[month]!.onReservation++;
             break;
         }

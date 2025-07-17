@@ -3,7 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -36,13 +36,13 @@ export class UserEntity {
   role: USER_ROLE;
 
   @Column({ default: false })
-  isBiz: boolean; // is_biz로 자동 변환됨
+  isBiz: boolean;
 
   @Column({ type: 'varchar', nullable: true })
-  refreshToken?: string | null; // refresh_token으로 자동 변환됨
+  refreshToken?: string | null;
 
   @Column({ type: 'datetime', nullable: true })
-  refreshTokenExpiresAt?: Date | null; // refresh_token_expires_at으로 자동 변환됨
+  refreshTokenExpiresAt?: Date | null;
 
   @Column({
     type: 'enum',
@@ -51,11 +51,14 @@ export class UserEntity {
   status: USER_STATUS;
 
   @CreateDateColumn()
-  createdAt: Date; // created_at으로 자동 변환됨
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date; // updated_at으로 자동 변환됨
+  updatedAt: Date;
 
-  @OneToOne(() => AdoptionEntity, (adoption) => adoption)
-  adoption: AdoptionEntity;
+  @ManyToOne(() => AdoptionEntity, (adoption) => adoption.seller)
+  sellerAdoption: AdoptionEntity;
+
+  @ManyToOne(() => AdoptionEntity, (adoption) => adoption.buyer)
+  buyerAdoption: AdoptionEntity;
 }

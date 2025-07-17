@@ -1,4 +1,4 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
 import { PetEntity } from 'src/pet/pet.entity';
 import { UserEntity } from 'src/user/user.entity';
@@ -10,6 +10,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity({ name: 'adoptions' })
@@ -28,7 +29,6 @@ export class AdoptionEntity {
   @Column({ nullable: true })
   price?: number; // 가격
 
-  @Expose({ name: 'adoptionDate' })
   @Column({ type: 'date', nullable: true })
   adoptionDate?: Date; // 분양 날짜
 
@@ -56,12 +56,12 @@ export class AdoptionEntity {
   @Column({ type: 'enum', enum: ADOPTION_SALE_STATUS, nullable: true })
   status?: ADOPTION_SALE_STATUS;
 
-  @OneToOne(() => PetEntity, (pet) => pet.adoption)
+  @JoinColumn({ name: 'petId' })
   pet: PetEntity;
 
-  @OneToOne(() => UserEntity, (user) => user.adoption)
+  @OneToOne(() => UserEntity, (user) => user.sellerAdoption)
   seller: UserEntity;
 
-  @OneToOne(() => UserEntity, (user) => user.adoption)
+  @OneToOne(() => UserEntity, (user) => user.buyerAdoption)
   buyer: UserEntity;
 }

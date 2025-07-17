@@ -268,8 +268,7 @@ const HatchingPage = () => {
               <Bar
                 dataKey="hatched"
                 stackId="a"
-                fill="oklch(37.3% .034 259.733)
-"
+                fill="oklch(37.3% .034 259.733)"
                 radius={[8, 8, 0, 0]}
               >
                 <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
