@@ -5,10 +5,13 @@ import {
   HttpException,
   HttpStatus,
   Post,
-  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateInitUserInfoDto, UserProfileDto } from './user.dto';
+import {
+  CreateInitUserInfoDto,
+  UserProfileDto,
+  VerifyNameDto,
+} from './user.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { JwtUser, Public } from 'src/auth/auth.decorator';
@@ -49,15 +52,15 @@ export class UserController {
     };
   }
 
-  @Get('/verify-name')
+  @Post('/verify-name')
   @Public()
   @ApiResponse({
     status: 200,
     description: '닉네임 중복 확인 성공',
     type: CommonResponseDto,
   })
-  async verifyName(@Query('name') name: string) {
-    const isExist = await this.userService.isNameExist(name);
+  async verifyName(@Body() verifyNameDto: VerifyNameDto) {
+    const isExist = await this.userService.isNameExist(verifyNameDto.name);
     if (!isExist) {
       return {
         success: true,

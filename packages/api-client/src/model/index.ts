@@ -128,3 +128,4 @@ export * from "./userProfileDtoStatus";
 export * from "./userProfilePublicDto";
 export * from "./userProfilePublicDtoRole";
 export * from "./userProfilePublicDtoStatus";
+export * from "./verifyNameDto";

@@ -24,8 +24,8 @@ import type {
   UpdateParentDto,
   UpdatePetDto,
   UpdateUserNotificationDto,
-  UserControllerVerifyNameParams,
   UserNotificationControllerFindAllParams,
+  VerifyNameDto,
 } from "../model";
 
 import { faker } from "@faker-js/faker";
@@ -285,11 +285,12 @@ export const userControllerCreateInitUserInfo = (createInitUserInfoDto: CreateIn
   });
 };
 
-export const userControllerVerifyName = (params: UserControllerVerifyNameParams) => {
+export const userControllerVerifyName = (verifyNameDto: VerifyNameDto) => {
   return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/user/verify-name`,
-    method: "GET",
-    params,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: verifyNameDto,
   });
 };
 
@@ -2409,10 +2410,10 @@ export const getUserControllerVerifyNameMockHandler = (
   overrideResponse?:
     | CommonResponseDto
     | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0],
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
       ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
-  return http.get("*/api/v1/user/verify-name", async (info) => {
+  return http.post("*/api/v1/user/verify-name", async (info) => {
     await delay(1000);
 
     return new HttpResponse(
