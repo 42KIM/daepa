@@ -3,7 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -56,9 +56,9 @@ export class UserEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => AdoptionEntity, (adoption) => adoption.seller)
+  @OneToOne(() => AdoptionEntity, (adoption) => adoption.seller)
   sellerAdoption: AdoptionEntity;
 
-  @ManyToOne(() => AdoptionEntity, (adoption) => adoption.buyer)
+  @OneToOne(() => AdoptionEntity, (adoption) => adoption.buyer)
   buyerAdoption: AdoptionEntity;
 }
