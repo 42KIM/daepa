@@ -3,14 +3,16 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Expose, Exclude } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import { USER_ROLE, USER_STATUS } from './user.constant';
+import { AdoptionEntity } from 'src/adoption/adoption.entity';
 
 @Entity({ name: 'users' })
-@Index('UNIQUE_USER_ID', ['user_id'], { unique: true })
+@Index('UNIQUE_USER_ID', ['userId'], { unique: true })
 @Index('UNIQUE_EMAIL', ['email'], { unique: true })
 @Index('UNIQUE_USER_NAME', ['name'], { unique: true })
 export class UserEntity {
@@ -18,9 +20,8 @@ export class UserEntity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @Expose({ name: 'userId' })
   @Column()
-  user_id: string;
+  userId: string;
 
   @Column()
   name: string;
@@ -34,17 +35,14 @@ export class UserEntity {
   })
   role: USER_ROLE;
 
-  @Expose({ name: 'isBiz' })
   @Column({ default: false })
-  is_biz: boolean;
+  isBiz: boolean; // is_biz로 자동 변환됨
 
-  @Expose({ name: 'refreshToken' })
   @Column({ type: 'varchar', nullable: true })
-  refresh_token?: string | null;
+  refreshToken?: string | null; // refresh_token으로 자동 변환됨
 
-  @Expose({ name: 'refreshTokenExpiresAt' })
   @Column({ type: 'datetime', nullable: true })
-  refresh_token_expires_at?: Date | null;
+  refreshTokenExpiresAt?: Date | null; // refresh_token_expires_at으로 자동 변환됨
 
   @Column({
     type: 'enum',
@@ -52,13 +50,12 @@ export class UserEntity {
   })
   status: USER_STATUS;
 
-  @Expose({ name: 'createdAt' })
-  @Column()
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date; // created_at으로 자동 변환됨
 
-  @Exclude()
-  @Column()
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date; // updated_at으로 자동 변환됨
+
+  @OneToOne(() => AdoptionEntity, (adoption) => adoption)
+  adoption: AdoptionEntity;
 }
