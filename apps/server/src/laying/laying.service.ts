@@ -17,11 +17,11 @@ export class LayingService {
       layingDate: createLayingDto.layingDate,
     });
 
-    const nextClutchOrder = clutchEggs + 1;
+    const incrementedLayingOrder = clutchEggs + 1;
 
     const layingEntity = this.layingRepository.create({
       ...createLayingDto,
-      layingOrder: nextClutchOrder,
+      layingOrder: incrementedLayingOrder,
     });
     return await this.layingRepository.save(layingEntity);
   }

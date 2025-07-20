@@ -9,6 +9,9 @@ import {
 import { LAYING_EGG_TYPE } from './laying.constants';
 
 @Entity({ name: 'layings' })
+@Index('UNIQUE_LAYING_ORDER', ['matingId', 'layingDate', 'layingOrder'], {
+  unique: true,
+})
 @Index('UNIQUE_EGG_ID', ['eggId'], {
   unique: true,
 })
