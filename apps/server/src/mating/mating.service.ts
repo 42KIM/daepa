@@ -4,7 +4,7 @@ import { MatingEntity } from './mating.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
-import { LayingBaseDto } from '../laying/laying.dto';
+import { LayingBaseDto, LayingDto } from '../laying/laying.dto';
 import { PetSummaryDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
 import { LayingEntity } from 'src/laying/laying.entity';
@@ -133,7 +133,9 @@ export class MatingService {
 
     return Object.entries(grouped).map(([layingDate, layingsForDate]) => ({
       layingDate: parseInt(layingDate, 10),
-      layings: layingsForDate.map((laying) => omit(laying, ['layingDate'])),
+      layings: layingsForDate.map((laying) =>
+        omit(laying, ['layingDate']),
+      ) as LayingDto[],
     }));
   }
 }

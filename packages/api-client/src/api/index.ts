@@ -42,7 +42,7 @@ import type {
   CommonResponseDto,
   EggDto,
   HatchedResponseDto,
-  MatingBaseDto,
+  MatingByParentsDto,
   ParentDto,
   PetControllerFindAll200,
   PetControllerGetPetsWithChildren200,
@@ -336,7 +336,7 @@ export const adoptionControllerUpdate = (
 };
 
 export const matingControllerFindAll = () => {
-  return useCustomInstance<MatingBaseDto[]>({
+  return useCustomInstance<MatingByParentsDto[]>({
     url: `http://localhost:4000/api/v1/mating`,
     method: "GET",
   });
@@ -1850,15 +1850,127 @@ export const getAdoptionControllerUpdateResponseMock = (
   ...overrideResponse,
 });
 
-export const getMatingControllerFindAllResponseMock = (): MatingBaseDto[] =>
+export const getMatingControllerFindAllResponseMock = (): MatingByParentsDto[] =>
   Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    matingId: faker.number.int({ min: undefined, max: undefined }),
-    userId: faker.string.alpha(20),
-    fatherId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-    motherId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-    matingDate: faker.number.int({ min: undefined, max: undefined }),
-    createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-    updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+    father: faker.helpers.arrayElement([
+      {
+        ...{
+          petId: faker.string.alpha(20),
+          owner: {
+            ...{
+              userId: faker.string.alpha(20),
+              name: faker.string.alpha(20),
+              role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
+              isBiz: faker.datatype.boolean(),
+              status: faker.helpers.arrayElement([
+                "pending",
+                "active",
+                "inactive",
+                "suspended",
+                "deleted",
+              ] as const),
+            },
+          },
+          name: faker.string.alpha(20),
+          species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
+          morphs: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          traits: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          birthdate: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          sex: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["M", "F", "N"] as const),
+            undefined,
+          ]),
+        },
+      },
+      undefined,
+    ]),
+    mother: faker.helpers.arrayElement([
+      {
+        ...{
+          petId: faker.string.alpha(20),
+          owner: {
+            ...{
+              userId: faker.string.alpha(20),
+              name: faker.string.alpha(20),
+              role: faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
+              isBiz: faker.datatype.boolean(),
+              status: faker.helpers.arrayElement([
+                "pending",
+                "active",
+                "inactive",
+                "suspended",
+                "deleted",
+              ] as const),
+            },
+          },
+          name: faker.string.alpha(20),
+          species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
+          morphs: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          traits: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          birthdate: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          sex: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["M", "F", "N"] as const),
+            undefined,
+          ]),
+        },
+      },
+      undefined,
+    ]),
+    matingsByDate: Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1,
+    ).map(() => ({
+      id: faker.number.int({ min: undefined, max: undefined }),
+      matingDate: faker.number.int({ min: undefined, max: undefined }),
+      layingsByDate: faker.helpers.arrayElement([
+        Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+          layingDate: faker.number.int({ min: undefined, max: undefined }),
+          layings: Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+          ).map(() => ({
+            id: faker.number.int({ min: undefined, max: undefined }),
+            layingOrder: faker.number.int({ min: undefined, max: undefined }),
+            eggType: faker.helpers.arrayElement([
+              faker.helpers.arrayElement(["FR", "UN"] as const),
+              undefined,
+            ]),
+            eggId: faker.string.alpha(20),
+            temperture: faker.helpers.arrayElement([
+              faker.number.int({ min: undefined, max: undefined }),
+              undefined,
+            ]),
+          })),
+        })),
+        undefined,
+      ]),
+    })),
   }));
 
 export const getMatingControllerCreateMatingResponseMock = (
@@ -2585,10 +2697,10 @@ export const getAdoptionControllerUpdateMockHandler = (
 
 export const getMatingControllerFindAllMockHandler = (
   overrideResponse?:
-    | MatingBaseDto[]
+    | MatingByParentsDto[]
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<MatingBaseDto[]> | MatingBaseDto[]),
+      ) => Promise<MatingByParentsDto[]> | MatingByParentsDto[]),
 ) => {
   return http.get("*/api/v1/mating", async (info) => {
     await delay(1000);

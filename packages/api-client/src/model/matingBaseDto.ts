@@ -8,7 +8,7 @@
 
 export interface MatingBaseDto {
   /** Mating ID */
-  matingId: number;
+  id: number;
   /** User ID */
   userId: string;
   /** Father ID */

@@ -76,3 +76,11 @@ export class CreateLayingDto extends PickType(LayingBaseDto, [
   'eggType',
   'temperture',
 ]) {}
+
+export class LayingDto extends PickType(LayingBaseDto, [
+  'id',
+  'layingOrder',
+  'eggType',
+  'eggId',
+  'temperture',
+]) {}
