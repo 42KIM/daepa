@@ -1,9 +1,9 @@
 import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
 import { PetService } from '../pet.service';
-import { PageMetaDto, PageOptionsDto, PageDto } from 'src/common/page.dto';
+import { PageMetaDto, PageDto } from 'src/common/page.dto';
 import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
 import { ApiResponse, getSchemaPath } from '@nestjs/swagger';
-import { PetDto } from '../pet.dto';
+import { PetDto, PetFilterDto } from '../pet.dto';
 import { ApiExtraModels } from '@nestjs/swagger';
 import { JwtUser } from 'src/auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
@@ -32,7 +32,7 @@ export class BrPetController {
     },
   })
   async findAll(
-    @Query() pageOptionsDto: PageOptionsDto,
+    @Query() pageOptionsDto: PetFilterDto,
     @JwtUser() token: JwtUserPayload,
   ): Promise<PageDto<PetDto>> {
     return this.petService.getPetListFull(pageOptionsDto, token.userId);

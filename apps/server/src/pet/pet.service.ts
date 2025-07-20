@@ -8,6 +8,7 @@ import {
   PetSummaryDto,
   ParentWithChildrenDto,
   UpdatePetDto,
+  PetFilterDto,
 } from './pet.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { PageOptionsDto, PageDto, PageMetaDto } from 'src/common/page.dto';
@@ -136,20 +137,137 @@ export class PetService {
   }
 
   async getPetListFull(
-    pageOptionsDto: PageOptionsDto,
+    searchDto: PetFilterDto,
     userId: string,
   ): Promise<PageDto<PetDto>> {
-    const { data, pageMeta } = await this.getPetList<PetDto>(
-      pageOptionsDto,
-      PetDto,
-      userId,
-    );
+    const queryBuilder = this.createPetWithOwnerQueryBuilder(userId);
 
-    if (data.length === 0) {
-      return new PageDto([], pageMeta);
+    // adoption 테이블을 LEFT JOIN으로 연결
+    queryBuilder
+      .leftJoin('adoptions', 'adoption', 'adoption.pet_id = pets.pet_id')
+      .andWhere(
+        '(adoption.is_deleted = :isDeleted OR adoption.is_deleted IS NULL)',
+        { isDeleted: false },
+      );
+
+    // 키워드 검색 (이름, 설명)
+    if (searchDto.keyword) {
+      queryBuilder.andWhere(
+        '(pets.name LIKE :keyword OR pets.desc LIKE :keyword)',
+        { keyword: `%${searchDto.keyword}%` },
+      );
     }
 
-    const petIds = data.map((pet) => pet.petId);
+    // 종별 필터
+    if (searchDto.species) {
+      queryBuilder.andWhere('pets.species = :species', {
+        species: searchDto.species,
+      });
+    }
+
+    // 성별 필터
+    if (searchDto.sex) {
+      queryBuilder.andWhere('pets.sex = :sex', { sex: searchDto.sex });
+    }
+
+    // 소유자별 필터
+    if (searchDto.ownerId) {
+      queryBuilder.andWhere('pets.ownerId = :ownerId', {
+        ownerId: searchDto.ownerId,
+      });
+    }
+
+    // 공개 여부 필터
+    if (searchDto.isPublic !== undefined) {
+      queryBuilder.andWhere('pets.isPublic = :isPublic', {
+        isPublic: searchDto.isPublic,
+      });
+    }
+
+    // 몸무게 범위 필터
+    if (searchDto.minWeight !== undefined) {
+      queryBuilder.andWhere('pets.weight >= :minWeight', {
+        minWeight: searchDto.minWeight,
+      });
+    }
+    if (searchDto.maxWeight !== undefined) {
+      queryBuilder.andWhere('pets.weight <= :maxWeight', {
+        maxWeight: searchDto.maxWeight,
+      });
+    }
+
+    // 생년월일 범위 필터
+    if (searchDto.minBirthdate !== undefined) {
+      queryBuilder.andWhere('pets.birthdate >= :minBirthdate', {
+        minBirthdate: searchDto.minBirthdate,
+      });
+    }
+    if (searchDto.maxBirthdate !== undefined) {
+      queryBuilder.andWhere('pets.birthdate <= :maxBirthdate', {
+        maxBirthdate: searchDto.maxBirthdate,
+      });
+    }
+
+    // 모프 검색 (JSON 배열에서 포함 여부 확인)
+    if (searchDto.morphs && searchDto.morphs.length > 0) {
+      searchDto.morphs.forEach((morph, index) => {
+        queryBuilder.andWhere(`JSON_CONTAINS(pets.morphs, :morph${index})`, {
+          [`morph${index}`]: JSON.stringify(morph),
+        });
+      });
+    }
+
+    // 형질 검색
+    if (searchDto.traits && searchDto.traits.length > 0) {
+      searchDto.traits.forEach((trait, index) => {
+        queryBuilder.andWhere(`JSON_CONTAINS(pets.traits, :trait${index})`, {
+          [`trait${index}`]: JSON.stringify(trait),
+        });
+      });
+    }
+
+    // 먹이 검색
+    if (searchDto.foods) {
+      queryBuilder.andWhere(`JSON_CONTAINS(pets.foods, :food)`, {
+        food: JSON.stringify(searchDto.foods),
+      });
+    }
+
+    // 판매 상태 검색
+    if (searchDto.status) {
+      queryBuilder.andWhere('adoption.status = :status', {
+        status: searchDto.status,
+      });
+    }
+
+    // 정렬 및 페이징
+    queryBuilder
+      .orderBy('pets.createdAt', searchDto.order)
+      .skip(searchDto.skip)
+      .take(searchDto.itemPerPage);
+
+    const totalCount = await queryBuilder.getCount();
+    const { entities } = await queryBuilder.getRawAndEntities();
+
+    const petList = entities.map((entity) => {
+      const plainEntity = instanceToPlain(entity);
+      plainEntity.weight = plainEntity.weight
+        ? Number(plainEntity.weight)
+        : undefined;
+      return plainEntity;
+    });
+
+    const petDtos = petList.map((pet) => plainToInstance(PetDto, pet));
+
+    if (petDtos.length === 0) {
+      const pageMetaDto = new PageMetaDto({
+        totalCount,
+        pageOptionsDto: searchDto,
+      });
+      return new PageDto([], pageMetaDto);
+    }
+
+    const petIds = petDtos.map((pet) => pet.petId);
 
     // 배치로 부모 정보 조회
     const [fathers, mothers] = await Promise.all([
@@ -160,7 +278,7 @@ export class PetService {
     // 배치로 분양 정보 조회
     const adoptions = await this.getAdoptionsBatch(petIds);
 
-    const petListFullWithParent = data.map((pet) => {
+    const petListFullWithParent = petDtos.map((pet) => {
       // 부모 정보 매핑
       const father = fathers.find((f) => f.petId === pet.petId);
       if (father) {
@@ -181,6 +299,8 @@ export class PetService {
             ? Math.floor(Number(adoption.price))
             : undefined,
           adoptionDate: adoption.adoptionDate,
+          memo: adoption.memo,
+          buyerId: adoption.buyerId,
           status: adoption.status,
         };
       }
@@ -188,7 +308,11 @@ export class PetService {
       return pet;
     });
 
-    return new PageDto(petListFullWithParent, pageMeta);
+    const pageMetaDto = new PageMetaDto({
+      totalCount,
+      pageOptionsDto: searchDto,
+    });
+    return new PageDto(petListFullWithParent, pageMetaDto);
   }
 
   async getPetListSummary(

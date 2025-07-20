@@ -409,6 +409,8 @@ export const SIDEBAR_ITEMS = [
   },
 ];
 
+export const FOOD_LIST = ["판게아 인섹트", "귀뚜라미", "누에", "지렙 인섹트"];
+
 export const FOOD_BADGE_COLORS: Record<string, string> = {
   "판게아 인섹트": "bg-indigo-300",
   귀뚜라미: "bg-gray-300",

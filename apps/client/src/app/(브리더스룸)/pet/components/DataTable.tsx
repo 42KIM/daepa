@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SearchFilter } from "./SearchFilter";
+import { Filters } from "./Filters";
 import useTableStore from "../store/table";
 import { useRouter } from "next/navigation";
 import Add from "@mui/icons-material/Add";
@@ -87,7 +87,8 @@ export const DataTable = ({
   return (
     <div className="relative w-full">
       <div className="w-full">
-        <SearchFilter table={table} />
+        <Filters table={table} />
+
         <div className="rounded-md border">
           <Table>
             <TableHeader>
