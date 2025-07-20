@@ -17,5 +17,5 @@ export interface CreateLayingDto {
   /** 알 ID */
   eggId: string;
   /** 해칭 온도 */
-  temperture?: number;
+  temperature?: number;
 }

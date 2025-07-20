@@ -48,7 +48,7 @@ export class MatingService {
         'layings.layingDate',
         'layings.layingOrder',
         'layings.eggType',
-        'layings.temperture',
+        'layings.temperature',
         'parents.petId',
         'parents.name',
         'parents.morphs',

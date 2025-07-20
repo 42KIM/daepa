@@ -54,7 +54,7 @@ export class LayingBaseDto {
     required: false,
   })
   @IsNumber()
-  temperture?: number;
+  temperature?: number;
 
   @ApiProperty({
     description: '생성일',
@@ -74,7 +74,7 @@ export class CreateLayingDto extends PickType(LayingBaseDto, [
   'layingDate',
   'eggId',
   'eggType',
-  'temperture',
+  'temperature',
 ]) {}
 
 export class LayingDto extends PickType(LayingBaseDto, [
@@ -82,5 +82,5 @@ export class LayingDto extends PickType(LayingBaseDto, [
   'layingOrder',
   'eggType',
   'eggId',
-  'temperture',
+  'temperature',
 ]) {}

@@ -1962,7 +1962,7 @@ export const getMatingControllerFindAllResponseMock = (): MatingByParentsDto[] =
               undefined,
             ]),
             eggId: faker.string.alpha(20),
-            temperture: faker.helpers.arrayElement([
+            temperature: faker.helpers.arrayElement([
               faker.number.int({ min: undefined, max: undefined }),
               undefined,
             ]),

@@ -32,7 +32,7 @@ export class LayingEntity {
   eggType: LAYING_EGG_TYPE;
 
   @Column({ nullable: true })
-  temperture: number;
+  temperature: number;
 
   @CreateDateColumn()
   createdAt: Date;
