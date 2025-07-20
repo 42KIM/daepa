@@ -11,8 +11,7 @@ import { LayingEntity } from 'src/laying/laying.entity';
 
 interface MatingWithRelations extends MatingEntity {
   layings?: Partial<LayingEntity>[];
-  father?: Partial<PetEntity>;
-  mother?: Partial<PetEntity>;
+  parents?: Partial<PetEntity>[];
 }
 
 @Injectable()
@@ -26,48 +25,36 @@ export class MatingService {
     const result = (await this.matingRepository
       .createQueryBuilder('matings')
       .leftJoinAndMapMany(
-        'matings.layings', // matings에 할당될 필드명
-        LayingEntity, // 매핑할 엔티티
-        'layings', // 매핑할 엔티티 alias
-        'layings.matingId = matings.id', // JOIN 조건
+        'matings.layings',
+        LayingEntity,
+        'layings',
+        'layings.matingId = matings.id',
       )
-      .leftJoinAndMapOne(
-        'matings.father',
+      .leftJoinAndMapMany(
+        'matings.parents',
         PetEntity,
-        'father',
-        'father.petId = matings.fatherId',
-      )
-      .leftJoinAndMapOne(
-        'matings.mother',
-        PetEntity,
-        'mother',
-        'mother.petId = matings.motherId',
+        'parents',
+        'parents.petId IN (matings.fatherId, matings.motherId)',
       )
       .select([
         'matings.id',
         'matings.matingDate',
+        'matings.fatherId',
+        'matings.motherId',
         'layings.id',
         'layings.eggId',
         'layings.layingDate',
         'layings.layingOrder',
         'layings.eggType',
         'layings.temperture',
-        'father.petId',
-        'father.name',
-        'father.morphs',
-        'father.species',
-        'father.sex',
-        'father.birthdate',
-        'father.growth',
-        'father.weight',
-        'mother.petId',
-        'mother.name',
-        'mother.morphs',
-        'mother.species',
-        'mother.sex',
-        'mother.birthdate',
-        'mother.growth',
-        'mother.weight',
+        'parents.petId',
+        'parents.name',
+        'parents.morphs',
+        'parents.species',
+        'parents.sex',
+        'parents.birthdate',
+        'parents.growth',
+        'parents.weight',
       ])
       .where('matings.user_id = :userId', { userId })
       .orderBy('matings.createdAt', 'DESC')
@@ -79,14 +66,13 @@ export class MatingService {
       const layingsDto = mating.layings?.map((laying) =>
         plainToInstance(LayingBaseDto, laying),
       );
-      const fatherSummaryDto = plainToInstance(PetSummaryDto, mating.father);
-      const motherSummaryDto = plainToInstance(PetSummaryDto, mating.mother);
-
+      const parentsDto = mating.parents?.map((parent) =>
+        plainToInstance(PetSummaryDto, parent),
+      );
       return {
         ...matingDto,
         layings: layingsDto,
-        father: fatherSummaryDto,
-        mother: motherSummaryDto,
+        parents: parentsDto,
       };
     });
   }
