@@ -37,6 +37,12 @@ import { AdoptionEntity } from './adoption/adoption.entity';
 import { AdoptionController } from './adoption/adoption.controller';
 import { AdoptionService } from './adoption/adoption.service';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { MatingController } from './mating/mating.controller';
+import { MatingService } from './mating/mating.service';
+import { MatingEntity } from './mating/mating.entity';
+import { LayingEntity } from './laying/laying.entity';
+import { LayingController } from './laying/laying.controller';
+import { LayingService } from './laying/laying.service';
 
 const ENTITIES = [
   UserEntity,
@@ -46,6 +52,8 @@ const ENTITIES = [
   ParentEntity,
   EggEntity,
   AdoptionEntity,
+  MatingEntity,
+  LayingEntity,
 ];
 
 @Module({
@@ -84,6 +92,8 @@ const ENTITIES = [
     AuthController,
     UserController,
     AdoptionController,
+    MatingController,
+    LayingController,
   ],
   providers: [
     AppService,
@@ -99,6 +109,8 @@ const ENTITIES = [
     GoogleStrategy,
     JwtStrategy,
     AdoptionService,
+    MatingService,
+    LayingService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
