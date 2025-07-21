@@ -1,6 +1,6 @@
 import { PetDto, PetDtoSex } from "@repo/api-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import { Expand, Shrink } from "lucide-react";
@@ -25,12 +25,6 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
       setCurrentImageIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
     }
   };
-
-  const weightFixed = useMemo(() => {
-    if (!pet.weight) return null;
-    const weight = Number(pet.weight);
-    return `${Number.isInteger(weight) ? weight : weight.toFixed(1)}g`;
-  }, [pet.weight]);
 
   return (
     <div className="relative h-full w-full">
@@ -146,8 +140,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
               )}
             >
               <div>
-                {weightFixed}
-                {!!weightFixed && !!pet.birthdate && " / "}
+                {pet.weight && `${pet.weight}g / `}
                 {pet.birthdate ?? "-"}
               </div>
               {SPECIES_KOREAN_INFO[pet.species]} / {GENDER_KOREAN_INFO[pet.sex ?? PetDtoSex.NON]}

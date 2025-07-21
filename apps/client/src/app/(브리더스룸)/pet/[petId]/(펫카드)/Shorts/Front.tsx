@@ -127,11 +127,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
               <h1 className="text-2xl font-bold">{pet.name}</h1>
               <div className="whitespace-nowrap text-sm text-gray-300">
                 <div>
-                  {pet.weight &&
-                    (() => {
-                      const weight = Number(pet.weight);
-                      return `${Number.isInteger(weight) ? weight : weight.toFixed(1)}g / `;
-                    })()}
+                  {pet.weight && `${pet.weight}g / `}
                   {pet.birthdate ? formatDateToYYYYMMDDString(pet.birthdate, "yy.MM.dd") : "-"}
                 </div>
                 {SPECIES_KOREAN_INFO[pet.species]} / {GENDER_KOREAN_INFO[pet.sex ?? PetDtoSex.NON]}

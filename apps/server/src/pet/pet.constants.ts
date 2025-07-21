@@ -24,3 +24,10 @@ export enum PET_ADOPTION_LOCATION {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
 }
+
+export enum PET_GROWTH {
+  BABY = 'BABY', // 베이비
+  ADULT = 'ADULT', // 아성체
+  JUNIOR = 'JUNIOR', // 준성체
+  SENIOR = 'SENIOR', // 성체
+}

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { UpdatePetDtoSpecies } from "./updatePetDtoSpecies";
+import type { UpdatePetDtoGrowth } from "./updatePetDtoGrowth";
 import type { UpdatePetDtoSex } from "./updatePetDtoSex";
 import type { CreateParentDto } from "./createParentDto";
 
@@ -21,7 +22,7 @@ export interface UpdatePetDto {
   /** 펫 출생일 */
   birthdate?: number;
   /** 펫 성장단계 */
-  growth?: string;
+  growth?: UpdatePetDtoGrowth;
   /** 펫 공개 여부 */
   isPublic?: boolean;
   /** 펫 성별(수컷, 암컷, 미구분) */

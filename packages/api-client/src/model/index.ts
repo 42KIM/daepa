@@ -135,3 +135,7 @@ export * from "./userProfilePublicDto";
 export * from "./userProfilePublicDtoRole";
 export * from "./userProfilePublicDtoStatus";
 export * from "./verifyNameDto";
+export * from "./brPetControllerFindAllGrowth";
+export * from "./createPetDtoGrowth";
+export * from "./petDtoGrowth";
+export * from "./updatePetDtoGrowth";

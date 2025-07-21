@@ -4,7 +4,7 @@ import FileField from "./FileField";
 import NumberField from "./NumberField";
 import Close from "@mui/icons-material/Close";
 import ParentLink from "../../pet/components/ParentLink";
-import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
+import { GENDER_KOREAN_INFO, GROWTH_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
 import { toast } from "sonner";
 import { CalendarIcon, InfoIcon } from "lucide-react";
 import { useSelect } from "../../register/hooks/useSelect";
@@ -14,7 +14,7 @@ import { usePathname } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { ParentDtoRole, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
+import { ParentDtoRole, PetDtoGrowth, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
 interface FormFieldProps {
   label?: string;
   field: FormStep["field"];
@@ -149,7 +149,9 @@ export const FormField = ({
               ? (GENDER_KOREAN_INFO[value as PetDtoSex] ?? placeholder)
               : name === "species"
                 ? (SPECIES_KOREAN_INFO[value as PetDtoSpecies] ?? placeholder)
-                : ((value as string) ?? placeholder)}
+                : name === "growth"
+                  ? (GROWTH_KOREAN_INFO[value as PetDtoGrowth] ?? placeholder)
+                  : ((value as string) ?? placeholder)}
           </div>
         );
       case "multipleSelect":
