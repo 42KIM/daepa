@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
   IsEnum,
@@ -136,21 +136,40 @@ export class EggDto extends EggBaseDto {
   declare isDeleted?: boolean;
 }
 
-export class CreateEggDto extends OmitType(EggBaseDto, [
-  'eggId',
-  'name',
-  'owner',
-  'clutchOrder',
-  'hatchedPetId',
-] as const) {
-  @Exclude()
-  declare eggId: string;
+export class CreateEggDto {
+  @ApiProperty({
+    description: '알 종',
+    example: '크레스티드게코',
+    enum: PET_SPECIES,
+    'x-enumNames': Object.keys(PET_SPECIES),
+  })
+  @IsString()
+  @IsEnum(PET_SPECIES)
+  species: PET_SPECIES;
 
-  @Exclude()
-  declare clutchOrder: number;
+  @ApiProperty({
+    description: '산란일(yyyyMMdd)',
+    example: 20250101,
+  })
+  @IsNumber()
+  layingDate: number;
 
-  @Exclude()
-  declare hatchedPetId?: string;
+  @ApiProperty({
+    description: '차수(클러치)',
+    example: 1,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  clutch?: number;
+
+  @ApiProperty({
+    description: '알 정보',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  desc?: string;
 
   @ApiProperty({
     description: '해당 클러치 알 개수',

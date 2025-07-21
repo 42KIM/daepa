@@ -1,6 +1,7 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType, IntersectionType } from '@nestjs/swagger';
 import { IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
 import { LAYING_EGG_TYPE } from './laying.constants';
+import { CreateEggDto } from 'src/egg/egg.dto';
 
 export class LayingBaseDto {
   @ApiProperty({
@@ -84,3 +85,8 @@ export class LayingDto extends PickType(LayingBaseDto, [
   'eggId',
   'temperature',
 ]) {}
+
+export class CreateLayingWithEggDto extends IntersectionType(
+  PickType(LayingBaseDto, ['matingId', 'layingDate', 'temperature']),
+  CreateEggDto,
+) {}

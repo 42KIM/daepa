@@ -12,7 +12,7 @@ import type {
   CreateAdoptionDto,
   CreateEggDto,
   CreateInitUserInfoDto,
-  CreateLayingDto,
+  CreateLayingWithEggDto,
   CreateMatingDto,
   CreateParentDto,
   CreatePetDto,
@@ -351,12 +351,12 @@ export const matingControllerCreateMating = (createMatingDto: CreateMatingDto) =
   });
 };
 
-export const layingControllerCreateLaying = (createLayingDto: CreateLayingDto) => {
+export const layingControllerCreateLaying = (createLayingWithEggDto: CreateLayingWithEggDto) => {
   return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/laying`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    data: createLayingDto,
+    data: createLayingWithEggDto,
   });
 };
 
