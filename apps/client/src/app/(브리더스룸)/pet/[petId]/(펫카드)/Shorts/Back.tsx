@@ -1,13 +1,14 @@
 import {
   FORM_STEPS,
   GENDER_KOREAN_INFO,
+  GROWTH_KOREAN_INFO,
   OPTION_STEPS,
   SPECIES_KOREAN_INFO,
 } from "@/app/(브리더스룸)/constants";
 
 import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import ParentLink from "../../../components/ParentLink";
-import { PetDto, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
+import { PetDto, PetDtoGrowth, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
 import { FormStep } from "@/app/(브리더스룸)/register/types";
 import { formatDateToYYYYMMDDString } from "@/lib/utils";
 interface ExtendedPetDto extends PetDto {
@@ -48,7 +49,9 @@ const CardBack = ({ pet, setIsFlipped }: CardBackProps) => {
               ? (GENDER_KOREAN_INFO[pet[field.name] as PetDtoSex] ?? "")
               : field.name === "species"
                 ? (SPECIES_KOREAN_INFO[pet[field.name] as PetDtoSpecies] ?? "")
-                : ((pet[field.name] as string) ?? "")}
+                : field.name === "growth"
+                  ? (GROWTH_KOREAN_INFO[pet[field.name] as PetDtoGrowth] ?? "")
+                  : ((pet[field.name] as string) ?? "")}
           </div>
         );
       case "multipleSelect":

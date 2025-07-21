@@ -16,7 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   FOOD_BADGE_COLORS,
   FOOD_BADGE_TEXT_COLORS,
+  FOOD_LIST,
   GENDER_KOREAN_INFO,
+  GROWTH_KOREAN_INFO,
   SALE_STATUS_KOREAN_INFO,
   SPECIES_KOREAN_INFO,
   STATUS_MAP,
@@ -29,9 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ParentDtoStatus, PetDto, PetDtoSpecies } from "@repo/api-client";
+import {
+  AdoptionDtoStatus,
+  BrPetControllerFindAllParams,
+  ParentDtoStatus,
+  PetDto,
+  PetDtoGrowth,
+  PetDtoSpecies,
+} from "@repo/api-client";
 import { formatDateToYYYYMMDDString } from "@/lib/utils";
 import LinkButton from "../../components/LinkButton";
+import useSearchStore from "../store/search";
 
 function TableHeaderSelect({
   column,
@@ -44,12 +54,29 @@ function TableHeaderSelect({
   items: string[];
   renderItem?: (item: string) => string;
 }) {
+  const { searchFilters, setSearchFilters } = useSearchStore();
+  const columnId = column.id === "adoption_status" ? "status" : column.id;
+  const handleValueChange = (value: string) => {
+    if (value === "all") {
+      setSearchFilters({
+        ...searchFilters,
+        [columnId]: undefined,
+      });
+      return;
+    }
+
+    setSearchFilters({
+      ...searchFilters,
+      [columnId]: value,
+    });
+  };
+
   return (
     <div className="mb-1 mt-1 flex flex-col items-center">
       {title}
       <Select
-        value={column.getFilterValue()?.toString() ?? "all"}
-        onValueChange={(value) => column.setFilterValue(value === "all" ? "" : value)}
+        value={searchFilters[columnId as keyof BrPetControllerFindAllParams]?.toString() ?? "all"}
+        onValueChange={handleValueChange}
       >
         <SelectTrigger size="sm" className="mt-1">
           <SelectValue placeholder="전체" />
@@ -91,12 +118,32 @@ export const columns: ColumnDef<PetDto>[] = [
   },
   {
     accessorKey: "isPublic",
-    header: TABLE_HEADER.isPublic,
+    header: ({ column }) => {
+      return (
+        <TableHeaderSelect
+          column={column}
+          title={TABLE_HEADER.isPublic || ""}
+          items={["true", "false"]}
+          renderItem={(item) => (item === "true" ? "공개" : "비공개")}
+        />
+      );
+    },
     cell: ({ cell }) => <div className="capitalize">{cell.getValue() ? "✅" : ""}</div>,
   },
   {
     accessorKey: "adoption.status",
-    header: TABLE_HEADER.status,
+    header: ({ column }) => {
+      return (
+        <TableHeaderSelect
+          column={column}
+          title={TABLE_HEADER.status}
+          items={Object.values(AdoptionDtoStatus)}
+          renderItem={(item) =>
+            SALE_STATUS_KOREAN_INFO[item as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"
+          }
+        />
+      );
+    },
     cell: ({ cell }) => {
       const status = cell.getValue();
       return (
@@ -116,10 +163,8 @@ export const columns: ColumnDef<PetDto>[] = [
   },
   {
     accessorKey: "species",
-    header: ({ column, table }) => {
-      const uniqueSpecies = Array.from(
-        new Set(table.getCoreRowModel().rows.map((row) => row.getValue("species") as string)),
-      ).filter(Boolean);
+    header: ({ column }) => {
+      const uniqueSpecies = Object.keys(SPECIES_KOREAN_INFO);
 
       return (
         <TableHeaderSelect
@@ -137,14 +182,22 @@ export const columns: ColumnDef<PetDto>[] = [
   },
   {
     accessorKey: "growth",
-    header: ({ column, table }) => {
-      const uniqueSizes = Array.from(
-        new Set(table.getCoreRowModel().rows.map((row) => row.getValue("growth") as string)),
-      ).filter(Boolean);
+    header: ({ column }) => {
+      const uniqueSizes = Object.keys(GROWTH_KOREAN_INFO);
 
-      return <TableHeaderSelect column={column} title={TABLE_HEADER.growth} items={uniqueSizes} />;
+      return (
+        <TableHeaderSelect
+          column={column}
+          title={TABLE_HEADER.growth}
+          items={uniqueSizes}
+          renderItem={(item) => GROWTH_KOREAN_INFO[item as keyof typeof GROWTH_KOREAN_INFO]}
+        />
+      );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("growth")}</div>,
+    cell: ({ row }) => {
+      const growth = row.getValue("growth") as PetDtoGrowth;
+      return <div>{GROWTH_KOREAN_INFO[growth]}</div>;
+    },
   },
   {
     accessorKey: "morphs",
@@ -178,10 +231,8 @@ export const columns: ColumnDef<PetDto>[] = [
   },
   {
     accessorKey: "sex",
-    header: ({ column, table }) => {
-      const uniqueSexes = Array.from(
-        new Set(table.getCoreRowModel().rows.map((row) => row.getValue("sex") as string)),
-      ).filter(Boolean);
+    header: ({ column }) => {
+      const uniqueSexes = Object.keys(GENDER_KOREAN_INFO);
 
       return (
         <TableHeaderSelect
@@ -276,7 +327,11 @@ export const columns: ColumnDef<PetDto>[] = [
   },
   {
     accessorKey: "foods",
-    header: TABLE_HEADER.foods,
+    header: ({ column }) => {
+      const uniqueFoods = FOOD_LIST;
+
+      return <TableHeaderSelect column={column} title={TABLE_HEADER.foods} items={uniqueFoods} />;
+    },
     cell: ({ row }) => {
       const foods = row.getValue("foods") as string[];
 
@@ -294,81 +349,6 @@ export const columns: ColumnDef<PetDto>[] = [
       );
     },
   },
-  // {
-  //   accessorKey: "canBreed",
-  //   header: ({ column }) => {
-  //     return (
-  //       <TableHeaderSelect
-  //         column={column}
-  //         title={TABLE_HEADER.canBreed}
-  //         items={["true", "false"]}
-  //         renderItem={(item) => (item === "true" ? "O" : "X")}
-  //       />
-  //     );
-  //   },
-  //   cell: ({ row }) => <div className="capitalize">{row.getValue("canBreed") ? "O" : "X"}</div>,
-  //   filterFn: (row, id, filterValue) => {
-  //     if (filterValue === "") return true;
-  //     return row.getValue(id) === (filterValue === "true");
-  //   },
-  // },
-  // {
-  //   accessorKey: "breedingCount",
-  //   header: TABLE_HEADER.breedingCount,
-  //   cell: ({ row }) => {
-  //     const mating = row.original.mating;
-
-  //     return mating?.deliveryCount ? (
-  //       <div className="capitalize">{mating.deliveryCount + "회"}</div>
-  //     ) : (
-  //       <span>-</span>
-  //     );
-  //   },
-  // },
-  // {
-  //   accessorKey: "pairing",
-  //   header: TABLE_HEADER.pairing,
-  //   cell: ({ row }) => {
-  //     const mating = row.original.mating;
-
-  //     return mating?.pair ? (
-  //       <Button variant="ghost" asChild>
-  //         {mating.pair.map((pet) => (
-  //           <Link key={pet.petId} href={`/detail/${pet.petId}`}>
-  //             {pet.name}
-  //           </Link>
-  //         ))}
-  //       </Button>
-  //     ) : (
-  //       <span>-</span>
-  //     );
-  //   },
-  // },
-  // {
-  //   accessorKey: "saleInfo",
-  //   header: ({ column, table }) => {
-  //     const uniqueSaleInfos = Array.from(
-  //       new Set(table.getCoreRowModel().rows.map((row) => row.getValue("saleInfo") as string)),
-  //     ).filter(Boolean);
-
-  //     return (
-  //       <TableHeaderSelect
-  //         column={column}
-  //         title={TABLE_HEADER.saleInfo}
-  //         items={uniqueSaleInfos}
-  //         renderItem={(item) => SALE_KOREAN_INFO[item as keyof typeof SALE_KOREAN_INFO]}
-  //       />
-  //     );
-  //   },
-  //   cell: ({ row }) => {
-  //     const saleInfo = row.getValue("saleInfo") as string;
-  //     return (
-  //       <div className="capitalize">
-  //         {SALE_KOREAN_INFO[saleInfo as keyof typeof SALE_KOREAN_INFO]}
-  //       </div>
-  //     );
-  //   },
-  // },
   {
     id: "actions",
     enableHiding: false,

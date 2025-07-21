@@ -6,6 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 import type { BrPetControllerFindAllOrder } from "./brPetControllerFindAllOrder";
+import type { BrPetControllerFindAllSpecies } from "./brPetControllerFindAllSpecies";
+import type { BrPetControllerFindAllSex } from "./brPetControllerFindAllSex";
+import type { BrPetControllerFindAllStatus } from "./brPetControllerFindAllStatus";
+import type { BrPetControllerFindAllGrowth } from "./brPetControllerFindAllGrowth";
 
 export type BrPetControllerFindAllParams = {
   /**
@@ -20,4 +24,60 @@ export type BrPetControllerFindAllParams = {
    * 페이지당 항목 수
    */
   itemPerPage?: number;
+  /**
+   * 검색 키워드 (이름, 설명 등)
+   */
+  keyword?: string;
+  /**
+   * 펫 종
+   */
+  species?: BrPetControllerFindAllSpecies;
+  /**
+   * 펫 성별
+   */
+  sex?: BrPetControllerFindAllSex;
+  /**
+   * 펫 소유자 아이디
+   */
+  ownerId?: string;
+  /**
+   * 펫 공개 여부
+   */
+  isPublic?: boolean;
+  /**
+   * 펫 최소 몸무게
+   */
+  minWeight?: number;
+  /**
+   * 펫 최대 몸무게
+   */
+  maxWeight?: number;
+  /**
+   * 펫 최소 생년월일
+   */
+  minBirthdate?: number;
+  /**
+   * 펫 최대 생년월일
+   */
+  maxBirthdate?: number;
+  /**
+   * 펫 모프
+   */
+  morphs?: string[];
+  /**
+   * 펫 형질
+   */
+  traits?: string[];
+  /**
+   * 펫 먹이
+   */
+  foods?: string;
+  /**
+   * 판매 상태
+   */
+  status?: BrPetControllerFindAllStatus;
+  /**
+   * 펫 성장단계
+   */
+  growth?: BrPetControllerFindAllGrowth;
 };

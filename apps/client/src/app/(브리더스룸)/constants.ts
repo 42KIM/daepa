@@ -10,7 +10,13 @@ import {
   TreeDeciduous,
 } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
-import { PetDtoSex, PetDtoSpecies, UserDtoStatus, UserNotificationDtoType } from "@repo/api-client";
+import {
+  PetDtoGrowth,
+  PetDtoSex,
+  PetDtoSpecies,
+  UserDtoStatus,
+  UserNotificationDtoType,
+} from "@repo/api-client";
 
 export const REGISTER_PAGE = {
   FIRST: 1,
@@ -335,6 +341,15 @@ export const GENDER_KOREAN_INFO: Record<PetDtoSex, string> = {
   N: "미구분",
 };
 
+export const GROWTH_KOREAN_INFO: Record<PetDtoGrowth, string> = {
+  BABY: "베이비",
+  ADULT: "아성체",
+  JUNIOR: "준성체",
+  SENIOR: "성체",
+};
+
+export const FOOD_LIST = ["판게아 인섹트", "귀뚜라미", "냉동귀뚜라미", "누에", "지렙 인섹트"];
+
 export const SELECTOR_CONFIGS: Record<
   "species" | "growth" | "sex" | "traits" | "foods",
   SelectorConfig
@@ -345,7 +360,7 @@ export const SELECTOR_CONFIGS: Record<
   },
   growth: {
     title: "크기 선택",
-    selectList: ["베이비", "아성체", "준성체", "성체"],
+    selectList: Object.keys(GROWTH_KOREAN_INFO),
   },
   sex: {
     title: "성별 선택",
@@ -357,7 +372,7 @@ export const SELECTOR_CONFIGS: Record<
   },
   foods: {
     title: "먹이 선택",
-    selectList: ["판게아 인섹트", "귀뚜라미", "냉동귀뚜라미", "누에", "지렙 인섹트"],
+    selectList: FOOD_LIST,
   },
 };
 

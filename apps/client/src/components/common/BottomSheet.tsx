@@ -8,6 +8,8 @@ interface BottomSheetProps {
   onClose: () => void;
   children: React.ReactNode;
   buttonText?: string;
+  secondButtonText?: string;
+  onSecondButtonClick?: () => void;
   onClick?: () => void;
   fullWidth?: boolean;
 }
@@ -17,6 +19,8 @@ export default function BottomSheet({
   onClose,
   children,
   buttonText = "",
+  secondButtonText = "",
+  onSecondButtonClick = () => {},
   onClick = () => {},
   fullWidth = false,
 }: BottomSheetProps) {
@@ -57,12 +61,22 @@ export default function BottomSheet({
           <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-gray-200" />
           {children}
           {buttonText && (
-            <button
-              className="absolute bottom-4 left-4 right-4 h-[48px] rounded-xl bg-[#247DFE] py-3 font-bold text-white"
-              onClick={onClick}
-            >
-              {buttonText}
-            </button>
+            <div className="absolute bottom-4 left-4 right-4 flex h-[48px] gap-2">
+              {secondButtonText && (
+                <button
+                  className="flex-[1] rounded-xl bg-gray-200 py-3 font-semibold"
+                  onClick={onSecondButtonClick}
+                >
+                  {secondButtonText}
+                </button>
+              )}
+              <button
+                className="flex-[2] rounded-xl bg-[#247DFE] py-3 font-bold text-white"
+                onClick={onClick}
+              >
+                {buttonText}
+              </button>
+            </div>
           )}
         </div>
       </div>

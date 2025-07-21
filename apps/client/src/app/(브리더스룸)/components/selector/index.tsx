@@ -1,9 +1,9 @@
 "use client";
 
 import BottomSheet from "@/components/common/BottomSheet";
-import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
+import { GENDER_KOREAN_INFO, GROWTH_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
 import { useEffect, useState } from "react";
-import { PetDtoSpecies } from "@repo/api-client";
+import { PetDtoGrowth, PetDtoSpecies } from "@repo/api-client";
 import { PetDtoSex } from "@repo/api-client";
 
 interface SelectorProps {
@@ -41,7 +41,9 @@ const SelectButton = ({
       ? GENDER_KOREAN_INFO[item as PetDtoSex]
       : type === "species"
         ? SPECIES_KOREAN_INFO[item as PetDtoSpecies]
-        : item}
+        : type === "growth"
+          ? GROWTH_KOREAN_INFO[item as PetDtoGrowth]
+          : item}
   </button>
 );
 

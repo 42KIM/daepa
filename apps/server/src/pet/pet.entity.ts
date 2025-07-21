@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   OneToOne,
 } from 'typeorm';
-import { PET_SEX, PET_SPECIES } from './pet.constants';
+import { PET_GROWTH, PET_SEX, PET_SPECIES } from './pet.constants';
 import { AdoptionEntity } from 'src/adoption/adoption.entity';
 import { UserEntity } from 'src/user/user.entity';
 
@@ -41,8 +41,8 @@ export class PetEntity {
   @Column({ nullable: true })
   birthdate?: number; // 생년월일 (yyyyMMdd)
 
-  @Column({ nullable: true })
-  growth?: string; // 성장단계
+  @Column({ type: 'enum', enum: PET_GROWTH, nullable: true })
+  growth?: PET_GROWTH; // 성장단계
 
   @Column({ type: 'enum', enum: PET_SEX, nullable: true })
   sex?: PET_SEX; // 성별
