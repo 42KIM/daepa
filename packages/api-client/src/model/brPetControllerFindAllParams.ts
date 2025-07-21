@@ -9,6 +9,7 @@ import type { BrPetControllerFindAllOrder } from "./brPetControllerFindAllOrder"
 import type { BrPetControllerFindAllSpecies } from "./brPetControllerFindAllSpecies";
 import type { BrPetControllerFindAllSex } from "./brPetControllerFindAllSex";
 import type { BrPetControllerFindAllStatus } from "./brPetControllerFindAllStatus";
+import type { BrPetControllerFindAllGrowth } from "./brPetControllerFindAllGrowth";
 
 export type BrPetControllerFindAllParams = {
   /**
@@ -75,4 +76,8 @@ export type BrPetControllerFindAllParams = {
    * 판매 상태
    */
   status?: BrPetControllerFindAllStatus;
+  /**
+   * 펫 성장단계
+   */
+  growth?: BrPetControllerFindAllGrowth;
 };

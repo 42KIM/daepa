@@ -143,19 +143,18 @@ export class PetService {
     const queryBuilder = this.createPetWithOwnerQueryBuilder(userId);
 
     // adoption 테이블을 LEFT JOIN으로 연결
-    queryBuilder
-      .leftJoin('adoptions', 'adoption', 'adoption.pet_id = pets.pet_id')
-      .andWhere(
-        '(adoption.is_deleted = :isDeleted OR adoption.is_deleted IS NULL)',
-        { isDeleted: false },
-      );
+    queryBuilder.leftJoin(
+      'adoptions',
+      'adoption',
+      'adoption.pet_id = pets.pet_id AND adoption.is_deleted = :isDeleted',
+      { isDeleted: false },
+    );
 
-    // 키워드 검색 (이름, 설명)
+    // 키워드 검색 (이름)
     if (searchDto.keyword) {
-      queryBuilder.andWhere(
-        '(pets.name LIKE :keyword OR pets.desc LIKE :keyword)',
-        { keyword: `%${searchDto.keyword}%` },
-      );
+      queryBuilder.andWhere('pets.name LIKE :keyword', {
+        keyword: `%${searchDto.keyword}%`,
+      });
     }
 
     // 종별 필터
@@ -240,6 +239,12 @@ export class PetService {
       });
     }
 
+    if (searchDto.growth) {
+      queryBuilder.andWhere('pets.growth = :growth', {
+        growth: searchDto.growth,
+      });
+    }
+
     // 정렬 및 페이징
     queryBuilder
       .orderBy('pets.createdAt', searchDto.order)
@@ -249,15 +254,7 @@ export class PetService {
     const totalCount = await queryBuilder.getCount();
     const { entities } = await queryBuilder.getRawAndEntities();
 
-    const petList = entities.map((entity) => {
-      const plainEntity = instanceToPlain(entity);
-      plainEntity.weight = plainEntity.weight
-        ? Number(plainEntity.weight)
-        : undefined;
-      return plainEntity;
-    });
-
-    const petDtos = petList.map((pet) => plainToInstance(PetDto, pet));
+    const petDtos = entities.map((pet) => plainToInstance(PetDto, pet));
 
     if (petDtos.length === 0) {
       const pageMetaDto = new PageMetaDto({

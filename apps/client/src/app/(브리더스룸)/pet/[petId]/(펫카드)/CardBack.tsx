@@ -59,7 +59,7 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
         ...(foods && { foods }),
         ...(desc && { desc }),
         ...(birthdate && { birthdate: format(birthdate, "yyyyMMdd") }),
-        ...(weight && { weight: Number(weight) }),
+        ...(weight && { weight }),
       };
 
       await petControllerUpdate(pet.petId, updateData as UpdatePetDto);

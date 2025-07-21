@@ -7,6 +7,7 @@
  */
 import type { UserProfilePublicDto } from "./userProfilePublicDto";
 import type { PetDtoSpecies } from "./petDtoSpecies";
+import type { PetDtoGrowth } from "./petDtoGrowth";
 import type { PetDtoSex } from "./petDtoSex";
 import type { PetParentDto } from "./petParentDto";
 import type { PetAdoptionDto } from "./petAdoptionDto";
@@ -27,7 +28,7 @@ export interface PetDto {
   /** 펫 출생일 */
   birthdate?: number;
   /** 펫 성장단계 */
-  growth?: string;
+  growth?: PetDtoGrowth;
   /** 펫 공개 여부 */
   isPublic?: boolean;
   /** 펫 성별(수컷, 암컷, 미구분) */

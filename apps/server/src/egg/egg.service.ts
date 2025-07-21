@@ -27,7 +27,7 @@ import {
 import { PetService } from 'src/pet/pet.service';
 import { nanoid } from 'nanoid';
 import { isMySQLError } from 'src/common/error';
-import { PET_SEX } from 'src/pet/pet.constants';
+import { PET_GROWTH, PET_SEX } from 'src/pet/pet.constants';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 @Injectable()
@@ -333,7 +333,7 @@ export class EggService {
       name: egg.name,
       species: egg.species,
       sex: PET_SEX.NON,
-      growth: '베이비',
+      growth: PET_GROWTH.BABY,
     };
 
     const { father, mother } = await this.parentService.findParents(eggId);

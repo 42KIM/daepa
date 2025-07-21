@@ -12,6 +12,7 @@ import {
   ADOPTION_SALE_STATUS,
   PET_SEX,
   PET_SPECIES,
+  PET_GROWTH,
 } from './pet.constants';
 import {
   ApiProperty,
@@ -20,7 +21,7 @@ import {
   PickType,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { Exclude, Transform } from 'class-transformer';
 import { PARENT_STATUS } from 'src/parent/parent.constant';
 import { UserProfilePublicDto } from 'src/user/user.dto';
 import { CreateParentDto } from 'src/parent/parent.dto';
@@ -82,16 +83,23 @@ export class PetBaseDto {
   })
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  })
   birthdate?: number;
 
   @ApiProperty({
     description: '펫 성장단계',
-    example: '준성체',
+    example: 'JUNIOR',
     required: false,
+    enum: PET_GROWTH,
+    'x-enumNames': Object.keys(PET_GROWTH),
   })
   @IsOptional()
-  @IsString()
-  growth?: string;
+  @IsEnum(PET_GROWTH)
+  growth?: PET_GROWTH;
 
   @ApiProperty({
     description: '펫 공개 여부',
@@ -120,6 +128,11 @@ export class PetBaseDto {
   })
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  })
   weight?: number;
 
   @ApiProperty({
@@ -157,7 +170,7 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   'birthdate',
 ]) {
   @Exclude()
-  declare growth?: string;
+  declare growth?: PET_GROWTH;
 
   @Exclude()
   declare weight?: number;
@@ -239,6 +252,11 @@ export class PetAdoptionDto {
     example: 100000,
   })
   @IsNumber()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : Math.floor(num);
+  })
   price?: number;
 
   @ApiProperty({
@@ -485,4 +503,15 @@ export class PetFilterDto extends PageOptionsDto {
   @IsOptional()
   @IsEnum(ADOPTION_SALE_STATUS)
   status?: ADOPTION_SALE_STATUS; // 판매 상태 검색
+
+  @ApiProperty({
+    description: '펫 성장단계',
+    example: 'BABY',
+    enum: PET_GROWTH,
+    'x-enumNames': Object.keys(PET_GROWTH),
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(PET_GROWTH)
+  growth?: PET_GROWTH; // 크기 검색
 }

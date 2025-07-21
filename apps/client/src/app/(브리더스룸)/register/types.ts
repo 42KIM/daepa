@@ -1,5 +1,3 @@
-import { PetParentDto } from "@repo/api-client";
-
 export type FieldName =
   | "species"
   | "morphs"
@@ -34,29 +32,6 @@ export type FormStep = {
     validation?: (value: string) => boolean;
   };
 };
-
-export interface FormData {
-  species?: string;
-  morphs?: string[];
-  traits?: string[];
-  growth?: string;
-  sex?: "M" | "F" | "N";
-  name?: string;
-  birthdate?: string;
-  weight?: number;
-  desc?: string;
-  photos?: any[];
-  foods?: string[];
-  fatherId?: string;
-  motherId?: string;
-  father?: PetParentDto & { message: string };
-  mother?: PetParentDto & { message: string };
-  petId?: string;
-  ownerId?: string;
-  clutch?: number;
-  clutchCount?: number;
-  layingDate?: string;
-}
 
 export interface FormErrors {
   [key: string]: string;

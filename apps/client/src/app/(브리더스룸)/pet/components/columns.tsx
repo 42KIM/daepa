@@ -18,6 +18,7 @@ import {
   FOOD_BADGE_TEXT_COLORS,
   FOOD_LIST,
   GENDER_KOREAN_INFO,
+  GROWTH_KOREAN_INFO,
   SALE_STATUS_KOREAN_INFO,
   SPECIES_KOREAN_INFO,
   STATUS_MAP,
@@ -35,6 +36,7 @@ import {
   BrPetControllerFindAllParams,
   ParentDtoStatus,
   PetDto,
+  PetDtoGrowth,
   PetDtoSpecies,
 } from "@repo/api-client";
 import { formatDateToYYYYMMDDString } from "@/lib/utils";
@@ -181,11 +183,21 @@ export const columns: ColumnDef<PetDto>[] = [
   {
     accessorKey: "growth",
     header: ({ column }) => {
-      const uniqueSizes = ["베이비", "아성체", "준성체", "성체"];
+      const uniqueSizes = Object.keys(GROWTH_KOREAN_INFO);
 
-      return <TableHeaderSelect column={column} title={TABLE_HEADER.growth} items={uniqueSizes} />;
+      return (
+        <TableHeaderSelect
+          column={column}
+          title={TABLE_HEADER.growth}
+          items={uniqueSizes}
+          renderItem={(item) => GROWTH_KOREAN_INFO[item as keyof typeof GROWTH_KOREAN_INFO]}
+        />
+      );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("growth")}</div>,
+    cell: ({ row }) => {
+      const growth = row.getValue("growth") as PetDtoGrowth;
+      return <div>{GROWTH_KOREAN_INFO[growth]}</div>;
+    },
   },
   {
     accessorKey: "morphs",

@@ -44,7 +44,7 @@ export function Filters<TData>({ table }: FiltersProps<TData>) {
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
-            placeholder="펫 이름 또는 설명으로 검색..."
+            placeholder="펫 이름으로 검색"
             value={filters.keyword || ""}
             onChange={(e) => setFilters((prev) => ({ ...prev, keyword: e.target.value }))}
             className="pl-10"
