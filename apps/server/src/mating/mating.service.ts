@@ -10,6 +10,8 @@ import { groupBy, omit } from 'es-toolkit';
 import { PET_SEX } from 'src/pet/pet.constants';
 import { EggEntity } from 'src/egg/egg.entity';
 import { EggBaseDto, EggDto } from 'src/egg/egg.dto';
+import { UpdateMatingDto } from './mating.dto';
+import { Not } from 'typeorm';
 
 interface MatingWithRelations extends MatingEntity {
   eggs?: Partial<EggEntity>[];
@@ -21,6 +23,8 @@ export class MatingService {
   constructor(
     @InjectRepository(MatingEntity)
     private readonly matingRepository: Repository<MatingEntity>,
+    @InjectRepository(EggEntity)
+    private readonly eggRepository: Repository<EggEntity>,
   ) {}
 
   async findAll(userId: string) {
@@ -91,6 +95,58 @@ export class MatingService {
       userId,
     });
     return await this.matingRepository.save(matingEntity);
+  }
+
+  async updateMating(
+    userId: string,
+    matingId: number,
+    updateMatingDto: UpdateMatingDto,
+  ) {
+    const mating = await this.matingRepository.findOne({
+      where: { id: matingId, userId },
+    });
+
+    if (!mating) {
+      throw new BadRequestException('메이팅 정보를 찾을 수 없습니다.');
+    }
+
+    // 중복 체크 (자신을 제외하고)
+    const existingMating = await this.matingRepository.findOne({
+      where: {
+        userId,
+        fatherId: updateMatingDto.fatherId,
+        motherId: updateMatingDto.motherId,
+        matingDate: updateMatingDto.matingDate,
+        id: Not(matingId),
+      },
+    });
+
+    if (existingMating) {
+      throw new BadRequestException('이미 존재하는 메이팅 정보입니다.');
+    }
+
+    await this.matingRepository.update(matingId, updateMatingDto);
+  }
+
+  async deleteMating(userId: string, matingId: number) {
+    const mating = await this.matingRepository.findOne({
+      where: { id: matingId, userId },
+    });
+
+    if (!mating) {
+      throw new BadRequestException('메이팅 정보를 찾을 수 없습니다.');
+    }
+
+    // 연관된 알이 있는지 확인
+    const relatedEggs = await this.eggRepository.find({
+      where: { matingId, isDeleted: false },
+    });
+
+    if (relatedEggs.length > 0) {
+      throw new BadRequestException('연관된 알이 있어 삭제할 수 없습니다.');
+    }
+
+    await this.matingRepository.delete(matingId);
   }
 
   private formatResponseByDate(data: MatingWithRelations[]) {

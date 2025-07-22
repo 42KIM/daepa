@@ -13,10 +13,7 @@ import {
   PetSummaryDto,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Info } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -27,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SPECIES_KOREAN_INFO } from "../../constants";
+import CalendarInput from "./CalendarInput";
 
 interface CreateLayingModalProps {
   isOpen: boolean;
@@ -177,42 +175,20 @@ const CreateLayingModal = ({
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="layingDate">산란일</Label>
             <div className="col-span-3">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    data-field-name="layingDate"
-                    className={cn(
-                      "flex w-full items-center justify-between",
-                      formData.layingDate && "text-black",
-                    )}
-                  >
-                    {formData.layingDate
-                      ? format(new Date(formData.layingDate), "yyyy년 MM월 dd일")
-                      : "산란일을 선택하세요"}
-                    <CalendarIcon className="h-4 w-4 opacity-50" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.layingDate ? new Date(formData.layingDate) : undefined}
-                    onSelect={(date) => {
-                      if (date) {
-                        setFormData((prev) => ({ ...prev, layingDate: date.toISOString() }));
+              <CalendarInput
+                placeholder="산란일을 선택하세요"
+                value={formData.layingDate}
+                onSelect={(date) => {
+                  setFormData((prev) => ({ ...prev, layingDate: date }));
 
-                        const trigger = document.querySelector(
-                          `button[data-field-name="layingDate"]`,
-                        );
-                        if (trigger) {
-                          (trigger as HTMLButtonElement).click();
-                        }
-                      }
-                    }}
-                    disabled={isDateDisabled}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                  const trigger = document.querySelector(`button[data-field-name="layingDate"]`);
+                  if (trigger) {
+                    (trigger as HTMLButtonElement).click();
+                  }
+                }}
+                disabled={isDateDisabled}
+              />
+
               {lastLayingDate && (
                 <div className="mt-1 text-sm">
                   <div className="flex items-center gap-1 text-gray-500">

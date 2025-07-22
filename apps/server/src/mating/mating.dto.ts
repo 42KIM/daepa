@@ -67,6 +67,12 @@ export class CreateMatingDto extends PickType(MatingBaseDto, [
   'matingDate',
 ]) {}
 
+export class UpdateMatingDto extends PickType(MatingBaseDto, [
+  'fatherId',
+  'motherId',
+  'matingDate',
+]) {}
+
 class LayingByDateDto {
   @ApiProperty({
     description: '산란 날짜',

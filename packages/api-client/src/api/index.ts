@@ -22,6 +22,7 @@ import type {
   PetControllerGetPetsWithChildrenParams,
   UpdateAdoptionDto,
   UpdateEggDto,
+  UpdateMatingDto,
   UpdateParentDto,
   UpdatePetDto,
   UpdateUserNotificationDto,
@@ -350,6 +351,25 @@ export const matingControllerCreateMating = (createMatingDto: CreateMatingDto) =
   });
 };
 
+export const matingControllerUpdateMating = (
+  matingId: number,
+  updateMatingDto: UpdateMatingDto,
+) => {
+  return useCustomInstance<CommonResponseDto>({
+    url: `http://localhost:4000/api/v1/mating/${matingId}`,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    data: updateMatingDto,
+  });
+};
+
+export const matingControllerDeleteMating = (matingId: number) => {
+  return useCustomInstance<CommonResponseDto>({
+    url: `http://localhost:4000/api/v1/mating/${matingId}`,
+    method: "DELETE",
+  });
+};
+
 export type PetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindAll>>
 >;
@@ -454,6 +474,12 @@ export type MatingControllerFindAllResult = NonNullable<
 >;
 export type MatingControllerCreateMatingResult = NonNullable<
   Awaited<ReturnType<typeof matingControllerCreateMating>>
+>;
+export type MatingControllerUpdateMatingResult = NonNullable<
+  Awaited<ReturnType<typeof matingControllerUpdateMating>>
+>;
+export type MatingControllerDeleteMatingResult = NonNullable<
+  Awaited<ReturnType<typeof matingControllerDeleteMating>>
 >;
 
 export const getPetControllerFindAllResponseMock = (
@@ -1975,6 +2001,22 @@ export const getMatingControllerCreateMatingResponseMock = (
   ...overrideResponse,
 });
 
+export const getMatingControllerUpdateMatingResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getMatingControllerDeleteMatingResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -2726,6 +2768,52 @@ export const getMatingControllerCreateMatingMockHandler = (
     );
   });
 };
+
+export const getMatingControllerUpdateMatingMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.patch("*/api/v1/mating/:matingId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getMatingControllerUpdateMatingResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
+export const getMatingControllerDeleteMatingMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.delete("*/api/v1/mating/:matingId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getMatingControllerDeleteMatingResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -2762,4 +2850,6 @@ export const getProjectDaepaAPIMock = () => [
   getAdoptionControllerUpdateMockHandler(),
   getMatingControllerFindAllMockHandler(),
   getMatingControllerCreateMatingMockHandler(),
+  getMatingControllerUpdateMatingMockHandler(),
+  getMatingControllerDeleteMatingMockHandler(),
 ];
