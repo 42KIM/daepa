@@ -13,7 +13,7 @@ interface MatingItemProps {
 }
 
 const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleAddLayingClick = () => {
     overlay.open(({ isOpen, close }) => (
@@ -23,38 +23,50 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
         matingId={mating.id}
         father={father}
         mother={mother}
+        layingData={mating.layingsByDate}
       />
     ));
   };
 
   return (
-    <div key={mating.id} className="flex flex-col rounded-lg border-2 border-gray-200 p-3">
+    <div
+      key={mating.id}
+      className="flex flex-col rounded-lg border-2 border-gray-200 p-3 shadow-md hover:bg-gray-100"
+    >
       <div
         className="flex cursor-pointer items-center justify-between rounded-t-md"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="font-bold">
-          {formatDateToYYYYMMDDString(mating.matingDate, "yy년 MM월 dd일")}
+          {formatDateToYYYYMMDDString(mating.matingDate, "yy/MM/dd")}{" "}
+          <span className="text-sm font-normal text-gray-500">메이팅</span>
         </span>
-        {isExpanded ? (
-          <ChevronDown className="h-4 w-4 text-gray-500" />
-        ) : (
-          <ChevronUp className="h-4 w-4 text-gray-500" />
-        )}
+
+        <div className="flex items-center gap-1">
+          {mating.layingsByDate && mating.layingsByDate.length > 0 && (
+            <span className="text-sm font-semibold text-gray-500">
+              {mating.layingsByDate?.length}차
+            </span>
+          )}
+          {!isExpanded ? (
+            <ChevronDown className="h-4 w-4 text-gray-500" />
+          ) : (
+            <ChevronUp className="h-4 w-4 text-gray-500" />
+          )}
+        </div>
       </div>
       {isExpanded && (
         <div>
-          {mating.layingsByDate &&
-            mating.layingsByDate.length > 0 &&
+          {mating.layingsByDate && mating.layingsByDate.length > 0 ? (
             mating.layingsByDate.map(({ layingDate, layings }) => (
               <div key={layingDate} className="mb-4">
                 <div className="mb-2 text-sm font-medium text-gray-600">
-                  산란일: {formatDateToYYYYMMDDString(layingDate, "MM/dd")}
+                  {formatDateToYYYYMMDDString(layingDate, "MM/dd")} 산란일
                 </div>
                 <div className="grid gap-2">
                   {layings.map((laying) => (
                     <Link
-                      key={laying.id}
+                      key={laying.eggId}
                       className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
                       href={`/egg/${laying.eggId}`}
                     >
@@ -64,7 +76,7 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
                         </div>
                         <div className="flex flex-col">
                           <span className="font-medium text-gray-900">
-                            {layings.length}-{laying.layingOrder}
+                            {laying.clutch ?? "@"}-{laying.clutchOrder}
                           </span>
                         </div>
                       </div>
@@ -80,11 +92,14 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
                   ))}
                 </div>
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="text-sm text-gray-500">아직 산란 정보가 없습니다.</div>
+          )}
 
           <button
             onClick={handleAddLayingClick}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-100 p-2 font-bold text-blue-800 transition-colors hover:bg-blue-200"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-100 p-2 text-sm font-bold text-blue-800 transition-colors hover:bg-blue-200"
           >
             <Plus className="h-4 w-4" />
             산란 추가

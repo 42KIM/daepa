@@ -4,15 +4,15 @@ import { MatingEntity } from './mating.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
-import { LayingBaseDto, LayingDto } from '../laying/laying.dto';
 import { PetSummaryDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
-import { LayingEntity } from 'src/laying/laying.entity';
 import { groupBy, omit } from 'es-toolkit';
 import { PET_SEX } from 'src/pet/pet.constants';
+import { EggEntity } from 'src/egg/egg.entity';
+import { EggBaseDto, EggDto } from 'src/egg/egg.dto';
 
 interface MatingWithRelations extends MatingEntity {
-  layings?: Partial<LayingEntity>[];
+  eggs?: Partial<EggEntity>[];
   parents?: Partial<PetEntity>[];
 }
 
@@ -27,10 +27,11 @@ export class MatingService {
     const entities = (await this.matingRepository
       .createQueryBuilder('matings')
       .leftJoinAndMapMany(
-        'matings.layings',
-        LayingEntity,
-        'layings',
-        'layings.matingId = matings.id',
+        'matings.eggs',
+        EggEntity,
+        'eggs',
+        'eggs.matingId = matings.id AND eggs.is_deleted = :isDeleted',
+        { isDeleted: false },
       )
       .leftJoinAndMapMany(
         'matings.parents',
@@ -43,12 +44,13 @@ export class MatingService {
         'matings.matingDate',
         'matings.fatherId',
         'matings.motherId',
-        'layings.id',
-        'layings.eggId',
-        'layings.layingDate',
-        'layings.layingOrder',
-        'layings.eggType',
-        'layings.temperature',
+        'eggs.eggId',
+        'eggs.layingDate',
+        'eggs.clutch',
+        'eggs.clutchOrder',
+        'eggs.name',
+        'eggs.hatchedPetId',
+        'eggs.temperature',
         'parents.petId',
         'parents.name',
         'parents.morphs',
@@ -60,7 +62,7 @@ export class MatingService {
       ])
       .where('matings.user_id = :userId', { userId })
       .orderBy('matings.createdAt', 'DESC')
-      .addOrderBy('layings.layingOrder', 'ASC')
+      .addOrderBy('eggs.clutchOrder', 'ASC')
       .getMany()) as MatingWithRelations[];
 
     return this.formatResponseByDate(entities);
@@ -69,6 +71,19 @@ export class MatingService {
   async saveMating(userId: string, createMatingDto: CreateMatingDto) {
     if (!createMatingDto.fatherId && !createMatingDto.motherId) {
       throw new BadRequestException('최소 하나의 부모 펫을 입력해야 합니다.');
+    }
+
+    const existingMating = await this.matingRepository.findOne({
+      where: {
+        userId,
+        fatherId: createMatingDto.fatherId,
+        motherId: createMatingDto.motherId,
+        matingDate: createMatingDto.matingDate,
+      },
+    });
+
+    if (existingMating) {
+      throw new BadRequestException('이미 존재하는 메이팅 정보입니다.');
     }
 
     const matingEntity = this.matingRepository.create({
@@ -81,15 +96,16 @@ export class MatingService {
   private formatResponseByDate(data: MatingWithRelations[]) {
     const resultDto = data.map((mating) => {
       const matingDto = plainToInstance(MatingDto, mating);
-      const layingsDto = mating.layings?.map((laying) =>
-        plainToInstance(LayingBaseDto, laying),
+      const eggsDto = mating.eggs?.map((egg) =>
+        plainToInstance(EggBaseDto, egg),
       );
+      console.log('🚀 ~ MatingService ~ resultDto ~ eggsDto:', eggsDto);
       const parentsDto = mating.parents?.map((parent) =>
         plainToInstance(PetSummaryDto, parent),
       );
       return {
         ...matingDto,
-        layings: layingsDto,
+        eggs: eggsDto,
         parents: parentsDto,
       };
     });
@@ -113,15 +129,15 @@ export class MatingService {
 
       const matingsByDate = matingByParents
         .map((mating) => {
-          const { id, matingDate, layings } = mating;
-          const layingsByDate = this.groupLayingsByDate(layings);
+          const { id, matingDate, eggs } = mating;
+          const eggsByDate = this.groupEggsByDate(eggs);
           return {
             id,
             matingDate,
-            layingsByDate,
+            layingsByDate: eggsByDate,
           };
         })
-        .sort((a, b) => a.matingDate - b.matingDate);
+        .sort((a, b) => b.matingDate - a.matingDate);
 
       return {
         father,
@@ -131,16 +147,14 @@ export class MatingService {
     });
   }
 
-  private groupLayingsByDate(layings: LayingBaseDto[] | undefined) {
-    if (!layings?.length) return;
+  private groupEggsByDate(eggs: EggBaseDto[] | undefined) {
+    if (!eggs?.length) return;
 
-    const grouped = groupBy(layings, (laying) => laying.layingDate);
+    const grouped = groupBy(eggs, (egg) => egg.layingDate);
 
-    return Object.entries(grouped).map(([layingDate, layingsForDate]) => ({
+    return Object.entries(grouped).map(([layingDate, eggsForDate]) => ({
       layingDate: parseInt(layingDate, 10),
-      layings: layingsForDate.map((laying) =>
-        omit(laying, ['layingDate']),
-      ) as LayingDto[],
+      layings: eggsForDate.map((egg) => omit(egg, ['layingDate'])) as EggDto[],
     }));
   }
 

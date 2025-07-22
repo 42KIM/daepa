@@ -3,10 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CreateParentDtoRole,
-  layingControllerCreateLaying,
+  eggControllerCreate,
+  LayingByDateDto,
   matingControllerFindAll,
   PetDtoSpecies,
   PetSummaryDto,
@@ -14,7 +15,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -33,6 +34,7 @@ interface CreateLayingModalProps {
   matingId: number;
   father?: PetSummaryDto;
   mother?: PetSummaryDto;
+  layingData?: LayingByDateDto[];
 }
 
 const CreateLayingModal = ({
@@ -41,11 +43,16 @@ const CreateLayingModal = ({
   matingId,
   father,
   mother,
+  layingData,
 }: CreateLayingModalProps) => {
   const queryClient = useQueryClient();
+  const lastLayingDate = useMemo(
+    () => layingData?.[layingData.length - 1]?.layingDate,
+    [layingData],
+  );
 
   const { mutate: createLaying } = useMutation({
-    mutationFn: layingControllerCreateLaying,
+    mutationFn: eggControllerCreate,
     onSuccess: () => {
       toast.success("산란이 추가되었습니다.");
       queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
@@ -55,16 +62,29 @@ const CreateLayingModal = ({
     },
   });
 
+  const defaultLayingDate = useMemo(() => {
+    return lastLayingDate
+      ? new Date(
+          new Date(
+            lastLayingDate.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"),
+          ).getTime() +
+            24 * 60 * 60 * 1000,
+        ).toISOString()
+      : new Date().toISOString();
+  }, [lastLayingDate]);
+
   const [formData, setFormData] = useState<{
     species: PetDtoSpecies;
     layingDate: string;
     clutchCount: string;
     temperature: string;
+    clutch: string;
   }>({
     species: PetDtoSpecies.CRESTED,
-    layingDate: new Date().toISOString(),
+    layingDate: defaultLayingDate,
     clutchCount: "2",
     temperature: "25",
+    clutch: layingData?.length ? (layingData.length + 1).toString() : "1",
   });
 
   const handleSubmit = () => {
@@ -83,6 +103,14 @@ const CreateLayingModal = ({
       return;
     }
 
+    // 차수 유효성 검사
+    const currentClutch = parseInt(formData.clutch, 10);
+    const minClutch = (layingData?.length || 0) + 1;
+    if (currentClutch <= minClutch - 1) {
+      toast.error(`이전 차수 ${minClutch - 1}보다 커야 합니다.`);
+      return;
+    }
+
     const layingDate = parseInt(formData.layingDate.replace(/-/g, ""), 10);
 
     createLaying({
@@ -91,6 +119,7 @@ const CreateLayingModal = ({
       temperature: formData.temperature ? parseFloat(formData.temperature) : undefined,
       species: formData.species,
       clutchCount: parseInt(formData.clutchCount, 10),
+      clutch: formData.clutch ? parseInt(formData.clutch, 10) : undefined,
       father: father
         ? {
             parentId: father.petId,
@@ -108,6 +137,14 @@ const CreateLayingModal = ({
     onClose();
   };
 
+  // 날짜 제한 함수
+  const isDateDisabled = (date: Date) => {
+    if (!lastLayingDate) return false;
+
+    const selectedDate = parseInt(format(date, "yyyyMMdd"), 10);
+    return selectedDate <= lastLayingDate;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -118,6 +155,7 @@ const CreateLayingModal = ({
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="species">종</Label>
             <Select
+              disabled
               value={formData.species}
               onValueChange={(value: PetDtoSpecies) =>
                 setFormData((prev) => ({ ...prev, species: value }))
@@ -170,20 +208,56 @@ const CreateLayingModal = ({
                         }
                       }
                     }}
+                    disabled={isDateDisabled}
                     initialFocus
                   />
                 </PopoverContent>
               </Popover>
+              {lastLayingDate && (
+                <div className="mt-1 text-sm">
+                  <div className="flex items-center gap-1 text-gray-500">
+                    <Info className="h-4 w-4" /> 이전 산란일 이후 날짜만 선택 가능합니다.
+                  </div>
+                  <div className="font-semibold text-blue-500">
+                    마지막 산란일:{" "}
+                    {format(
+                      new Date(
+                        lastLayingDate.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"),
+                      ),
+                      "yyyy년 MM월 dd일",
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="clutchCount">산란 수</Label>
+            <Label htmlFor="clutch">차수</Label>
+            <div className="col-span-3 flex flex-col gap-1">
+              <Input
+                id="clutch"
+                type="number"
+                min={(layingData?.length || 0) + 2}
+                placeholder="차수를 입력하세요"
+                value={formData.clutch}
+                onChange={(e) => setFormData((prev) => ({ ...prev, clutch: e.target.value }))}
+              />
+              <div className="col-span-3">
+                <div className="flex items-center gap-1 text-sm text-gray-500">
+                  <Info className="h-4 w-4" /> 이전 차수 {layingData?.length}보다 커야 합니다.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="clutchCount">알 개수</Label>
             <Input
               id="clutchCount"
               type="number"
               min="1"
-              placeholder="산란 수를 입력하세요"
+              placeholder="알 개수를 입력하세요"
               value={formData.clutchCount}
               onChange={(e) => setFormData((prev) => ({ ...prev, clutchCount: e.target.value }))}
               className="col-span-3"

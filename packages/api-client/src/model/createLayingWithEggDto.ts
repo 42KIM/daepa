@@ -9,8 +9,8 @@ import type { CreateLayingWithEggDtoSpecies } from "./createLayingWithEggDtoSpec
 import type { CreateParentDto } from "./createParentDto";
 
 export interface CreateLayingWithEggDto {
-  /** Mating ID */
-  matingId: number;
+  /** 메이팅 아이디 */
+  matingId?: number;
   /** 산란일(yyyyMMdd) */
   layingDate: number;
   /** 해칭 온도 */

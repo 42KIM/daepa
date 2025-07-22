@@ -1,7 +1,12 @@
 import Loading from "@/components/common/Loading";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { matingControllerCreateMating, matingControllerFindAll } from "@repo/api-client";
+import {
+  CommonResponseDto,
+  MatingByDateDto,
+  matingControllerCreateMating,
+  matingControllerFindAll,
+} from "@repo/api-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import MatingItem from "./MatingItem";
@@ -11,7 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { AxiosError } from "axios";
 
 const MatingList = () => {
   const queryClient = useQueryClient();
@@ -22,14 +28,27 @@ const MatingList = () => {
     select: (data) => data.data,
   });
 
+  // 메이팅 날짜들을 추출하여 Calendar용 날짜 배열 생성
+  const matingDates = useCallback((matingDates: MatingByDateDto[]) => {
+    if (!matingDates) return [];
+
+    return matingDates.map((mating) => {
+      const dateString = mating.matingDate.toString();
+      const year = parseInt(dateString.substring(0, 4), 10);
+      const month = parseInt(dateString.substring(4, 6), 10);
+      const day = parseInt(dateString.substring(6, 8), 10);
+      return new Date(year, month - 1, day);
+    });
+  }, []);
+
   const { mutate: createMating } = useMutation({
     mutationFn: matingControllerCreateMating,
     onSuccess: () => {
       toast.success("메이팅이 추가되었습니다.");
       queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
     },
-    onError: () => {
-      toast.error("메이팅 추가에 실패했습니다.");
+    onError: (error: AxiosError<CommonResponseDto>) => {
+      toast.error(error.response?.data?.message ?? "메이팅 추가에 실패했습니다.");
     },
   });
 
@@ -106,8 +125,8 @@ const MatingList = () => {
                 </div>
               </div>
 
-              <div className="px-1">
-                <button className="mb-2 flex w-full items-center justify-center gap-2 rounded-lg bg-yellow-100 p-2 text-sm font-semibold text-yellow-800 transition-colors hover:bg-yellow-200">
+              <div className="flex flex-col gap-2 px-1">
+                <div className="flex w-full items-center justify-center gap-2 rounded-lg bg-yellow-100 p-2 text-sm font-semibold text-yellow-800 transition-colors hover:bg-yellow-200">
                   <Popover>
                     <PopoverTrigger asChild>
                       <button
@@ -126,6 +145,17 @@ const MatingList = () => {
                         selected={matingDate ? new Date(matingDate) : undefined}
                         onSelect={(date) => {
                           if (date) {
+                            // 선택된 날짜가 이미 메이팅이 있는 날짜인지 확인
+                            const dateString = format(date, "yyyyMMdd");
+                            const matingDateStrings = matingDates(
+                              matingGroup?.matingsByDate ?? [],
+                            ).map((d) => format(d, "yyyyMMdd"));
+
+                            if (matingDateStrings.includes(dateString)) {
+                              toast.error("이미 메이팅이 등록된 날짜입니다.");
+                              return;
+                            }
+
                             setMatingDate(date.toISOString());
 
                             const trigger = document.querySelector(
@@ -135,6 +165,16 @@ const MatingList = () => {
                               (trigger as HTMLButtonElement).click();
                             }
                           }
+                        }}
+                        modifiers={{
+                          hasMating: matingDates(matingGroup?.matingsByDate ?? []),
+                        }}
+                        modifiersStyles={{
+                          hasMating: {
+                            backgroundColor: "#fef3c7", // yellow-100
+                            color: "#92400e", // yellow-800
+                            fontWeight: "bold",
+                          },
                         }}
                         initialFocus
                       />
@@ -149,11 +189,12 @@ const MatingList = () => {
                         disabled={!matingDate}
                         className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-b-lg bg-black p-2 text-sm font-semibold text-white transition-colors hover:bg-black/80"
                       >
-                        {matingDate ? format(matingDate, "yyyy년 MM월 dd일") : ""} 메이팅 추가
+                        {matingDate ? format(new Date(matingDate), "yyyy년 MM월 dd일") : ""} 메이팅
+                        추가
                       </button>
                     </PopoverContent>
                   </Popover>
-                </button>
+                </div>
                 {matingGroup.matingsByDate.map((mating) => (
                   <MatingItem
                     key={mating.id}

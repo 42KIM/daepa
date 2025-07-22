@@ -1,7 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
 import { IsDate, IsNumber, IsString } from 'class-validator';
-import { LayingDto } from 'src/laying/laying.dto';
+import { LayingDto } from 'src/egg/egg.dto';
 import { PetSummaryDto } from 'src/pet/pet.dto';
 
 export class MatingBaseDto {
