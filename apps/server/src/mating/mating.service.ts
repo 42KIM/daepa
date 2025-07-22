@@ -99,7 +99,6 @@ export class MatingService {
       const eggsDto = mating.eggs?.map((egg) =>
         plainToInstance(EggBaseDto, egg),
       );
-      console.log('🚀 ~ MatingService ~ resultDto ~ eggsDto:', eggsDto);
       const parentsDto = mating.parents?.map((parent) =>
         plainToInstance(PetSummaryDto, parent),
       );
