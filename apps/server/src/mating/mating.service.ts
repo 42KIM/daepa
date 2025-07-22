@@ -186,7 +186,6 @@ export class MatingService {
         .map((mating) => {
           const { id, matingDate, eggs } = mating;
           const eggsByDate = this.groupEggsByDate(eggs);
-          console.log(eggsByDate?.[0]?.layings);
           return {
             id,
             matingDate,
