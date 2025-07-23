@@ -24,8 +24,6 @@ export interface EggDto {
   clutch?: number;
   /** 동배 번호(차수 내 구분 - 순서 무관) */
   clutchOrder: number;
-  /** 알 이름 */
-  name: string;
   /** 알 보관 온도 */
   temperature?: number;
   /** 알 정보 */

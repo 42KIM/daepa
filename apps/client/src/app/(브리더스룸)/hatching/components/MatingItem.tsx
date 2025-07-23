@@ -15,9 +15,6 @@ import {
   Thermometer,
   Edit,
   Trash2,
-  MoreVertical,
-  X,
-  Check,
   CheckSquare,
 } from "lucide-react";
 import { overlay } from "overlay-kit";
@@ -26,14 +23,7 @@ import CreateLayingModal from "./CreateLayingModal";
 import EditMatingModal from "./EditMatingModal";
 import DeleteMatingModal from "./DeleteMatingModal";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CalendarSelect from "./CalendarSelect";
 import { isAfter, isBefore } from "date-fns";

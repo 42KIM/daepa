@@ -2,7 +2,6 @@
 
 import { eggControllerFindOne } from "@repo/api-client";
 import EggDetail from "../ EggDetail";
-import { formatDateToYYYYMMDDString } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { use } from "react";
 interface EggDetailPageProps {
@@ -23,12 +22,7 @@ const EggDetailPage = ({ params }: EggDetailPageProps) => {
 
   if (!data) return null;
 
-  const formattedData = {
-    ...data,
-    layingDate: formatDateToYYYYMMDDString(data.layingDate),
-  };
-
-  return <EggDetail egg={formattedData} />;
+  return <EggDetail egg={data} />;
 };
 
 export default EggDetailPage;

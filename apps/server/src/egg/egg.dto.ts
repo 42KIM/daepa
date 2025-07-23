@@ -65,13 +65,6 @@ export class EggBaseDto {
   clutchOrder: number;
 
   @ApiProperty({
-    description: '알 이름',
-    example: '대파아빠x대파엄마(1-1)',
-  })
-  @IsString()
-  name: string;
-
-  @ApiProperty({
     description: '알 보관 온도',
     example: 25,
     required: false,
@@ -101,7 +94,6 @@ export class EggBaseDto {
 export class EggSummaryDto extends PickType(EggBaseDto, [
   'eggId',
   'species',
-  'name',
   'owner',
   'layingDate',
   'clutch',
@@ -262,7 +254,6 @@ export class HatchedResponseDto extends CommonResponseDto {
 export class LayingDto extends PickType(EggBaseDto, [
   'eggId',
   'clutchOrder',
-  'name',
   'clutch',
   'temperature',
   'hatchedPetId',
