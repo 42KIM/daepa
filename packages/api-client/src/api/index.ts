@@ -1162,7 +1162,6 @@ export const getEggControllerFindOneResponseMock = (
     undefined,
   ]),
   clutchOrder: faker.number.int({ min: undefined, max: undefined }),
-  name: faker.string.alpha(20),
   temperature: faker.helpers.arrayElement([
     faker.number.int({ min: undefined, max: undefined }),
     undefined,
@@ -1351,7 +1350,6 @@ export const getBrEggControllerFindAllResponseMock = (): BrEggControllerFindAll2
       undefined,
     ]),
     clutchOrder: faker.number.int({ min: undefined, max: undefined }),
-    name: faker.string.alpha(20),
     temperature: faker.helpers.arrayElement([
       faker.number.int({ min: undefined, max: undefined }),
       undefined,
@@ -2017,7 +2015,6 @@ export const getMatingControllerFindAllResponseMock = (): MatingByParentsDto[] =
               undefined,
             ]),
             clutchOrder: faker.number.int({ min: undefined, max: undefined }),
-            name: faker.string.alpha(20),
             temperature: faker.helpers.arrayElement([
               faker.number.int({ min: undefined, max: undefined }),
               undefined,

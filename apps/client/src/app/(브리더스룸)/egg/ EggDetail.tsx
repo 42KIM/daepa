@@ -27,7 +27,7 @@ import { EGG_EDIT_STEPS } from "../constants";
 import useParentLinkStore, { PetParentDtoWithMessage } from "../pet/store/parentLink";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn, formatDateToYYYYMMDDString, getEggName } from "@/lib/utils";
 import FloatingButton from "../components/FloatingButton";
 import { AxiosError } from "axios";
 import Loading from "@/components/common/Loading";
@@ -37,13 +37,17 @@ import Link from "next/link";
 type EggDetailDto = Omit<EggDto, "layingDate"> & {
   layingDate: string;
 };
+
 interface EggDetailProps {
-  egg: EggDetailDto;
+  egg: EggDto;
 }
 
 const EggDetail = ({ egg }: EggDetailProps) => {
   const router = useRouter();
-  const [formData, setFormData] = useState<EggDetailDto>(egg);
+  const [formData, setFormData] = useState<EggDetailDto>({
+    ...egg,
+    layingDate: formatDateToYYYYMMDDString(egg.layingDate),
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const { selectedParent, setSelectedParent } = useParentLinkStore();
@@ -239,7 +243,7 @@ const EggDetail = ({ egg }: EggDetailProps) => {
 
           <div className="mb-2 flex justify-between">
             <span className="relative text-2xl font-bold after:absolute after:bottom-0 after:left-0 after:-z-10 after:h-[15px] after:w-full after:bg-[#247DFE] after:opacity-40">
-              {formData.name}
+              {getEggName(egg)}
             </span>
 
             <Button
@@ -344,7 +348,10 @@ const EggDetail = ({ egg }: EggDetailProps) => {
                 variant="outline"
                 className="h-8 rounded-xl"
                 onClick={() => {
-                  setFormData(egg);
+                  setFormData({
+                    ...egg,
+                    layingDate: formatDateToYYYYMMDDString(egg.layingDate),
+                  });
                   setIsEditing(false);
                 }}
               >

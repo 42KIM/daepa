@@ -52,7 +52,6 @@ export class MatingService {
         'eggs.layingDate',
         'eggs.clutch',
         'eggs.clutchOrder',
-        'eggs.name',
         'eggs.hatchedPetId',
         'eggs.temperature',
         'parents.petId',

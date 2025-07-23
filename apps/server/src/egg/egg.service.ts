@@ -19,11 +19,7 @@ import {
 } from 'src/common/page.dto';
 import { PARENT_ROLE } from 'src/parent/parent.constant';
 import { CreatePetDto, PetParentDto } from 'src/pet/pet.dto';
-import {
-  CreateParentDto,
-  ParentBaseDto,
-  ParentDto,
-} from 'src/parent/parent.dto';
+import { CreateParentDto, ParentDto } from 'src/parent/parent.dto';
 import { PetService } from 'src/pet/pet.service';
 import { nanoid } from 'nanoid';
 import { isMySQLError } from 'src/common/error';
@@ -216,22 +212,24 @@ export class EggService {
         endYmd: layingDateTo,
       });
 
+    if (userId) {
+      queryBuilder.andWhere('users.user_id = :userId', { userId });
+    }
+
     const { entities } = await queryBuilder.getRawAndEntities();
-    const eggList = entities.map((entity) => {
-      const egg = instanceToPlain(entity);
-      const { parents, ...eggData } = egg;
-      const father = (parents as ParentBaseDto[])?.find(
-        (parent) => parent.role === PARENT_ROLE.FATHER,
-      );
-      const mother = (parents as ParentBaseDto[])?.find(
-        (parent) => parent.role === PARENT_ROLE.MOTHER,
-      );
-      return plainToInstance(EggDto, {
-        ...eggData,
-        father, // TODO: dto 타입 수정을 통해 불필요한 필드 제거하기
-        mother,
-      });
-    });
+    const eggList = await Promise.all(
+      entities.map(async (egg) => {
+        const father = await this.getParent(egg.eggId, PARENT_ROLE.FATHER);
+        const mother = await this.getParent(egg.eggId, PARENT_ROLE.MOTHER);
+
+        return plainToInstance(EggDto, {
+          ...egg,
+          father,
+          mother,
+        });
+      }),
+    );
+
     const eggDtosByDate = eggList.reduce(
       (acc, eggDto) => {
         const layingDate = eggDto.layingDate;
@@ -330,7 +328,7 @@ export class EggService {
     }
 
     const createPetDto: CreatePetDto = {
-      name: egg.name,
+      name: `${egg.father?.name ?? '@'}x${egg.mother?.name ?? '@'}(${egg.clutch ?? '@'}-${egg.clutchOrder})-${egg.layingDate}`,
       species: egg.species,
       sex: PET_SEX.NON,
       growth: PET_GROWTH.BABY,

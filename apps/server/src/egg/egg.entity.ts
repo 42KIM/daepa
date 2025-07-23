@@ -11,7 +11,7 @@ import {
 
 @Entity({ name: 'eggs' })
 @Index('UNIQUE_EGG_ID', ['eggId'], { unique: true })
-@Index('UNIQUE_CLUTCH', ['name', 'layingDate', 'clutch', 'clutchOrder'], {
+@Index('UNIQUE_CLUTCH', ['matingId', 'layingDate', 'clutch', 'clutchOrder'], {
   unique: true,
 })
 export class EggEntity {
@@ -39,9 +39,6 @@ export class EggEntity {
 
   @Column({ type: 'tinyint' })
   clutchOrder: number; // 동배 번호(같은 차수 내 구분)
-
-  @Column()
-  name: string;
 
   @Column({ nullable: true })
   temperature?: number; // 알 온도
