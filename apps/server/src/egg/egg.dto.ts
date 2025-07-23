@@ -267,3 +267,26 @@ export class LayingDto extends PickType(EggBaseDto, [
   'temperature',
   'hatchedPetId',
 ]) {}
+
+export class UpdateLayingDateDto {
+  @ApiProperty({
+    description: '메이팅 ID',
+    example: 1,
+  })
+  @IsNumber()
+  matingId: number;
+
+  @ApiProperty({
+    description: '기존 산란일(yyyyMMdd)',
+    example: 20250101,
+  })
+  @IsNumber()
+  currentLayingDate: number;
+
+  @ApiProperty({
+    description: '새로운 산란일(yyyyMMdd)',
+    example: 20250102,
+  })
+  @IsNumber()
+  newLayingDate: number;
+}

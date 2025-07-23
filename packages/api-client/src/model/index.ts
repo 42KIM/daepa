@@ -109,6 +109,7 @@ export * from "./updateAdoptionDto";
 export * from "./updateAdoptionDtoSaleStatus";
 export * from "./updateAdoptionDtoStatus";
 export * from "./updateEggDto";
+export * from "./updateLayingDateDto";
 export * from "./updateMatingDto";
 export * from "./updateParentDto";
 export * from "./updateParentDtoStatus";

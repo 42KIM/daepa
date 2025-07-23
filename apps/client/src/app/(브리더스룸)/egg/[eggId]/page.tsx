@@ -15,9 +15,10 @@ const EggDetailPage = ({ params }: EggDetailPageProps) => {
   const { eggId } = use(params);
 
   const { data } = useQuery({
-    queryKey: [eggControllerFindOne.name],
+    queryKey: [eggControllerFindOne.name, eggId],
     queryFn: () => eggControllerFindOne(eggId),
     select: (response) => response.data,
+    enabled: !!eggId,
   });
 
   if (!data) return null;

@@ -103,9 +103,9 @@ const CreateLayingModal = ({
 
     // 차수 유효성 검사
     const currentClutch = parseInt(formData.clutch, 10);
-    const minClutch = (layingData?.length || 0) + 1;
-    if (currentClutch <= minClutch - 1) {
-      toast.error(`이전 차수 ${minClutch - 1}보다 커야 합니다.`);
+    const minClutch = layingData?.length || 0;
+    if (currentClutch <= minClutch) {
+      toast.error(`이전 차수 ${minClutch}보다 커야 합니다.`);
       return;
     }
 
@@ -173,7 +173,7 @@ const CreateLayingModal = ({
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="layingDate">산란일</Label>
+            <Label>산란일</Label>
             <div className="col-span-3">
               <CalendarInput
                 placeholder="산란일을 선택하세요"
@@ -184,11 +184,6 @@ const CreateLayingModal = ({
                     ...prev,
                     layingDate: format(date, "yyyy-MM-dd"),
                   }));
-
-                  const trigger = document.querySelector(`button[data-field-name="layingDate"]`);
-                  if (trigger) {
-                    (trigger as HTMLButtonElement).click();
-                  }
                 }}
                 disabled={isDateDisabled}
               />
@@ -218,7 +213,7 @@ const CreateLayingModal = ({
               <Input
                 id="clutch"
                 type="number"
-                min={(layingData?.length || 0) + 2}
+                min={(layingData?.length || 0) + 1}
                 placeholder="차수를 입력하세요"
                 value={formData.clutch}
                 onChange={(e) => setFormData((prev) => ({ ...prev, clutch: e.target.value }))}

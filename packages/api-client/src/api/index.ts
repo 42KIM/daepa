@@ -22,6 +22,7 @@ import type {
   PetControllerGetPetsWithChildrenParams,
   UpdateAdoptionDto,
   UpdateEggDto,
+  UpdateLayingDateDto,
   UpdateMatingDto,
   UpdateParentDto,
   UpdatePetDto,
@@ -219,6 +220,15 @@ export const eggControllerCreate = (createEggDto: CreateEggDto) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     data: createEggDto,
+  });
+};
+
+export const eggControllerUpdateLayingDate = (updateLayingDateDto: UpdateLayingDateDto) => {
+  return useCustomInstance<CommonResponseDto>({
+    url: `http://localhost:4000/api/v1/egg/laying-date`,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    data: updateLayingDateDto,
   });
 };
 
@@ -426,6 +436,9 @@ export type EggControllerDeleteResult = NonNullable<
 >;
 export type EggControllerCreateResult = NonNullable<
   Awaited<ReturnType<typeof eggControllerCreate>>
+>;
+export type EggControllerUpdateLayingDateResult = NonNullable<
+  Awaited<ReturnType<typeof eggControllerUpdateLayingDate>>
 >;
 export type EggControllerHatchedResult = NonNullable<
   Awaited<ReturnType<typeof eggControllerHatched>>
@@ -1282,6 +1295,14 @@ export const getEggControllerDeleteResponseMock = (
 });
 
 export const getEggControllerCreateResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getEggControllerUpdateLayingDateResponseMock = (
   overrideResponse: Partial<CommonResponseDto> = {},
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
@@ -2455,6 +2476,29 @@ export const getEggControllerCreateMockHandler = (
   });
 };
 
+export const getEggControllerUpdateLayingDateMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.patch("*/api/v1/egg/laying-date", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getEggControllerUpdateLayingDateResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getEggControllerHatchedMockHandler = (
   overrideResponse?:
     | HatchedResponseDto
@@ -2850,6 +2894,7 @@ export const getProjectDaepaAPIMock = () => [
   getEggControllerUpdateMockHandler(),
   getEggControllerDeleteMockHandler(),
   getEggControllerCreateMockHandler(),
+  getEggControllerUpdateLayingDateMockHandler(),
   getEggControllerHatchedMockHandler(),
   getBrEggControllerFindAllMockHandler(),
   getAuthControllerKakaoLoginMockHandler(),

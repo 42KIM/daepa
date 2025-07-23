@@ -366,6 +366,22 @@ export class EggService {
     return { petId };
   }
 
+  async updateLayingDate(
+    userId: string,
+    matingId: number,
+    currentLayingDate: number,
+    newLayingDate: number,
+  ): Promise<void> {
+    await this.eggRepository.update(
+      {
+        ownerId: userId,
+        matingId: matingId,
+        layingDate: currentLayingDate,
+      },
+      { layingDate: newLayingDate },
+    );
+  }
+
   private async getParent(
     eggId: string,
     role: PARENT_ROLE,

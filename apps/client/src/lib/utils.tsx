@@ -56,3 +56,11 @@ export const getStatusBadge = (status?: PetDtoSaleStatus) => {
       return <Badge variant="outline">미정</Badge>;
   }
 };
+
+export const getNumberToDate = (dateNumber: number) => {
+  const dateString = dateNumber.toString();
+  const year = parseInt(dateString.substring(0, 4), 10);
+  const month = parseInt(dateString.substring(4, 6), 10);
+  const day = parseInt(dateString.substring(6, 8), 10);
+  return new Date(year, month - 1, day);
+};

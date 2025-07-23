@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateMatingDto, MatingBaseDto, MatingDto } from './mating.dto';
 import { MatingEntity } from './mating.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { PetSummaryDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
@@ -80,8 +80,8 @@ export class MatingService {
     const existingMating = await this.matingRepository.findOne({
       where: {
         userId,
-        fatherId: createMatingDto.fatherId,
-        motherId: createMatingDto.motherId,
+        fatherId: createMatingDto.fatherId ?? IsNull(),
+        motherId: createMatingDto.motherId ?? IsNull(),
         matingDate: createMatingDto.matingDate,
       },
     });
@@ -114,8 +114,8 @@ export class MatingService {
     const existingMating = await this.matingRepository.findOne({
       where: {
         userId,
-        fatherId: updateMatingDto.fatherId,
-        motherId: updateMatingDto.motherId,
+        fatherId: updateMatingDto.fatherId ?? IsNull(),
+        motherId: updateMatingDto.motherId ?? IsNull(),
         matingDate: updateMatingDto.matingDate,
         id: Not(matingId),
       },

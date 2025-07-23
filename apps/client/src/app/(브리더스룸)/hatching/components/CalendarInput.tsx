@@ -1,35 +1,41 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { DayModifiers, ModifiersStyles } from "react-day-picker";
+import { useState } from "react";
 
 interface CalendarInputProps {
   placeholder: string;
-  value: string;
+  value?: string;
+  formatString?: string;
   modifiers?: DayModifiers;
   modifiersStyles?: ModifiersStyles;
   onSelect: (date?: Date) => void;
   disabled?: (date: Date) => boolean;
+  closeOnSelect?: boolean;
 }
 
 const CalendarInput = ({
   placeholder,
   value,
+  formatString = "yyyy년 MM월 dd일",
   onSelect,
   disabled,
   modifiers,
   modifiersStyles,
+  closeOnSelect = true,
 }: CalendarInputProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button
-          data-field-name="layingDate"
-          className={cn("flex w-full items-center justify-between", value && "text-black")}
+          className={cn("flex w-full cursor-pointer items-center gap-1", value && "text-black")}
         >
-          {value ? format(new Date(value), "yyyy년 MM월 dd일") : placeholder}
+          {value && isValid(new Date(value)) ? format(new Date(value), formatString) : placeholder}
           <CalendarIcon className="h-4 w-4 opacity-50" />
         </button>
       </PopoverTrigger>
@@ -37,7 +43,12 @@ const CalendarInput = ({
         <Calendar
           mode="single"
           selected={value ? new Date(value) : undefined}
-          onSelect={(date) => onSelect(date)}
+          onSelect={(date) => {
+            onSelect(date);
+            if (closeOnSelect) {
+              setIsOpen(false);
+            }
+          }}
           disabled={disabled}
           modifiers={modifiers}
           modifiersStyles={modifiersStyles}
