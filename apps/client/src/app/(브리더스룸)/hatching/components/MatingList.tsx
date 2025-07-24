@@ -1,8 +1,13 @@
 import Loading from "@/components/common/Loading";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MatingByDateDto, matingControllerFindAll } from "@repo/api-client";
-import { useQuery } from "@tanstack/react-query";
+import {
+  CommonResponseDto,
+  MatingByDateDto,
+  matingControllerCreateMating,
+  matingControllerFindAll,
+} from "@repo/api-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import MatingItem from "./MatingItem";
 import { toast } from "sonner";
@@ -12,14 +17,27 @@ import Link from "next/link";
 import CalendarSelect from "./CalendarSelect";
 import { Button } from "@/components/ui/button";
 import CreateMatingForm from "./CreateMatingForm";
+import { AxiosError } from "axios";
 
 const MatingList = () => {
+  const queryClient = useQueryClient();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
   const { data: matings, isPending } = useQuery({
     queryKey: [matingControllerFindAll.name],
     queryFn: matingControllerFindAll,
     select: (data) => data.data,
+  });
+
+  const { mutate: createMating } = useMutation({
+    mutationFn: matingControllerCreateMating,
+    onSuccess: () => {
+      toast.success("메이팅이 추가되었습니다.");
+      queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+    },
+    onError: (error: AxiosError<CommonResponseDto>) => {
+      toast.error(error.response?.data?.message ?? "메이팅 추가에 실패했습니다.");
+    },
   });
 
   // 메이팅 날짜들을 추출하여 Calendar용 날짜 배열 생성
@@ -65,6 +83,8 @@ const MatingList = () => {
   }
 
   const handleAddMatingClick = ({
+    fatherId,
+    motherId,
     matingDate,
   }: {
     fatherId?: string;
@@ -76,8 +96,13 @@ const MatingList = () => {
       return;
     }
 
-    // API 호출은 CreateMatingForm에서 처리하므로 여기서는 토스트만 표시
-    toast.error("이 기능은 새 메이팅 추가 폼을 사용해주세요.");
+    const matingDateNumber = parseInt(matingDate.replace(/-/g, ""), 10);
+
+    createMating({
+      matingDate: matingDateNumber,
+      fatherId,
+      motherId,
+    });
   };
 
   return (
@@ -126,6 +151,7 @@ const MatingList = () => {
                 <div className="flex w-full items-center justify-center gap-2 rounded-lg bg-yellow-100 p-2 text-sm font-semibold text-yellow-800 transition-colors hover:bg-yellow-200">
                   <CalendarSelect
                     triggerText="메이팅을 추가하려면 날짜를 선택하세요"
+                    confirmButtonText="메이팅 추가"
                     disabledDates={matingDates(matingGroup?.matingsByDate ?? [])}
                     onConfirm={(matingDate) =>
                       handleAddMatingClick({
