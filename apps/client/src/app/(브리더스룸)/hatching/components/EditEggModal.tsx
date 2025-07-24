@@ -3,9 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  brMatingControllerFindAll,
   eggControllerUpdate,
   LayingDto,
-  matingControllerFindAll,
   UpdateEggDto,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,7 +32,7 @@ const EditEggModal = ({
     mutationFn: (data: UpdateEggDto) => eggControllerUpdate(egg.eggId, data),
     onSuccess: () => {
       toast.success("알 수정 완료");
-      queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       onClose();
     },
     onError: () => {

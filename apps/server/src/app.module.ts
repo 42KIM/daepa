@@ -40,6 +40,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { MatingController } from './mating/mating.controller';
 import { MatingService } from './mating/mating.service';
 import { MatingEntity } from './mating/mating.entity';
+import { BrMatingController } from './mating/br/br.mating.controller';
 
 const ENTITIES = [
   UserEntity,
@@ -90,6 +91,7 @@ const ENTITIES = [
     UserController,
     AdoptionController,
     MatingController,
+    BrMatingController,
   ],
   providers: [
     AppService,

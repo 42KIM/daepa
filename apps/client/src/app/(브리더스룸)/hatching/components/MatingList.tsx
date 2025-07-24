@@ -2,38 +2,56 @@ import Loading from "@/components/common/Loading";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  brMatingControllerFindAll,
   CommonResponseDto,
   MatingByDateDto,
   matingControllerCreateMating,
-  matingControllerFindAll,
 } from "@repo/api-client";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import MatingItem from "./MatingItem";
 import { toast } from "sonner";
 import { getNumberToDate } from "@/lib/utils";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import CalendarSelect from "./CalendarSelect";
 import { Button } from "@/components/ui/button";
 import CreateMatingForm from "./CreateMatingForm";
 import { AxiosError } from "axios";
+import { useInView } from "react-intersection-observer";
 
 const MatingList = () => {
+  const { ref, inView } = useInView();
   const queryClient = useQueryClient();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const itemPerPage = 10;
 
-  const { data: matings, isPending } = useQuery({
-    queryKey: [matingControllerFindAll.name],
-    queryFn: matingControllerFindAll,
-    select: (data) => data.data,
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: [brMatingControllerFindAll.name],
+    queryFn: ({ pageParam = 1 }) =>
+      brMatingControllerFindAll({
+        page: pageParam,
+        itemPerPage,
+        order: "DESC",
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.data.meta.hasNextPage) {
+        return lastPage.data.meta.page + 1;
+      }
+      return undefined;
+    },
+    select: (resp) => ({
+      items: resp.pages.flatMap((p) => p.data.data),
+      totalCount: resp.pages[0]?.data.meta.totalCount ?? 0,
+    }),
   });
 
   const { mutate: createMating } = useMutation({
     mutationFn: matingControllerCreateMating,
     onSuccess: () => {
       toast.success("메이팅이 추가되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
     },
     onError: (error: AxiosError<CommonResponseDto>) => {
       toast.error(error.response?.data?.message ?? "메이팅 추가에 실패했습니다.");
@@ -47,11 +65,16 @@ const MatingList = () => {
     return matingDates.map((mating) => getNumberToDate(mating.matingDate));
   }, []);
 
-  if (isPending) {
-    return <Loading />;
-  }
+  const { items, totalCount } = data ?? { items: [], totalCount: 0 };
 
-  if (!matings || matings.length === 0) {
+  // 무한 스크롤 처리
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  if (!items || items.length === 0) {
     return (
       <div className="space-y-4">
         <Card>
@@ -106,7 +129,7 @@ const MatingList = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div>
       {/* 헤더 영역 */}
       <Button
         onClick={() => setIsCreateFormOpen(!isCreateFormOpen)}
@@ -119,9 +142,11 @@ const MatingList = () => {
       {/* 폴더블 폼 */}
       {isCreateFormOpen && <CreateMatingForm onClose={() => setIsCreateFormOpen(false)} />}
 
+      <div className="mt-2 text-sm text-gray-600">검색 결과: {totalCount}개</div>
+
       <ScrollArea className="h-[700px]">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {matings.map((matingGroup, index) => (
+          {items.map((matingGroup, index) => (
             <div
               key={index}
               className="flex flex-col gap-4 rounded-lg border-2 border-pink-100 px-2 py-4 shadow-md"
@@ -175,6 +200,19 @@ const MatingList = () => {
             </div>
           ))}
         </div>
+
+        {hasNextPage && (
+          <div ref={ref}>
+            {isFetchingNextPage ? (
+              <div className="flex items-center justify-center">
+                <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
+              </div>
+            ) : (
+              <Loading />
+            )}
+          </div>
+        )}
+        <div className="h-10" />
       </ScrollArea>
     </div>
   );

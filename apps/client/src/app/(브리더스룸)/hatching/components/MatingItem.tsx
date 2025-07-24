@@ -1,11 +1,11 @@
 import { formatDateToYYYYMMDDString, getNumberToDate } from "@/lib/utils";
 import {
+  brMatingControllerFindAll,
   eggControllerDelete,
   eggControllerHatched,
   eggControllerUpdateLayingDate,
   LayingDto,
   MatingByDateDto,
-  matingControllerFindAll,
   PetSummaryDto,
 } from "@repo/api-client";
 import {
@@ -53,14 +53,14 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
   const { mutate: updateLayingDate } = useMutation({
     mutationFn: eggControllerUpdateLayingDate,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
     },
   });
 
   const { mutate: deleteEgg } = useMutation({
     mutationFn: eggControllerDelete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
     },
   });
 
@@ -69,7 +69,7 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
     onSuccess: (response) => {
       if (response?.data?.hatchedPetId) {
         toast.success("해칭 완료");
-        queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+        queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       }
     },
     onError: (error: AxiosError<{ message: string }>) => {

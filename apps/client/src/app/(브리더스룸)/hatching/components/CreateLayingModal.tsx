@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 
 import { useMemo, useState } from "react";
 import {
+  brMatingControllerFindAll,
   CreateParentDtoRole,
   eggControllerCreate,
   LayingByDateDto,
-  matingControllerFindAll,
   PetDtoSpecies,
   PetSummaryDto,
 } from "@repo/api-client";
@@ -53,7 +53,7 @@ const CreateLayingModal = ({
     mutationFn: eggControllerCreate,
     onSuccess: () => {
       toast.success("산란이 추가되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
     },
     onError: () => {
       toast.error("산란 추가에 실패했습니다.");

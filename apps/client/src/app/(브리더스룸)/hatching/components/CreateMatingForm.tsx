@@ -3,9 +3,9 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import {
+  brMatingControllerFindAll,
   CommonResponseDto,
   matingControllerCreateMating,
-  matingControllerFindAll,
   ParentDtoRole,
   PetParentDto,
 } from "@repo/api-client";
@@ -37,7 +37,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
     mutationFn: matingControllerCreateMating,
     onSuccess: () => {
       toast.success("메이팅이 추가되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [matingControllerFindAll.name] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       // 폼 초기화
       setFormData({
         father: undefined,
