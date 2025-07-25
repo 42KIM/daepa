@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { matingControllerUpdateMating } from "@repo/api-client";
+import { brMatingControllerFindAll, matingControllerUpdateMating } from "@repo/api-client";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { CommonResponseDto, UpdateMatingDto } from "@repo/api-client";
@@ -42,7 +42,7 @@ const EditMatingModal = ({
     mutationFn: (data: UpdateMatingDto) => matingControllerUpdateMating(matingId, data),
     onSuccess: () => {
       toast.success("메이팅 정보가 수정되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["matingControllerFindAll"] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       onClose();
     },
     onError: (error: AxiosError<CommonResponseDto>) => {

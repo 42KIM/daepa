@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { matingControllerDeleteMating } from "@repo/api-client";
+import { brMatingControllerFindAll, matingControllerDeleteMating } from "@repo/api-client";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { CommonResponseDto } from "@repo/api-client";
@@ -21,7 +21,7 @@ const DeleteMatingModal = ({ isOpen, onClose, matingId, matingDate }: DeleteMati
     mutationFn: () => matingControllerDeleteMating(matingId),
     onSuccess: () => {
       toast.success("메이팅 정보가 삭제되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["matingControllerFindAll"] });
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       onClose();
     },
     onError: (error: AxiosError<CommonResponseDto>) => {

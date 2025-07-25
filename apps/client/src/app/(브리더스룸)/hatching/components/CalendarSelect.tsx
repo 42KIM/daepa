@@ -59,11 +59,6 @@ const CalendarSelect = ({
               const month = String(date.getMonth() + 1).padStart(2, "0");
               const day = String(date.getDate()).padStart(2, "0");
               setMatingDate(`${year}-${month}-${day}`);
-
-              const trigger = document.querySelector(`button[data-field-name="layingDate"]`);
-              if (trigger) {
-                (trigger as HTMLButtonElement).click();
-              }
             }
           }}
           disabled={disabled}

@@ -1,5 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateMatingDto, MatingBaseDto, MatingDto } from './mating.dto';
+import {
+  CreateMatingDto,
+  MatingBaseDto,
+  MatingByParentsDto,
+  MatingDto,
+} from './mating.dto';
 import { MatingEntity } from './mating.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
@@ -12,6 +17,8 @@ import { EggEntity } from 'src/egg/egg.entity';
 import { EggBaseDto, LayingDto } from 'src/egg/egg.dto';
 import { UpdateMatingDto } from './mating.dto';
 import { Not } from 'typeorm';
+import { PageOptionsDto } from 'src/common/page.dto';
+import { PageDto, PageMetaDto } from 'src/common/page.dto';
 
 interface MatingWithRelations extends MatingEntity {
   eggs?: Partial<EggEntity>[];
@@ -34,7 +41,7 @@ export class MatingService {
         'matings.eggs',
         EggEntity,
         'eggs',
-        'eggs.matingId = matings.id AND eggs.is_deleted = :isDeleted',
+        'eggs.matingId = matings.id AND eggs.isDeleted = :isDeleted AND eggs.hatchedPetId IS NULL',
         { isDeleted: false },
       )
       .leftJoinAndMapMany(
@@ -63,7 +70,7 @@ export class MatingService {
         'parents.growth',
         'parents.weight',
       ])
-      .where('matings.user_id = :userId', { userId })
+      .where('matings.userId = :userId', { userId })
       .orderBy('matings.createdAt', 'DESC')
       .addOrderBy('eggs.clutchOrder', 'ASC')
       .getMany()) as MatingWithRelations[];
@@ -71,6 +78,66 @@ export class MatingService {
     return this.formatResponseByDate(entities);
   }
 
+  async getMatingListFull(
+    pageOptionsDto: PageOptionsDto,
+    userId: string,
+  ): Promise<PageDto<MatingByParentsDto>> {
+    // 모든 메이팅 데이터를 가져와서 가공
+    const allQueryBuilder = this.matingRepository
+      .createQueryBuilder('matings')
+      .leftJoinAndMapMany(
+        'matings.eggs',
+        EggEntity,
+        'eggs',
+        'eggs.matingId = matings.id AND eggs.isDeleted = :isDeleted AND eggs.hatchedPetId IS NULL',
+        { isDeleted: false },
+      )
+      .leftJoinAndMapMany(
+        'matings.parents',
+        PetEntity,
+        'parents',
+        'parents.petId IN (matings.fatherId, matings.motherId)',
+      )
+      .select([
+        'matings.id',
+        'matings.matingDate',
+        'matings.fatherId',
+        'matings.motherId',
+        'matings.createdAt',
+        'eggs.eggId',
+        'eggs.layingDate',
+        'eggs.clutch',
+        'eggs.clutchOrder',
+        'eggs.hatchedPetId',
+        'eggs.temperature',
+        'parents.petId',
+        'parents.name',
+        'parents.morphs',
+        'parents.species',
+        'parents.sex',
+        'parents.birthdate',
+        'parents.growth',
+        'parents.weight',
+      ])
+      .where('matings.userId = :userId', { userId })
+      .orderBy('matings.id', pageOptionsDto.order);
+
+    const { entities } = await allQueryBuilder.getRawAndEntities();
+
+    // 가공된 데이터 생성
+    const allMatingList = this.formatResponseByDate(
+      entities as MatingWithRelations[],
+    );
+
+    // 가공 후 데이터로 페이지네이션 적용
+    const totalCount = allMatingList.length;
+    const startIndex = pageOptionsDto.skip;
+    const endIndex = startIndex + pageOptionsDto.itemPerPage;
+    const paginatedMatingList = allMatingList.slice(startIndex, endIndex);
+
+    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+    return new PageDto(paginatedMatingList, pageMetaDto);
+  }
   async saveMating(userId: string, createMatingDto: CreateMatingDto) {
     if (!createMatingDto.fatherId && !createMatingDto.motherId) {
       throw new BadRequestException('최소 하나의 부모 펫을 입력해야 합니다.');
