@@ -66,7 +66,6 @@ export class ParentService {
     const parentEntities = await this.createParentQueryBuilder(petId)
       .andWhere('parent.status = :status', { status: PARENT_STATUS.APPROVED })
       .getMany();
-    console.log(parentEntities);
     const fatherEntity = parentEntities.find(
       (parent) => parent.role === PARENT_ROLE.FATHER,
     );

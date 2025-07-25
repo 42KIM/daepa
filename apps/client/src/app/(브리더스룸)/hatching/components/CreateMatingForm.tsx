@@ -67,7 +67,13 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
       return;
     }
 
-    const matingDateNumber = parseInt(formData.matingDate.replace(/-/g, ""), 10);
+    const matingDateStr = formData.matingDate.replace(/-/g, "");
+    const matingDateNumber = parseInt(matingDateStr, 10);
+
+    if (isNaN(matingDateNumber) || matingDateStr.length !== 8) {
+      toast.error("올바른 날짜 형식이 아닙니다.");
+      return;
+    }
 
     createMating({
       matingDate: matingDateNumber,

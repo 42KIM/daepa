@@ -25,7 +25,7 @@ const EditEggModal = ({
   const [formData, setFormData] = useState<{
     temperature: string;
   }>({
-    temperature: "25",
+    temperature: egg.temperature?.toString() ?? "25",
   });
 
   const { mutate: updateEgg } = useMutation({
@@ -39,6 +39,15 @@ const EditEggModal = ({
       toast.error("알 수정 실패");
     },
   });
+
+  const handleSubmit = () => {
+    const temp = parseFloat(formData.temperature);
+    if (isNaN(temp)) {
+      toast.error("올바른 온도를 입력해주세요.");
+      return;
+    }
+    updateEgg({ temperature: temp });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -64,9 +73,7 @@ const EditEggModal = ({
           <Button variant="outline" onClick={onClose}>
             취소
           </Button>
-          <Button onClick={() => updateEgg({ temperature: parseFloat(formData.temperature) })}>
-            수정
-          </Button>
+          <Button onClick={handleSubmit}>수정</Button>
         </div>
       </DialogContent>
     </Dialog>
