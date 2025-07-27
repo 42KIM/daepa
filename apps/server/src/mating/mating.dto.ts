@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsDate, IsNumber, IsString } from 'class-validator';
-import { LayingDto } from 'src/egg/egg.dto';
+import { LayingByDateDto } from 'src/laying/laying.dto';
 import { PetSummaryDto } from 'src/pet/pet.dto';
 
 export class MatingBaseDto {
@@ -12,11 +12,11 @@ export class MatingBaseDto {
   id: number;
 
   @ApiProperty({
-    description: 'User ID',
-    example: 'USER_XXXXXXXX',
+    description: 'Pair ID',
+    example: 'PAIR_XXXXXXXX',
   })
   @IsString()
-  userId: string;
+  pairId: string;
 
   @ApiProperty({
     description: 'Father ID',
@@ -36,10 +36,10 @@ export class MatingBaseDto {
 
   @ApiProperty({
     description: 'Mating Date',
-    example: 'yyyyMMdd',
+    example: '2025-01-01',
   })
-  @IsNumber()
-  matingDate: number;
+  @IsDate()
+  matingDate: Date;
 
   @ApiProperty({
     description: '생성일',
@@ -73,21 +73,6 @@ export class UpdateMatingDto extends PickType(MatingBaseDto, [
   'matingDate',
 ]) {}
 
-class LayingByDateDto {
-  @ApiProperty({
-    description: '산란 날짜',
-    example: 'yyyyMMdd',
-  })
-  layingDate: number;
-
-  @ApiProperty({
-    description: '산란 정보',
-    isArray: true,
-    type: LayingDto,
-  })
-  layings: LayingDto[];
-}
-
 class MatingByDateDto {
   @ApiProperty({
     description: '메이팅 ID',
@@ -97,9 +82,10 @@ class MatingByDateDto {
 
   @ApiProperty({
     description: '메이팅 날짜',
-    example: 20250101,
+    example: '2025-01-01',
   })
-  matingDate: number;
+  @IsDate()
+  matingDate: Date;
 
   @ApiProperty({
     description: '산란 정보',

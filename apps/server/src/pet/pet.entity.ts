@@ -6,11 +6,13 @@ import {
   Index,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
   OneToOne,
 } from 'typeorm';
 import { PET_GROWTH, PET_SEX, PET_SPECIES } from './pet.constants';
-import { AdoptionEntity } from 'src/adoption/adoption.entity';
-import { UserEntity } from 'src/user/user.entity';
+import { AdoptionEntity } from '../adoption/adoption.entity';
 
 @Entity({ name: 'pets' })
 @Index('UNIQUE_PET_ID', ['petId'], { unique: true })
@@ -26,8 +28,26 @@ export class PetEntity {
   @Column({ nullable: true })
   ownerId: string;
 
-  @Column()
+  @Column({ nullable: true })
+  layingId: string;
+
+  @Column({ nullable: true })
+  fatherId: string;
+
+  @Column({ nullable: true })
+  motherId: string;
+
+  @Column({ nullable: true })
+  pairId: string;
+
+  @Column({ type: 'date', nullable: true })
+  hatchingDate: Date;
+
+  @Column({ nullable: true })
   name: string; // 이름
+
+  @Column({ type: 'enum', enum: PET_SEX, nullable: true })
+  sex?: PET_SEX; // 성별
 
   @Column({ type: 'enum', enum: PET_SPECIES })
   species: PET_SPECIES; // 종
@@ -38,23 +58,29 @@ export class PetEntity {
   @Column('json', { nullable: true })
   traits?: string[]; // 형질
 
-  @Column({ nullable: true })
-  birthdate?: number; // 생년월일 (yyyyMMdd)
-
-  @Column({ type: 'enum', enum: PET_GROWTH, nullable: true })
-  growth?: PET_GROWTH; // 성장단계
-
-  @Column({ type: 'enum', enum: PET_SEX, nullable: true })
-  sex?: PET_SEX; // 성별
+  @Column('json', { nullable: true })
+  foods?: string[]; // 먹이
 
   @Column({ type: 'decimal', precision: 10, scale: 1, nullable: true })
   weight?: number; // 몸무게(g)
 
-  @Column('json', { nullable: true })
-  foods?: string[]; // 먹이
+  @Column({ type: 'enum', enum: PET_GROWTH, nullable: true })
+  growth?: PET_GROWTH; // 성장단계
+
+  @Column({ type: 'tinyint', nullable: true })
+  clutchOrder?: number; // 동배 번호(같은 차수 내 구분)
+
+  @Column({ type: 'decimal', precision: 10, scale: 1, nullable: true })
+  temperature?: number;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   desc?: string; // 소개말
+
+  @Column({ default: true })
+  isPublic?: boolean;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -62,15 +88,25 @@ export class PetEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ default: false })
-  isDeleted: boolean;
+  // 부모 관계 정의
+  @ManyToOne(() => PetEntity, { nullable: true })
+  @JoinColumn({ name: 'fatherId', referencedColumnName: 'petId' })
+  father?: PetEntity;
 
-  @Column({ default: true })
-  isPublic?: boolean;
+  @ManyToOne(() => PetEntity, { nullable: true })
+  @JoinColumn({ name: 'motherId', referencedColumnName: 'petId' })
+  mother?: PetEntity;
 
-  @OneToOne(() => AdoptionEntity, (adoption) => adoption.pet)
-  adoption: AdoptionEntity;
+  // 자식 관계 정의 (선택사항 - 필요시 사용)
+  @OneToMany(() => PetEntity, (pet) => pet.father)
+  childrenAsFather?: PetEntity[];
 
-  @OneToOne(() => UserEntity, (user) => user)
-  owner: UserEntity;
+  @OneToMany(() => PetEntity, (pet) => pet.mother)
+  childrenAsMother?: PetEntity[];
+
+  // 분양 관계 정의
+  @OneToOne(() => AdoptionEntity, (adoption) => adoption.pet, {
+    nullable: true,
+  })
+  adoption?: AdoptionEntity;
 }

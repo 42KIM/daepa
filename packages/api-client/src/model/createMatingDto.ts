@@ -12,5 +12,5 @@ export interface CreateMatingDto {
   /** Mother ID */
   motherId?: string;
   /** Mating Date */
-  matingDate: number;
+  matingDate: string;
 }

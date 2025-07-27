@@ -9,7 +9,7 @@ import type { LayingDto } from "./layingDto";
 
 export interface LayingByDateDto {
   /** 산란 날짜 */
-  layingDate: number;
+  layingDate: string;
   /** 산란 정보 */
   layings: LayingDto[];
 }

@@ -6,7 +6,7 @@ export type FieldName =
   | "sex"
   | "name"
   | "foods"
-  | "birthdate"
+  | "hatchingDate"
   | "weight"
   | "desc"
   | "photos"

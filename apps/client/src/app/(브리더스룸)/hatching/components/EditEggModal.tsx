@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   brMatingControllerFindAll,
-  eggControllerUpdate,
   LayingDto,
+  petControllerUpdate,
   UpdateEggDto,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,7 +29,7 @@ const EditEggModal = ({
   });
 
   const { mutate: updateEgg } = useMutation({
-    mutationFn: (data: UpdateEggDto) => eggControllerUpdate(egg.eggId, data),
+    mutationFn: (data: UpdateEggDto) => petControllerUpdate(egg.id, data),
     onSuccess: () => {
       toast.success("알 수정 완료");
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });

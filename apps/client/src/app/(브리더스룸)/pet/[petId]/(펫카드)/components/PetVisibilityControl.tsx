@@ -1,7 +1,7 @@
 import Dialog from "@/app/(브리더스룸)/components/Form/Dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { petControllerFindOne, petControllerUpdate, UpdatePetDto } from "@repo/api-client";
+import { petControllerFindPetByPetId, petControllerUpdate, UpdatePetDto } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { overlay } from "overlay-kit";
 import { memo, useCallback } from "react";
@@ -18,7 +18,7 @@ const PetVisibilityControl = memo(({ petId, isPublic = false }: PetVisibilityCon
     mutationFn: (data: UpdatePetDto) => petControllerUpdate(petId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [petControllerFindOne.name, petId],
+        queryKey: [petControllerFindPetByPetId.name, petId],
       });
       toast.success("펫 정보가 변경되었습니다.");
     },

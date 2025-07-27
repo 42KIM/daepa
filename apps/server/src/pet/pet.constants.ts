@@ -26,8 +26,10 @@ export enum PET_ADOPTION_LOCATION {
 }
 
 export enum PET_GROWTH {
+  EGG = 'EGG', // 알
   BABY = 'BABY', // 베이비
-  ADULT = 'ADULT', // 아성체
-  JUNIOR = 'JUNIOR', // 준성체
-  SENIOR = 'SENIOR', // 성체
+  JUVENILE = 'JUVENILE', // 아성체
+  PRE_ADULT = 'PRE_ADULT', // 준성체
+  ADULT = 'ADULT', // 성체
+  DEAD = 'DEAD', // 사망
 }

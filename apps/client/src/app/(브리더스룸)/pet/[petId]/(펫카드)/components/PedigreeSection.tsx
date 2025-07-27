@@ -2,11 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ParentLink from "../../../components/ParentLink";
 import { PetParentDtoWithMessage } from "../../../store/parentLink";
 import {
-  parentControllerCreateParent,
-  parentControllerDeleteParent,
   ParentDtoRole,
   ParentDtoStatus,
-  petControllerFindOne,
+  petControllerFindPetByPetId,
+  petControllerLinkParent,
+  petControllerUnlinkParent,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
@@ -22,8 +22,7 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
   const { formData, setFormData } = usePetStore();
 
   const { mutate: mutateDeleteParent } = useMutation({
-    mutationFn: ({ relationId }: { relationId: number }) =>
-      parentControllerDeleteParent(relationId),
+    mutationFn: ({ role }: { role: ParentDtoRole }) => petControllerUnlinkParent(petId, { role }),
   });
 
   const { mutate: mutateRequestParent } = useMutation({
@@ -36,14 +35,14 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
       role: ParentDtoRole;
       message: string;
     }) =>
-      parentControllerCreateParent(petId, {
+      petControllerLinkParent(petId, {
         parentId,
         role,
         message,
       }),
     onSuccess: () => {
       toast.success("부모 연동 요청이 완료되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [petControllerFindOne.name, petId] });
+      queryClient.invalidateQueries({ queryKey: [petControllerFindPetByPetId.name, petId] });
     },
     onError: () => {
       toast.error("부모 연동 요청에 실패했습니다.");
@@ -69,9 +68,8 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
   const handleUnlink = useCallback(
     (label: ParentDtoRole) => {
       try {
-        if (!formData[label]?.petId || !formData[label]?.relationId)
-          return toast.error("부모 연동 해제에 실패했습니다.");
-        mutateDeleteParent({ relationId: formData[label]?.relationId });
+        if (!formData[label]?.petId) return toast.error("부모 연동 해제에 실패했습니다.");
+        mutateDeleteParent({ role: label });
 
         toast.success("부모 연동 해제가 완료되었습니다.");
         setFormData((prev) => ({ ...prev, [label]: null }));

@@ -21,7 +21,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useMemo, useState } from "react";
-import { brEggControllerFindAll } from "@repo/api-client";
+
 import { useQuery } from "@tanstack/react-query";
 import { TreeView } from "../components/TreeView";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { DateRange } from "react-day-picker";
 import MatingList from "./components/MatingList";
+import { brPetControllerFindAll } from "@repo/api-client";
 
 const HatchingPage = () => {
   const [month, setMonth] = useState<Date>(new Date());
@@ -49,11 +50,11 @@ const HatchingPage = () => {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   const { data: yearData } = useQuery({
-    queryKey: [brEggControllerFindAll.name, selectedYear],
+    queryKey: [brPetControllerFindAll.name, selectedYear],
     queryFn: () => {
       const startDate = new Date(selectedYear, 0, 1);
       const endDate = new Date(selectedYear, 11, 31);
-      return brEggControllerFindAll({
+      return brPetControllerFindAll({
         startYmd: Number(format(startDate, "yyyyMMdd")),
         endYmd: Number(format(endDate, "yyyyMMdd")),
       });
@@ -62,11 +63,11 @@ const HatchingPage = () => {
   });
 
   const { data: monthlyData } = useQuery({
-    queryKey: [brEggControllerFindAll.name, month],
+    queryKey: [brPetControllerFindAll.name, month],
     queryFn: () => {
       const startDate = new Date(month.getFullYear(), month.getMonth(), 1);
       const endDate = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-      return brEggControllerFindAll({
+      return brPetControllerFindAll({
         startYmd: Number(format(startDate, "yyyyMMdd")),
         endYmd: Number(format(endDate, "yyyyMMdd")),
       });
@@ -75,9 +76,9 @@ const HatchingPage = () => {
   });
 
   const { data: selectedData, isPending: todayIsPending } = useQuery({
-    queryKey: [brEggControllerFindAll.name, dateRange],
+    queryKey: [brPetControllerFindAll.name, dateRange],
     queryFn: () =>
-      brEggControllerFindAll({
+      brPetControllerFindAll({
         startYmd: dateRange?.from ? Number(format(dateRange.from, "yyyyMMdd")) : undefined,
         endYmd: dateRange?.to ? Number(format(dateRange.to, "yyyyMMdd")) : undefined,
       }),

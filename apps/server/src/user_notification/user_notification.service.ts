@@ -102,4 +102,10 @@ export class UserNotificationService {
       { isDeleted: true },
     );
   }
+
+  async findOne(id: number): Promise<UserNotificationEntity | null> {
+    return await this.userNotificationRepository.findOne({
+      where: { id, isDeleted: false },
+    });
+  }
 }

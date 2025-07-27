@@ -6,6 +6,7 @@ import {
   IsObject,
   IsOptional,
   IsBoolean,
+  IsDate,
 } from 'class-validator';
 import {
   PET_ADOPTION_LOCATION,
@@ -22,9 +23,12 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { Exclude, Transform } from 'class-transformer';
-import { PARENT_STATUS } from 'src/parent/parent.constant';
+import {
+  PARENT_ROLE,
+  PARENT_STATUS,
+} from 'src/parent_request/parent_request.constants';
 import { UserProfilePublicDto } from 'src/user/user.dto';
-import { CreateParentDto } from 'src/parent/parent.dto';
+import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { PageOptionsDto } from 'src/common/page.dto';
 
 export class PetBaseDto {
@@ -88,7 +92,7 @@ export class PetBaseDto {
     const num = Number(value);
     return isNaN(num) ? undefined : num;
   })
-  birthdate?: number;
+  hatchingDate?: Date;
 
   @ApiProperty({
     description: '펫 성장단계',
@@ -167,7 +171,7 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   'traits',
   'sex',
   'photos',
-  'birthdate',
+  'hatchingDate',
 ]) {
   @Exclude()
   declare growth?: PET_GROWTH;
@@ -270,10 +274,10 @@ export class PetAdoptionDto {
 
   @ApiProperty({
     description: '분양 날짜',
-    example: '2024-01-01',
+    example: 20240101,
   })
   @IsNumber()
-  adoptionDate?: Date;
+  adoptionDate?: number;
 
   @ApiProperty({
     description: '메모',
@@ -352,6 +356,29 @@ export class CreatePetDto extends OmitType(PetBaseDto, [
   @IsOptional()
   @IsObject()
   mother?: CreateParentDto;
+
+  @ApiProperty({
+    description: '알 클러치 개수',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  clutchCount: number;
+
+  @ApiProperty({
+    description: '알 클러치',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  clutch?: number;
+
+  @ApiProperty({
+    description: '산란일',
+    required: false,
+  })
+  @IsOptional()
+  layingDate?: Date;
 }
 
 export class UpdatePetDto extends PartialType(CreatePetDto) {}
@@ -523,4 +550,35 @@ export class PetFilterDto extends PageOptionsDto {
   @IsOptional()
   @IsBoolean()
   includeOthers?: boolean;
+}
+
+export class LinkParentDto {
+  @ApiProperty({
+    description: '부모 펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  parentId: string;
+
+  @ApiProperty({
+    description: '부모 역할',
+    enum: PARENT_ROLE,
+    example: PARENT_ROLE.FATHER,
+  })
+  role: PARENT_ROLE;
+
+  @ApiProperty({
+    description: '연동 요청 메시지',
+    required: false,
+    example: '혈통 정보를 위해 연동 요청합니다.',
+  })
+  message?: string;
+}
+
+export class CompleteHatchingDto {
+  @ApiProperty({
+    description: '해칭 날짜',
+    example: '2024-01-01',
+  })
+  @IsNumber()
+  hatchingDate?: Date;
 }

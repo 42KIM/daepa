@@ -130,29 +130,29 @@ export const columns: ColumnDef<PetDto>[] = [
     },
     cell: ({ cell }) => <div className="capitalize">{cell.getValue() ? "✅" : ""}</div>,
   },
-  {
-    accessorKey: "adoption.status",
-    header: ({ column }) => {
-      return (
-        <TableHeaderSelect
-          column={column}
-          title={TABLE_HEADER.status}
-          items={Object.values(AdoptionDtoStatus)}
-          renderItem={(item) =>
-            SALE_STATUS_KOREAN_INFO[item as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"
-          }
-        />
-      );
-    },
-    cell: ({ cell }) => {
-      const status = cell.getValue();
-      return (
-        <div className="capitalize">
-          {SALE_STATUS_KOREAN_INFO[status as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"}
-        </div>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "adoption.status",
+  //   header: ({ column }) => {
+  //     return (
+  //       <TableHeaderSelect
+  //         column={column}
+  //         title={TABLE_HEADER.status}
+  //         items={Object.values(AdoptionDtoStatus)}
+  //         renderItem={(item) =>
+  //           SALE_STATUS_KOREAN_INFO[item as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"
+  //         }
+  //       />
+  //     );
+  //   },
+  //   cell: ({ cell }) => {
+  //     const status = cell.getValue();
+  //     return (
+  //       <div className="capitalize">
+  //         {SALE_STATUS_KOREAN_INFO[status as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"}
+  //       </div>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "name",
     header: TABLE_HEADER.name,
@@ -260,13 +260,13 @@ export const columns: ColumnDef<PetDto>[] = [
     ),
   },
   {
-    accessorKey: "birthdate",
-    header: TABLE_HEADER.birthdate,
+    accessorKey: "hatchingDate",
+    header: TABLE_HEADER.hatchingDate,
     cell: ({ row }) => {
-      const birthdate = row.getValue("birthdate");
+      const hatchingDate = row.getValue("hatchingDate");
       return (
         <div className="capitalize">
-          {birthdate ? formatDateToYYYYMMDDString(Number(birthdate)) : "-"}
+          {hatchingDate ? formatDateToYYYYMMDDString(Number(hatchingDate)) : "-"}
         </div>
       );
     },
@@ -293,28 +293,28 @@ export const columns: ColumnDef<PetDto>[] = [
       );
     },
   },
-  {
-    accessorKey: "father",
-    header: TABLE_HEADER.father,
-    cell: ({ row }) => {
-      const father = row.original.father;
-      return father?.petId ? (
-        <LinkButton
-          href={`/pet/${father.petId}`}
-          label={father.name ?? ""}
-          tooltip="펫 상세 페이지로 이동"
-          className={`${STATUS_MAP[father.status as keyof typeof STATUS_MAP].color} hover:text-accent/80 font-semibold text-white`}
-          icon={
-            father.status === ParentDtoStatus.APPROVED ? (
-              <BadgeCheck className="h-4 w-4 text-gray-100" />
-            ) : null
-          }
-        />
-      ) : (
-        <span>-</span>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "father",
+  //   header: TABLE_HEADER.father,
+  //   cell: ({ row }) => {
+  //     const father = row.original.father;
+  //     return father?.petId ? (
+  //       <LinkButton
+  //         href={`/pet/${father.petId}`}
+  //         label={father.name ?? ""}
+  //         tooltip="펫 상세 페이지로 이동"
+  //         className={`${STATUS_MAP[father.status as keyof typeof STATUS_MAP].color} hover:text-accent/80 font-semibold text-white`}
+  //         icon={
+  //           father.status === ParentDtoStatus.APPROVED ? (
+  //             <BadgeCheck className="h-4 w-4 text-gray-100" />
+  //           ) : null
+  //         }
+  //       />
+  //     ) : (
+  //       <span>-</span>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "desc",
     header: TABLE_HEADER.desc,

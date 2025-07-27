@@ -1,0 +1,32 @@
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+@Entity({ name: 'layings' })
+@Index('UNIQUE_LAYING', ['matingId', 'layingDate'], {
+  unique: true,
+})
+export class LayingEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ nullable: true })
+  matingId: string;
+
+  @Column({ type: 'date' })
+  layingDate: Date;
+
+  @Column({ type: 'tinyint', nullable: true })
+  clutch?: number; // 차수(클러치)
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}

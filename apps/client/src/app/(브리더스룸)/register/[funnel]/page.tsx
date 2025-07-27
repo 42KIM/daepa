@@ -110,8 +110,8 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
         sex,
         species,
         ...(desc && { desc }),
-        ...(rest?.birthdate && {
-          birthdate: format(rest.birthdate, "yyyyMMdd"),
+        ...(rest?.hatchingDate && {
+          hatchingDate: format(rest.hatchingDate, "yyyyMMdd"),
         }),
         ...(rest?.weight && { weight: Number(rest.weight) }),
         ...(rest?.father?.petId && {
@@ -130,8 +130,9 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
             message: rest.mother?.message,
           },
         }),
+        ...(rest?.foods && { foods: rest.foods }),
+        ...(rest?.traits && { traits: rest.traits }),
       };
-
       mutateCreatePet(requestData);
     } catch (error) {
       console.error("Failed to create pet:", error);

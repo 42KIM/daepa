@@ -1,11 +1,11 @@
 import { formatDateToYYYYMMDDString, getNumberToDate } from "@/lib/utils";
 import {
   brMatingControllerFindAll,
-  eggControllerDelete,
-  eggControllerHatched,
-  eggControllerUpdateLayingDate,
+  layingControllerCreate,
   LayingDto,
   MatingByDateDto,
+  petControllerCompleteHatching,
+  petControllerDeletePet,
   PetSummaryDto,
 } from "@repo/api-client";
 import {
@@ -51,23 +51,24 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
   );
 
   const { mutate: updateLayingDate } = useMutation({
-    mutationFn: eggControllerUpdateLayingDate,
+    mutationFn: layingControllerCreate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
     },
   });
 
   const { mutate: deleteEgg } = useMutation({
-    mutationFn: eggControllerDelete,
+    mutationFn: petControllerDeletePet,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
     },
   });
 
   const { mutate: mutateHatched } = useMutation({
-    mutationFn: eggControllerHatched,
+    mutationFn: (petId: string, hatchingDate: string) =>
+      petControllerCompleteHatching(petId, { hatchingDate }),
     onSuccess: (response) => {
-      if (response?.data?.hatchedPetId) {
+      if (response?.data) {
         toast.success("해칭 완료");
         queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       }

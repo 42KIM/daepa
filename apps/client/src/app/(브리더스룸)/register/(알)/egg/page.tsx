@@ -1,7 +1,7 @@
 "use client";
 
 import { EGG_REGISTER_STEPS } from "../../../constants";
-import { CreateEggDto, eggControllerCreate } from "@repo/api-client";
+import { CreatePetDto, petControllerCreate, PetDtoGrowth } from "@repo/api-client";
 import { FormField } from "../../../components/Form/FormField";
 
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ const EggRegisterPage = () => {
   const visibleSteps = EGG_REGISTER_STEPS.slice(-step - 1);
 
   const { mutate: mutateCreateEgg, isPending } = useMutation({
-    mutationFn: (data: CreateEggDto) => eggControllerCreate(data),
+    mutationFn: (data: CreatePetDto) => petControllerCreate(data),
     onSuccess: () => {
       toast.success("알 등록이 완료되었습니다.");
       router.push("/hatching");
@@ -109,7 +109,9 @@ const EggRegisterPage = () => {
     try {
       const formattedData = {
         species: newFormData.species,
-        layingDate: format(newFormData.layingDate, "yyyyMMdd"),
+        ...(newFormData.layingDate && {
+          layingDate: format(newFormData.layingDate, "yyyyMMdd"),
+        }),
         ...(newFormData.father?.petId && {
           father: {
             parentId: newFormData.father.petId,
@@ -132,6 +134,8 @@ const EggRegisterPage = () => {
         ...(newFormData.clutch && { clutch: Number(newFormData.clutch) }),
         clutchCount: Number(newFormData.clutchCount),
         desc: newFormData.desc,
+        growth: PetDtoGrowth.EGG,
+        name: `${newFormData.father?.name}x${newFormData.mother?.name}(${newFormData.clutchCount ?? "@"}-${newFormData.clutch ?? "@"})`,
       };
       mutateCreateEgg(formattedData);
     } catch (error) {

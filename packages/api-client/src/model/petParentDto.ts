@@ -24,7 +24,7 @@ export interface PetParentDto {
   /** 펫 형질 */
   traits?: string[];
   /** 펫 출생일 */
-  birthdate?: number;
+  hatchingDate?: string;
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: PetParentDtoSex;
   /** 부모 관계 테이블 row id */

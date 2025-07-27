@@ -7,8 +7,8 @@ import { useMemo, useState } from "react";
 import {
   brMatingControllerFindAll,
   CreateParentDtoRole,
-  eggControllerCreate,
   LayingByDateDto,
+  petControllerCreate,
   PetDtoSpecies,
   PetSummaryDto,
 } from "@repo/api-client";
@@ -50,7 +50,7 @@ const CreateLayingModal = ({
   );
 
   const { mutate: createLaying } = useMutation({
-    mutationFn: eggControllerCreate,
+    mutationFn: petControllerCreate,
     onSuccess: () => {
       toast.success("산란이 추가되었습니다.");
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });

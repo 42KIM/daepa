@@ -11,8 +11,10 @@ export type BrPetControllerFindAllGrowth =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BrPetControllerFindAllGrowth = {
+  EGG: "EGG",
   BABY: "BABY",
+  JUVENILE: "JUVENILE",
+  PRE_ADULT: "PRE_ADULT",
   ADULT: "ADULT",
-  JUNIOR: "JUNIOR",
-  SENIOR: "SENIOR",
+  DEAD: "DEAD",
 } as const;

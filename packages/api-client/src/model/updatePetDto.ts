@@ -20,7 +20,7 @@ export interface UpdatePetDto {
   /** 펫 형질 */
   traits?: string[];
   /** 펫 출생일 */
-  birthdate?: number;
+  hatchingDate?: string;
   /** 펫 성장단계 */
   growth?: UpdatePetDtoGrowth;
   /** 펫 공개 여부 */
@@ -37,4 +37,10 @@ export interface UpdatePetDto {
   father?: CreateParentDto;
   /** 엄마 개체 정보 */
   mother?: CreateParentDto;
+  /** 알 클러치 개수 */
+  clutchCount?: number;
+  /** 알 클러치 */
+  clutch?: number;
+  /** 산란일 */
+  layingDate?: string;
 }
