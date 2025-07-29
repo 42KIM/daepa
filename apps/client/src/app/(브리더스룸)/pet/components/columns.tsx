@@ -39,9 +39,9 @@ import {
   PetDtoGrowth,
   PetDtoSpecies,
 } from "@repo/api-client";
-import { formatDateToYYYYMMDDString } from "@/lib/utils";
 import LinkButton from "../../components/LinkButton";
 import useSearchStore from "../store/search";
+import { format } from "date-fns";
 
 function TableHeaderSelect({
   column,
@@ -130,29 +130,29 @@ export const columns: ColumnDef<PetDto>[] = [
     },
     cell: ({ cell }) => <div className="capitalize">{cell.getValue() ? "✅" : ""}</div>,
   },
-  // {
-  //   accessorKey: "adoption.status",
-  //   header: ({ column }) => {
-  //     return (
-  //       <TableHeaderSelect
-  //         column={column}
-  //         title={TABLE_HEADER.status}
-  //         items={Object.values(AdoptionDtoStatus)}
-  //         renderItem={(item) =>
-  //           SALE_STATUS_KOREAN_INFO[item as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"
-  //         }
-  //       />
-  //     );
-  //   },
-  //   cell: ({ cell }) => {
-  //     const status = cell.getValue();
-  //     return (
-  //       <div className="capitalize">
-  //         {SALE_STATUS_KOREAN_INFO[status as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"}
-  //       </div>
-  //     );
-  //   },
-  // },
+  {
+    accessorKey: "adoption.status",
+    header: ({ column }) => {
+      return (
+        <TableHeaderSelect
+          column={column}
+          title={TABLE_HEADER.adoption_status}
+          items={Object.values(AdoptionDtoStatus)}
+          renderItem={(item) =>
+            SALE_STATUS_KOREAN_INFO[item as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"
+          }
+        />
+      );
+    },
+    cell: ({ cell }) => {
+      const status = cell.getValue();
+      return (
+        <div className="capitalize">
+          {SALE_STATUS_KOREAN_INFO[status as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"}
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "name",
     header: TABLE_HEADER.name,
@@ -263,11 +263,9 @@ export const columns: ColumnDef<PetDto>[] = [
     accessorKey: "hatchingDate",
     header: TABLE_HEADER.hatchingDate,
     cell: ({ row }) => {
-      const hatchingDate = row.getValue("hatchingDate");
+      const hatchingDate = row.getValue("hatchingDate") as Date;
       return (
-        <div className="capitalize">
-          {hatchingDate ? formatDateToYYYYMMDDString(Number(hatchingDate)) : "-"}
-        </div>
+        <div className="capitalize">{hatchingDate ? format(hatchingDate, "yyyy-MM-dd") : "-"}</div>
       );
     },
   },
@@ -276,14 +274,16 @@ export const columns: ColumnDef<PetDto>[] = [
     header: TABLE_HEADER.mother,
     cell: ({ row }) => {
       const mother = row.original.mother;
+      const status = mother?.status ?? "approved";
       return mother?.petId ? (
         <LinkButton
           href={`/pet/${mother.petId}`}
           label={mother.name ?? ""}
           tooltip="펫 상세 페이지로 이동"
-          className={`${STATUS_MAP[mother.status as keyof typeof STATUS_MAP].color} hover:text-accent/80 font-semibold text-white`}
+          // status가 없으면 내 펫
+          className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
           icon={
-            mother.status === ParentDtoStatus.APPROVED ? (
+            status === ParentDtoStatus.APPROVED ? (
               <BadgeCheck className="h-4 w-4 text-gray-100" />
             ) : null
           }
@@ -293,28 +293,30 @@ export const columns: ColumnDef<PetDto>[] = [
       );
     },
   },
-  // {
-  //   accessorKey: "father",
-  //   header: TABLE_HEADER.father,
-  //   cell: ({ row }) => {
-  //     const father = row.original.father;
-  //     return father?.petId ? (
-  //       <LinkButton
-  //         href={`/pet/${father.petId}`}
-  //         label={father.name ?? ""}
-  //         tooltip="펫 상세 페이지로 이동"
-  //         className={`${STATUS_MAP[father.status as keyof typeof STATUS_MAP].color} hover:text-accent/80 font-semibold text-white`}
-  //         icon={
-  //           father.status === ParentDtoStatus.APPROVED ? (
-  //             <BadgeCheck className="h-4 w-4 text-gray-100" />
-  //           ) : null
-  //         }
-  //       />
-  //     ) : (
-  //       <span>-</span>
-  //     );
-  //   },
-  // },
+  {
+    accessorKey: "father",
+    header: TABLE_HEADER.father,
+    cell: ({ row }) => {
+      const father = row.original.father;
+      const status = father?.status ?? "approved";
+
+      return father?.petId ? (
+        <LinkButton
+          href={`/pet/${father.petId}`}
+          label={father.name ?? ""}
+          tooltip="펫 상세 페이지로 이동"
+          className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
+          icon={
+            status === ParentDtoStatus.APPROVED ? (
+              <BadgeCheck className="h-4 w-4 text-gray-100" />
+            ) : null
+          }
+        />
+      ) : (
+        <span>-</span>
+      );
+    },
+  },
   {
     accessorKey: "desc",
     header: TABLE_HEADER.desc,

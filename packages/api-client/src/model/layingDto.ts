@@ -10,9 +10,11 @@ export interface LayingDto {
   /** Laying ID */
   id: number;
   /** Mating ID */
-  matingId?: string;
+  matingId?: number;
   /** Laying Date */
   layingDate: string;
   /** 차수(클러치) */
   clutch?: number;
+  /** 차수(클러치) 순서 */
+  clutchOrder?: number;
 }

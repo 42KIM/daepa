@@ -64,7 +64,7 @@ export class PageOptionsDtoWithDateRange extends PageOptionsDto {
   })
   @IsOptional()
   @Type(() => Number)
-  readonly startYmd?: number;
+  readonly minHatchingDate?: number;
 
   @ApiProperty({
     description: '조회 범위 종료일',
@@ -73,7 +73,7 @@ export class PageOptionsDtoWithDateRange extends PageOptionsDto {
   })
   @IsOptional()
   @Type(() => Number)
-  readonly endYmd?: number;
+  readonly maxHatchingDate?: number;
 }
 
 export class PageMetaDto {
@@ -160,19 +160,19 @@ export class PageDto<T> {
 export class DateRangeDto {
   @ApiProperty({
     description: '조회 범위 시작일',
-    type: Number,
+    type: Date,
     required: false,
   })
   @IsOptional()
-  @Type(() => Number)
-  readonly startYmd?: number;
+  @Type(() => Date)
+  readonly minHatchingDate?: Date;
 
   @ApiProperty({
     description: '조회 범위 종료일',
-    type: Number,
+    type: Date,
     required: false,
   })
   @IsOptional()
-  @Type(() => Number)
-  readonly endYmd?: number;
+  @Type(() => Date)
+  readonly maxHatchingDate?: Date;
 }

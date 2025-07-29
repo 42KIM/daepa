@@ -5,7 +5,7 @@ import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../components/selector/parentSearch";
 import { Button } from "@/components/ui/button";
 import Dialog from "../../components/Form/Dialog";
-import { PetParentDto } from "@repo/api-client";
+import { BrPetControllerFindAllFilterType, PetParentDto } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import ParentStatusBadge from "../../components/ParentStatusBadge";
 import { Badge } from "@/components/ui/badge";
@@ -17,12 +17,14 @@ const ParentLink = ({
   label,
   data,
   editable = true,
+  petListType = BrPetControllerFindAllFilterType.ALL,
   onSelect,
   onUnlink,
 }: {
   label: "부" | "모";
   data?: PetParentDto;
   editable?: boolean;
+  petListType?: BrPetControllerFindAllFilterType;
   onSelect?: (item: PetParentDtoWithMessage) => void;
   onUnlink?: () => void;
 }) => {
@@ -50,6 +52,25 @@ const ParentLink = ({
         title="부모 연동 해제"
         description={`${label} 개체와의 연동을 해제하시겠습니까?`}
         onExit={unmount}
+      />
+    ));
+  };
+
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!editable) return;
+
+    overlay.open(({ isOpen, close, unmount }) => (
+      <ParentSearchSelector
+        isOpen={isOpen}
+        onClose={close}
+        onSelect={(item) => {
+          close();
+          onSelect?.(item);
+        }}
+        sex={label === "부" ? "M" : "F"}
+        onExit={unmount}
+        petListType={petListType}
       />
     ));
   };
@@ -119,23 +140,7 @@ const ParentLink = ({
         <div className="flex flex-col items-center gap-2">
           <button
             className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg bg-gray-100 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!editable) return;
-
-              overlay.open(({ isOpen, close, unmount }) => (
-                <ParentSearchSelector
-                  isOpen={isOpen}
-                  onClose={close}
-                  onSelect={(item) => {
-                    close();
-                    onSelect?.(item);
-                  }}
-                  sex={label === "부" ? "M" : "F"}
-                  onExit={unmount}
-                />
-              ));
-            }}
+            onClick={handleSelect}
           >
             {editable ? (
               <Search className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-gray-400" />

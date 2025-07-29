@@ -26,9 +26,27 @@ export class ParentRequestService {
   async createParentRequest(
     createParentRequestDto: CreateParentRequestDto,
   ): Promise<ParentRequestEntity> {
-    const parentRequest = this.parentRequestRepository.create(
-      createParentRequestDto,
-    );
+    // 부모 펫 엔티티 조회
+    const parentPet = await this.petRepository.findOne({
+      where: { petId: createParentRequestDto.parentPetId },
+    });
+
+    if (!parentPet) {
+      throw new HttpException(
+        '부모 펫을 찾을 수 없습니다.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const parentRequest = this.parentRequestRepository.create({
+      requesterId: createParentRequestDto.requesterId,
+      childPetId: createParentRequestDto.childPetId,
+      parentPetId: createParentRequestDto.parentPetId,
+      role: createParentRequestDto.role,
+      status: PARENT_STATUS.PENDING,
+      message: createParentRequestDto.message,
+    });
+
     return await this.parentRequestRepository.save(parentRequest);
   }
 
@@ -39,6 +57,7 @@ export class ParentRequestService {
     const requester = await this.userService.findOne({
       userId: createParentRequestDto.requesterId,
     });
+
     const requesterName = requester?.name || '요청자';
 
     // 자식 펫 정보 조회
@@ -103,6 +122,19 @@ export class ParentRequestService {
     });
   }
 
+  async findPendingRequestByChildAndRole(
+    childPetId: string,
+    role: PARENT_ROLE,
+  ): Promise<ParentRequestEntity | null> {
+    return await this.parentRequestRepository.findOne({
+      where: {
+        childPetId,
+        role,
+        status: PARENT_STATUS.PENDING,
+      },
+    });
+  }
+
   async findById(id: number): Promise<ParentRequestEntity | null> {
     return await this.parentRequestRepository.findOne({
       where: { id },
@@ -113,6 +145,17 @@ export class ParentRequestService {
     id: number,
     updateParentRequestDto: UpdateParentRequestDto,
   ): Promise<ParentRequestEntity> {
+    // 기존 요청 조회
+    const existingRequest = await this.findById(id);
+
+    if (!existingRequest) {
+      throw new HttpException(
+        '부모 요청을 찾을 수 없습니다.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // 상태 업데이트
     await this.parentRequestRepository.update(id, updateParentRequestDto);
     const updated = await this.findById(id);
     if (!updated) {
@@ -121,7 +164,130 @@ export class ParentRequestService {
         HttpStatus.NOT_FOUND,
       );
     }
+
+    // 상태가 변경된 경우에만 알림 처리
+    if (existingRequest.status !== updateParentRequestDto.status) {
+      await this.handleStatusChangeNotification(updated);
+    }
+
     return updated;
+  }
+
+  private async handleStatusChangeNotification(
+    parentRequest: ParentRequestEntity,
+  ): Promise<void> {
+    // 펫 정보 조회
+    const childPet = await this.petRepository.findOne({
+      where: { petId: parentRequest.childPetId },
+      select: ['name', 'ownerId'],
+    });
+
+    const parentPet = await this.petRepository.findOne({
+      where: { petId: parentRequest.parentPetId },
+      select: ['name', 'ownerId'],
+    });
+    console.log(
+      '🚀 ~ ParentRequestService ~ handleStatusChangeNotification ~ parentPet:',
+      { parentPet, childPet, parentRequest },
+    );
+
+    if (!childPet || !parentPet) {
+      throw new HttpException(
+        '펫 정보를 찾을 수 없습니다.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // 요청자에게 알림 보내기
+    const notificationType = this.getNotificationTypeByStatus(
+      parentRequest.status,
+    );
+
+    const message = this.getStatusChangeMessage(
+      parentRequest.status,
+      parentRequest.role,
+    );
+
+    // 기존 알림 업데이트 (요청자에게 보낸 알림)
+    await this.userNotificationService.updateWhere(
+      {
+        targetId: parentRequest.childPetId,
+        senderId: parentRequest.requesterId,
+        type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
+      },
+      {
+        type: notificationType,
+        detailJson: {
+          childPetId: parentRequest.childPetId,
+          childPetName: childPet.name,
+          parentPetId: parentRequest.parentPetId,
+          parentPetName: parentPet.name,
+          requesterId: parentRequest.requesterId,
+          role: parentRequest.role,
+          status: parentRequest.status,
+          message,
+        },
+      },
+    );
+
+    try {
+      await this.userNotificationService.createUserNotification(
+        parentPet.ownerId, // 부모 펫 소유자가 발신자
+        {
+          receiverId: parentRequest.requesterId, // 요청자가 수신자
+          type: notificationType,
+          targetId: parentRequest.childPetId,
+          detailJson: {
+            childPetId: parentRequest.childPetId,
+            childPetName: childPet.name,
+            parentPetId: parentRequest.parentPetId,
+            parentPetName: parentPet.name,
+            role: parentRequest.role,
+            status: parentRequest.status,
+            message,
+          },
+        },
+      );
+    } catch (error) {
+      console.log(
+        '🚀 ~ ParentRequestService ~ handleStatusChangeNotification ~ error:',
+        error,
+      );
+    }
+    // 새로운 알림 생성 (요청자에게 결과 알림)
+  }
+
+  private getNotificationTypeByStatus(
+    status: PARENT_STATUS,
+  ): USER_NOTIFICATION_TYPE {
+    switch (status) {
+      case PARENT_STATUS.APPROVED:
+        return USER_NOTIFICATION_TYPE.PARENT_ACCEPT;
+      case PARENT_STATUS.REJECTED:
+        return USER_NOTIFICATION_TYPE.PARENT_REJECT;
+      case PARENT_STATUS.CANCELLED:
+        return USER_NOTIFICATION_TYPE.PARENT_REJECT; // CANCEL 타입이 없으므로 REJECT 사용
+      default:
+        return USER_NOTIFICATION_TYPE.PARENT_REQUEST;
+    }
+  }
+
+  private getStatusChangeMessage(
+    status: PARENT_STATUS,
+    role: PARENT_ROLE,
+  ): string {
+    const roleText = role === PARENT_ROLE.FATHER ? '아버지' : '어머니';
+
+    switch (status) {
+      case PARENT_STATUS.APPROVED:
+        return `${roleText} 연동 요청이 수락되었습니다.`;
+      case PARENT_STATUS.REJECTED:
+        return `${roleText} 연동 요청이 거절되었습니다.`;
+      case PARENT_STATUS.CANCELLED:
+        return `${roleText} 연동 요청이 취소되었습니다.`;
+      default:
+        return `${roleText} 연동 요청이 처리되었습니다.`;
+    }
   }
 
   async approveParentRequest(
@@ -192,13 +358,19 @@ export class ParentRequestService {
   async findPendingRequestsByReceiverId(
     receiverId: string,
   ): Promise<ParentRequestEntity[]> {
+    // 부모 펫의 소유자 ID로 필터링하기 위해 서브쿼리 사용
+    const subQuery = this.petRepository
+      .createQueryBuilder('pet')
+      .select('pet.petId')
+      .where('pet.ownerId = :receiverId', { receiverId });
+
     return await this.parentRequestRepository
       .createQueryBuilder('parentRequest')
-      .leftJoin('parentRequest.parentPet', 'parentPet')
-      .where('parentPet.ownerId = :receiverId', { receiverId })
+      .where('parentRequest.parentPetId IN (' + subQuery.getQuery() + ')')
       .andWhere('parentRequest.status = :status', {
         status: PARENT_STATUS.PENDING,
       })
+      .setParameters({ receiverId })
       .orderBy('parentRequest.createdAt', 'DESC')
       .getMany();
   }
@@ -251,5 +423,37 @@ export class ParentRequestService {
       },
       { status: PARENT_STATUS.DELETED },
     );
+  }
+
+  async updateParentRequestByNotificationId(
+    userId: string,
+    notificationId: number,
+    updateParentRequestDto: UpdateParentRequestDto,
+  ) {
+    const notification = await this.userNotificationService.findOne(
+      notificationId,
+      userId,
+    );
+
+    if (!notification) {
+      throw new HttpException('알림을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    const parentRequest = await this.parentRequestRepository.findOne({
+      where: {
+        requesterId: notification.senderId,
+        childPetId: notification.targetId,
+        role: notification.detailJson.role as PARENT_ROLE,
+      },
+    });
+
+    if (!parentRequest) {
+      throw new HttpException(
+        '부모 요청을 찾을 수 없습니다.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    await this.updateParentRequest(parentRequest.id, updateParentRequestDto);
   }
 }

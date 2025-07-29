@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import {
   brMatingControllerFindAll,
+  BrPetControllerFindAllFilterType,
   CommonResponseDto,
   matingControllerCreateMating,
   ParentDtoRole,
@@ -67,16 +68,8 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
       return;
     }
 
-    const matingDateStr = formData.matingDate.replace(/-/g, "");
-    const matingDateNumber = parseInt(matingDateStr, 10);
-
-    if (isNaN(matingDateNumber) || matingDateStr.length !== 8) {
-      toast.error("올바른 날짜 형식이 아닙니다.");
-      return;
-    }
-
     createMating({
-      matingDate: matingDateNumber,
+      matingDate: formData.matingDate,
       fatherId: formData.father.petId,
       motherId: formData.mother.petId,
     });
@@ -98,9 +91,12 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
   };
 
   return (
-    <Card className="max-w-lg border-2 border-blue-200 bg-blue-50/50">
+    <Card className="mt-2 max-w-lg border-2 border-blue-200 bg-blue-50/50">
       <CardHeader>
         <CardTitle className="text-lg">새 메이팅 추가</CardTitle>
+        <CardDescription className="text-sm text-blue-700">
+          나의 개체만 선택할 수 있습니다.
+        </CardDescription>
       </CardHeader>
       <div className="px-6">
         <div className="grid gap-6">
@@ -115,6 +111,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
                   data={formData.father}
                   onSelect={(item) => handleParentSelect(ParentDtoRole.FATHER, item)}
                   onUnlink={handleFatherUnlink}
+                  petListType={BrPetControllerFindAllFilterType.MY}
                 />
               </div>
               <div className="space-y-2">
@@ -124,6 +121,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
                   data={formData.mother}
                   onSelect={(item) => handleParentSelect(ParentDtoRole.MOTHER, item)}
                   onUnlink={handleMotherUnlink}
+                  petListType={BrPetControllerFindAllFilterType.MY}
                 />
               </div>
             </div>

@@ -9,9 +9,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ParentRequestService } from './parent_request.service';
-import { CreateParentRequestDto } from './parent_request.dto';
+import {
+  CreateParentRequestDto,
+  UpdateParentRequestDto,
+} from './parent_request.dto';
 import { JwtAuthGuard, JwtUser } from '../auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
+import { ApiResponse } from '@nestjs/swagger';
+import { CommonResponseDto } from 'src/common/response.dto';
 
 @Controller('parent-requests')
 @UseGuards(JwtAuthGuard)
@@ -40,6 +45,29 @@ export class ParentRequestController {
   @Get('sent/:userId')
   async getSentRequests(@Param('userId') userId: string) {
     return await this.parentRequestService.findRequestsByRequesterId(userId);
+  }
+
+  @Put(':notificationId/status')
+  @ApiResponse({
+    status: 200,
+    description: '부모 관계 상태 업데이트 성공',
+    type: CommonResponseDto,
+  })
+  async updateStatus(
+    @Param('notificationId') notificationId: number,
+    @Body() updateParentRequestDto: UpdateParentRequestDto,
+    @JwtUser() token: JwtUserPayload,
+  ) {
+    await this.parentRequestService.updateParentRequestByNotificationId(
+      token.userId,
+      notificationId,
+      updateParentRequestDto,
+    );
+
+    return {
+      success: true,
+      message: '부모 연동 상태가 성공적으로 업데이트되었습니다.',
+    };
   }
 
   @Put(':id/approve')

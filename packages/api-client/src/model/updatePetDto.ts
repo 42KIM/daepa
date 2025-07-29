@@ -43,4 +43,10 @@ export interface UpdatePetDto {
   clutch?: number;
   /** 산란일 */
   layingDate?: string;
+  /** 온도 */
+  temperature?: number;
+  /** 산란 아이디 */
+  layingId?: number;
+  /** 클러치 순서 */
+  clutchOrder?: number;
 }

@@ -5,9 +5,9 @@ import { PageOptionsDtoWithDateRange } from '../page.dto';
 export class DateRangeValidationPipe implements PipeTransform {
   transform(value: PageOptionsDtoWithDateRange) {
     if (
-      value.startYmd !== undefined &&
-      value.endYmd != undefined &&
-      value.startYmd > value.endYmd
+      value.minHatchingDate !== undefined &&
+      value.maxHatchingDate != undefined &&
+      value.minHatchingDate > value.maxHatchingDate
     ) {
       throw new BadRequestException('종료일은 시작일보다 이후여야 합니다.');
     }

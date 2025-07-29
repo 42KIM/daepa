@@ -8,30 +8,36 @@ import { Users, TrendingUp } from "lucide-react";
 import { PetWithChildrenCard } from "./components/PetWithChildrenCard";
 import { useInView } from "react-intersection-observer";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { petControllerGetPetsWithChildren } from "@repo/api-client";
+// import { petControllerGetPetsWithChildren } from "@repo/api-client";
 
 const FamilyTreePage = () => {
   const { ref, inView } = useInView();
 
   const itemPerPage = 10;
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: [petControllerGetPetsWithChildren.name],
-    queryFn: ({ pageParam = 1 }) =>
-      petControllerGetPetsWithChildren({
-        page: pageParam,
-        itemPerPage,
-        order: "DESC",
-      }),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.data.meta.hasNextPage) {
-        return lastPage.data.meta.page + 1;
-      }
-      return undefined;
-    },
-    select: (data) => data.pages.flatMap((page) => page.data.data),
-  });
+  const data = [];
+  const isLoading = false;
+  const fetchNextPage = () => {};
+  const hasNextPage = false;
+  const isFetchingNextPage = false;
+
+  // const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+  //   queryKey: [petControllerGetPetsWithChildren.name],
+  //   queryFn: ({ pageParam = 1 }) =>
+  //     petControllerGetPetsWithChildren({
+  //       page: pageParam,
+  //       itemPerPage,
+  //       order: "DESC",
+  //     }),
+  //   initialPageParam: 1,
+  //   getNextPageParam: (lastPage) => {
+  //     if (lastPage.data.meta.hasNextPage) {
+  //       return lastPage.data.meta.page + 1;
+  //     }
+  //     return undefined;
+  //   },
+  //   select: (data) => data.pages.flatMap((page) => page.data.data),
+  // });
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {

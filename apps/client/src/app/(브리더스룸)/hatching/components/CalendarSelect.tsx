@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
 interface CalendarSelectProps {
-  disabledDates: Date[];
+  disabledDates: string[];
   triggerText?: string;
   confirmButtonText?: string;
   disabled?: (date: Date) => boolean;
@@ -46,10 +46,9 @@ const CalendarSelect = ({
           selected={matingDate ? new Date(matingDate) : undefined}
           onSelect={(date) => {
             if (date) {
-              const dateString = format(date, "yyyyMMdd");
-              const matingDateStrings = disabledDates.map((d) => format(d, "yyyyMMdd"));
+              const dateString = format(date, "yyyy-MM-dd");
 
-              if (matingDateStrings.includes(dateString)) {
+              if (disabledDates.includes(dateString)) {
                 toast.error(`이미 등록된 날짜입니다.`);
                 return;
               }
@@ -63,7 +62,7 @@ const CalendarSelect = ({
           }}
           disabled={disabled}
           modifiers={{
-            hasMating: disabledDates,
+            hasMating: disabledDates.map((d) => new Date(d)),
           }}
           modifiersStyles={{
             hasMating: {

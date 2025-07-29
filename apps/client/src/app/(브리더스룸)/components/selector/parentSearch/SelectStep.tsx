@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Loading from "@/components/common/Loading";
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
+import { BrPetControllerFindAllFilterType } from "@repo/api-client";
 
 const SelectStep = ({
   pets,
@@ -12,12 +13,14 @@ const SelectStep = ({
   hasMore,
   isFetchingMore,
   loaderRefAction,
+  petListType,
 }: {
   pets: PetParentDtoWithMessage[];
   handlePetSelect: (pet: PetParentDtoWithMessage) => void;
   hasMore: boolean;
   isFetchingMore: boolean;
   loaderRefAction: (node?: Element | null) => void;
+  petListType: BrPetControllerFindAllFilterType;
 }) => {
   const { user } = useUserStore();
   const [tab, setTab] = useState<"my" | "others">("my");
@@ -31,20 +34,22 @@ const SelectStep = ({
           setTab(value as "my" | "others");
         }}
       >
-        <TabsList className="grid h-12 w-full grid-cols-2 rounded-full p-1">
-          <TabsTrigger
-            value="my"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-base text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
-          >
-            내 개체
-          </TabsTrigger>
-          <TabsTrigger
-            value="others"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-base text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
-          >
-            타인의 개체
-          </TabsTrigger>
-        </TabsList>
+        {petListType === BrPetControllerFindAllFilterType.ALL && (
+          <TabsList className="grid h-12 w-full grid-cols-2 rounded-full p-1">
+            <TabsTrigger
+              value="my"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-base text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
+            >
+              내 개체
+            </TabsTrigger>
+            <TabsTrigger
+              value="others"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-base text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
+            >
+              타인의 개체
+            </TabsTrigger>
+          </TabsList>
+        )}
 
         <ScrollArea className="h-[calc(100vh-200px)]">
           <div className="mb-10 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">

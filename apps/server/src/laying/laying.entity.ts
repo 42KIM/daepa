@@ -16,7 +16,7 @@ export class LayingEntity {
   id: number;
 
   @Column({ nullable: true })
-  matingId: string;
+  matingId: number;
 
   @Column({ type: 'date' })
   layingDate: Date;

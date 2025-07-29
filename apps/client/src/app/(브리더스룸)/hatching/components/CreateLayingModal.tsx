@@ -6,11 +6,9 @@ import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import {
   brMatingControllerFindAll,
-  CreateParentDtoRole,
   LayingByDateDto,
-  petControllerCreate,
+  layingControllerCreate,
   PetDtoSpecies,
-  PetSummaryDto,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Info } from "lucide-react";
@@ -30,8 +28,9 @@ interface CreateLayingModalProps {
   isOpen: boolean;
   onClose: () => void;
   matingId: number;
-  father?: PetSummaryDto;
-  mother?: PetSummaryDto;
+  matingDate?: string;
+  fatherId?: string;
+  motherId?: string;
   layingData?: LayingByDateDto[];
 }
 
@@ -39,9 +38,10 @@ const CreateLayingModal = ({
   isOpen,
   onClose,
   matingId,
-  father,
-  mother,
+  matingDate,
   layingData,
+  fatherId,
+  motherId,
 }: CreateLayingModalProps) => {
   const queryClient = useQueryClient();
   const lastLayingDate = useMemo(
@@ -50,7 +50,7 @@ const CreateLayingModal = ({
   );
 
   const { mutate: createLaying } = useMutation({
-    mutationFn: petControllerCreate,
+    mutationFn: layingControllerCreate,
     onSuccess: () => {
       toast.success("산란이 추가되었습니다.");
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
@@ -109,27 +109,15 @@ const CreateLayingModal = ({
       return;
     }
 
-    const layingDate = parseInt(formData.layingDate.replace(/-/g, ""), 10);
-
     createLaying({
       matingId,
-      layingDate,
+      layingDate: format(new Date(formData.layingDate), "yyyy-MM-dd"),
       temperature: formData.temperature ? parseFloat(formData.temperature) : undefined,
       species: formData.species,
       clutchCount: parseInt(formData.clutchCount, 10),
       clutch: formData.clutch ? parseInt(formData.clutch, 10) : undefined,
-      father: father
-        ? {
-            parentId: father.petId,
-            role: CreateParentDtoRole.FATHER,
-          }
-        : undefined,
-      mother: mother
-        ? {
-            parentId: mother.petId,
-            role: CreateParentDtoRole.MOTHER,
-          }
-        : undefined,
+      motherId,
+      fatherId,
     });
 
     onClose();
@@ -137,10 +125,26 @@ const CreateLayingModal = ({
 
   // 날짜 제한 함수
   const isDateDisabled = (date: Date) => {
-    if (!lastLayingDate) return false;
+    const selectedDate = new Date(format(date, "yyyy-MM-dd"));
 
-    const selectedDate = parseInt(format(date, "yyyyMMdd"), 10);
-    return selectedDate <= lastLayingDate;
+    // matingDate 이후 조건
+    if (matingDate) {
+      const matingDateString = matingDate.toString();
+      const matingDateObj = new Date(matingDateString.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
+      if (selectedDate < matingDateObj) {
+        return true;
+      }
+    }
+
+    // lastLayingDate 이후 조건
+    if (lastLayingDate) {
+      const lastLayingDateObj = new Date(lastLayingDate);
+      if (selectedDate <= lastLayingDateObj) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   return (

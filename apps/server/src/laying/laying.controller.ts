@@ -1,9 +1,17 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Param,
+  Patch,
+} from '@nestjs/common';
 import { LayingService } from './laying.service';
-import { CreateLayingDto } from './laying.dto';
+import { CreateLayingDto, UpdateLayingDto } from './laying.dto';
 import { LayingEntity } from './laying.entity';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/auth.decorator';
+import { JwtAuthGuard, JwtUser } from 'src/auth/auth.decorator';
+import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
 
 @ApiTags('산란')
 @Controller('v1/layings')
@@ -17,7 +25,23 @@ export class LayingController {
     description: '산란 정보가 성공적으로 추가되었습니다.',
     type: LayingEntity,
   })
-  async create(@Body() createLayingDto: CreateLayingDto) {
-    return this.layingService.createLaying(createLayingDto);
+  async create(
+    @Body() createLayingDto: CreateLayingDto,
+    @JwtUser() token: JwtUserPayload,
+  ) {
+    return this.layingService.createLaying(createLayingDto, token.userId);
+  }
+
+  @Patch(':id')
+  @ApiResponse({
+    status: 200,
+    description: '산란 정보가 성공적으로 수정되었습니다.',
+    type: LayingEntity,
+  })
+  async update(
+    @Param('id') id: number,
+    @Body() updateLayingDto: UpdateLayingDto,
+  ) {
+    return this.layingService.updateLaying(id, updateLayingDto);
   }
 }

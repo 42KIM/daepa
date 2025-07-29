@@ -196,7 +196,7 @@ export const FormField = ({
       case "date":
         return (
           <Popover>
-            <PopoverTrigger asChild>
+            <PopoverTrigger asChild disabled={disabled}>
               <button
                 data-field-name={field.name}
                 className={cn(

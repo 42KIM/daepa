@@ -103,9 +103,16 @@ export class UserNotificationService {
     );
   }
 
-  async findOne(id: number): Promise<UserNotificationEntity | null> {
-    return await this.userNotificationRepository.findOne({
-      where: { id, isDeleted: false },
-    });
+  async findOne(
+    id: number,
+    userId: string,
+  ): Promise<UserNotificationEntity | null> {
+    try {
+      return await this.userNotificationRepository.findOne({
+        where: { id, isDeleted: false, receiverId: userId },
+      });
+    } catch {
+      throw new NotFoundException('알림을 찾을 수 없습니다.');
+    }
   }
 }

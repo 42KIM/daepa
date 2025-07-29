@@ -4,6 +4,7 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -116,5 +117,15 @@ export class UserNotificationController {
       success: true,
       message: '알림이 삭제되었습니다.',
     };
+  }
+
+  @Get(':id')
+  @ApiResponse({
+    status: 200,
+    description: '알림 상세 조회',
+    type: UserNotificationDto,
+  })
+  async findOne(@Param('id') id: number, @JwtUser() token: JwtUserPayload) {
+    return await this.userNotificationService.findOne(id, token.userId);
   }
 }

@@ -15,7 +15,7 @@ export interface PetSummaryDto {
   /** 펫 주인 정보 */
   owner: UserProfilePublicDto;
   /** 펫 이름 */
-  name: string;
+  name?: string;
   /** 펫 종 */
   species: PetSummaryDtoSpecies;
   /** 펫 모프 */

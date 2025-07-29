@@ -41,6 +41,8 @@ import { LayingEntity } from './laying/laying.entity';
 import { LayingController } from './laying/laying.controller';
 import { LayingService } from './laying/laying.service';
 import { PairEntity } from './pair/pair.entity';
+import { PairController } from './pair/pair.controller';
+import { PairService } from './pair/pair.service';
 
 const ENTITIES = [
   UserEntity,
@@ -91,6 +93,7 @@ const ENTITIES = [
     BrMatingController,
     ParentRequestController,
     LayingController,
+    PairController,
   ],
   providers: [
     AppService,
@@ -109,6 +112,7 @@ const ENTITIES = [
     UserService,
     UserNotificationService,
     LayingService,
+    PairService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

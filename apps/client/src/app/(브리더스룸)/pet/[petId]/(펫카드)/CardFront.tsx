@@ -7,6 +7,7 @@ import { Expand, Shrink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string }) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -141,7 +142,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
             >
               <div>
                 {pet.weight && `${pet.weight}g / `}
-                {pet.birthdate ?? "-"}
+                {pet.hatchingDate ? format(pet.hatchingDate, "yy.MM.dd") : "-"}
               </div>
               {SPECIES_KOREAN_INFO[pet.species]} / {GENDER_KOREAN_INFO[pet.sex ?? PetDtoSex.NON]}
             </div>

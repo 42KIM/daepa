@@ -79,7 +79,7 @@ function Calendar({
       }}
       components={{
         DayContent: ({ date }: { date: Date }) => {
-          const dateKey = format(date, "yyyyMMdd");
+          const dateKey = format(date, "yyyy-MM-dd");
           const count = eggCounts?.[dateKey] ?? { hatched: 0, notHatched: 0, total: 0 };
 
           return (

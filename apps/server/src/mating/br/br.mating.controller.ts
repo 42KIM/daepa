@@ -1,6 +1,5 @@
-import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { PageMetaDto, PageDto, PageOptionsDto } from 'src/common/page.dto';
-import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
 import { ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { ApiExtraModels } from '@nestjs/swagger';
 import { JwtUser } from 'src/auth/auth.decorator';
@@ -9,7 +8,6 @@ import { MatingService } from '../mating.service';
 import { MatingByParentsDto } from '../mating.dto';
 
 @Controller('/v1/br/mating')
-@UseInterceptors(ExcludeNilInterceptor)
 export class BrMatingController {
   constructor(private readonly matingService: MatingService) {}
 

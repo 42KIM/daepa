@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import BottomSheet from "@/components/common/BottomSheet";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { brPetControllerFindAll } from "@repo/api-client";
+import {
+  brPetControllerFindAll,
+  BrPetControllerFindAllFilterType,
+  PetDtoSex,
+} from "@repo/api-client";
 import SelectStep from "./SelectStep";
 import LinkStep from "./LinkStep";
 import Header from "./Header";
@@ -15,7 +19,8 @@ interface ParentSearchProps {
   onClose: () => void;
   onSelect: (item: PetParentDtoWithMessage) => void;
   onExit: () => void;
-  sex?: "M" | "F";
+  sex?: PetDtoSex;
+  petListType?: BrPetControllerFindAllFilterType;
 }
 
 export default function ParentSearchSelector({
@@ -24,6 +29,7 @@ export default function ParentSearchSelector({
   onSelect,
   onExit,
   sex = "F",
+  petListType = BrPetControllerFindAllFilterType.ALL,
 }: ParentSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [step, setStep] = useState(1);
@@ -33,13 +39,13 @@ export default function ParentSearchSelector({
   const itemPerPage = 10;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: [brPetControllerFindAll.name, "includeOthers"],
+    queryKey: [brPetControllerFindAll.name, petListType],
     queryFn: ({ pageParam = 1 }) =>
       brPetControllerFindAll({
         page: pageParam,
         itemPerPage,
         order: "DESC",
-        includeOthers: true,
+        filterType: petListType,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
@@ -97,6 +103,7 @@ export default function ParentSearchSelector({
               hasMore={hasNextPage}
               isFetchingMore={isFetchingNextPage}
               loaderRefAction={ref}
+              petListType={petListType}
             />
           ) : (
             <LinkStep

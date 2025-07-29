@@ -89,13 +89,13 @@ export class AdoptionService {
       if (newAdoptionDto.buyerId) {
         await entityManager.update(
           'pets',
-          { petId: petId },
+          { petId },
           {
             ownerId: newAdoptionDto.buyerId,
           },
         );
       } else {
-        await entityManager.update('pets', { petId: petId }, { ownerId: null });
+        await entityManager.update('pets', { petId }, { ownerId: null });
       }
     }
   }

@@ -1,18 +1,38 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PetEntity } from './pet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { nanoid } from 'nanoid';
 import { plainToInstance } from 'class-transformer';
-import { CreatePetDto, PetAdoptionDto, PetDto, PetParentDto } from './pet.dto';
-import { PET_GROWTH, PET_SEX } from './pet.constants';
+import {
+  CreatePetDto,
+  LinkParentDto,
+  PetAdoptionDto,
+  PetDto,
+  PetParentDto,
+} from './pet.dto';
+import {
+  PET_GROWTH,
+  PET_SEX,
+  ADOPTION_SALE_STATUS,
+  PET_LIST_FILTER_TYPE,
+} from './pet.constants';
 import { ParentRequestService } from '../parent_request/parent_request.service';
-import { PARENT_ROLE } from '../parent_request/parent_request.constants';
+import {
+  PARENT_ROLE,
+  PARENT_STATUS,
+} from '../parent_request/parent_request.constants';
 import { UserService } from '../user/user.service';
 import { PetFilterDto } from './pet.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { UpdatePetDto } from './pet.dto';
 import { AdoptionEntity } from '../adoption/adoption.entity';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { PairService } from 'src/pair/pair.service';
+import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
+import { CreateParentDto } from 'src/parent_request/parent_request.dto';
+import { PairEntity } from 'src/pair/pair.entity';
+import { LayingEntity } from 'src/laying/laying.entity';
 
 @Injectable()
 export class PetService {
@@ -25,6 +45,11 @@ export class PetService {
     private readonly userService: UserService,
     @InjectRepository(AdoptionEntity)
     private readonly adoptionRepository: Repository<AdoptionEntity>,
+    private readonly pairService: PairService,
+    @InjectRepository(PairEntity)
+    private readonly pairRepository: Repository<PairEntity>,
+    @InjectRepository(LayingEntity)
+    private readonly layingRepository: Repository<LayingEntity>,
   ) {}
 
   private async generateUniquePetId(): Promise<string> {
@@ -76,6 +101,27 @@ export class PetService {
         await this.handleParentRequest(petId, ownerId, mother);
       }
 
+      // 부모 모두 있는 경우, 둘 다 내 펫인지 확인 후 pair 생성
+      if (father && mother) {
+        // pair에 해당 쌍이 없는 경우에만 아래 로직 수행
+        const pair = await this.pairRepository.findOne({
+          where: {
+            ownerId,
+            fatherId: father.parentId,
+            motherId: mother.parentId,
+          },
+        });
+
+        // 둘 다 현재 사용자의 펫인 경우에만 pair 생성
+        if (!pair) {
+          await this.pairService.createPair({
+            ownerId,
+            fatherId: father.parentId,
+            motherId: mother.parentId,
+          });
+        }
+      }
+
       return { petId };
     } catch (error: unknown) {
       if (
@@ -107,6 +153,54 @@ export class PetService {
     }
   }
 
+  private async getParentWithRequestStatus(
+    petId: string,
+    parentId: string | null,
+    role: PARENT_ROLE,
+  ): Promise<{
+    parent: PetEntity | null;
+    parentRequest: ParentRequestEntity | null;
+  }> {
+    let parent: PetEntity | null = null;
+    let parentRequest: ParentRequestEntity | null = null;
+
+    if (parentId) {
+      // 기존 부모 ID가 있는 경우
+      parent = await this.petRepository.findOne({
+        where: { petId: parentId, isDeleted: false },
+        select: ['petId', 'name', 'species', 'morphs', 'sex', 'hatchingDate'],
+      });
+
+      if (parent) {
+        parentRequest =
+          await this.parentRequestService.findPendingRequestByChildAndParent(
+            petId,
+            parentId,
+            role,
+          );
+      }
+    } else {
+      // 부모 ID가 없어도 parent_request에서 요청 조회
+      parentRequest =
+        await this.parentRequestService.findPendingRequestByChildAndRole(
+          petId,
+          role,
+        );
+
+      if (parentRequest) {
+        parent = await this.petRepository.findOne({
+          where: {
+            petId: parentRequest.parentPetId,
+            isDeleted: false,
+          },
+          select: ['petId', 'name', 'species', 'morphs', 'sex', 'hatchingDate'],
+        });
+      }
+    }
+
+    return { parent, parentRequest };
+  }
+
   async findPetByPetId(petId: string): Promise<PetDto> {
     const pet = await this.petRepository.findOne({
       where: { petId, isDeleted: false },
@@ -131,14 +225,35 @@ export class PetService {
     // 소유자 정보 조회
     const owner = await this.userService.findOneProfile(pet.ownerId);
 
+    // 부모 정보와 요청 상태 조회
+    const { parent: father, parentRequest: fatherParentRequest } =
+      await this.getParentWithRequestStatus(
+        petId,
+        pet.fatherId,
+        PARENT_ROLE.FATHER,
+      );
+
+    const { parent: mother, parentRequest: motherParentRequest } =
+      await this.getParentWithRequestStatus(
+        petId,
+        pet.motherId,
+        PARENT_ROLE.MOTHER,
+      );
+
     return plainToInstance(PetDto, {
       ...pet,
       owner,
-      father: pet.father
-        ? plainToInstance(PetParentDto, pet.father)
+      father: father
+        ? {
+            ...plainToInstance(PetParentDto, father),
+            status: fatherParentRequest?.status ?? PARENT_STATUS.APPROVED,
+          }
         : undefined,
-      mother: pet.mother
-        ? plainToInstance(PetParentDto, pet.mother)
+      mother: mother
+        ? {
+            ...plainToInstance(PetParentDto, mother),
+            status: motherParentRequest?.status ?? PARENT_STATUS.APPROVED,
+          }
         : undefined,
       adoption: adoption
         ? plainToInstance(PetAdoptionDto, adoption)
@@ -222,10 +337,13 @@ export class PetService {
     }
   }
 
+  // 내 펫 -> 즉시 연동
+  // 타인 펫 -> parent_request 테이블에 요청 생성
+
   private async handleParentRequest(
     childPetId: string,
     requesterId: string,
-    parentInfo: { parentId: string; role: PARENT_ROLE; message?: string },
+    parentInfo: CreateParentDto,
   ): Promise<void> {
     // 부모 펫 정보 조회
     const parentPet = await this.petRepository.findOne({
@@ -233,7 +351,7 @@ export class PetService {
       select: ['petId', 'sex', 'ownerId', 'name'],
     });
 
-    if (!parentPet) {
+    if (!parentPet?.petId) {
       throw new HttpException(
         {
           statusCode: HttpStatus.NOT_FOUND,
@@ -277,16 +395,15 @@ export class PetService {
         parentPet.petId,
         parentInfo.role,
       );
-      return;
+    } else {
+      // 다른 사람의 펫인 경우 parent_request 테이블에 요청 생성
+      await this.createParentRequest(
+        childPetId,
+        requesterId,
+        parentPet,
+        parentInfo,
+      );
     }
-
-    // 다른 사람의 펫인 경우 parent_request 테이블에 요청 생성
-    await this.createParentRequest(
-      childPetId,
-      requesterId,
-      parentPet,
-      parentInfo,
-    );
   }
 
   private async linkParentDirectly(
@@ -306,8 +423,8 @@ export class PetService {
   private async createParentRequest(
     childPetId: string,
     requesterId: string,
-    parentPet: { petId: string; name: string; ownerId: string },
-    parentInfo: { parentId: string; role: PARENT_ROLE; message?: string },
+    parentPet: PetEntity,
+    parentInfo: CreateParentDto,
   ): Promise<void> {
     // 기존 대기 중인 요청이 있는지 확인
     const existingRequest =
@@ -365,18 +482,28 @@ export class PetService {
         'pets.adoption',
         'adoptions',
         'adoptions',
-        'adoptions.petId = pets.petId AND adoptions.isDeleted = false',
+        'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
       )
-      .where('pets.isDeleted = :isDeleted', { isDeleted: false });
+      // parent_request 정보 추가
+      .leftJoinAndMapMany(
+        'pets.parentRequests',
+        'parent_requests',
+        'parent_requests',
+        'parent_requests.childPetId = pets.petId',
+      )
+      .where(' pets.isDeleted = :isDeleted AND pets.growth != :eggGrowth', {
+        isDeleted: false,
+        eggGrowth: PET_GROWTH.EGG,
+      })
+      .setParameter('soldStatus', ADOPTION_SALE_STATUS.SOLD);
 
-    // 사용자 필터링
-    if (pageOptionsDto.includeOthers !== false) {
+    if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.ALL) {
       // 기본적으로 모든 공개된 펫과 자신의 펫을 조회
       queryBuilder.andWhere(
         '(pets.isPublic = :isPublic OR pets.ownerId = :userId)',
         { isPublic: true, userId },
       );
-    } else {
+    } else if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
       // 자신의 펫만 조회
       queryBuilder.andWhere('pets.ownerId = :userId', { userId });
     }
@@ -429,15 +556,15 @@ export class PetService {
     }
 
     // 생년월일 범위 필터링
-    if (pageOptionsDto.minBirthdate !== undefined) {
-      queryBuilder.andWhere('pets.hatchingDate >= :minBirthdate', {
-        minBirthdate: pageOptionsDto.minBirthdate,
+    if (pageOptionsDto.minHatchingDate !== undefined) {
+      queryBuilder.andWhere('pets.hatchingDate >= :minHatchingDate', {
+        minHatchingDate: pageOptionsDto.minHatchingDate,
       });
     }
 
-    if (pageOptionsDto.maxBirthdate !== undefined) {
-      queryBuilder.andWhere('pets.hatchingDate <= :maxBirthdate', {
-        maxBirthdate: pageOptionsDto.maxBirthdate,
+    if (pageOptionsDto.maxHatchingDate !== undefined) {
+      queryBuilder.andWhere('pets.hatchingDate <= :maxHatchingDate', {
+        maxHatchingDate: pageOptionsDto.maxHatchingDate,
       });
     }
 
@@ -489,47 +616,41 @@ export class PetService {
     const totalCount = await queryBuilder.getCount();
     const petEntities = await queryBuilder.getMany();
 
-    // PetDto로 변환
+    // PetDto로 변환하면서 parent_request 상태 정보 포함
     const petDtos = await Promise.all(
       petEntities.map(async (pet) => {
         const owner = await this.userService.findOneProfile(pet.ownerId);
 
-        let father: PetEntity | null = null;
-        let mother: PetEntity | null = null;
+        // 부모 정보와 요청 상태 조회
+        const { parent: father, parentRequest: fatherParentRequest } =
+          await this.getParentWithRequestStatus(
+            pet.petId,
+            pet.fatherId,
+            PARENT_ROLE.FATHER,
+          );
 
-        if (pet.fatherId) {
-          father = await this.petRepository.findOne({
-            where: { petId: pet.fatherId, isDeleted: false },
-            select: [
-              'petId',
-              'name',
-              'species',
-              'morphs',
-              'sex',
-              'hatchingDate',
-            ],
-          });
-        }
-
-        if (pet.motherId) {
-          mother = await this.petRepository.findOne({
-            where: { petId: pet.motherId, isDeleted: false },
-            select: [
-              'petId',
-              'name',
-              'species',
-              'morphs',
-              'sex',
-              'hatchingDate',
-            ],
-          });
-        }
+        const { parent: mother, parentRequest: motherParentRequest } =
+          await this.getParentWithRequestStatus(
+            pet.petId,
+            pet.motherId,
+            PARENT_ROLE.MOTHER,
+          );
 
         return plainToInstance(PetDto, {
           ...pet,
           owner,
-          father: father ? plainToInstance(PetParentDto, father) : undefined,
-          mother: mother ? plainToInstance(PetParentDto, mother) : undefined,
+          father: father
+            ? {
+                ...plainToInstance(PetParentDto, father),
+                status: fatherParentRequest?.status ?? PARENT_STATUS.APPROVED,
+              }
+            : undefined,
+          mother: mother
+            ? {
+                ...plainToInstance(PetParentDto, mother),
+                status: motherParentRequest?.status ?? PARENT_STATUS.APPROVED,
+              }
+            : undefined,
         });
       }),
     );
@@ -558,27 +679,25 @@ export class PetService {
       );
     }
 
-    if (existingPet.ownerId !== userId) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.FORBIDDEN,
-          message: '펫의 소유자가 아닙니다.',
-        },
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    // 부모 ID 확인
+    // 연동된 부모인지 확인
     const parentId =
       parentRole === PARENT_ROLE.FATHER
         ? existingPet.fatherId
         : existingPet.motherId;
 
-    if (!parentId) {
+    // 요청 중인 경우
+    const parentRequest =
+      await this.parentRequestService.findPendingRequestByChildAndParent(
+        petId,
+        parentId,
+        parentRole,
+      );
+
+    if (!parentId && parentRequest) {
       throw new HttpException(
         {
           statusCode: HttpStatus.BAD_REQUEST,
-          message: '연동된 부모가 없습니다.',
+          message: '연동된 부모가 없거나 요청 중입니다.',
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -586,19 +705,21 @@ export class PetService {
 
     try {
       // 펫에서 부모 연동 제거
-      const updateData =
-        parentRole === PARENT_ROLE.FATHER
-          ? { fatherId: undefined }
-          : { motherId: undefined };
+      const updateData = {
+        ...(parentRole === PARENT_ROLE.FATHER ? { fatherId: null } : {}),
+        ...(parentRole === PARENT_ROLE.MOTHER ? { motherId: null } : {}),
+      } as Partial<PetEntity>;
 
       await this.petRepository.update({ petId }, updateData);
 
-      // parent_request 상태를 deleted로 변경
-      await this.parentRequestService.deleteParentRequest(
-        petId,
-        parentId,
-        parentRole,
-      );
+      // 내 펫이 아닌경우만 parent_request 삭제
+      if (existingPet.ownerId !== userId) {
+        await this.parentRequestService.deleteParentRequest(
+          petId,
+          parentId,
+          parentRole,
+        );
+      }
 
       return { petId };
     } catch {
@@ -614,7 +735,7 @@ export class PetService {
 
   async linkParent(
     petId: string,
-    parentInfo: { parentId: string; role: PARENT_ROLE; message?: string },
+    linkParentDto: LinkParentDto,
     userId: string,
   ): Promise<{ petId: string }> {
     // 펫 존재 여부 및 소유권 확인
@@ -632,19 +753,9 @@ export class PetService {
       );
     }
 
-    if (existingPet.ownerId !== userId) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.FORBIDDEN,
-          message: '펫의 소유자가 아닙니다.',
-        },
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
     // 이미 연동된 부모가 있는지 확인
     const existingParentId =
-      parentInfo.role === PARENT_ROLE.FATHER
+      linkParentDto.role === PARENT_ROLE.FATHER
         ? existingPet.fatherId
         : existingPet.motherId;
 
@@ -660,7 +771,7 @@ export class PetService {
 
     try {
       // 부모 연동 요청 처리
-      await this.handleParentRequest(petId, userId, parentInfo);
+      await this.handleParentRequest(petId, userId, linkParentDto);
 
       return { petId };
     } catch {
@@ -734,10 +845,30 @@ export class PetService {
     }
 
     try {
+      // 펫 삭제 전에 layingId 확인
+      const petToDelete = await this.petRepository.findOne({
+        where: { petId, isDeleted: false },
+        select: ['layingId'],
+      });
+
       await this.petRepository.update({ petId }, { isDeleted: true });
 
       // 연관된 parent_request들을 모두 삭제 상태로 변경
       await this.parentRequestService.deleteAllParentRequestsByPet(petId);
+
+      // layingId가 있고, 해당 laying에 연동된 다른 펫이 없으면 laying도 삭제
+      if (petToDelete?.layingId) {
+        const remainingPets = await this.petRepository.count({
+          where: {
+            layingId: petToDelete.layingId,
+            isDeleted: false,
+          },
+        });
+
+        if (remainingPets === 0) {
+          await this.layingRepository.delete(petToDelete.layingId);
+        }
+      }
 
       return { petId };
     } catch {
@@ -796,5 +927,163 @@ export class PetService {
     );
 
     return { petId };
+  }
+
+  async getPetListByHatchingDate(
+    dateRange: { startDate?: Date; endDate?: Date },
+    userId?: string,
+  ): Promise<Record<string, PetDto[]>> {
+    const queryBuilder = this.petRepository
+      .createQueryBuilder('pets')
+      .leftJoinAndMapOne(
+        'pets.owner',
+        'users',
+        'users',
+        'users.userId = pets.ownerId',
+      )
+      .leftJoinAndMapOne(
+        'pets.father',
+        'pets',
+        'father',
+        'father.petId = pets.fatherId',
+      )
+      .leftJoinAndMapOne(
+        'pets.mother',
+        'pets',
+        'mother',
+        'mother.petId = pets.motherId',
+      )
+      .leftJoinAndMapOne(
+        'pets.laying',
+        'layings',
+        'layings',
+        'layings.id = pets.layingId',
+      )
+      .where('pets.isDeleted = :isDeleted', { isDeleted: false })
+      .select([
+        'pets',
+        'users.userId',
+        'users.name',
+        'users.role',
+        'users.isBiz',
+        'users.status',
+        'father.petId',
+        'father.name',
+        'father.species',
+        'father.morphs',
+        'father.sex',
+        'father.hatchingDate',
+        'mother.petId',
+        'mother.name',
+        'mother.species',
+        'mother.morphs',
+        'mother.sex',
+        'mother.hatchingDate',
+        'layings.layingDate',
+      ]);
+
+    const startDate = dateRange?.startDate ?? startOfMonth(new Date());
+    const endDate = dateRange?.endDate ?? endOfMonth(new Date());
+
+    queryBuilder.andWhere(
+      '(pets.hatchingDate >= :startDate AND pets.hatchingDate <= :endDate) OR (layings.layingDate >= :startDate AND layings.layingDate <= :endDate)',
+      {
+        startDate: format(startDate, 'yyyy-MM-dd'),
+        endDate: format(endDate, 'yyyy-MM-dd'),
+      },
+    );
+
+    if (userId) {
+      queryBuilder.andWhere('users.userId = :userId', { userId });
+    }
+
+    const petEntities = await queryBuilder.getMany();
+    const petDtos = await Promise.all(
+      petEntities.map(async (pet) => {
+        const owner = await this.userService.findOneProfile(pet.ownerId);
+        return plainToInstance(PetDto, {
+          ...pet,
+          owner,
+          father: pet.father
+            ? plainToInstance(PetParentDto, pet.father)
+            : undefined,
+          mother: pet.mother
+            ? plainToInstance(PetParentDto, pet.mother)
+            : undefined,
+        });
+      }),
+    );
+
+    // EGG인 펫들의 layingDate 정보 가져오기
+    const eggPetIds = petEntities
+      .filter((pet) => pet.growth === PET_GROWTH.EGG && pet.layingId)
+      .map((pet) => pet.layingId);
+
+    const layings =
+      eggPetIds.length > 0
+        ? await this.layingRepository.find({
+            where: { id: In(eggPetIds) },
+            select: ['id', 'layingDate'],
+          })
+        : [];
+
+    const layingMap = new Map(
+      layings.map((laying) => [laying.id, laying.layingDate]),
+    );
+
+    // 날짜별로 그룹화 (EGG는 layingDate 기준, 나머지는 hatchingDate 기준)
+    const petsByDate = petDtos.reduce(
+      (acc, petDto) => {
+        let dateToUse: Date | undefined;
+
+        if (petDto.growth === PET_GROWTH.EGG) {
+          // EGG인 경우 layingDate 사용
+          const petEntity = petEntities.find((p) => p.petId === petDto.petId);
+          if (petEntity?.layingId) {
+            const layingDate = layingMap.get(petEntity.layingId);
+            if (layingDate) {
+              dateToUse = new Date(layingDate);
+            }
+          }
+        } else {
+          // EGG가 아닌 경우 hatchingDate 사용
+          if (petDto.hatchingDate) {
+            dateToUse = petDto.hatchingDate;
+          }
+        }
+
+        if (!dateToUse) return acc;
+
+        const dateStr = format(dateToUse, 'yyyy-MM-dd');
+        if (!acc[dateStr]) {
+          acc[dateStr] = [];
+        }
+        acc[dateStr].push(petDto);
+        return acc;
+      },
+      {} as Record<string, PetDto[]>,
+    );
+
+    return petsByDate;
+  }
+
+  async getPetListByYear(
+    year: number,
+    userId?: string,
+  ): Promise<Record<string, PetDto[]>> {
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31);
+
+    return this.getPetListByHatchingDate({ startDate, endDate }, userId);
+  }
+
+  async getPetListByMonth(
+    month: Date,
+    userId?: string,
+  ): Promise<Record<string, PetDto[]>> {
+    const startDate = new Date(month.getFullYear(), month.getMonth(), 1);
+    const endDate = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+
+    return this.getPetListByHatchingDate({ startDate, endDate }, userId);
   }
 }

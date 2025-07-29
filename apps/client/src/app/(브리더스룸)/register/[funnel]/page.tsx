@@ -15,7 +15,6 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/common/Loading";
-import { format } from "date-fns";
 
 export default function RegisterPage({ params }: { params: Promise<{ funnel: string }> }) {
   const router = useRouter();
@@ -111,7 +110,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
         species,
         ...(desc && { desc }),
         ...(rest?.hatchingDate && {
-          hatchingDate: format(rest.hatchingDate, "yyyyMMdd"),
+          hatchingDate: rest.hatchingDate,
         }),
         ...(rest?.weight && { weight: Number(rest.weight) }),
         ...(rest?.father?.petId && {

@@ -29,7 +29,7 @@ export class PetEntity {
   ownerId: string;
 
   @Column({ nullable: true })
-  layingId: string;
+  layingId: number;
 
   @Column({ nullable: true })
   fatherId: string;

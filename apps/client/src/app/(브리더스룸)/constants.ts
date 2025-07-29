@@ -1,17 +1,6 @@
-import {
-  Bell,
-  Bubbles,
-  DollarSign,
-  Egg,
-  Film,
-  Heart,
-  Home,
-  Inbox,
-  TreeDeciduous,
-} from "lucide-react";
+import { Bell, Bubbles, DollarSign, Film, Heart, Home, Inbox, TreeDeciduous } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
 import {
-  PetDto,
   PetDtoGrowth,
   PetDtoSex,
   PetDtoSpecies,
@@ -306,7 +295,7 @@ export const SALE_STATUS_KOREAN_INFO = {
   SOLD: "판매 완료",
 };
 
-export const TABLE_HEADER: Record<keyof Omit<PetDto, "petId" | "adoption" | "owner">, string> = {
+export const TABLE_HEADER = {
   name: "이름",
   species: "종",
   morphs: "모프",
@@ -320,6 +309,7 @@ export const TABLE_HEADER: Record<keyof Omit<PetDto, "petId" | "adoption" | "own
   desc: "설명",
   foods: "먹이",
   isPublic: "공개 여부",
+  adoption_status: "분양 상태",
 };
 
 export const SPECIES_KOREAN_INFO: Record<PetDtoSpecies, string> = {
@@ -380,11 +370,11 @@ export const SIDEBAR_ITEMS = [
     url: "/pet",
     icon: Home,
   },
-  {
-    title: "알 등록",
-    url: "/register/egg",
-    icon: Egg,
-  },
+  // {
+  //   title: "알 등록",
+  //   url: "/register/egg",
+  //   icon: Egg,
+  // },
   {
     title: "개체 등록",
     url: "/register/1",

@@ -11,8 +11,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { Heart, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import MatingItem from "./MatingItem";
 import { toast } from "sonner";
-import { getNumberToDate } from "@/lib/utils";
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import CalendarSelect from "./CalendarSelect";
 import { Button } from "@/components/ui/button";
@@ -20,12 +19,13 @@ import CreateMatingForm from "./CreateMatingForm";
 import { AxiosError } from "axios";
 import { useInView } from "react-intersection-observer";
 
-const MatingList = () => {
+const MatingList = memo(() => {
   const { ref, inView } = useInView();
   const queryClient = useQueryClient();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const itemPerPage = 10;
 
+  // 메이팅 조회 (무한 스크롤)
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: [brMatingControllerFindAll.name],
     queryFn: ({ pageParam = 1 }) =>
@@ -47,6 +47,7 @@ const MatingList = () => {
     }),
   });
 
+  // 메이팅 추가
   const { mutate: createMating } = useMutation({
     mutationFn: matingControllerCreateMating,
     onSuccess: () => {
@@ -62,7 +63,7 @@ const MatingList = () => {
   const matingDates = useCallback((matingDates: MatingByDateDto[]) => {
     if (!matingDates) return [];
 
-    return matingDates.map((mating) => getNumberToDate(mating.matingDate));
+    return matingDates.map((mating) => mating.matingDate);
   }, []);
 
   const { items, totalCount } = data ?? { items: [], totalCount: 0 };
@@ -119,10 +120,8 @@ const MatingList = () => {
       return;
     }
 
-    const matingDateNumber = parseInt(matingDate.replace(/-/g, ""), 10);
-
     createMating({
-      matingDate: matingDateNumber,
+      matingDate,
       fatherId,
       motherId,
     });
@@ -216,6 +215,8 @@ const MatingList = () => {
       </ScrollArea>
     </div>
   );
-};
+});
+
+MatingList.displayName = "MatingList";
 
 export default MatingList;

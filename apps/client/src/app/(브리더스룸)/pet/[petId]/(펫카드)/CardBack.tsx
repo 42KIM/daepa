@@ -8,7 +8,6 @@ import {
 } from "@repo/api-client";
 import { toast } from "sonner";
 
-import { format } from "date-fns";
 import AdoptionReceipt from "./components/AdoptionReceipt";
 import PetVisibilityControl from "./components/PetVisibilityControl";
 import AdoptionStatusControl from "./components/AdoptionStatusControl";
@@ -66,7 +65,7 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
         ...(sex && { sex }),
         ...(foods && { foods }),
         ...(desc && { desc }),
-        ...(hatchingDate && { hatchingDate: format(hatchingDate, "yyyyMMdd") }),
+        ...(hatchingDate && { hatchingDate }),
         ...(weight && { weight }),
       };
 

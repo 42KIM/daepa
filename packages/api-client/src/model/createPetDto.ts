@@ -12,7 +12,7 @@ import type { CreateParentDto } from "./createParentDto";
 
 export interface CreatePetDto {
   /** 펫 이름 */
-  name: string;
+  name?: string;
   /** 펫 종 */
   species: CreatePetDtoSpecies;
   /** 펫 모프 */
@@ -43,4 +43,10 @@ export interface CreatePetDto {
   clutch?: number;
   /** 산란일 */
   layingDate?: string;
+  /** 온도 */
+  temperature?: number;
+  /** 산란 아이디 */
+  layingId?: number;
+  /** 클러치 순서 */
+  clutchOrder?: number;
 }

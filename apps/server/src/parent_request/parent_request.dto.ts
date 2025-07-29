@@ -1,5 +1,6 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { PARENT_ROLE, PARENT_STATUS } from './parent_request.constants';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateParentRequestDto {
   @IsNotEmpty()
@@ -24,10 +25,19 @@ export class CreateParentRequestDto {
 }
 
 export class UpdateParentRequestDto {
-  @IsOptional()
+  @ApiProperty({
+    description: '부모 관계 상태',
+    enum: PARENT_STATUS,
+    'x-enumNames': Object.keys(PARENT_STATUS),
+  })
+  @IsNotEmpty()
   @IsEnum(PARENT_STATUS)
-  status?: PARENT_STATUS;
+  status: PARENT_STATUS;
 
+  @ApiProperty({
+    description: '거절 사유',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   rejectReason?: string;

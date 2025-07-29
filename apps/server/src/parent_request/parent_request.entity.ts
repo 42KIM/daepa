@@ -4,33 +4,35 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
+  Index,
 } from 'typeorm';
 import { PARENT_ROLE, PARENT_STATUS } from './parent_request.constants';
-import { PetEntity } from '../pet/pet.entity';
 
 @Entity({ name: 'parent_requests' })
+@Index(
+  'UNIQUE_REQUESTER_CHILD_PARENT',
+  ['requesterId', 'childPetId', 'parentPetId'],
+  {
+    unique: true,
+  },
+)
 export class ParentRequestEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: false })
   requesterId: string;
 
-  @Column()
+  @Column({ nullable: false })
   childPetId: string;
 
-  @Column()
+  @Column({ nullable: false })
   parentPetId: string;
-
-  @ManyToOne(() => PetEntity, { nullable: false })
-  @JoinColumn({ name: 'parentPetId' })
-  parentPet: PetEntity;
 
   @Column({
     type: 'enum',
     enum: PARENT_ROLE,
+    nullable: false,
   })
   role: PARENT_ROLE;
 

@@ -4,7 +4,6 @@ import {
   Post,
   Get,
   Param,
-  UseInterceptors,
   Patch,
   Delete,
   Query,
@@ -18,14 +17,12 @@ import {
 } from './pet.dto';
 import { PetService } from './pet.service';
 import { ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { JwtUser } from 'src/auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
 import { PARENT_ROLE } from 'src/parent_request/parent_request.constants';
 
 @Controller('/v1/pet')
-@UseInterceptors(ExcludeNilInterceptor)
 export class PetController {
   constructor(private readonly petService: PetService) {}
 

@@ -33,3 +33,8 @@ export enum PET_GROWTH {
   ADULT = 'ADULT', // 성체
   DEAD = 'DEAD', // 사망
 }
+
+export enum PET_LIST_FILTER_TYPE {
+  ALL = 'ALL',
+  MY = 'MY',
+}
