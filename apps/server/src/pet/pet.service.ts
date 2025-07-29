@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PetEntity } from './pet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Not, IsNull } from 'typeorm';
 import { nanoid } from 'nanoid';
 import { plainToInstance } from 'class-transformer';
 import {
@@ -9,7 +9,9 @@ import {
   LinkParentDto,
   PetAdoptionDto,
   PetDto,
+  PetFamilyParentDto,
   PetParentDto,
+  PetFamilyPairGroupDto,
 } from './pet.dto';
 import {
   PET_GROWTH,
@@ -114,11 +116,15 @@ export class PetService {
 
         // 둘 다 현재 사용자의 펫인 경우에만 pair 생성
         if (!pair) {
-          await this.pairService.createPair({
+          const newPair = await this.pairService.createPair({
             ownerId,
             fatherId: father.parentId,
             motherId: mother.parentId,
           });
+
+          await this.petRepository.update({ petId }, { pairId: newPair.id });
+        } else {
+          await this.petRepository.update({ petId }, { pairId: pair.id });
         }
       }
 
@@ -1085,5 +1091,57 @@ export class PetService {
     const endDate = new Date(month.getFullYear(), month.getMonth() + 1, 0);
 
     return this.getPetListByHatchingDate({ startDate, endDate }, userId);
+  }
+
+  async getFamilyTree(): Promise<Record<string, PetFamilyPairGroupDto>> {
+    const petList = await this.petRepository.find({
+      where: {
+        isDeleted: false,
+        pairId: Not(IsNull()),
+        growth: Not(PET_GROWTH.EGG),
+      },
+    });
+
+    // pairId를 key로. 펫리스트와 해당 pairId의 부,모 id를 value로 가진다.
+    const petListByPairId: Record<
+      string,
+      {
+        petList: PetEntity[];
+        father: PetFamilyParentDto | null;
+        mother: PetFamilyParentDto | null;
+      }
+    > = {};
+
+    for (const pet of petList) {
+      if (!petListByPairId[pet.pairId]) {
+        // 부모 펫 정보 조회
+        const father = pet.fatherId
+          ? await this.petRepository.findOne({
+              where: { petId: pet.fatherId },
+              select: ['petId', 'name'],
+            })
+          : null;
+
+        const mother = pet.motherId
+          ? await this.petRepository.findOne({
+              where: { petId: pet.motherId },
+              select: ['petId', 'name'],
+            })
+          : null;
+
+        petListByPairId[pet.pairId] = {
+          petList: [],
+          father: father
+            ? { petId: father.petId, name: father.name || '이름 없음' }
+            : null,
+          mother: mother
+            ? { petId: mother.petId, name: mother.name || '이름 없음' }
+            : null,
+        };
+      }
+      petListByPairId[pet.pairId].petList.push(pet);
+    }
+
+    return petListByPairId;
   }
 }

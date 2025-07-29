@@ -14,6 +14,8 @@ import {
   LinkParentDto,
   PetDto,
   UpdatePetDto,
+  PetFamilyTreeResponseDto,
+  PetFamilyPairGroupDto,
 } from './pet.dto';
 import { PetService } from './pet.service';
 import { ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
@@ -42,6 +44,16 @@ export class PetController {
       success: true,
       message: '펫 등록이 완료되었습니다.',
     };
+  }
+
+  @Get('family-tree')
+  @ApiResponse({
+    status: 200,
+    description: '가족관계도 조회 성공',
+    type: PetFamilyTreeResponseDto,
+  })
+  async getFamilyTree(): Promise<Record<string, PetFamilyPairGroupDto>> {
+    return this.petService.getFamilyTree();
   }
 
   @Get(':petId')

@@ -38,7 +38,7 @@ export class PetEntity {
   motherId: string;
 
   @Column({ nullable: true })
-  pairId: string;
+  pairId: number;
 
   @Column({ type: 'date', nullable: true })
   hatchingDate: Date;

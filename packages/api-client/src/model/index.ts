@@ -112,6 +112,7 @@ export * from "./petDtoGrowth";
 export * from "./petDtoSaleStatus";
 export * from "./petDtoSex";
 export * from "./petDtoSpecies";
+export * from "./petFamilyTreeResponseDto";
 export * from "./petParentDto";
 export * from "./petParentDtoSex";
 export * from "./petParentDtoSpecies";

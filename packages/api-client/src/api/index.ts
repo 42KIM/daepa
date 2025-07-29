@@ -49,6 +49,7 @@ import type {
   LayingEntity,
   MatingByParentsDto,
   PetDto,
+  PetFamilyTreeResponseDto,
   TokenResponseDto,
   UserNotificationControllerFindAll200,
   UserNotificationDto,
@@ -62,6 +63,13 @@ export const petControllerCreate = (createPetDto: CreatePetDto) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     data: createPetDto,
+  });
+};
+
+export const petControllerGetFamilyTree = () => {
+  return useCustomInstance<PetFamilyTreeResponseDto>({
+    url: `http://localhost:4000/api/v1/pet/family-tree`,
+    method: "GET",
   });
 };
 
@@ -439,6 +447,9 @@ export const pairControllerCreate = (createPairDto: CreatePairDto) => {
 export type PetControllerCreateResult = NonNullable<
   Awaited<ReturnType<typeof petControllerCreate>>
 >;
+export type PetControllerGetFamilyTreeResult = NonNullable<
+  Awaited<ReturnType<typeof petControllerGetFamilyTree>>
+>;
 export type PetControllerFindPetByPetIdResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindPetByPetId>>
 >;
@@ -574,6 +585,26 @@ export const getPetControllerCreateResponseMock = (
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
   message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getPetControllerGetFamilyTreeResponseMock = (
+  overrideResponse: Partial<PetFamilyTreeResponseDto> = {},
+): PetFamilyTreeResponseDto => ({
+  individualNodes: Array.from(
+    { length: faker.number.int({ min: 1, max: 10 }) },
+    (_, i) => i + 1,
+  ).map(() => ({})),
+  parentPairs: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({}),
+  ),
+  childNodes: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({}),
+  ),
+  totalPets: faker.number.int({ min: undefined, max: undefined }),
+  totalRelations: faker.number.int({ min: undefined, max: undefined }),
+  maleCount: faker.number.int({ min: undefined, max: undefined }),
+  femaleCount: faker.number.int({ min: undefined, max: undefined }),
   ...overrideResponse,
 });
 
@@ -2495,6 +2526,29 @@ export const getPetControllerCreateMockHandler = (
   });
 };
 
+export const getPetControllerGetFamilyTreeMockHandler = (
+  overrideResponse?:
+    | PetFamilyTreeResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<PetFamilyTreeResponseDto> | PetFamilyTreeResponseDto),
+) => {
+  return http.get("*/api/v1/pet/family-tree", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetControllerGetFamilyTreeResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getPetControllerFindPetByPetIdMockHandler = (
   overrideResponse?:
     | PetDto
@@ -3373,6 +3427,7 @@ export const getPairControllerCreateMockHandler = (
 };
 export const getProjectDaepaAPIMock = () => [
   getPetControllerCreateMockHandler(),
+  getPetControllerGetFamilyTreeMockHandler(),
   getPetControllerFindPetByPetIdMockHandler(),
   getPetControllerUpdateMockHandler(),
   getPetControllerDeletePetMockHandler(),
