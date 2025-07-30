@@ -27,8 +27,8 @@ export class ParentRequestService {
     createParentRequestDto: CreateParentRequestDto,
   ): Promise<ParentRequestEntity> {
     // 부모 펫 엔티티 조회
-    const parentPet = await this.petRepository.findOne({
-      where: { petId: createParentRequestDto.parentPetId },
+    const parentPet = await this.petRepository.existsBy({
+      petId: createParentRequestDto.parentPetId,
     });
 
     if (!parentPet) {
@@ -186,10 +186,6 @@ export class ParentRequestService {
       where: { petId: parentRequest.parentPetId },
       select: ['name', 'ownerId'],
     });
-    console.log(
-      '🚀 ~ ParentRequestService ~ handleStatusChangeNotification ~ parentPet:',
-      { parentPet, childPet, parentRequest },
-    );
 
     if (!childPet || !parentPet) {
       throw new HttpException(
@@ -249,12 +245,14 @@ export class ParentRequestService {
         },
       );
     } catch (error) {
-      console.log(
-        '🚀 ~ ParentRequestService ~ handleStatusChangeNotification ~ error:',
-        error,
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        '알림 생성 중 오류가 발생했습니다.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    // 새로운 알림 생성 (요청자에게 결과 알림)
   }
 
   private getNotificationTypeByStatus(

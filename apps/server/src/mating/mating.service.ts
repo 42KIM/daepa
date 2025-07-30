@@ -249,12 +249,10 @@ export class MatingService {
     }
 
     // 중복 체크 (자신을 제외하고)
-    const existingMating = await this.matingRepository.findOne({
-      where: {
-        pairId: pair.id.toString(),
-        matingDate: updateMatingDto.matingDate,
-        id: Not(matingId),
-      },
+    const existingMating = await this.matingRepository.existsBy({
+      pairId: pair.id.toString(),
+      matingDate: updateMatingDto.matingDate,
+      id: Not(matingId),
     });
 
     if (existingMating) {

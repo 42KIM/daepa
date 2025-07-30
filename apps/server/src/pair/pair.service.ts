@@ -25,8 +25,8 @@ export class PairService {
       );
     }
     if (fatherId) {
-      const father = await this.petRepository.findOne({
-        where: { petId: fatherId },
+      const father = await this.petRepository.existsBy({
+        petId: fatherId,
       });
       if (!father) {
         throw new BadRequestException(
@@ -35,8 +35,8 @@ export class PairService {
       }
     }
     if (motherId) {
-      const mother = await this.petRepository.findOne({
-        where: { petId: motherId },
+      const mother = await this.petRepository.existsBy({
+        petId: motherId,
       });
 
       if (!mother) {
@@ -47,12 +47,10 @@ export class PairService {
     }
 
     // 이미 존재하는 펫 쌍인지 확인
-    const existingPair = await this.pairRepository.findOne({
-      where: {
-        ownerId: ownerId,
-        fatherId: fatherId,
-        motherId: motherId,
-      },
+    const existingPair = await this.pairRepository.existsBy({
+      ownerId,
+      fatherId,
+      motherId,
     });
     if (existingPair) {
       throw new BadRequestException('이미 존재하는 펫 쌍입니다.');

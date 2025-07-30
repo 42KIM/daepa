@@ -24,19 +24,17 @@ export class LayingService {
     createLayingDto: CreateLayingDto,
     ownerId: string,
   ): Promise<LayingEntity> {
-    const exists = await this.layingRepository.findOne({
-      where: {
-        matingId: createLayingDto.matingId,
-        layingDate: createLayingDto.layingDate,
-      },
+    const exists = await this.layingRepository.existsBy({
+      matingId: createLayingDto.matingId,
+      layingDate: createLayingDto.layingDate,
     });
     if (exists) {
       throw new BadRequestException('이미 해당 날짜에 산란 정보가 존재합니다.');
     }
 
     // 산란 정보 생성
-    const laying = this.layingRepository.create(createLayingDto);
-    const savedLaying = await this.layingRepository.save(laying);
+    const layingEntity = this.layingRepository.create(createLayingDto);
+    const savedLaying = await this.layingRepository.save(layingEntity);
 
     // clutchCount만큼 펫 생성
     if (createLayingDto.clutchCount && createLayingDto.clutchCount > 0) {
@@ -71,11 +69,10 @@ export class LayingService {
   }
 
   async updateLaying(id: number, updateLayingDto: UpdateLayingDto) {
-    const laying = await this.layingRepository.findOne({
-      where: {
-        id,
-      },
+    const laying = await this.layingRepository.existsBy({
+      id,
     });
+
     if (!laying) {
       throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
     }
