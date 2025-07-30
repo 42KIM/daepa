@@ -164,6 +164,7 @@ export * from "./userDtoStatus";
 export * from "./userNotificationControllerFindAll200";
 export * from "./userNotificationControllerFindAllOrder";
 export * from "./userNotificationControllerFindAllParams";
+export * from "./userNotificationControllerFindOne200";
 export * from "./userNotificationDto";
 export * from "./userNotificationDtoDetailJson";
 export * from "./userNotificationDtoStatus";

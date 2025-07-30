@@ -8,9 +8,9 @@
 import type { CreateLayingDtoSpecies } from "./createLayingDtoSpecies";
 
 export interface CreateLayingDto {
-  /** Mating ID */
+  /** 메이팅 ID */
   matingId?: number;
-  /** Laying Date */
+  /** 산란 날짜 */
   layingDate: string;
   /** 차수(클러치) */
   clutch?: number;

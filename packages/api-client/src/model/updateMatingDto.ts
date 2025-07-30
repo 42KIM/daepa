@@ -7,10 +7,10 @@
  */
 
 export interface UpdateMatingDto {
-  /** Father ID */
+  /** 아빠 펫 ID */
   fatherId?: string;
-  /** Mother ID */
+  /** 엄마 펫 ID */
   motherId?: string;
-  /** Mating Date */
+  /** 메이팅 날짜 */
   matingDate: string;
 }
