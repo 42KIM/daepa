@@ -24,10 +24,12 @@ import { NOTIFICATION_TYPE } from "../../constants";
 import { Badge } from "@/components/ui/badge";
 import NotiTitle from "./NotiTitle";
 import { cn, formatDateToYYYYMMDDString } from "@/lib/utils";
-import { isDetailData, isString, isNumber } from "@/lib/typeGuards";
 import { useRouter, useSearchParams } from "next/navigation";
+import { isPlainObject, isString } from "es-toolkit";
+import { isNumber } from "@/lib/typeGuards";
+import { memo } from "react";
 
-export function NotiDisplay() {
+const NotiDisplay = memo(() => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -38,7 +40,7 @@ export function NotiDisplay() {
     queryKey: [userNotificationControllerFindOne.name, id],
     queryFn: () => userNotificationControllerFindOne(Number(id)),
     enabled: !!id,
-    select: (res) => res?.data,
+    select: (res) => res?.data?.data,
   });
 
   const detailData = data?.detailJson;
@@ -86,7 +88,7 @@ export function NotiDisplay() {
   };
 
   const getDetailData = () => {
-    if (!detailData || !isDetailData(detailData)) {
+    if (!detailData || !isPlainObject(detailData)) {
       return null;
     }
     return detailData;
@@ -300,6 +302,7 @@ export function NotiDisplay() {
       )}
     </div>
   );
-}
+});
+NotiDisplay.displayName = "NotiDisplay";
 
 export default NotiDisplay;
