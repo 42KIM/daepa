@@ -19,7 +19,7 @@ export class PairService {
     if (!ownerId) {
       throw new BadRequestException('등록 시 주인 아이디가 필요합니다.');
     }
-    if (!fatherId || !motherId) {
+    if (!fatherId && !motherId) {
       throw new BadRequestException(
         '등록하려면 최소 한 마리의 부모 정보가 필요합니다.',
       );
