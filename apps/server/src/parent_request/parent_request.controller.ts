@@ -1,6 +1,5 @@
 import {
   Controller,
-  Get,
   Post,
   Put,
   Delete,
@@ -11,9 +10,6 @@ import {
 import { ParentRequestService } from './parent_request.service';
 import {
   CreateParentRequestDto,
-  RequestByIdResponseDto,
-  RequestsByReceiverIdResponseDto,
-  RequestsByRequesterIdResponseDto,
   UpdateParentRequestDto,
 } from './parent_request.dto';
 import { JwtAuthGuard, JwtUser } from '../auth/auth.decorator';
@@ -21,7 +17,7 @@ import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
 import { ApiResponse } from '@nestjs/swagger';
 import { CommonResponseDto } from 'src/common/response.dto';
 
-@Controller('parent-requests')
+@Controller('v1/parent-requests')
 @UseGuards(JwtAuthGuard)
 export class ParentRequestController {
   constructor(private readonly parentRequestService: ParentRequestService) {}
@@ -42,42 +38,6 @@ export class ParentRequestController {
     return {
       success: true,
       message: '부모 관계 상태가 성공적으로 업데이트되었습니다.',
-    };
-  }
-
-  @Get('pending/:userId')
-  @ApiResponse({
-    status: 200,
-    description: '유저의 부모 요청 목록을 성공적으로 조회했습니다.',
-    type: RequestsByRequesterIdResponseDto,
-  })
-  async getPendingRequests(
-    @Param('userId') userId: string,
-  ): Promise<RequestsByRequesterIdResponseDto> {
-    const parentRequests =
-      await this.parentRequestService.findPendingRequestsByReceiverId(userId);
-    return {
-      success: true,
-      message: '부모 요청 목록을 성공적으로 조회했습니다.',
-      data: parentRequests,
-    };
-  }
-
-  @Get('sent/:userId')
-  @ApiResponse({
-    status: 200,
-    description: '유저의 부모 요청 목록을 성공적으로 조회했습니다.',
-    type: RequestsByReceiverIdResponseDto,
-  })
-  async getSentRequests(
-    @Param('userId') userId: string,
-  ): Promise<RequestsByReceiverIdResponseDto> {
-    const parentRequests =
-      await this.parentRequestService.findRequestsByRequesterId(userId);
-    return {
-      success: true,
-      message: '부모 요청 목록을 성공적으로 조회했습니다.',
-      data: parentRequests,
     };
   }
 
@@ -157,23 +117,6 @@ export class ParentRequestController {
     return {
       success: true,
       message: '부모 관계 상태가 취소되었습니다.',
-    };
-  }
-
-  @Get(':id')
-  @ApiResponse({
-    status: 200,
-    description: '부모 관계 상태를 성공적으로 조회했습니다.',
-    type: RequestByIdResponseDto,
-  })
-  async getRequestById(
-    @Param('id') id: number,
-  ): Promise<RequestByIdResponseDto> {
-    const parentRequest = await this.parentRequestService.findById(id);
-    return {
-      success: true,
-      message: '부모 관계 상태를 성공적으로 조회했습니다.',
-      data: parentRequest,
     };
   }
 }

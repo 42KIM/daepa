@@ -48,9 +48,6 @@ import type {
   FindPetByPetIdResponseDto,
   MatingDetailResponseDto,
   PetFamilyTreeResponseDto,
-  RequestByIdResponseDto,
-  RequestsByReceiverIdResponseDto,
-  RequestsByRequesterIdResponseDto,
   TokenResponseDto,
   UserNotificationControllerFindAll200,
   UserNotificationResponseDto,
@@ -357,24 +354,10 @@ export const parentRequestControllerCreateParentRequest = (
   createParentRequestDto: CreateParentRequestDto,
 ) => {
   return useCustomInstance<CommonResponseDto>({
-    url: `http://localhost:4000/api/parent-requests`,
+    url: `http://localhost:4000/api/v1/parent-requests`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
     data: createParentRequestDto,
-  });
-};
-
-export const parentRequestControllerGetPendingRequests = (userId: string) => {
-  return useCustomInstance<RequestsByRequesterIdResponseDto>({
-    url: `http://localhost:4000/api/parent-requests/pending/${userId}`,
-    method: "GET",
-  });
-};
-
-export const parentRequestControllerGetSentRequests = (userId: string) => {
-  return useCustomInstance<RequestsByReceiverIdResponseDto>({
-    url: `http://localhost:4000/api/parent-requests/sent/${userId}`,
-    method: "GET",
   });
 };
 
@@ -383,7 +366,7 @@ export const parentRequestControllerUpdateStatus = (
   updateParentRequestDto: UpdateParentRequestDto,
 ) => {
   return useCustomInstance<CommonResponseDto>({
-    url: `http://localhost:4000/api/parent-requests/${notificationId}/status`,
+    url: `http://localhost:4000/api/v1/parent-requests/${notificationId}/status`,
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     data: updateParentRequestDto,
@@ -392,29 +375,22 @@ export const parentRequestControllerUpdateStatus = (
 
 export const parentRequestControllerApproveRequest = (id: number) => {
   return useCustomInstance<CommonResponseDto>({
-    url: `http://localhost:4000/api/parent-requests/${id}/approve`,
+    url: `http://localhost:4000/api/v1/parent-requests/${id}/approve`,
     method: "PUT",
   });
 };
 
 export const parentRequestControllerRejectRequest = (id: number) => {
   return useCustomInstance<CommonResponseDto>({
-    url: `http://localhost:4000/api/parent-requests/${id}/reject`,
+    url: `http://localhost:4000/api/v1/parent-requests/${id}/reject`,
     method: "PUT",
   });
 };
 
 export const parentRequestControllerCancelRequest = (id: number) => {
   return useCustomInstance<CommonResponseDto>({
-    url: `http://localhost:4000/api/parent-requests/${id}/cancel`,
+    url: `http://localhost:4000/api/v1/parent-requests/${id}/cancel`,
     method: "DELETE",
-  });
-};
-
-export const parentRequestControllerGetRequestById = (id: number) => {
-  return useCustomInstance<RequestByIdResponseDto>({
-    url: `http://localhost:4000/api/parent-requests/${id}`,
-    method: "GET",
   });
 };
 
@@ -550,12 +526,6 @@ export type BrMatingControllerFindAllResult = NonNullable<
 export type ParentRequestControllerCreateParentRequestResult = NonNullable<
   Awaited<ReturnType<typeof parentRequestControllerCreateParentRequest>>
 >;
-export type ParentRequestControllerGetPendingRequestsResult = NonNullable<
-  Awaited<ReturnType<typeof parentRequestControllerGetPendingRequests>>
->;
-export type ParentRequestControllerGetSentRequestsResult = NonNullable<
-  Awaited<ReturnType<typeof parentRequestControllerGetSentRequests>>
->;
 export type ParentRequestControllerUpdateStatusResult = NonNullable<
   Awaited<ReturnType<typeof parentRequestControllerUpdateStatus>>
 >;
@@ -567,9 +537,6 @@ export type ParentRequestControllerRejectRequestResult = NonNullable<
 >;
 export type ParentRequestControllerCancelRequestResult = NonNullable<
   Awaited<ReturnType<typeof parentRequestControllerCancelRequest>>
->;
-export type ParentRequestControllerGetRequestByIdResult = NonNullable<
-  Awaited<ReturnType<typeof parentRequestControllerGetRequestById>>
 >;
 export type LayingControllerCreateResult = NonNullable<
   Awaited<ReturnType<typeof layingControllerCreate>>
@@ -2385,28 +2352,6 @@ export const getParentRequestControllerCreateParentRequestResponseMock = (
   ...overrideResponse,
 });
 
-export const getParentRequestControllerGetPendingRequestsResponseMock = (
-  overrideResponse: Partial<RequestsByRequesterIdResponseDto> = {},
-): RequestsByRequesterIdResponseDto => ({
-  success: faker.datatype.boolean(),
-  message: faker.string.alpha(20),
-  data: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-    () => ({}),
-  ),
-  ...overrideResponse,
-});
-
-export const getParentRequestControllerGetSentRequestsResponseMock = (
-  overrideResponse: Partial<RequestsByReceiverIdResponseDto> = {},
-): RequestsByReceiverIdResponseDto => ({
-  success: faker.datatype.boolean(),
-  message: faker.string.alpha(20),
-  data: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-    () => ({}),
-  ),
-  ...overrideResponse,
-});
-
 export const getParentRequestControllerUpdateStatusResponseMock = (
   overrideResponse: Partial<CommonResponseDto> = {},
 ): CommonResponseDto => ({
@@ -2436,15 +2381,6 @@ export const getParentRequestControllerCancelRequestResponseMock = (
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
   message: faker.string.alpha(20),
-  ...overrideResponse,
-});
-
-export const getParentRequestControllerGetRequestByIdResponseMock = (
-  overrideResponse: Partial<RequestByIdResponseDto> = {},
-): RequestByIdResponseDto => ({
-  success: faker.datatype.boolean(),
-  message: faker.string.alpha(20),
-  data: { ...{} },
   ...overrideResponse,
 });
 
@@ -3243,7 +3179,7 @@ export const getParentRequestControllerCreateParentRequestMockHandler = (
         info: Parameters<Parameters<typeof http.post>[1]>[0],
       ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
-  return http.post("*/api/parent-requests", async (info) => {
+  return http.post("*/api/v1/parent-requests", async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -3259,52 +3195,6 @@ export const getParentRequestControllerCreateParentRequestMockHandler = (
   });
 };
 
-export const getParentRequestControllerGetPendingRequestsMockHandler = (
-  overrideResponse?:
-    | RequestsByRequesterIdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<RequestsByRequesterIdResponseDto> | RequestsByRequesterIdResponseDto),
-) => {
-  return http.get("*/api/parent-requests/pending/:userId", async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getParentRequestControllerGetPendingRequestsResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  });
-};
-
-export const getParentRequestControllerGetSentRequestsMockHandler = (
-  overrideResponse?:
-    | RequestsByReceiverIdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<RequestsByReceiverIdResponseDto> | RequestsByReceiverIdResponseDto),
-) => {
-  return http.get("*/api/parent-requests/sent/:userId", async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getParentRequestControllerGetSentRequestsResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  });
-};
-
 export const getParentRequestControllerUpdateStatusMockHandler = (
   overrideResponse?:
     | CommonResponseDto
@@ -3312,7 +3202,7 @@ export const getParentRequestControllerUpdateStatusMockHandler = (
         info: Parameters<Parameters<typeof http.put>[1]>[0],
       ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
-  return http.put("*/api/parent-requests/:notificationId/status", async (info) => {
+  return http.put("*/api/v1/parent-requests/:notificationId/status", async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -3335,7 +3225,7 @@ export const getParentRequestControllerApproveRequestMockHandler = (
         info: Parameters<Parameters<typeof http.put>[1]>[0],
       ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
-  return http.put("*/api/parent-requests/:id/approve", async (info) => {
+  return http.put("*/api/v1/parent-requests/:id/approve", async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -3358,7 +3248,7 @@ export const getParentRequestControllerRejectRequestMockHandler = (
         info: Parameters<Parameters<typeof http.put>[1]>[0],
       ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
-  return http.put("*/api/parent-requests/:id/reject", async (info) => {
+  return http.put("*/api/v1/parent-requests/:id/reject", async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -3381,7 +3271,7 @@ export const getParentRequestControllerCancelRequestMockHandler = (
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
       ) => Promise<CommonResponseDto> | CommonResponseDto),
 ) => {
-  return http.delete("*/api/parent-requests/:id/cancel", async (info) => {
+  return http.delete("*/api/v1/parent-requests/:id/cancel", async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -3391,29 +3281,6 @@ export const getParentRequestControllerCancelRequestMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getParentRequestControllerCancelRequestResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  });
-};
-
-export const getParentRequestControllerGetRequestByIdMockHandler = (
-  overrideResponse?:
-    | RequestByIdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<RequestByIdResponseDto> | RequestByIdResponseDto),
-) => {
-  return http.get("*/api/parent-requests/:id", async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getParentRequestControllerGetRequestByIdResponseMock(),
       ),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
@@ -3524,13 +3391,10 @@ export const getProjectDaepaAPIMock = () => [
   getMatingControllerDeleteMatingMockHandler(),
   getBrMatingControllerFindAllMockHandler(),
   getParentRequestControllerCreateParentRequestMockHandler(),
-  getParentRequestControllerGetPendingRequestsMockHandler(),
-  getParentRequestControllerGetSentRequestsMockHandler(),
   getParentRequestControllerUpdateStatusMockHandler(),
   getParentRequestControllerApproveRequestMockHandler(),
   getParentRequestControllerRejectRequestMockHandler(),
   getParentRequestControllerCancelRequestMockHandler(),
-  getParentRequestControllerGetRequestByIdMockHandler(),
   getLayingControllerCreateMockHandler(),
   getLayingControllerUpdateMockHandler(),
   getPairControllerCreateMockHandler(),
