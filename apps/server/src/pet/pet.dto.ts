@@ -199,6 +199,10 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   declare isDeleted?: boolean;
 }
 
+export class PetSummaryWithoutOwnerDto extends OmitType(PetSummaryDto, [
+  'owner',
+]) {}
+
 export class PetSummaryWithLayingDto extends PetSummaryDto {
   @ApiProperty({
     description: '산란 아이디',
@@ -325,8 +329,9 @@ export class PetAdoptionDto {
     description: '분양 날짜',
     example: 20240101,
   })
-  @IsNumber()
-  adoptionDate?: number;
+  @IsOptional()
+  @IsDate()
+  adoptionDate?: Date;
 
   @ApiProperty({
     description: '메모',
@@ -379,6 +384,15 @@ export class PetDto extends PetBaseDto {
   @IsObject()
   adoption?: PetAdoptionDto;
 
+  @ApiProperty({
+    description: '부모 관계 상태',
+    enum: PARENT_STATUS,
+    'x-enumNames': Object.keys(PARENT_STATUS),
+  })
+  @IsOptional()
+  @IsEnum(PARENT_STATUS)
+  status?: PARENT_STATUS;
+
   @Exclude()
   declare createdAt?: Date;
 
@@ -427,6 +441,7 @@ export class CreatePetDto extends OmitType(PetBaseDto, [
     required: false,
   })
   @IsOptional()
+  @IsDate()
   layingDate?: Date;
 
   @ApiProperty({
@@ -554,6 +569,7 @@ export class PetFilterDto extends PageOptionsDto {
     required: false,
   })
   @IsOptional()
+  @IsDate()
   startYmd?: Date; // 최소 생년월일
 
   @ApiProperty({
@@ -562,6 +578,7 @@ export class PetFilterDto extends PageOptionsDto {
     required: false,
   })
   @IsOptional()
+  @IsDate()
   endYmd?: Date; // 최대 생년월일
 
   @ApiProperty({
@@ -715,8 +732,9 @@ export class PetFamilyParentDto {
   petId: string;
 
   @ApiProperty({ description: '펫 이름', example: '잠원동대파' })
+  @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 }
 
 export class PetFamilyTreeResponseDto extends CommonResponseDto {
@@ -748,4 +766,16 @@ export class FilterPetListResponseDto extends CommonResponseDto {
     },
   })
   data: Record<string, PetDto[]>;
+}
+
+export class UnlinkParentDto {
+  @ApiProperty({
+    description: '부모 역할',
+    enum: PARENT_ROLE,
+    'x-enumNames': Object.keys(PARENT_ROLE),
+    example: PARENT_ROLE.FATHER,
+  })
+  @IsEnum(PARENT_ROLE)
+  @IsNotEmpty()
+  role: PARENT_ROLE;
 }

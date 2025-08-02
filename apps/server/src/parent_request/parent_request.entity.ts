@@ -9,19 +9,12 @@ import {
 import { PARENT_ROLE, PARENT_STATUS } from './parent_request.constants';
 
 @Entity({ name: 'parent_requests' })
-@Index(
-  'UNIQUE_REQUESTER_CHILD_PARENT',
-  ['requesterId', 'childPetId', 'parentPetId'],
-  {
-    unique: true,
-  },
-)
+@Index('UNIQUE_CHILD_PARENT', ['childPetId', 'parentPetId'], {
+  unique: true,
+})
 export class ParentRequestEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ nullable: false })
-  requesterId: string;
 
   @Column({ nullable: false })
   childPetId: string;
@@ -34,7 +27,7 @@ export class ParentRequestEntity {
     enum: PARENT_ROLE,
     nullable: false,
   })
-  role: PARENT_ROLE;
+  role?: PARENT_ROLE;
 
   @Column({
     type: 'enum',
@@ -42,7 +35,7 @@ export class ParentRequestEntity {
     default: PARENT_STATUS.PENDING,
     nullable: true,
   })
-  status: PARENT_STATUS;
+  status?: PARENT_STATUS;
 
   @Column({ type: 'text', nullable: true })
   message?: string;

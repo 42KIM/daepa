@@ -45,7 +45,7 @@ export class MatingController {
   async createMating(
     @Body() createMatingDto: CreateMatingDto,
     @JwtUser() token: JwtUserPayload,
-  ) {
+  ): Promise<CommonResponseDto> {
     await this.matingService.saveMating(token.userId, createMatingDto);
     return {
       success: true,

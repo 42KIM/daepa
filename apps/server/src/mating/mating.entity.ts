@@ -26,7 +26,7 @@ export class MatingEntity {
   pair: PairEntity;
 
   @Column({ type: 'date', nullable: true })
-  matingDate: Date;
+  matingDate?: Date;
 
   @CreateDateColumn()
   createdAt: Date;

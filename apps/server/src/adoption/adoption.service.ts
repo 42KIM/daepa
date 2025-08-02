@@ -23,8 +23,6 @@ import { nanoid } from 'nanoid';
 import { PageMetaDto, PageOptionsDto } from 'src/common/page.dto';
 import { PageDto } from 'src/common/page.dto';
 import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
-import { PetSummaryDto } from 'src/pet/pet.dto';
-import { UserProfilePublicDto } from 'src/user/user.dto';
 import { PetEntity } from 'src/pet/pet.entity';
 
 @Injectable()
@@ -45,6 +43,7 @@ export class AdoptionService {
     if (!entity.pet) {
       throw new Error('Pet information is required for adoption');
     }
+
     return {
       adoptionId: entity.adoptionId,
       petId: entity.petId,
@@ -61,9 +60,7 @@ export class AdoptionService {
     };
   }
 
-  private toPetSummaryDtoOptimized(
-    pet: PetEntity & { owner?: UserProfilePublicDto },
-  ): PetSummaryDto {
+  private toPetSummaryDtoOptimized(pet: PetEntity) {
     return {
       petId: pet.petId,
       name: pet.name,
@@ -72,7 +69,6 @@ export class AdoptionService {
       traits: pet.traits,
       hatchingDate: pet.hatchingDate,
       sex: pet.sex,
-      owner: pet.owner!,
     };
   }
 
@@ -175,96 +171,129 @@ export class AdoptionService {
     pageOptionsDto: PageOptionsDto,
     userId: string,
   ): Promise<PageDto<AdoptionDto>> {
-    const queryBuilder = this.adoptionRepository
-      .createQueryBuilder('adoptions')
-      .leftJoinAndMapOne(
-        'adoptions.pet',
-        'pets',
-        'pets',
-        'pets.petId = adoptions.petId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.seller',
-        'users',
-        'seller',
-        'seller.userId = adoptions.sellerId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.buyer',
-        'users',
-        'buyer',
-        'buyer.userId = adoptions.buyerId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.pet.owner',
-        'users',
-        'owner',
-        'owner.userId = pets.ownerId',
-      )
-      .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
-      .andWhere('adoptions.sellerId = :userId', { userId })
-      .orderBy('adoptions.createdAt', pageOptionsDto.order)
-      .skip(pageOptionsDto.skip)
-      .take(pageOptionsDto.itemPerPage);
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const [adoptionEntities, totalCount] = await Promise.all([
+        entityManager
+          .createQueryBuilder(AdoptionEntity, 'adoptions')
+          .leftJoinAndMapOne(
+            'adoptions.pet',
+            'pets',
+            'pets',
+            'pets.petId = adoptions.petId',
+          )
+          .leftJoinAndMapOne(
+            'adoptions.seller',
+            'users',
+            'seller',
+            'seller.userId = adoptions.sellerId',
+          )
+          .leftJoinAndMapOne(
+            'adoptions.buyer',
+            'users',
+            'buyer',
+            'buyer.userId = adoptions.buyerId',
+          )
+          .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
+          .andWhere('adoptions.sellerId = :userId', { userId })
+          .orderBy('adoptions.createdAt', pageOptionsDto.order)
+          .skip(pageOptionsDto.skip)
+          .take(pageOptionsDto.itemPerPage)
+          .getMany(),
+        entityManager
+          .createQueryBuilder(AdoptionEntity, 'adoptions')
+          .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
+          .andWhere('adoptions.sellerId = :userId', { userId })
+          .getCount(),
+      ]);
 
-    const totalCount = await queryBuilder.getCount();
-    const adoptionEntities = await queryBuilder.getMany();
+      const adoptionDtos = await Promise.all(
+        adoptionEntities.map((adoption) =>
+          this.toAdoptionDtoOptimized(adoption),
+        ),
+      );
 
-    const adoptionDtos = adoptionEntities.map((adoption) =>
-      this.toAdoptionDtoOptimized(adoption),
-    );
+      console.log(
+        '🚀 ~ AdoptionService ~ findAll ~ adoptionEntities:',
+        adoptionEntities,
+      );
 
-    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+      const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
-    return new PageDto(adoptionDtos, pageMetaDto);
+      return new PageDto(adoptionDtos, pageMetaDto);
+    });
   }
 
   async findOne(
     where: FindOptionsWhere<AdoptionEntity>,
   ): Promise<AdoptionDto | null> {
-    const queryBuilder = this.adoptionRepository
-      .createQueryBuilder('adoptions')
-      .leftJoinAndMapOne(
-        'adoptions.pet',
-        'pets',
-        'pets',
-        'pets.petId = adoptions.petId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.seller',
-        'users',
-        'seller',
-        'seller.userId = adoptions.sellerId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.buyer',
-        'users',
-        'buyer',
-        'buyer.userId = adoptions.buyerId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.pet.owner',
-        'users',
-        'owner',
-        'owner.userId = pets.ownerId',
-      )
-      .where('adoptions.isDeleted = :isDeleted', { isDeleted: false });
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const queryBuilder = entityManager
+        .createQueryBuilder(AdoptionEntity, 'adoptions')
+        .leftJoinAndMapOne(
+          'adoptions.pet',
+          'pets',
+          'pets',
+          'pets.petId = adoptions.petId',
+        )
+        .leftJoinAndMapOne(
+          'adoptions.seller',
+          'users',
+          'seller',
+          'seller.userId = adoptions.sellerId',
+        )
+        .leftJoinAndMapOne(
+          'adoptions.buyer',
+          'users',
+          'buyer',
+          'buyer.userId = adoptions.buyerId',
+        )
+        .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
+        .select([
+          'adoptions.adoptionId',
+          'adoptions.petId',
+          'adoptions.price',
+          'adoptions.adoptionDate',
+          'adoptions.memo',
+          'adoptions.location',
+          'adoptions.status',
+          'adoptions.createdAt',
+          'adoptions.updatedAt',
+          'pets.petId',
+          'pets.name',
+          'pets.species',
+          'pets.morphs',
+          'pets.traits',
+          'pets.hatchingDate',
+          'pets.sex',
+          'pets.ownerId',
+          'seller.userId',
+          'seller.name',
+          'seller.role',
+          'seller.isBiz',
+          'seller.status',
+          'buyer.userId',
+          'buyer.name',
+          'buyer.role',
+          'buyer.isBiz',
+          'buyer.status',
+        ]);
 
-    // where 조건 추가
-    Object.keys(where).forEach((key) => {
-      const value = where[key as keyof typeof where];
-      if (value !== undefined) {
-        queryBuilder.andWhere(`adoptions.${key} = :${key}`, { [key]: value });
+      // where 조건 추가
+      Object.keys(where).forEach((key) => {
+        const value = where[key as keyof typeof where];
+        if (value !== undefined) {
+          queryBuilder.andWhere(`adoptions.${key} = :${key}`, { [key]: value });
+        }
+      });
+
+      const adoptionEntity = await queryBuilder.getOne();
+
+      if (!adoptionEntity) {
+        return null;
       }
+
+      return this.toAdoptionDtoOptimized(adoptionEntity);
     });
-
-    const adoptionEntity = await queryBuilder.getOne();
-
-    if (!adoptionEntity) {
-      return null;
-    }
-
-    return this.toAdoptionDtoOptimized(adoptionEntity);
   }
 
   async findByAdoptionId(adoptionId: string): Promise<AdoptionDto> {

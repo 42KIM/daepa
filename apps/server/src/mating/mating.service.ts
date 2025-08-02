@@ -7,7 +7,7 @@ import {
 } from './mating.dto';
 import { MatingEntity } from './mating.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager, DataSource } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { PetSummaryWithLayingDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
@@ -39,181 +39,186 @@ export class MatingService {
     private readonly pairRepository: Repository<PairEntity>,
     @InjectRepository(PetEntity)
     private readonly petRepository: Repository<PetEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
-  async findAll(userId: string) {
-    const entities = (await this.matingRepository
-      .createQueryBuilder('matings')
-      .leftJoinAndMapMany(
-        'matings.layings',
-        LayingEntity,
-        'layings',
-        'layings.matingId = matings.id',
-      )
-      .leftJoinAndMapOne(
-        'matings.pair',
-        PairEntity,
-        'pairs',
-        'pairs.id = matings.pairId',
-      )
-      .leftJoinAndMapMany(
-        'matings.parents',
-        PetEntity,
-        'parents',
-        'parents.petId IN (pairs.fatherId, pairs.motherId)',
-      )
-      .select([
-        'matings.id',
-        'matings.matingDate',
-        'matings.pairId',
-        'matings.createdAt',
-        'layings.id',
-        'layings.layingDate',
-        'layings.clutch',
-        'pairs.id',
-        'pairs.fatherId',
-        'pairs.motherId',
-        'pairs.ownerId',
-        'parents.petId',
-        'parents.name',
-        'parents.morphs',
-        'parents.species',
-        'parents.sex',
-        'parents.hatchingDate',
-        'parents.growth',
-        'parents.weight',
-      ])
-      .where('pairs.ownerId = :userId', { userId })
-      .orderBy('matings.createdAt', 'DESC')
-      .addOrderBy('layings.layingDate', 'ASC')
-      .getMany()) as MatingWithRelations[];
+  async findAll(userId: string): Promise<MatingByParentsDto[]> {
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const entities = (await entityManager
+        .createQueryBuilder(MatingEntity, 'matings')
+        .leftJoinAndMapMany(
+          'matings.layings',
+          LayingEntity,
+          'layings',
+          'layings.matingId = matings.id',
+        )
+        .leftJoinAndMapOne(
+          'matings.pair',
+          PairEntity,
+          'pairs',
+          'pairs.id = matings.pairId',
+        )
+        .leftJoinAndMapMany(
+          'matings.parents',
+          PetEntity,
+          'parents',
+          'parents.petId IN (pairs.fatherId, pairs.motherId)',
+        )
+        .select([
+          'matings.id',
+          'matings.matingDate',
+          'matings.pairId',
+          'matings.createdAt',
+          'layings.id',
+          'layings.layingDate',
+          'layings.clutch',
+          'pairs.id',
+          'pairs.fatherId',
+          'pairs.motherId',
+          'pairs.ownerId',
+          'parents.petId',
+          'parents.name',
+          'parents.morphs',
+          'parents.species',
+          'parents.sex',
+          'parents.hatchingDate',
+          'parents.growth',
+          'parents.weight',
+        ])
+        .where('pairs.ownerId = :userId', { userId })
+        .orderBy('matings.createdAt', 'DESC')
+        .addOrderBy('layings.layingDate', 'ASC')
+        .getMany()) as MatingWithRelations[];
 
-    return this.formatResponseByDate(entities);
+      return this.formatResponseByDate(entities);
+    });
   }
 
   async getMatingListFull(
     pageOptionsDto: PageOptionsDto,
     userId: string,
   ): Promise<PageDto<MatingByParentsDto>> {
-    // 모든 메이팅 데이터를 가져와서 가공
-    const allQueryBuilder = this.matingRepository
-      .createQueryBuilder('matings')
-      .leftJoinAndMapMany(
-        'matings.layings',
-        LayingEntity,
-        'layings',
-        'layings.matingId = matings.id',
-      )
-      .leftJoinAndMapOne(
-        'matings.pair',
-        PairEntity,
-        'pairs',
-        'pairs.id = matings.pairId',
-      )
-      .leftJoinAndMapMany(
-        'matings.parents',
-        PetEntity,
-        'parents',
-        'parents.petId IN (pairs.fatherId, pairs.motherId)',
-      )
-      .leftJoinAndMapMany(
-        'matings.children',
-        PetEntity,
-        'children',
-        'children.layingId IN (SELECT layings.id FROM layings WHERE layings.matingId = matings.id) AND children.isDeleted = false',
-      )
-      .select([
-        'matings.id',
-        'matings.matingDate',
-        'matings.pairId',
-        'matings.createdAt',
-        'layings.id',
-        'layings.layingDate',
-        'layings.clutch',
-        'pairs.id',
-        'pairs.fatherId',
-        'pairs.motherId',
-        'pairs.ownerId',
-        'parents.petId',
-        'parents.name',
-        'parents.morphs',
-        'parents.species',
-        'parents.sex',
-        'parents.hatchingDate',
-        'parents.growth',
-        'parents.weight',
-        'children.petId',
-        'children.name',
-        'children.species',
-        'children.morphs',
-        'children.sex',
-        'children.hatchingDate',
-        'children.growth',
-        'children.weight',
-        'children.clutchOrder',
-        'children.layingId',
-        'children.temperature',
-      ])
-      .where('pairs.ownerId = :userId', { userId })
-      .orderBy('matings.id', pageOptionsDto.order);
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 모든 메이팅 데이터를 가져와서 가공
+      const allQueryBuilder = entityManager
+        .createQueryBuilder(MatingEntity, 'matings')
+        .leftJoinAndMapMany(
+          'matings.layings',
+          LayingEntity,
+          'layings',
+          'layings.matingId = matings.id',
+        )
+        .leftJoinAndMapOne(
+          'matings.pair',
+          PairEntity,
+          'pairs',
+          'pairs.id = matings.pairId',
+        )
+        .leftJoinAndMapMany(
+          'matings.parents',
+          PetEntity,
+          'parents',
+          'parents.petId IN (pairs.fatherId, pairs.motherId)',
+        )
+        .leftJoinAndMapMany(
+          'matings.children',
+          PetEntity,
+          'children',
+          'children.layingId IN (SELECT layings.id FROM layings WHERE layings.matingId = matings.id) AND children.isDeleted = false',
+        )
+        .select([
+          'matings.id',
+          'matings.matingDate',
+          'matings.pairId',
+          'matings.createdAt',
+          'layings.id',
+          'layings.layingDate',
+          'layings.clutch',
+          'pairs.id',
+          'pairs.fatherId',
+          'pairs.motherId',
+          'pairs.ownerId',
+          'parents.petId',
+          'parents.name',
+          'parents.morphs',
+          'parents.species',
+          'parents.sex',
+          'parents.hatchingDate',
+          'parents.growth',
+          'parents.weight',
+          'children.petId',
+          'children.name',
+          'children.species',
+          'children.morphs',
+          'children.sex',
+          'children.hatchingDate',
+          'children.growth',
+          'children.weight',
+          'children.clutchOrder',
+          'children.layingId',
+          'children.temperature',
+        ])
+        .where('pairs.ownerId = :userId', { userId })
+        .orderBy('matings.id', pageOptionsDto.order);
 
-    const { entities } = await allQueryBuilder.getRawAndEntities();
+      const { entities } = await allQueryBuilder.getRawAndEntities();
 
-    // 가공된 데이터 생성
-    const allMatingList = this.formatResponseByDate(
-      entities as MatingWithRelations[],
-    );
+      // 가공된 데이터 생성
+      const allMatingList = this.formatResponseByDate(
+        entities as MatingWithRelations[],
+      );
 
-    // 가공 후 데이터로 페이지네이션 적용
-    const totalCount = allMatingList.length;
-    const startIndex = pageOptionsDto.skip;
-    const endIndex = startIndex + pageOptionsDto.itemPerPage;
-    const paginatedMatingList = allMatingList.slice(startIndex, endIndex);
+      // 가공 후 데이터로 페이지네이션 적용
+      const totalCount = allMatingList.length;
+      const startIndex = pageOptionsDto.skip;
+      const endIndex = startIndex + pageOptionsDto.itemPerPage;
+      const paginatedMatingList = allMatingList.slice(startIndex, endIndex);
 
-    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
-    return new PageDto(paginatedMatingList, pageMetaDto);
+      const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+      return new PageDto(paginatedMatingList, pageMetaDto);
+    });
   }
 
   async saveMating(userId: string, createMatingDto: CreateMatingDto) {
-    if (!createMatingDto.fatherId && !createMatingDto.motherId) {
-      throw new BadRequestException('최소 하나의 부모 펫을 입력해야 합니다.');
-    }
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      if (!createMatingDto.fatherId && !createMatingDto.motherId) {
+        throw new BadRequestException('최소 하나의 부모 펫을 입력해야 합니다.');
+      }
 
-    // 페어가 존재하는지 확인하거나 생성
-    let pair = await this.pairRepository.findOne({
-      where: {
-        ownerId: userId,
-        fatherId: createMatingDto.fatherId,
-        motherId: createMatingDto.motherId,
-      },
-    });
-
-    if (!pair) {
-      pair = this.pairRepository.create({
-        ownerId: userId,
-        fatherId: createMatingDto.fatherId,
-        motherId: createMatingDto.motherId,
+      // 페어가 존재하는지 확인하거나 생성
+      let pair = await entityManager.findOne(PairEntity, {
+        where: {
+          ownerId: userId,
+          fatherId: createMatingDto.fatherId,
+          motherId: createMatingDto.motherId,
+        },
       });
-      pair = await this.pairRepository.save(pair);
-    }
 
-    // 동일한 페어의 동일한 날짜에 메이팅이 있는지 확인
-    const existingMating = await this.matingRepository.findOne({
-      where: {
+      if (!pair) {
+        pair = entityManager.create(PairEntity, {
+          ownerId: userId,
+          fatherId: createMatingDto.fatherId,
+          motherId: createMatingDto.motherId,
+        });
+        pair = await entityManager.save(PairEntity, pair);
+      }
+
+      // 동일한 페어의 동일한 날짜에 메이팅이 있는지 확인 (exists 사용으로 성능 향상)
+      const existingMating = await entityManager.existsBy(MatingEntity, {
         pairId: pair.id.toString(),
         matingDate: createMatingDto.matingDate,
-      },
-    });
+      });
 
-    if (existingMating) {
-      throw new BadRequestException('이미 존재하는 메이팅 정보입니다.');
-    }
+      if (existingMating) {
+        throw new BadRequestException('이미 존재하는 메이팅 정보입니다.');
+      }
 
-    const matingEntity = this.matingRepository.create({
-      pairId: pair.id.toString(),
-      matingDate: createMatingDto.matingDate,
+      const matingEntity = entityManager.create(MatingEntity, {
+        pairId: pair.id.toString(),
+        matingDate: createMatingDto.matingDate,
+      });
+      await entityManager.save(MatingEntity, matingEntity);
     });
-    return await this.matingRepository.save(matingEntity);
   }
 
   async updateMating(
@@ -221,81 +226,88 @@ export class MatingService {
     matingId: number,
     updateMatingDto: UpdateMatingDto,
   ) {
-    const mating = await this.matingRepository.findOne({
-      where: { id: matingId },
-      relations: ['pair'],
-    });
-
-    if (!mating || mating.pair?.ownerId !== userId) {
-      throw new BadRequestException('메이팅 정보를 찾을 수 없습니다.');
-    }
-
-    // 페어 정보 업데이트 또는 새 페어 생성
-    let pair = await this.pairRepository.findOne({
-      where: {
-        ownerId: userId,
-        fatherId: updateMatingDto.fatherId,
-        motherId: updateMatingDto.motherId,
-      },
-    });
-
-    if (!pair) {
-      pair = this.pairRepository.create({
-        ownerId: userId,
-        fatherId: updateMatingDto.fatherId,
-        motherId: updateMatingDto.motherId,
-      });
-      pair = await this.pairRepository.save(pair);
-    }
-
-    // 중복 체크 (자신을 제외하고)
-    const existingMating = await this.matingRepository.existsBy({
-      pairId: pair.id.toString(),
-      matingDate: updateMatingDto.matingDate,
-      id: Not(matingId),
-    });
-
-    if (existingMating) {
-      throw new BadRequestException('이미 존재하는 메이팅 정보입니다.');
-    }
-
-    await this.matingRepository.update(matingId, {
-      pairId: pair.id.toString(),
-      matingDate: updateMatingDto.matingDate,
-    });
-  }
-
-  async deleteMating(matingId: number) {
-    try {
-      const mating = await this.matingRepository.findOne({
-        where: { id: matingId },
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const mating = await entityManager.existsBy(MatingEntity, {
+        id: matingId,
       });
 
       if (!mating) {
         throw new BadRequestException('메이팅 정보를 찾을 수 없습니다.');
       }
 
-      // 연관된 산란 정보가 있는지 확인
-      const relatedLayings = await this.layingRepository.find({
-        where: { matingId: mating.id },
+      // 페어 정보 업데이트 또는 새 페어 생성
+      let pair = await entityManager.findOne(PairEntity, {
+        where: {
+          ownerId: userId,
+          fatherId: updateMatingDto.fatherId,
+          motherId: updateMatingDto.motherId,
+        },
+        select: ['id'],
       });
 
-      if (relatedLayings.length > 0) {
-        throw new BadRequestException(
-          '연관된 산란 정보가 있어 삭제할 수 없습니다.',
-        );
+      if (!pair) {
+        pair = entityManager.create(PairEntity, {
+          ownerId: userId,
+          fatherId: updateMatingDto.fatherId,
+          motherId: updateMatingDto.motherId,
+        });
+        pair = await entityManager.save(PairEntity, pair);
       }
 
-      await this.matingRepository.delete(matingId);
+      // 중복 체크 (자신을 제외하고)
+      const existingMating = await entityManager.existsBy(MatingEntity, {
+        pairId: pair.id.toString(),
+        matingDate: updateMatingDto.matingDate,
+        id: Not(matingId),
+      });
 
-      return { success: true, message: '메이팅이 성공적으로 삭제되었습니다.' };
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
+      if (existingMating) {
+        throw new BadRequestException('이미 존재하는 메이팅 정보입니다.');
       }
 
-      throw new BadRequestException('메이팅 삭제 중 오류가 발생했습니다.');
-    }
+      await entityManager.update(
+        MatingEntity,
+        { id: matingId },
+        {
+          pairId: pair.id.toString(),
+          matingDate: updateMatingDto.matingDate,
+        },
+      );
+    });
+  }
+
+  async deleteMating(matingId: number) {
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      try {
+        const mating = await entityManager.findOne(MatingEntity, {
+          where: { id: matingId },
+          select: ['id'],
+        });
+
+        if (!mating) {
+          throw new BadRequestException('메이팅 정보를 찾을 수 없습니다.');
+        }
+
+        // 연관된 산란 정보가 있는지 확인 (exists 사용으로 성능 향상)
+        const hasRelatedLayings = await entityManager.existsBy(LayingEntity, {
+          matingId: mating.id,
+        });
+
+        if (hasRelatedLayings) {
+          throw new BadRequestException(
+            '연관된 산란 정보가 있어 삭제할 수 없습니다.',
+          );
+        }
+
+        await entityManager.delete(MatingEntity, { id: matingId });
+      } catch (error) {
+        if (error instanceof BadRequestException) {
+          throw error;
+        }
+
+        throw new BadRequestException('메이팅 삭제 중 오류가 발생했습니다.');
+      }
+    });
   }
 
   private formatResponseByDate(data: MatingWithRelations[]) {

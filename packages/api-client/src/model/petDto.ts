@@ -11,6 +11,7 @@ import type { PetDtoGrowth } from "./petDtoGrowth";
 import type { PetDtoSex } from "./petDtoSex";
 import type { PetParentDto } from "./petParentDto";
 import type { PetAdoptionDto } from "./petAdoptionDto";
+import type { PetDtoStatus } from "./petDtoStatus";
 
 export interface PetDto {
   /** 펫 아이디 */
@@ -45,4 +46,6 @@ export interface PetDto {
   mother?: PetParentDto;
   /** 분양 정보 */
   adoption?: PetAdoptionDto;
+  /** 부모 관계 상태 */
+  status: PetDtoStatus;
 }

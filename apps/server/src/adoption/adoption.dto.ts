@@ -5,11 +5,11 @@ import {
   IsDate,
   IsEnum,
 } from 'class-validator';
-import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { UserProfilePublicDto } from '../user/user.dto';
 
-import { PetDto, PetSummaryDto } from '../pet/pet.dto';
+import { PetSummaryWithoutOwnerDto } from '../pet/pet.dto';
 import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
 import { CommonResponseDto } from 'src/common/response.dto';
 
@@ -186,24 +186,7 @@ export class AdoptionDto extends PickType(AdoptionBaseDto, [
   @ApiProperty({
     description: '펫 정보',
   })
-  pet: PetSummaryDto;
-}
-export class AdoptionWithPetDto extends OmitType(AdoptionBaseDto, [
-  'location',
-] as const) {
-  @ApiProperty({
-    description: '펫 정보',
-  })
-  pet: PetDto;
-}
-
-export class createAdoptionResponseDto {
-  @ApiProperty({
-    description: '분양 ID',
-    example: 'XXXXXXXX',
-  })
-  @IsString()
-  adoptionId: string;
+  pet: PetSummaryWithoutOwnerDto;
 }
 
 export class AdoptionDetailResponseDto extends CommonResponseDto {

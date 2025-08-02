@@ -5,10 +5,6 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateParentRequestDto {
   @IsNotEmpty()
   @IsString()
-  requesterId: string;
-
-  @IsNotEmpty()
-  @IsString()
   childPetId: string;
 
   @IsNotEmpty()
@@ -22,6 +18,10 @@ export class CreateParentRequestDto {
   @IsOptional()
   @IsString()
   message?: string;
+
+  @IsOptional()
+  @IsEnum(PARENT_STATUS)
+  status?: PARENT_STATUS;
 }
 
 export class UpdateParentRequestDto {

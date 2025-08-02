@@ -52,7 +52,7 @@ export class AdoptionEntity {
   updatedAt: Date;
 
   @Column({ default: false })
-  isDeleted: boolean;
+  isDeleted?: boolean;
 
   @Column({ type: 'enum', enum: ADOPTION_SALE_STATUS, nullable: true })
   status?: ADOPTION_SALE_STATUS;

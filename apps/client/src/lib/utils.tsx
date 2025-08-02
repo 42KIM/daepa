@@ -47,9 +47,9 @@ export const formatDateToYYYYMMDDString = (
 export const getStatusBadge = (status?: PetDtoSaleStatus) => {
   switch (status) {
     case PetDtoSaleStatus.ON_SALE:
-      return <Badge className="bg-yellow-500">판매중</Badge>;
+      return <Badge className="bg-blue-500">판매중</Badge>;
     case PetDtoSaleStatus.ON_RESERVATION:
-      return <Badge className="bg-blue-500">예약중</Badge>;
+      return <Badge className="bg-yellow-500">예약중</Badge>;
     case PetDtoSaleStatus.SOLD:
       return <Badge className="bg-green-500">판매완료</Badge>;
     default:

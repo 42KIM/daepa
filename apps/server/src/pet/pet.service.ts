@@ -1,16 +1,27 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PetEntity } from './pet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, Not, IsNull } from 'typeorm';
+import {
+  Repository,
+  In,
+  Not,
+  IsNull,
+  EntityManager,
+  DataSource,
+} from 'typeorm';
 import { nanoid } from 'nanoid';
 import { plainToInstance } from 'class-transformer';
 import {
   CreatePetDto,
-  LinkParentDto,
-  PetAdoptionDto,
   PetDto,
   PetFamilyParentDto,
-  PetParentDto,
   PetFamilyPairGroupDto,
 } from './pet.dto';
 import {
@@ -31,10 +42,12 @@ import { UpdatePetDto } from './pet.dto';
 import { AdoptionEntity } from '../adoption/adoption.entity';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { PairService } from 'src/pair/pair.service';
-import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
 import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { PairEntity } from 'src/pair/pair.entity';
 import { LayingEntity } from 'src/laying/laying.entity';
+import { isMySQLError } from 'src/common/error';
+import { UserProfilePublicDto } from 'src/user/user.dto';
+import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
 
 @Injectable()
 export class PetService {
@@ -44,226 +57,120 @@ export class PetService {
     @InjectRepository(PetEntity)
     private readonly petRepository: Repository<PetEntity>,
     private readonly parentRequestService: ParentRequestService,
-    private readonly userService: UserService,
-    @InjectRepository(AdoptionEntity)
-    private readonly adoptionRepository: Repository<AdoptionEntity>,
-    private readonly pairService: PairService,
-    @InjectRepository(PairEntity)
-    private readonly pairRepository: Repository<PairEntity>,
     @InjectRepository(LayingEntity)
     private readonly layingRepository: Repository<LayingEntity>,
+    private readonly userService: UserService,
+    private readonly pairService: PairService,
+    private readonly dataSource: DataSource,
   ) {}
-
-  private async generateUniquePetId(): Promise<string> {
-    let attempts = 0;
-    while (attempts < this.MAX_RETRIES) {
-      const petId = nanoid(8);
-      const existingPet = await this.petRepository.findOne({
-        where: { petId },
-      });
-      if (!existingPet) {
-        return petId;
-      }
-      attempts++;
-    }
-    throw new HttpException(
-      {
-        statusCode: HttpStatus.CONFLICT,
-        message:
-          '펫 아이디 생성 중 오류가 발생했습니다. 나중에 다시 시도해주세요.',
-      },
-      HttpStatus.CONFLICT,
-    );
-  }
 
   async createPet(
     createPetDto: CreatePetDto,
     ownerId: string,
   ): Promise<{ petId: string }> {
-    const petId = await this.generateUniquePetId();
-    const { father, mother, ...petData } = createPetDto;
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const petId = await this.generateUniquePetId();
+      const { father, mother, ...petData } = createPetDto;
 
-    // 펫 데이터 준비
-    const petEntityData = plainToInstance(PetEntity, {
-      ...petData,
-      petId,
-      ownerId,
-    });
+      // 펫 데이터 준비
+      const petEntityData = plainToInstance(PetEntity, {
+        ...petData,
+        petId,
+        ownerId,
+      });
 
-    try {
-      // 펫 생성
-      await this.petRepository.insert(petEntityData);
+      try {
+        // 펫 생성
+        await entityManager.insert(PetEntity, petEntityData);
 
-      // 부모 연동 요청 처리
-      if (father) {
-        await this.handleParentRequest(petId, ownerId, father);
-      }
+        // 부모 연동 요청 처리
+        if (father) {
+          await this.handleParentRequest(petId, ownerId, father);
+        }
 
-      if (mother) {
-        await this.handleParentRequest(petId, ownerId, mother);
-      }
+        if (mother) {
+          await this.handleParentRequest(petId, ownerId, mother);
+        }
 
-      // 부모 모두 있는 경우, 둘 다 내 펫인지 확인 후 pair 생성
-      if (father && mother) {
-        // pair에 해당 쌍이 없는 경우에만 아래 로직 수행
-        const pair = await this.pairRepository.findOne({
-          where: {
-            ownerId,
-            fatherId: father.parentId,
-            motherId: mother.parentId,
-          },
-        });
-
-        // 둘 다 현재 사용자의 펫인 경우에만 pair 생성
-        if (!pair) {
-          const newPair = await this.pairService.createPair({
-            ownerId,
-            fatherId: father.parentId,
-            motherId: mother.parentId,
+        // 부모 모두 있는 경우, 둘 다 내 펫인지 확인 후 pair 생성
+        if (father && mother) {
+          // pair에 해당 쌍이 없는 경우에만 아래 로직 수행
+          const pair = await entityManager.findOne(PairEntity, {
+            where: {
+              ownerId,
+              fatherId: father.parentId,
+              motherId: mother.parentId,
+            },
           });
 
-          await this.petRepository.update({ petId }, { pairId: newPair.id });
-        } else {
-          await this.petRepository.update({ petId }, { pairId: pair.id });
-        }
-      }
+          // 둘 다 현재 사용자의 펫인 경우에만 pair 생성
+          if (!pair) {
+            const newPair = await this.pairService.createPair({
+              ownerId,
+              fatherId: father.parentId,
+              motherId: mother.parentId,
+            });
 
-      return { petId };
-    } catch (error: unknown) {
-      if (
-        error &&
-        typeof error === 'object' &&
-        'code' in error &&
-        'message' in error
-      ) {
-        const dbError = error as { code: string; message: string };
-        if (dbError.code === 'ER_DUP_ENTRY') {
-          if (dbError.message.includes('UNIQUE_OWNER_PET_NAME')) {
-            throw new HttpException(
-              {
-                statusCode: HttpStatus.CONFLICT,
-                message: '이미 존재하는 펫 이름입니다.',
-              },
-              HttpStatus.CONFLICT,
+            await entityManager.update(
+              PetEntity,
+              { petId },
+              { pairId: newPair.id },
+            );
+          } else {
+            await entityManager.update(
+              PetEntity,
+              { petId },
+              { pairId: pair.id },
             );
           }
         }
-      }
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: '펫 생성 중 오류가 발생했습니다.',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
 
-  private async getParentWithRequestStatus(
-    petId: string,
-    parentId: string | null,
-    role: PARENT_ROLE,
-  ): Promise<{
-    parent: PetEntity | null;
-    parentRequest: ParentRequestEntity | null;
-  }> {
-    let parent: PetEntity | null = null;
-    let parentRequest: ParentRequestEntity | null = null;
-
-    if (parentId) {
-      // 기존 부모 ID가 있는 경우
-      parent = await this.petRepository.findOne({
-        where: { petId: parentId, isDeleted: false },
-        select: ['petId', 'name', 'species', 'morphs', 'sex', 'hatchingDate'],
-      });
-
-      if (parent) {
-        parentRequest =
-          await this.parentRequestService.findPendingRequestByChildAndParent(
-            petId,
-            parentId,
-            role,
-          );
-      }
-    } else {
-      // 부모 ID가 없어도 parent_request에서 요청 조회
-      parentRequest =
-        await this.parentRequestService.findPendingRequestByChildAndRole(
-          petId,
-          role,
+        return { petId };
+      } catch (error: unknown) {
+        if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
+          if (error.message.includes('UNIQUE_OWNER_PET_NAME')) {
+            throw new ConflictException('이미 존재하는 펫 이름입니다.');
+          }
+        }
+        throw new InternalServerErrorException(
+          '펫 생성 중 오류가 발생했습니다.',
         );
-
-      if (parentRequest) {
-        parent = await this.petRepository.findOne({
-          where: {
-            petId: parentRequest.parentPetId,
-            isDeleted: false,
-          },
-          select: ['petId', 'name', 'species', 'morphs', 'sex', 'hatchingDate'],
-        });
       }
-    }
-
-    return { parent, parentRequest };
+    });
   }
 
   async findPetByPetId(petId: string): Promise<PetDto> {
-    const pet = await this.petRepository.findOne({
-      where: { petId, isDeleted: false },
-      relations: ['father', 'mother', 'adoption'],
-    });
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const pet = await entityManager.findOne(PetEntity, {
+        where: { petId, isDeleted: false },
+      });
 
-    if (!pet) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: '펫을 찾을 수 없습니다.',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
+      if (!pet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
 
-    // adoption 정보를 별도로 조회해보기
-    const adoption = await this.adoptionRepository.findOne({
-      where: { petId, isDeleted: false },
-    });
+      // adoption 정보를 petId로 조회
+      const adoption = await entityManager.findOne(AdoptionEntity, {
+        where: { petId, isDeleted: false },
+      });
 
-    // 소유자 정보 조회
-    const owner = await this.userService.findOneProfile(pet.ownerId);
+      if (!pet.ownerId) {
+        throw new NotFoundException('펫의 소유자를 찾을 수 없습니다.');
+      }
 
-    // 부모 정보와 요청 상태 조회
-    const { parent: father, parentRequest: fatherParentRequest } =
-      await this.getParentWithRequestStatus(
-        petId,
-        pet.fatherId,
-        PARENT_ROLE.FATHER,
-      );
+      // 소유자 정보 조회
+      const owner = await this.userService.findOneProfile(pet.ownerId);
 
-    const { parent: mother, parentRequest: motherParentRequest } =
-      await this.getParentWithRequestStatus(
-        petId,
-        pet.motherId,
-        PARENT_ROLE.MOTHER,
-      );
+      const { father, mother } =
+        await this.parentRequestService.getParentsWithRequestStatus(petId);
 
-    return plainToInstance(PetDto, {
-      ...pet,
-      owner,
-      father: father
-        ? {
-            ...plainToInstance(PetParentDto, father),
-            status: fatherParentRequest?.status ?? PARENT_STATUS.APPROVED,
-          }
-        : undefined,
-      mother: mother
-        ? {
-            ...plainToInstance(PetParentDto, mother),
-            status: motherParentRequest?.status ?? PARENT_STATUS.APPROVED,
-          }
-        : undefined,
-      adoption: adoption
-        ? plainToInstance(PetAdoptionDto, adoption)
-        : undefined,
+      return plainToInstance(PetDto, {
+        ...pet,
+        owner,
+        father,
+        mother,
+        adoption,
+      });
     });
   }
 
@@ -278,23 +185,11 @@ export class PetService {
     });
 
     if (!existingPet) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: '펫을 찾을 수 없습니다.',
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException('펫을 찾을 수 없습니다.');
     }
 
     if (existingPet.ownerId !== userId) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.FORBIDDEN,
-          message: '펫의 소유자가 아닙니다.',
-        },
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException('펫의 소유자가 아닙니다.');
     }
 
     const { father, mother, ...petData } = updatePetDto;
@@ -314,38 +209,17 @@ export class PetService {
 
       return { petId };
     } catch (error: unknown) {
-      if (
-        error &&
-        typeof error === 'object' &&
-        'code' in error &&
-        'message' in error
-      ) {
-        const dbError = error as { code: string; message: string };
-        if (dbError.code === 'ER_DUP_ENTRY') {
-          if (dbError.message.includes('UNIQUE_OWNER_PET_NAME')) {
-            throw new HttpException(
-              {
-                statusCode: HttpStatus.CONFLICT,
-                message: '이미 존재하는 펫 이름입니다.',
-              },
-              HttpStatus.CONFLICT,
-            );
-          }
+      if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
+        if (error.message.includes('UNIQUE_OWNER_PET_NAME')) {
+          throw new ConflictException('이미 존재하는 펫 이름입니다.');
         }
       }
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: '펫 수정 중 오류가 발생했습니다.',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('펫 수정 중 오류가 발생했습니다.');
     }
   }
 
   // 내 펫 -> 즉시 연동
   // 타인 펫 -> parent_request 테이블에 요청 생성
-
   private async handleParentRequest(
     childPetId: string,
     requesterId: string,
@@ -358,13 +232,7 @@ export class PetService {
     });
 
     if (!parentPet?.petId) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: '부모로 지정된 펫을 찾을 수 없습니다.',
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException('부모로 지정된 펫을 찾을 수 없습니다.');
     }
 
     // 성별 검증
@@ -372,58 +240,22 @@ export class PetService {
       parentInfo.role === PARENT_ROLE.FATHER &&
       parentPet.sex !== PET_SEX.MALE
     ) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: '아버지로 지정된 펫은 수컷이어야 합니다.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new BadRequestException('아버지로 지정된 펫은 수컷이어야 합니다.');
     }
 
     if (
       parentInfo.role === PARENT_ROLE.MOTHER &&
       parentPet.sex !== PET_SEX.FEMALE
     ) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: '어머니로 지정된 펫은 암컷이어야 합니다.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new BadRequestException('어머니로 지정된 펫은 암컷이어야 합니다.');
     }
 
-    // 자신의 펫인 경우 즉시 연동
-    if (parentPet.ownerId === requesterId) {
-      await this.linkParentDirectly(
-        childPetId,
-        parentPet.petId,
-        parentInfo.role,
-      );
-    } else {
-      // 다른 사람의 펫인 경우 parent_request 테이블에 요청 생성
-      await this.createParentRequest(
-        childPetId,
-        requesterId,
-        parentPet,
-        parentInfo,
-      );
-    }
-  }
-
-  private async linkParentDirectly(
-    childPetId: string,
-    parentPetId: string,
-    role: PARENT_ROLE,
-  ): Promise<void> {
-    // 펫 엔티티에 부모 정보 업데이트
-    const updateData =
-      role === PARENT_ROLE.FATHER
-        ? { fatherId: parentPetId }
-        : { motherId: parentPetId };
-
-    await this.petRepository.update({ petId: childPetId }, updateData);
+    await this.createParentRequest(
+      childPetId,
+      requesterId,
+      parentPet,
+      parentInfo,
+    );
   }
 
   private async createParentRequest(
@@ -441,22 +273,19 @@ export class PetService {
       );
 
     if (existingRequest) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.CONFLICT,
-          message: '이미 대기 중인 부모 연동 요청이 있습니다.',
-        },
-        HttpStatus.CONFLICT,
-      );
+      throw new ConflictException('이미 대기 중인 부모 연동 요청이 있습니다.');
     }
 
     // parent_request 테이블에 요청 생성 및 알림 발송
     await this.parentRequestService.createParentRequestWithNotification({
-      requesterId,
       childPetId,
       parentPetId: parentPet.petId,
       role: parentInfo.role,
       message: parentInfo.message,
+      status:
+        requesterId === parentPet.ownerId
+          ? PARENT_STATUS.APPROVED
+          : PARENT_STATUS.PENDING,
     });
   }
 
@@ -473,29 +302,10 @@ export class PetService {
         'users.userId = pets.ownerId',
       )
       .leftJoinAndMapOne(
-        'pets.father',
-        'pets',
-        'father',
-        'father.petId = pets.fatherId',
-      )
-      .leftJoinAndMapOne(
-        'pets.mother',
-        'pets',
-        'mother',
-        'mother.petId = pets.motherId',
-      )
-      .leftJoinAndMapOne(
         'pets.adoption',
         'adoptions',
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
-      )
-      // parent_request 정보 추가
-      .leftJoinAndMapMany(
-        'pets.parentRequests',
-        'parent_requests',
-        'parent_requests',
-        'parent_requests.childPetId = pets.petId',
       )
       .where(' pets.isDeleted = :isDeleted AND pets.growth != :eggGrowth', {
         isDeleted: false,
@@ -625,38 +435,22 @@ export class PetService {
     // PetDto로 변환하면서 parent_request 상태 정보 포함
     const petDtos = await Promise.all(
       petEntities.map(async (pet) => {
+        if (!pet.ownerId) {
+          throw new NotFoundException('펫의 소유자를 찾을 수 없습니다.');
+        }
+
         const owner = await this.userService.findOneProfile(pet.ownerId);
 
-        // 부모 정보와 요청 상태 조회
-        const { parent: father, parentRequest: fatherParentRequest } =
-          await this.getParentWithRequestStatus(
+        const { father, mother } =
+          await this.parentRequestService.getParentsWithRequestStatus(
             pet.petId,
-            pet.fatherId,
-            PARENT_ROLE.FATHER,
-          );
-
-        const { parent: mother, parentRequest: motherParentRequest } =
-          await this.getParentWithRequestStatus(
-            pet.petId,
-            pet.motherId,
-            PARENT_ROLE.MOTHER,
           );
 
         return plainToInstance(PetDto, {
           ...pet,
           owner,
-          father: father
-            ? {
-                ...plainToInstance(PetParentDto, father),
-                status: fatherParentRequest?.status ?? PARENT_STATUS.APPROVED,
-              }
-            : undefined,
-          mother: mother
-            ? {
-                ...plainToInstance(PetParentDto, mother),
-                status: motherParentRequest?.status ?? PARENT_STATUS.APPROVED,
-              }
-            : undefined,
+          father,
+          mother,
         });
       }),
     );
@@ -665,227 +459,67 @@ export class PetService {
     return new PageDto(petDtos, pageMetaDto);
   }
 
-  async unlinkParent(
-    petId: string,
-    parentRole: PARENT_ROLE,
-    userId: string,
-  ): Promise<{ petId: string }> {
-    // 펫 존재 여부 및 소유권 확인
-    const existingPet = await this.petRepository.findOne({
-      where: { petId, isDeleted: false },
-    });
-
-    if (!existingPet) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: '펫을 찾을 수 없습니다.',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // 연동된 부모인지 확인
-    const parentId =
-      parentRole === PARENT_ROLE.FATHER
-        ? existingPet.fatherId
-        : existingPet.motherId;
-
-    // 요청 중인 경우
-    const parentRequest =
-      await this.parentRequestService.findPendingRequestByChildAndParent(
-        petId,
-        parentId,
-        parentRole,
-      );
-
-    if (!parentId && parentRequest) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: '연동된 부모가 없거나 요청 중입니다.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    try {
-      // 펫에서 부모 연동 제거
-      const updateData = {
-        ...(parentRole === PARENT_ROLE.FATHER ? { fatherId: null } : {}),
-        ...(parentRole === PARENT_ROLE.MOTHER ? { motherId: null } : {}),
-      } as Partial<PetEntity>;
-
-      await this.petRepository.update({ petId }, updateData);
-
-      // 내 펫이 아닌경우만 parent_request 삭제
-      if (existingPet.ownerId !== userId) {
-        await this.parentRequestService.deleteParentRequest(
-          petId,
-          parentId,
-          parentRole,
-        );
-      }
-
-      return { petId };
-    } catch {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: '부모 연동 해제 중 오류가 발생했습니다.',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async linkParent(
-    petId: string,
-    linkParentDto: LinkParentDto,
-    userId: string,
-  ): Promise<{ petId: string }> {
-    // 펫 존재 여부 및 소유권 확인
-    const existingPet = await this.petRepository.findOne({
-      where: { petId, isDeleted: false },
-    });
-
-    if (!existingPet) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: '펫을 찾을 수 없습니다.',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // 이미 연동된 부모가 있는지 확인
-    const existingParentId =
-      linkParentDto.role === PARENT_ROLE.FATHER
-        ? existingPet.fatherId
-        : existingPet.motherId;
-
-    if (existingParentId) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.CONFLICT,
-          message: '이미 연동된 부모가 있습니다.',
-        },
-        HttpStatus.CONFLICT,
-      );
-    }
-
-    try {
-      // 부모 연동 요청 처리
-      await this.handleParentRequest(petId, userId, linkParentDto);
-
-      return { petId };
-    } catch {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: '부모 연동 중 오류가 발생했습니다.',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
   async deletePet(petId: string, userId: string): Promise<{ petId: string }> {
-    // 펫 존재 여부 및 소유권 확인
-    const existingPet = await this.petRepository.findOne({
-      where: { petId, isDeleted: false },
-    });
-
-    if (!existingPet) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: '펫을 찾을 수 없습니다.',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    if (existingPet.ownerId !== userId) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.FORBIDDEN,
-          message: '펫의 소유자가 아닙니다.',
-        },
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    // 연관된 데이터 확인 (분양 정보 등)
-    const hasAdoption = await this.adoptionRepository.findOne({
-      where: { petId, isDeleted: false },
-    });
-
-    if (hasAdoption) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: '분양 정보가 있어 삭제할 수 없습니다.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    // 자식 펫이 있는지 확인 (이 펫을 부모로 하는 펫들)
-    const childrenPets = await this.petRepository.find({
-      where: [
-        { fatherId: petId, isDeleted: false },
-        { motherId: petId, isDeleted: false },
-      ],
-    });
-
-    if (childrenPets.length > 0) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: '자식 펫이 있어 삭제할 수 없습니다.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    try {
-      // 펫 삭제 전에 layingId 확인
-      const petToDelete = await this.petRepository.findOne({
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 펫 존재 여부 및 소유권 확인
+      const existingPet = await entityManager.findOne(PetEntity, {
         where: { petId, isDeleted: false },
-        select: ['layingId'],
       });
 
-      await this.petRepository.update({ petId }, { isDeleted: true });
-
-      // 연관된 parent_request들을 모두 삭제 상태로 변경
-      await this.parentRequestService.deleteAllParentRequestsByPet(petId);
-
-      // layingId가 있고, 해당 laying에 연동된 다른 펫이 없으면 laying도 삭제
-      if (petToDelete?.layingId) {
-        const remainingPets = await this.petRepository.count({
-          where: {
-            layingId: petToDelete.layingId,
-            isDeleted: false,
-          },
-        });
-
-        if (remainingPets === 0) {
-          await this.layingRepository.delete(petToDelete.layingId);
-        }
+      if (!existingPet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
       }
 
-      return { petId };
-    } catch {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: '펫 삭제 중 오류가 발생했습니다.',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+      if (existingPet.ownerId !== userId) {
+        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      }
+
+      // 연관된 데이터 확인 (분양 정보 등)
+      const hasAdoption = await entityManager.findOne(AdoptionEntity, {
+        where: { petId, isDeleted: false },
+      });
+
+      if (hasAdoption) {
+        throw new BadRequestException('분양 정보가 있어 삭제할 수 없습니다.');
+      }
+
+      // 자식 펫이 있는지 확인 (이 펫을 부모로 하는 펫들)
+      const childrenPets = await entityManager.existsBy(ParentRequestEntity, {
+        parentPetId: petId,
+        status: In([PARENT_STATUS.APPROVED, PARENT_STATUS.PENDING]),
+      });
+
+      if (childrenPets) {
+        throw new BadRequestException('자식 펫이 있어 삭제할 수 없습니다.');
+      }
+
+      try {
+        await entityManager.update(PetEntity, { petId }, { isDeleted: true });
+
+        // 연관된 parent_request들을 모두 삭제 상태로 변경
+        await this.parentRequestService.deleteAllParentRequestsByPet(petId);
+
+        // layingId가 있고, 해당 laying에 연동된 다른 펫이 없으면 laying도 삭제
+        if (existingPet.layingId) {
+          const remainingPets = await entityManager.existsBy(PetEntity, {
+            layingId: existingPet.layingId,
+            isDeleted: false,
+          });
+
+          if (!remainingPets) {
+            await entityManager.delete(LayingEntity, {
+              id: existingPet.layingId,
+            });
+          }
+        }
+
+        return { petId };
+      } catch {
+        throw new InternalServerErrorException(
+          '펫 삭제 중 오류가 발생했습니다.',
+        );
+      }
+    });
   }
 
   async completeHatching(
@@ -898,23 +532,11 @@ export class PetService {
     });
 
     if (!existingPet) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: '펫을 찾을 수 없습니다.',
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException('펫을 찾을 수 없습니다.');
     }
 
     if (existingPet.ownerId !== userId) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.FORBIDDEN,
-          message: '펫의 소유자가 아닙니다.',
-        },
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException('펫의 소유자가 아닙니다.');
     }
 
     // hatchingDate가 있으면 사용하고, 없으면 현재 시간으로 설정
@@ -948,18 +570,6 @@ export class PetService {
         'users.userId = pets.ownerId',
       )
       .leftJoinAndMapOne(
-        'pets.father',
-        'pets',
-        'father',
-        'father.petId = pets.fatherId',
-      )
-      .leftJoinAndMapOne(
-        'pets.mother',
-        'pets',
-        'mother',
-        'mother.petId = pets.motherId',
-      )
-      .leftJoinAndMapOne(
         'pets.laying',
         'layings',
         'layings',
@@ -973,18 +583,6 @@ export class PetService {
         'users.role',
         'users.isBiz',
         'users.status',
-        'father.petId',
-        'father.name',
-        'father.species',
-        'father.morphs',
-        'father.sex',
-        'father.hatchingDate',
-        'mother.petId',
-        'mother.name',
-        'mother.species',
-        'mother.morphs',
-        'mother.sex',
-        'mother.hatchingDate',
         'layings.layingDate',
       ]);
 
@@ -1006,16 +604,21 @@ export class PetService {
     const petEntities = await queryBuilder.getMany();
     const petDtos = await Promise.all(
       petEntities.map(async (pet) => {
-        const owner = await this.userService.findOneProfile(pet.ownerId);
+        let owner: UserProfilePublicDto | null = null;
+        if (pet.ownerId) {
+          owner = await this.userService.findOneProfile(pet.ownerId);
+        }
+
+        const { father, mother } =
+          await this.parentRequestService.getParentsWithRequestStatus(
+            pet.petId,
+          );
+
         return plainToInstance(PetDto, {
           ...pet,
           owner,
-          father: pet.father
-            ? plainToInstance(PetParentDto, pet.father)
-            : undefined,
-          mother: pet.mother
-            ? plainToInstance(PetParentDto, pet.mother)
-            : undefined,
+          father,
+          mother,
         });
       }),
     );
@@ -1093,6 +696,132 @@ export class PetService {
     return this.getPetListByHatchingDate({ startDate, endDate }, userId);
   }
 
+  async linkParent(
+    petId: string,
+    parentId: string,
+    role: PARENT_ROLE,
+    userId: string,
+    message?: string,
+  ) {
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 자식 펫 존재 여부 및 소유권 확인
+      const childPet = await entityManager.findOne(PetEntity, {
+        where: { petId, isDeleted: false },
+      });
+
+      if (!childPet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
+
+      if (childPet.ownerId !== userId) {
+        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      }
+
+      // 부모 펫 존재 여부 확인
+      const parentPet = await entityManager.findOne(PetEntity, {
+        where: { petId: parentId, isDeleted: false },
+      });
+
+      if (!parentPet) {
+        throw new NotFoundException('부모로 지정된 펫을 찾을 수 없습니다.');
+      }
+
+      // 성별 검증
+      if (role === PARENT_ROLE.FATHER && parentPet.sex !== PET_SEX.MALE) {
+        throw new BadRequestException(
+          '아버지로 지정된 펫은 수컷이어야 합니다.',
+        );
+      }
+
+      if (role === PARENT_ROLE.MOTHER && parentPet.sex !== PET_SEX.FEMALE) {
+        throw new BadRequestException(
+          '어머니로 지정된 펫은 암컷이어야 합니다.',
+        );
+      }
+
+      // 기존 부모 관계 확인
+      const existingRequest = await entityManager.findOne(ParentRequestEntity, {
+        where: {
+          childPetId: petId,
+          role,
+          status: In([PARENT_STATUS.PENDING, PARENT_STATUS.APPROVED]),
+        },
+      });
+
+      if (existingRequest) {
+        throw new ConflictException(
+          '이미 해당 역할의 부모가 연동되어 있습니다.',
+        );
+      }
+
+      // 부모 관계 생성
+      const status =
+        userId === parentPet.ownerId
+          ? PARENT_STATUS.APPROVED
+          : PARENT_STATUS.PENDING;
+
+      await entityManager.insert(ParentRequestEntity, {
+        childPetId: petId,
+        parentPetId: parentId,
+        role,
+        message,
+        status,
+      });
+
+      // 내 펫이 아닌 경우 알림 발송
+      if (userId !== parentPet.ownerId) {
+        await this.parentRequestService.createParentRequestWithNotification({
+          childPetId: petId,
+          parentPetId: parentId,
+          role,
+          message,
+          status: PARENT_STATUS.PENDING,
+        });
+      }
+    });
+  }
+
+  async unlinkParent(petId: string, role: PARENT_ROLE, userId: string) {
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 펫 존재 여부 및 소유권 확인
+      const pet = await entityManager.findOne(PetEntity, {
+        where: { petId, isDeleted: false },
+      });
+
+      if (!pet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
+
+      if (pet.ownerId !== userId) {
+        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      }
+
+      // 해당 role의 부모 관계 찾기
+      const parentRequest = await entityManager.findOne(ParentRequestEntity, {
+        where: {
+          childPetId: petId,
+          role,
+          status: In([PARENT_STATUS.PENDING, PARENT_STATUS.APPROVED]),
+        },
+      });
+
+      if (!parentRequest) {
+        throw new NotFoundException('해당 부모 관계를 찾을 수 없습니다.');
+      }
+
+      await entityManager.update(
+        ParentRequestEntity,
+        { id: parentRequest.id },
+        {
+          status:
+            parentRequest.status === PARENT_STATUS.PENDING
+              ? PARENT_STATUS.CANCELLED
+              : PARENT_STATUS.DELETED,
+        },
+      );
+    });
+  }
+
   async getFamilyTree(): Promise<Record<string, PetFamilyPairGroupDto>> {
     const petList = await this.petRepository.find({
       where: {
@@ -1113,35 +842,52 @@ export class PetService {
     > = {};
 
     for (const pet of petList) {
-      if (!petListByPairId[pet.pairId]) {
+      if (pet.pairId && !petListByPairId[pet.pairId]) {
         // 부모 펫 정보 조회
-        const father = pet.fatherId
-          ? await this.petRepository.findOne({
-              where: { petId: pet.fatherId },
-              select: ['petId', 'name'],
-            })
-          : null;
-
-        const mother = pet.motherId
-          ? await this.petRepository.findOne({
-              where: { petId: pet.motherId },
-              select: ['petId', 'name'],
-            })
-          : null;
+        const { father, mother } =
+          await this.parentRequestService.getParentsWithRequestStatus(
+            pet.petId,
+          );
 
         petListByPairId[pet.pairId] = {
           petList: [],
-          father: father
-            ? { petId: father.petId, name: father.name || '이름 없음' }
+          father: father?.petId
+            ? {
+                petId: father.petId,
+                name: father.name,
+              }
             : null,
-          mother: mother
-            ? { petId: mother.petId, name: mother.name || '이름 없음' }
+          mother: mother?.petId
+            ? {
+                petId: mother.petId,
+                name: mother.name,
+              }
             : null,
         };
       }
-      petListByPairId[pet.pairId].petList.push(pet);
+      if (pet.pairId && petListByPairId[pet.pairId]) {
+        petListByPairId[pet.pairId].petList.push(pet);
+      }
     }
 
     return petListByPairId;
+  }
+
+  // 펫 아이디 생성
+  private async generateUniquePetId(): Promise<string> {
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      let attempts = 0;
+      while (attempts < this.MAX_RETRIES) {
+        const petId = nanoid(8);
+        const existingPet = await entityManager.existsBy(PetEntity, { petId });
+        if (!existingPet) {
+          return petId;
+        }
+        attempts++;
+      }
+      throw new InternalServerErrorException(
+        '펫 아이디 생성 중 오류가 발생했습니다. 나중에 다시 시도해주세요.',
+      );
+    });
   }
 }

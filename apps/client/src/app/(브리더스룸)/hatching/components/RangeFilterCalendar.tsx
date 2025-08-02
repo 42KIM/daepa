@@ -96,8 +96,8 @@ const RangeFilterCalendar = memo(() => {
             </div>
           </div>
           <Tabs
-            defaultValue="hatched"
-            onValueChange={(value) => setTab(value as "hatched")}
+            defaultValue="all"
+            onValueChange={(value) => setTab(value as "all" | "hatched" | "notHatched")}
             className="sticky top-0 z-10 pb-2"
           >
             <TabsList>

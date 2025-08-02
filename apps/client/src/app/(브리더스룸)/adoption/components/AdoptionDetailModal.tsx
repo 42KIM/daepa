@@ -59,7 +59,7 @@ const AdoptionDetailModal = ({ isOpen, onClose, adoptionId }: AdoptionDetailModa
                   {pet.morphs.map((morph: string) => `#${morph}`).join(" ")}
                 </div>
               )}
-              {pet?.hatchingDate && <p className="text-blue-600">{pet.hatchingDate ?? "-"}</p>}
+              {pet?.hatchingDate && <p className="text-blue-600">{pet.hatchingDate}</p>}
             </div>
           </div>
 
