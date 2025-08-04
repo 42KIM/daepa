@@ -170,7 +170,7 @@ const RegisterPage = () => {
                       type="text"
                       placeholder="닉네임/업체명을 입력해주세요"
                       className={cn("h-12 pr-16")}
-                      maxLength={NICKNAME_MAX_LENGTH}
+                      maxLength={NICKNAME_MAX_LENGTH - 1}
                       {...register("nickname")}
                     />
                     {nickname && (
