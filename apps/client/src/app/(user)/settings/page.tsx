@@ -315,7 +315,6 @@ const SettingsPage = () => {
                   type="email"
                   value={userProfile?.email ?? ""}
                   placeholder="이메일을 입력하세요"
-                  defaultValue="user@example.com"
                   disabled
                 />
                 {/* TODO: provider가 여러 개인 경우 대응하기 */}
