@@ -10,6 +10,7 @@ import type { BrPetControllerFindAllSpecies } from "./brPetControllerFindAllSpec
 import type { BrPetControllerFindAllSex } from "./brPetControllerFindAllSex";
 import type { BrPetControllerFindAllStatus } from "./brPetControllerFindAllStatus";
 import type { BrPetControllerFindAllGrowth } from "./brPetControllerFindAllGrowth";
+import type { BrPetControllerFindAllFilterType } from "./brPetControllerFindAllFilterType";
 
 export type BrPetControllerFindAllParams = {
   /**
@@ -55,11 +56,11 @@ export type BrPetControllerFindAllParams = {
   /**
    * 펫 최소 생년월일
    */
-  minBirthdate?: number;
+  startYmd?: string;
   /**
    * 펫 최대 생년월일
    */
-  maxBirthdate?: number;
+  endYmd?: string;
   /**
    * 펫 모프
    */
@@ -81,7 +82,7 @@ export type BrPetControllerFindAllParams = {
    */
   growth?: BrPetControllerFindAllGrowth;
   /**
-   * 타인 펫 포함 여부
+   * 펫 목록 필터링 타입
    */
-  includeOthers?: boolean;
+  filterType?: BrPetControllerFindAllFilterType;
 };

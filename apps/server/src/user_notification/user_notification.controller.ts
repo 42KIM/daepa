@@ -4,6 +4,7 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -115,6 +116,32 @@ export class UserNotificationController {
     return {
       success: true,
       message: '알림이 삭제되었습니다.',
+    };
+  }
+
+  @Get(':id')
+  @ApiResponse({
+    status: 200,
+    description: '알림 상세 조회',
+    schema: {
+      type: 'object',
+      required: ['data'],
+      properties: {
+        data: { $ref: getSchemaPath(UserNotificationDto) },
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findOne(@Param('id') id: number, @JwtUser() token: JwtUserPayload) {
+    const userNotification = await this.userNotificationService.findOne(
+      id,
+      token.userId,
+    );
+    return {
+      success: true,
+      message: '알림 상세 조회',
+      data: userNotification,
     };
   }
 }

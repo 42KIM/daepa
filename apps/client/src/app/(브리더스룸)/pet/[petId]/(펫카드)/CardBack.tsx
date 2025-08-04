@@ -1,9 +1,13 @@
 import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
-import { petControllerUpdate, UpdatePetDto, PetDto, petControllerFindOne } from "@repo/api-client";
+import {
+  UpdatePetDto,
+  PetDto,
+  petControllerUpdate,
+  petControllerFindPetByPetId,
+} from "@repo/api-client";
 import { toast } from "sonner";
 
-import { format } from "date-fns";
 import AdoptionReceipt from "./components/AdoptionReceipt";
 import PetVisibilityControl from "./components/PetVisibilityControl";
 import AdoptionStatusControl from "./components/AdoptionStatusControl";
@@ -33,7 +37,7 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
   useEffect(() => {
     if (from !== "egg") return;
 
-    if (formData.name && formData.morphs && formData.birthdate) {
+    if (formData.name && formData.morphs && formData.hatchingDate) {
       setIsTooltipOpen(false);
     } else {
       setIsTooltipOpen(true);
@@ -47,7 +51,7 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
 
   const handleSave = useCallback(async () => {
     try {
-      const { name, species, morphs, traits, growth, sex, foods, desc, birthdate, weight } =
+      const { name, species, morphs, traits, growth, sex, foods, desc, hatchingDate, weight } =
         formData;
 
       if (!pet.petId) return;
@@ -61,14 +65,14 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
         ...(sex && { sex }),
         ...(foods && { foods }),
         ...(desc && { desc }),
-        ...(birthdate && { birthdate: format(birthdate, "yyyyMMdd") }),
+        ...(hatchingDate && { hatchingDate }),
         ...(weight && { weight }),
       };
 
       await petControllerUpdate(pet.petId, updateData as UpdatePetDto);
       setIsEditing(false);
       queryClient.invalidateQueries({
-        queryKey: [petControllerFindOne.name, pet.petId],
+        queryKey: [petControllerFindPetByPetId.name, pet.petId],
       });
       toast.success("펫 정보 수정이 완료되었습니다.");
     } catch (error) {

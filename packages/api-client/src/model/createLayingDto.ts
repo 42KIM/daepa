@@ -5,17 +5,23 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { CreateLayingDtoEggType } from "./createLayingDtoEggType";
+import type { CreateLayingDtoSpecies } from "./createLayingDtoSpecies";
 
 export interface CreateLayingDto {
-  /** Mating ID */
-  matingId: number;
-  /** Laying Date */
-  layingDate: number;
-  /** 알 상태 */
-  eggType?: CreateLayingDtoEggType;
-  /** 알 ID */
-  eggId: string;
-  /** 해칭 온도 */
+  /** 메이팅 ID */
+  matingId?: number;
+  /** 산란 날짜 */
+  layingDate: string;
+  /** 차수(클러치) */
+  clutch?: number;
+  /** 알 개수 */
+  clutchCount?: number;
+  /** 온도 */
   temperature?: number;
+  /** 펫 종 */
+  species: CreateLayingDtoSpecies;
+  /** 부 펫 ID */
+  fatherId?: string;
+  /** 모 펫 ID */
+  motherId?: string;
 }

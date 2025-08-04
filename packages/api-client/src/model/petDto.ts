@@ -18,7 +18,7 @@ export interface PetDto {
   /** 펫 주인 정보 */
   owner: UserProfilePublicDto;
   /** 펫 이름 */
-  name: string;
+  name?: string;
   /** 펫 종 */
   species: PetDtoSpecies;
   /** 펫 모프 */
@@ -26,7 +26,7 @@ export interface PetDto {
   /** 펫 형질 */
   traits?: string[];
   /** 펫 출생일 */
-  birthdate?: number;
+  hatchingDate?: string;
   /** 펫 성장단계 */
   growth?: PetDtoGrowth;
   /** 펫 공개 여부 */

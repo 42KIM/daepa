@@ -1,16 +1,19 @@
-import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { PetService } from '../pet.service';
 import { PageMetaDto, PageDto } from 'src/common/page.dto';
-import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
-import { ApiResponse, getSchemaPath } from '@nestjs/swagger';
-import { PetDto, PetFilterDto } from '../pet.dto';
+import {
+  ApiResponse,
+  getSchemaPath,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
+import { PetDto, PetFilterDto, PetHatchingDateRangeDto } from '../pet.dto';
 import { ApiExtraModels } from '@nestjs/swagger';
 import { JwtUser } from 'src/auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
 
 // TODO: UseGuard를 사용하여 breeder 검증
 @Controller('/v1/br/pet')
-@UseInterceptors(ExcludeNilInterceptor)
 export class BrPetController {
   constructor(private readonly petService: PetService) {}
 
@@ -36,5 +39,95 @@ export class BrPetController {
     @JwtUser() token: JwtUserPayload,
   ): Promise<PageDto<PetDto>> {
     return this.petService.getPetListFull(pageOptionsDto, token.userId);
+  }
+
+  @Get('hatching/year/:year')
+  @ApiParam({
+    name: 'year',
+    description: '연도',
+    example: 2024,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '연도별 해칭 펫 목록 조회 성공',
+    schema: {
+      type: 'object',
+      additionalProperties: {
+        type: 'array',
+        items: { $ref: getSchemaPath(PetDto) },
+      },
+    },
+  })
+  async getPetsByYear(
+    @Param('year') year: string,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<Record<string, PetDto[]>> {
+    return this.petService.getPetListByYear(Number(year), token.userId);
+  }
+
+  @Get('hatching/month')
+  @ApiQuery({
+    name: 'year',
+    description: '연도',
+    example: 2024,
+  })
+  @ApiQuery({
+    name: 'month',
+    description: '월 (0-11)',
+    example: 0,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '월별 해칭 펫 목록 조회 성공',
+    schema: {
+      type: 'object',
+      additionalProperties: {
+        type: 'array',
+        items: { $ref: getSchemaPath(PetDto) },
+      },
+    },
+  })
+  async getPetsByMonth(
+    @JwtUser() token: JwtUserPayload,
+    @Query('year') year: string,
+    @Query('month') month: string,
+  ): Promise<Record<string, PetDto[]>> {
+    const monthDate = new Date(Number(year), Number(month), 1);
+    return this.petService.getPetListByMonth(monthDate, token.userId);
+  }
+
+  @Get('hatching/date-range')
+  @ApiQuery({
+    name: 'startDate',
+    description: '시작 날짜 (yyyy-MM-dd)',
+    example: '2024-01-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    description: '종료 날짜 (yyyy-MM-dd)',
+    example: '2024-01-31',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '날짜 범위별 해칭 펫 목록 조회 성공',
+    schema: {
+      type: 'object',
+      additionalProperties: {
+        type: 'array',
+        items: { $ref: getSchemaPath(PetDto) },
+      },
+    },
+  })
+  async getPetsByDateRange(
+    @Query() query: PetHatchingDateRangeDto,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<Record<string, PetDto[]>> {
+    const start = query.startDate ? new Date(query.startDate) : undefined;
+    const end = query.endDate ? new Date(query.endDate) : undefined;
+
+    return this.petService.getPetListByHatchingDate(
+      { startDate: start, endDate: end },
+      token.userId,
+    );
   }
 }

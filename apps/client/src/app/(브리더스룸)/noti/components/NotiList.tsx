@@ -1,15 +1,12 @@
 import { cn } from "@/lib/utils";
 import {
-  EggDto,
-  PetDto,
-  PetSummaryDto,
   UpdateUserNotificationDto,
   userNotificationControllerFindAll,
   userNotificationControllerUpdate,
+  UserNotificationDto,
   UserNotificationDtoStatus,
 } from "@repo/api-client";
 import { formatDistanceToNow } from "date-fns";
-import { NotificationDetail, useNotiStore } from "../store/noti";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ko } from "date-fns/locale";
 import { NOTIFICATION_TYPE } from "@/app/(브리더스룸)/constants";
@@ -24,11 +21,11 @@ import { toast } from "sonner";
 
 const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
   const queryClient = useQueryClient();
-  const [items, setItems] = useState<NotificationDetail[]>([]);
+  const [items, setItems] = useState<UserNotificationDto[]>([]);
   const selectedRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { selected, setSelected } = useNotiStore();
+  const selectedId = Number(searchParams.get("id"));
   const { ref, inView } = useInView();
 
   const itemPerPage = 10;
@@ -61,31 +58,28 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
   });
 
   const handleItemClick = useCallback(
-    (item: NotificationDetail) => {
+    (item: UserNotificationDto) => {
       if (item.id) {
         router.push(`/noti?id=${item.id}`);
       }
-      setSelected(item);
 
       if (item.status === UserNotificationDtoStatus.UNREAD) {
         updateNotification({ id: item.id, status: UserNotificationDtoStatus.READ });
       }
     },
-    [router, setSelected, updateNotification],
+    [router, updateNotification],
   );
 
   useEffect(() => {
-    const id = searchParams.get("id");
-    const item = items.find((item) => item.id === Number(id));
-    if (item) {
-      setSelected(item);
-      setTimeout(() => {
-        selectedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-    } else {
-      setSelected(null);
+    if (selectedId) {
+      const item = items.find((item) => item.id === Number(selectedId));
+      if (item) {
+        setTimeout(() => {
+          selectedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
     }
-  }, [searchParams, items, selected, setSelected]);
+  }, [selectedId, items]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -96,11 +90,11 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
   useEffect(() => {
     if (!data?.pages) return;
     if (tab === "all") {
-      setItems(data?.pages.flatMap((page) => page.data.data as NotificationDetail[]) ?? []);
+      setItems(data?.pages.flatMap((page) => page.data.data) ?? []);
     } else {
       setItems(
         data?.pages
-          .flatMap((page) => page.data.data as NotificationDetail[])
+          .flatMap((page) => page.data.data)
           ?.filter((item) => item.status === UserNotificationDtoStatus.UNREAD) ?? [],
       );
     }
@@ -135,10 +129,10 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
           return (
             <button
               key={item.id}
-              ref={selected?.id === item.id ? selectedRef : null}
+              ref={item.id === selectedId ? selectedRef : null}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md",
-                selected?.id === item.id && "bg-blue-200 dark:bg-gray-800",
+                item.id === selectedId && "bg-blue-200 dark:bg-gray-800",
               )}
               onClick={() => handleItemClick(item)}
             >
@@ -148,10 +142,10 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
                     <Badge
                       className={cn(
                         "my-1 px-2 text-sm font-semibold",
-                        NOTIFICATION_TYPE[item.type as keyof typeof NOTIFICATION_TYPE].color,
+                        NOTIFICATION_TYPE[item.type].color,
                       )}
                     >
-                      {NOTIFICATION_TYPE[item.type as keyof typeof NOTIFICATION_TYPE].label}
+                      {NOTIFICATION_TYPE[item.type].label}
                     </Badge>
                     {item.status === UserNotificationDtoStatus.UNREAD && (
                       <span className="flex h-2 w-2 rounded-full bg-red-500" />
@@ -160,7 +154,7 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
                   <div
                     className={cn(
                       "ml-auto text-xs",
-                      selected?.id === item.id ? "text-foreground" : "text-muted-foreground",
+                      item.id === selectedId ? "text-foreground" : "text-muted-foreground",
                     )}
                   >
                     {formatDistanceToNow(new Date(item.createdAt), {
@@ -169,10 +163,7 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
                     })}
                   </div>
                 </div>
-                <NotiTitle
-                  receiverPet={item?.detailJson?.receiverPet as PetDto | PetSummaryDto | EggDto}
-                  senderPet={item?.detailJson?.senderPet as PetDto | PetSummaryDto | EggDto}
-                />
+                <NotiTitle detailData={item?.detailJson} />
               </div>
               <div className="text-muted-foreground line-clamp-2 text-xs">
                 {(item.detailJson?.message as string)?.substring(0, 300)}

@@ -3,11 +3,11 @@ import { Edit3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { overlay } from "overlay-kit";
 import Dialog from "@/app/(브리더스룸)/components/Form/Dialog";
-import { petControllerDelete } from "@repo/api-client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { memo, useCallback } from "react";
+import { petControllerDeletePet } from "@repo/api-client";
 
 interface CardBackActionsProps {
   petId: string;
@@ -22,7 +22,7 @@ const CardBackActions = memo(
     const router = useRouter();
 
     const { mutate: mutateDeletePet } = useMutation({
-      mutationFn: (petId: string) => petControllerDelete(petId),
+      mutationFn: (petId: string) => petControllerDeletePet(petId),
       onSuccess: () => {
         router.push("/pet");
         toast.success("펫이 삭제되었습니다.");

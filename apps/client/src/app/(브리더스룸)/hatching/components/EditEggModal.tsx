@@ -4,9 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   brMatingControllerFindAll,
-  eggControllerUpdate,
-  LayingDto,
-  UpdateEggDto,
+  petControllerUpdate,
+  PetSummaryWithLayingDto,
+  UpdatePetDto,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -19,7 +19,7 @@ const EditEggModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  egg: LayingDto;
+  egg: PetSummaryWithLayingDto;
 }) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<{
@@ -29,7 +29,7 @@ const EditEggModal = ({
   });
 
   const { mutate: updateEgg } = useMutation({
-    mutationFn: (data: UpdateEggDto) => eggControllerUpdate(egg.eggId, data),
+    mutationFn: (data: UpdatePetDto) => petControllerUpdate(egg.petId, data),
     onSuccess: () => {
       toast.success("알 수정 완료");
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });

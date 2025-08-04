@@ -16,7 +16,7 @@ export interface PetAdoptionDto {
   /** 분양 상태 */
   status: PetAdoptionDtoStatus;
   /** 분양 날짜 */
-  adoptionDate: string;
+  adoptionDate: number;
   /** 메모 */
   memo: string;
   /** 분양 위치 */

@@ -1,8 +1,8 @@
 "use client";
 
-import { petControllerFindOne, PetDto } from "@repo/api-client";
+import { petControllerFindPetByPetId } from "@repo/api-client";
 import PetDetail from "./petDetail";
-import { generateQRCode, formatDateToYYYYMMDDString } from "@/lib/utils";
+import { generateQRCode } from "@/lib/utils";
 import { use, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -17,8 +17,8 @@ function PetDetailPage({ params }: PetDetailPageProps) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
 
   const { data } = useQuery({
-    queryKey: [petControllerFindOne.name, petId],
-    queryFn: () => petControllerFindOne(petId),
+    queryKey: [petControllerFindPetByPetId.name, petId],
+    queryFn: () => petControllerFindPetByPetId(petId),
     select: (response) => response.data,
   });
 
@@ -32,14 +32,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
 
   if (!data) return null;
 
-  const formattedData = {
-    ...data,
-    ...(data?.birthdate && {
-      birthdate: formatDateToYYYYMMDDString(data.birthdate),
-    }),
-  } as PetDto;
-
-  return <PetDetail pet={formattedData} qrCodeDataUrl={qrCodeDataUrl} />;
+  return <PetDetail pet={data} qrCodeDataUrl={qrCodeDataUrl} />;
 }
 
 export default PetDetailPage;

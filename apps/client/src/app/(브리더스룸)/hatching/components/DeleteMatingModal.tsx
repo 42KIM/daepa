@@ -19,8 +19,8 @@ const DeleteMatingModal = ({ isOpen, onClose, matingId, matingDate }: DeleteMati
 
   const { mutate: deleteMating, isPending } = useMutation({
     mutationFn: () => matingControllerDeleteMating(matingId),
-    onSuccess: () => {
-      toast.success("메이팅 정보가 삭제되었습니다.");
+    onSuccess: (res) => {
+      toast.success(res.data.message ?? "메이팅 정보가 삭제되었습니다.");
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       onClose();
     },
@@ -29,10 +29,6 @@ const DeleteMatingModal = ({ isOpen, onClose, matingId, matingDate }: DeleteMati
       onClose();
     },
   });
-
-  const handleDelete = () => {
-    deleteMating();
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -50,7 +46,12 @@ const DeleteMatingModal = ({ isOpen, onClose, matingId, matingDate }: DeleteMati
             <Button type="button" variant="outline" onClick={onClose}>
               취소
             </Button>
-            <Button type="button" variant="destructive" onClick={handleDelete} disabled={isPending}>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => deleteMating()}
+              disabled={isPending}
+            >
               {isPending ? "삭제 중..." : "삭제"}
             </Button>
           </div>

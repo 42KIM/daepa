@@ -160,19 +160,19 @@ export class PageDto<T> {
 export class DateRangeDto {
   @ApiProperty({
     description: '조회 범위 시작일',
-    type: Number,
+    type: Date,
     required: false,
   })
   @IsOptional()
-  @Type(() => Number)
-  readonly startYmd?: number;
+  @Type(() => Date)
+  readonly startYmd?: Date;
 
   @ApiProperty({
     description: '조회 범위 종료일',
-    type: Number,
+    type: Date,
     required: false,
   })
   @IsOptional()
-  @Type(() => Number)
-  readonly endYmd?: number;
+  @Type(() => Date)
+  readonly endYmd?: Date;
 }

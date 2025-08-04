@@ -10,7 +10,7 @@ import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import ParentLink from "../../../components/ParentLink";
 import { PetDto, PetDtoGrowth, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
 import { FormStep } from "@/app/(브리더스룸)/register/types";
-import { formatDateToYYYYMMDDString } from "@/lib/utils";
+import { format } from "date-fns";
 interface ExtendedPetDto extends PetDto {
   [key: string]: any;
 }
@@ -23,7 +23,7 @@ const CardBack = ({ pet, setIsFlipped }: CardBackProps) => {
   const visibleFields = [
     ...[...FORM_STEPS].reverse(),
     ...OPTION_STEPS.filter((step) =>
-      ["traits", "foods", "birthdate", "weight", "name", "desc"].includes(step.field.name),
+      ["traits", "foods", "hatchingDate", "weight", "name", "desc"].includes(step.field.name),
     ),
   ];
 
@@ -72,7 +72,7 @@ const CardBack = ({ pet, setIsFlipped }: CardBackProps) => {
           </div>
         );
       case "date":
-        return <div>{formatDateToYYYYMMDDString(pet[field.name] as number)}</div>;
+        return <div>{format(pet[field.name] as Date, "yy.MM.dd")}</div>;
       default:
         return <div>{pet[field.name]}</div>;
     }

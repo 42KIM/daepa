@@ -11,6 +11,7 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity({ name: 'adoptions' })
@@ -56,12 +57,18 @@ export class AdoptionEntity {
   @Column({ type: 'enum', enum: ADOPTION_SALE_STATUS, nullable: true })
   status?: ADOPTION_SALE_STATUS;
 
-  @JoinColumn({ name: 'petId' })
+  // 펫과의 관계 수정
+  @OneToOne(() => PetEntity, (pet) => pet.adoption)
+  @JoinColumn({ name: 'petId', referencedColumnName: 'petId' })
   pet: PetEntity;
 
-  @OneToOne(() => UserEntity, (user) => user.sellerAdoption)
+  // 판매자와의 관계
+  @ManyToOne(() => UserEntity, { nullable: true })
+  @JoinColumn({ name: 'sellerId', referencedColumnName: 'userId' })
   seller: UserEntity;
 
-  @OneToOne(() => UserEntity, (user) => user.buyerAdoption)
+  // 구매자와의 관계
+  @ManyToOne(() => UserEntity, { nullable: true })
+  @JoinColumn({ name: 'buyerId', referencedColumnName: 'userId' })
   buyer: UserEntity;
 }

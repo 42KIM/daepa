@@ -6,7 +6,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { AdoptionDto } from "@repo/api-client";
 import { getStatusBadge } from "@/lib/utils";
-import { formatDateToYYYYMMDDString } from "@/lib/utils";
 import { SPECIES_KOREAN_INFO } from "../../constants";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
@@ -60,13 +59,11 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     },
   },
   {
-    accessorKey: "pet.birthdate",
+    accessorKey: "pet.hatchingDate",
     header: "출생일",
     cell: ({ row }) => {
-      const birthdate = row.original.pet.birthdate;
-      return (
-        <div className="capitalize">{birthdate ? formatDateToYYYYMMDDString(birthdate) : "-"}</div>
-      );
+      const hatchingDate = row.original.pet.hatchingDate;
+      return <div className="capitalize">{hatchingDate ?? "-"}</div>;
     },
   },
   {

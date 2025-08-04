@@ -28,7 +28,7 @@ const BreedingInfoSection = memo(({ isEditing, isTooltipOpen }: BreedingInfoSect
     () => [
       ...[...FORM_STEPS].reverse(),
       ...OPTION_STEPS.filter((step) =>
-        ["traits", "foods", "birthdate", "weight", "name", "desc"].includes(step.field.name),
+        ["traits", "foods", "hatchingDate", "weight", "name", "desc"].includes(step.field.name),
       ),
     ],
     [],

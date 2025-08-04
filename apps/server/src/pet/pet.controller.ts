@@ -1,82 +1,32 @@
 import {
   Body,
   Controller,
-  Delete,
+  Post,
   Get,
   Param,
   Patch,
-  Post,
+  Delete,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CreatePetDto, PetDto, PetSummaryDto, UpdatePetDto } from './pet.dto';
+import {
+  CompleteHatchingDto,
+  CreatePetDto,
+  LinkParentDto,
+  PetDto,
+  UpdatePetDto,
+  PetFamilyTreeResponseDto,
+  PetFamilyPairGroupDto,
+} from './pet.dto';
 import { PetService } from './pet.service';
-import { PageOptionsDto, PageDto, PageMetaDto } from 'src/common/page.dto';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
-import { ExcludeNilInterceptor } from 'src/interceptors/exclude-nil';
+import { ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CommonResponseDto } from 'src/common/response.dto';
-import { ParentWithChildrenDto } from './pet.dto';
 import { JwtUser } from 'src/auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
+import { PARENT_ROLE } from 'src/parent_request/parent_request.constants';
 
 @Controller('/v1/pet')
-@UseInterceptors(ExcludeNilInterceptor)
 export class PetController {
   constructor(private readonly petService: PetService) {}
-
-  @Get()
-  @ApiExtraModels(PetSummaryDto, PageMetaDto)
-  @ApiResponse({
-    status: 200,
-    description: '펫 목록 조회 성공',
-    schema: {
-      type: 'object',
-      required: ['data', 'meta'],
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: getSchemaPath(PetSummaryDto) },
-        },
-        meta: { $ref: getSchemaPath(PageMetaDto) },
-      },
-    },
-  })
-  async findAll(
-    @Query() pageOptionsDto: PageOptionsDto,
-  ): Promise<PageDto<PetSummaryDto>> {
-    return await this.petService.getPetListSummary(pageOptionsDto);
-  }
-
-  @Get('children')
-  @ApiExtraModels(ParentWithChildrenDto, PageMetaDto)
-  @ApiResponse({
-    status: 200,
-    description: '자식이 있는 개체 목록 조회 성공',
-    schema: {
-      type: 'object',
-      required: ['data', 'meta'],
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: getSchemaPath(ParentWithChildrenDto) },
-        },
-        meta: { $ref: getSchemaPath(PageMetaDto) },
-      },
-    },
-  })
-  async getPetsWithChildren(@Query() pageOptionsDto: PageOptionsDto) {
-    return await this.petService.getPetsWithChildren(pageOptionsDto);
-  }
-
-  @Get(':petId')
-  @ApiResponse({
-    status: 200,
-    description: '펫 정보 조회 성공',
-    type: PetDto,
-  })
-  async findOne(@Param('petId') petId: string) {
-    return await this.petService.getPet(petId);
-  }
 
   @Post()
   @ApiResponse({
@@ -88,37 +38,221 @@ export class PetController {
     @Body() createPetDto: CreatePetDto,
     @JwtUser() token: JwtUserPayload,
   ) {
-    const { petId } = await this.petService.createPet({
-      ...createPetDto,
-      ownerId: token.userId,
-    });
+    await this.petService.createPet(createPetDto, token.userId);
 
     return {
       success: true,
-      message: '펫 등록이 완료되었습니다. petId: ' + petId,
+      message: '펫 등록이 완료되었습니다.',
     };
   }
 
-  @Patch(':petId')
+  @Get('family-tree')
   @ApiResponse({
     status: 200,
-    description: '펫 수정이 완료되었습니다. petId: XXXXXX',
+    description: '가족관계도 조회 성공',
+    type: PetFamilyTreeResponseDto,
+  })
+  async getFamilyTree(): Promise<Record<string, PetFamilyPairGroupDto>> {
+    return this.petService.getFamilyTree();
+  }
+
+  @Get(':petId')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 정보 조회 성공',
+    type: PetDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '펫을 찾을 수 없습니다.',
+  })
+  async findPetByPetId(@Param('petId') petId: string): Promise<PetDto> {
+    return this.petService.findPetByPetId(petId);
+  }
+
+  @Patch(':petId')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 수정이 완료되었습니다.',
     type: CommonResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '펫을 찾을 수 없습니다.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '펫의 소유자가 아닙니다.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: '이미 존재하는 펫 이름입니다.',
   })
   async update(
     @Param('petId') petId: string,
     @Body() updatePetDto: UpdatePetDto,
     @JwtUser() token: JwtUserPayload,
   ) {
-    await this.petService.updatePet(token.userId, petId, updatePetDto);
+    await this.petService.updatePet(petId, updatePetDto, token.userId);
+
     return {
       success: true,
-      message: '펫 수정이 완료되었습니다. petId: ' + petId,
+      message: '펫 수정이 완료되었습니다.',
+    };
+  }
+
+  @Post(':petId/parent')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '부모 연동 요청이 완료되었습니다.',
+    type: CommonResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '펫을 찾을 수 없습니다.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '펫의 소유자가 아닙니다.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: '이미 연동된 부모가 있습니다.',
+  })
+  async linkParent(
+    @Param('petId') petId: string,
+    @Body() linkParentDto: LinkParentDto,
+    @JwtUser() token: JwtUserPayload,
+  ) {
+    await this.petService.linkParent(petId, linkParentDto, token.userId);
+
+    return {
+      success: true,
+      message: '부모 연동 요청이 완료되었습니다.',
+    };
+  }
+
+  @Delete(':petId/parent')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiQuery({
+    name: 'role',
+    description: '부모 역할',
+    enum: PARENT_ROLE,
+    example: PARENT_ROLE.FATHER,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '부모 연동 해제가 완료되었습니다.',
+    type: CommonResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '펫을 찾을 수 없습니다.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '펫의 소유자가 아닙니다.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '연동된 부모가 없습니다.',
+  })
+  async unlinkParent(
+    @Param('petId') petId: string,
+    @Query('role') role: PARENT_ROLE,
+    @JwtUser() token: JwtUserPayload,
+  ) {
+    await this.petService.unlinkParent(petId, role, token.userId);
+
+    return {
+      success: true,
+      message: '부모 연동 해제가 완료되었습니다.',
     };
   }
 
   @Delete(':petId')
-  async delete(@Param('petId') petId: string) {
-    return await this.petService.deletePet(petId);
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 삭제가 완료되었습니다.',
+    type: CommonResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '펫을 찾을 수 없습니다.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '펫의 소유자가 아닙니다.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '분양 정보가 있어 삭제할 수 없습니다.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '자식 펫이 있어 삭제할 수 없습니다.',
+  })
+  async deletePet(
+    @Param('petId') petId: string,
+    @JwtUser() token: JwtUserPayload,
+  ) {
+    await this.petService.deletePet(petId, token.userId);
+
+    return {
+      success: true,
+      message: '펫 삭제가 완료되었습니다.',
+    };
+  }
+
+  @Post(':petId/hatching')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '해칭이 완료되었습니다.',
+    type: CommonResponseDto,
+  })
+  async completeHatching(
+    @Param('petId') petId: string,
+    @JwtUser() token: JwtUserPayload,
+    @Body() completeHatchingDto: CompleteHatchingDto,
+  ) {
+    await this.petService.completeHatching(
+      petId,
+      token.userId,
+      completeHatchingDto.hatchingDate,
+    );
+
+    return {
+      success: true,
+      message: '해칭이 완료되었습니다.',
+    };
   }
 }

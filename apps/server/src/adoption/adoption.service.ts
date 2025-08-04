@@ -40,7 +40,7 @@ export class AdoptionService {
     return nanoid(8);
   }
 
-  private toAdoptionDto(entity: AdoptionEntity): AdoptionDto {
+  private async toAdoptionDto(entity: AdoptionEntity): Promise<AdoptionDto> {
     if (!entity.pet) {
       throw new Error('Pet information is required for adoption');
     }
@@ -56,20 +56,21 @@ export class AdoptionService {
       status: entity.status,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-      pet: this.toPetSummaryDto(entity.pet),
+      pet: await this.toPetSummaryDto(entity.pet), // await 추가
     };
   }
 
-  private toPetSummaryDto(pet: PetEntity): PetSummaryDto {
+  private async toPetSummaryDto(pet: PetEntity): Promise<PetSummaryDto> {
+    const owner = await this.userService.findOneProfile(pet.ownerId);
     return {
       petId: pet.petId,
       name: pet.name,
       species: pet.species,
       morphs: pet.morphs,
       traits: pet.traits,
-      birthdate: pet.birthdate,
+      hatchingDate: pet.hatchingDate,
       sex: pet.sex,
-      owner: pet.owner,
+      owner,
     };
   }
 
@@ -88,13 +89,13 @@ export class AdoptionService {
       if (newAdoptionDto.buyerId) {
         await entityManager.update(
           'pets',
-          { petId: petId },
+          { petId },
           {
             ownerId: newAdoptionDto.buyerId,
           },
         );
       } else {
-        await entityManager.update('pets', { petId: petId }, { ownerId: null });
+        await entityManager.update('pets', { petId }, { ownerId: null });
       }
     }
   }
@@ -118,12 +119,12 @@ export class AdoptionService {
   ): Promise<{ adoptionId: string }> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       // 펫 존재 여부 확인
-      const pet = await this.petService.getPet(createAdoptionDto.petId);
+      const pet = await this.petService.findPetByPetId(createAdoptionDto.petId);
       if (!pet) {
         throw new NotFoundException('펫을 찾을 수 없습니다.');
       }
 
-      if (pet.owner?.userId !== sellerId) {
+      if (pet?.owner?.userId !== sellerId) {
         throw new ForbiddenException('펫의 소유자가 아닙니다.');
       }
 
@@ -203,8 +204,8 @@ export class AdoptionService {
     const totalCount = await queryBuilder.getCount();
     const adoptionEntities = await queryBuilder.getMany();
 
-    const adoptionDtos = adoptionEntities.map((adoption) =>
-      this.toAdoptionDto(adoption),
+    const adoptionDtos = await Promise.all(
+      adoptionEntities.map((adoption) => this.toAdoptionDto(adoption)),
     );
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });

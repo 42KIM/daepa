@@ -69,9 +69,7 @@ export class UserNotificationService {
       throw new BadRequestException('Status is required');
     }
     const userNotificationEntity =
-      await this.userNotificationRepository.findOne({
-        where: { id: dto.id },
-      });
+      await this.userNotificationRepository.existsBy({ id: dto.id });
     if (!userNotificationEntity) {
       throw new NotFoundException('User notification not found');
     }
@@ -101,5 +99,18 @@ export class UserNotificationService {
       { id: dto.id, receiverId: dto.receiverId, isDeleted: false },
       { isDeleted: true },
     );
+  }
+
+  async findOne(
+    id: number,
+    userId: string,
+  ): Promise<UserNotificationEntity | null> {
+    try {
+      return await this.userNotificationRepository.findOne({
+        where: { id, isDeleted: false, receiverId: userId },
+      });
+    } catch {
+      throw new NotFoundException('알림을 찾을 수 없습니다.');
+    }
   }
 }

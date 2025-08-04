@@ -8,7 +8,6 @@ import { brMatingControllerFindAll, matingControllerUpdateMating } from "@repo/a
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { CommonResponseDto, UpdateMatingDto } from "@repo/api-client";
-import { formatDateToYYYYMMDDString } from "@/lib/utils";
 import CalendarInput from "./CalendarInput";
 import { format } from "date-fns";
 
@@ -19,9 +18,9 @@ interface EditMatingModalProps {
   currentData: {
     fatherId?: string;
     motherId?: string;
-    matingDate: number;
+    matingDate: string;
   };
-  matingDates?: Date[];
+  matingDates?: string[];
 }
 
 const EditMatingModal = ({
@@ -35,7 +34,7 @@ const EditMatingModal = ({
   const [formData, setFormData] = useState({
     fatherId: currentData.fatherId || "",
     motherId: currentData.motherId || "",
-    matingDate: formatDateToYYYYMMDDString(currentData.matingDate, "yyyy-MM-dd"),
+    matingDate: currentData.matingDate,
   });
 
   const { mutate: updateMating, isPending } = useMutation({
@@ -53,12 +52,10 @@ const EditMatingModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const matingDate = parseInt(formData.matingDate.replace(/-/g, ""), 10);
-
     updateMating({
       fatherId: formData.fatherId || undefined,
       motherId: formData.motherId || undefined,
-      matingDate,
+      matingDate: formData.matingDate,
     });
   };
 
@@ -87,7 +84,7 @@ const EditMatingModal = ({
                 setFormData((prev) => ({ ...prev, matingDate: format(date, "yyyy-MM-dd") }));
               }}
               modifiers={{
-                hasMating: matingDates ?? [],
+                hasMating: matingDates?.map((d) => new Date(d)) ?? [],
               }}
               modifiersStyles={{
                 hasMating: {

@@ -15,7 +15,7 @@ export interface PetSummaryDto {
   /** 펫 주인 정보 */
   owner: UserProfilePublicDto;
   /** 펫 이름 */
-  name: string;
+  name?: string;
   /** 펫 종 */
   species: PetSummaryDtoSpecies;
   /** 펫 모프 */
@@ -23,7 +23,7 @@ export interface PetSummaryDto {
   /** 펫 형질 */
   traits?: string[];
   /** 펫 출생일 */
-  birthdate?: number;
+  hatchingDate?: string;
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: PetSummaryDtoSex;
 }

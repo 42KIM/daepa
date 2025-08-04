@@ -8,14 +8,14 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNotiStore } from "../store/noti";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  parentControllerUpdateParentRequest,
-  UpdateParentDto,
+  parentRequestControllerUpdateStatus,
   UpdateParentDtoStatus,
+  UpdateParentRequestDto,
   userNotificationControllerDelete,
   userNotificationControllerFindAll,
+  userNotificationControllerFindOne,
   UserNotificationDtoType,
 } from "@repo/api-client";
 import Link from "next/link";
@@ -24,38 +24,37 @@ import { NOTIFICATION_TYPE } from "../../constants";
 import { Badge } from "@/components/ui/badge";
 import NotiTitle from "./NotiTitle";
 import { cn, formatDateToYYYYMMDDString } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { isPlainObject, isString } from "es-toolkit";
+import { isNumber } from "@/lib/typeGuards";
+import { memo } from "react";
 
-export function NotiDisplay() {
+const NotiDisplay = memo(() => {
   const router = useRouter();
-  const { selected: item, setSelected } = useNotiStore();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const receiverPet = item?.detailJson?.receiverPet;
-  const senderPet = item?.detailJson?.senderPet;
-  const isEgg = senderPet && "eggId" in senderPet;
-  const isPet = senderPet && "petId" in senderPet;
+
+  const id = searchParams.get("id");
+
+  const { data } = useQuery({
+    queryKey: [userNotificationControllerFindOne.name, id],
+    queryFn: () => userNotificationControllerFindOne(Number(id)),
+    enabled: !!id,
+    select: (res) => res?.data?.data,
+  });
+
+  const detailData = data?.detailJson;
 
   const { mutate: updateParentStatus } = useMutation({
-    mutationFn: ({ relationId, status, opponentId }: UpdateParentDto) =>
-      parentControllerUpdateParentRequest({ relationId, status, opponentId }),
+    mutationFn: ({ id, status, rejectReason }: UpdateParentRequestDto & { id: number }) =>
+      parentRequestControllerUpdateStatus(id, { status, rejectReason }),
     onSuccess: (res, variables) => {
-      if (res?.data?.success) {
-        toast.success(
-          res?.data?.message ??
-            `부모 연동이 ${variables.status === UpdateParentDtoStatus.APPROVED ? "수락" : variables.status === UpdateParentDtoStatus.CANCELLED ? "취소" : "거절"} 되었습니다.`,
-        );
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+      toast.success(
+        res?.data?.message ??
+          `부모 연동이 ${variables.status === UpdateParentDtoStatus.APPROVED ? "수락" : variables.status === UpdateParentDtoStatus.CANCELLED ? "취소" : "거절"} 되었습니다.`,
+      );
 
-        if (item) {
-          setSelected({
-            ...item,
-            type:
-              variables.status === UpdateParentDtoStatus.APPROVED
-                ? UserNotificationDtoType.PARENT_ACCEPT
-                : UserNotificationDtoType.PARENT_REJECT,
-          });
-        }
-      }
+      queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindOne.name, id] });
     },
     onError: () => {
       toast.error("부모 연동 상태 변경에 실패했습니다.");
@@ -79,13 +78,78 @@ export function NotiDisplay() {
   });
 
   const handleUpdate = (status: UpdateParentDtoStatus) => {
-    if (!item?.senderId || !item?.targetId) return;
+    if (!data?.senderId || !data?.targetId) return;
 
     updateParentStatus({
-      relationId: Number(item.targetId),
+      id: data.id,
       status,
-      opponentId: item.senderId,
+      rejectReason: undefined,
     });
+  };
+
+  const getDetailData = () => {
+    if (!detailData || !isPlainObject(detailData)) {
+      return null;
+    }
+    return detailData;
+  };
+
+  const safeData = getDetailData();
+
+  const renderMorphs = () => {
+    if (
+      !safeData ||
+      !("morphs" in safeData) ||
+      !safeData.morphs ||
+      !Array.isArray(safeData.morphs)
+    ) {
+      return null;
+    }
+    return safeData.morphs.map((morph: string) => (
+      <Badge
+        key={morph}
+        className="whitespace-nowrap bg-yellow-500/80 font-bold text-black backdrop-blur-sm"
+      >
+        {morph}
+      </Badge>
+    ));
+  };
+
+  const renderTraits = () => {
+    if (
+      !safeData ||
+      !("traits" in safeData) ||
+      !safeData.traits ||
+      !Array.isArray(safeData.traits)
+    ) {
+      return null;
+    }
+    return safeData.traits.map((trait: string) => (
+      <Badge
+        variant="outline"
+        key={trait}
+        className="whitespace-nowrap bg-white font-bold text-black backdrop-blur-sm"
+      >
+        {trait}
+      </Badge>
+    ));
+  };
+
+  const renderLayingInfo = () => {
+    if (!safeData) return null;
+
+    const parts = [];
+    if ("layingDate" in safeData && safeData.layingDate && isNumber(safeData.layingDate)) {
+      parts.push(formatDateToYYYYMMDDString(safeData.layingDate));
+    }
+    if ("clutch" in safeData && safeData.clutch && isNumber(safeData.clutch)) {
+      parts.push(`◦ ${safeData.clutch}개`);
+    }
+    if ("clutchOrder" in safeData && safeData.clutchOrder && isNumber(safeData.clutchOrder)) {
+      parts.push(`◦ ${safeData.clutchOrder}번째`);
+    }
+
+    return parts.length > 0 ? parts.join(" ") : null;
   };
 
   return (
@@ -96,10 +160,10 @@ export function NotiDisplay() {
             <Button
               variant="ghost"
               size="icon"
-              disabled={!item}
+              disabled={!data}
               onClick={() => {
-                if (item?.id && item?.receiverId) {
-                  deleteNotification({ id: item?.id, receiverId: item?.receiverId });
+                if (data?.id && data?.receiverId) {
+                  deleteNotification({ id: data?.id, receiverId: data?.receiverId });
                 }
               }}
             >
@@ -109,7 +173,7 @@ export function NotiDisplay() {
           <TooltipContent>삭제</TooltipContent>
         </Tooltip>
 
-        {item?.type === UserNotificationDtoType.PARENT_REQUEST && (
+        {data?.type === UserNotificationDtoType.PARENT_REQUEST && (
           <form>
             <div className="grid gap-4">
               <div className="flex items-center gap-2">
@@ -140,32 +204,32 @@ export function NotiDisplay() {
         )}
       </div>
       <Separator />
-      {item ? (
+      {data ? (
         <div className="flex flex-1 flex-col">
           <div className="flex items-start p-4">
             <div className="flex items-center gap-4 text-sm">
               <Avatar>
                 <AvatarImage alt="보내는 사람" />
-                <AvatarFallback>{isEgg ? "🐣" : "A"}</AvatarFallback>
+                <AvatarFallback>A</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <Badge
                   className={cn(
                     "my-1 px-2 text-sm font-semibold",
-                    NOTIFICATION_TYPE[item.type as keyof typeof NOTIFICATION_TYPE].color,
+                    NOTIFICATION_TYPE[data.type as keyof typeof NOTIFICATION_TYPE].color,
                   )}
                 >
-                  {NOTIFICATION_TYPE[item.type as keyof typeof NOTIFICATION_TYPE].label}
+                  {NOTIFICATION_TYPE[data.type as keyof typeof NOTIFICATION_TYPE].label}
                 </Badge>
-                <NotiTitle hasLink receiverPet={receiverPet} senderPet={senderPet} />
+                <NotiTitle hasLink detailData={detailData} />
               </div>
             </div>
-            {item.createdAt && (
+            {data.createdAt && (
               <div className="text-muted-foreground ml-auto text-xs">
-                {format(new Date(item.createdAt), "PPP EE p", { locale: ko })}
-                {item.updatedAt !== item.createdAt && (
+                {format(new Date(data.createdAt), "PPP EE p", { locale: ko })}
+                {data.updatedAt !== data.createdAt && (
                   <div className="flex items-center gap-1">
-                    {formatDistanceToNow(new Date(item.updatedAt), {
+                    {formatDistanceToNow(new Date(data.updatedAt), {
                       addSuffix: true,
                       locale: ko,
                     })}
@@ -179,26 +243,26 @@ export function NotiDisplay() {
 
           <div className="whitespace-pre-wrap p-4 text-sm">
             <span className="font-bold">
-              {item?.type !== UserNotificationDtoType.PARENT_REQUEST && "내가 보낸 요청 메시지"}
+              {data?.type !== UserNotificationDtoType.PARENT_REQUEST && "내가 보낸 요청 메시지"}
             </span>
 
-            <div>{String(item?.detailJson?.message ?? "")}</div>
+            <div>{String(safeData?.message ?? "")}</div>
           </div>
 
           <Link
-            href={`/${isEgg ? "egg" : "pet"}/${isEgg ? senderPet?.eggId : senderPet?.petId}`}
+            href={`/pet/${safeData?.childPetId && isString(safeData.childPetId) ? safeData.childPetId : ""}`}
             className="group mx-4 mt-4 flex flex-col rounded-lg border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
           >
             <div className="flex flex-col gap-3">
-              {senderPet && "photos" in senderPet && senderPet?.photos ? (
+              {detailData && "photos" in detailData && detailData?.photos ? (
                 <div className="relative h-48 w-full overflow-hidden rounded-lg">
                   <Image
                     src={
-                      "photos" in senderPet && Array.isArray(senderPet.photos)
-                        ? (senderPet.photos[0] ?? "/default-pet-image.png")
+                      "photos" in detailData && Array.isArray(detailData.photos)
+                        ? (detailData.photos[0] ?? "/default-pet-image.png")
                         : "/default-pet-image.png"
                     }
-                    alt={senderPet?.name ?? "펫 이미지"}
+                    alt={safeData?.name && isString(safeData.name) ? safeData.name : "펫 이미지"}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 384px"
@@ -206,49 +270,29 @@ export function NotiDisplay() {
                 </div>
               ) : (
                 <div className="bg-foreground/70 flex h-48 w-full items-center justify-center rounded-lg">
-                  <span className="text-4xl">{isEgg ? "🥚" : "🔗"}</span>
+                  <span className="text-4xl">🔗</span>
                 </div>
               )}
               <div className="flex flex-col">
                 <div className="flex items-center justify-between">
                   <span className="text-base">
-                    <span className="font-bold">{senderPet?.name}</span>
-                    {isEgg ? " 알 " : " 펫 "}
+                    <span className="font-bold">
+                      {safeData?.childPetName && isString(safeData.childPetName)
+                        ? safeData.childPetName
+                        : ""}
+                    </span>
                     프로필로 이동
                   </span>
                   <ArrowUpRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </div>
                 <div className="flex gap-1">
-                  {isPet &&
-                    senderPet?.morphs?.map((morph) => (
-                      <Badge
-                        key={morph}
-                        className="whitespace-nowrap bg-yellow-500/80 font-bold text-black backdrop-blur-sm"
-                      >
-                        {morph}
-                      </Badge>
-                    ))}
-                  {isPet &&
-                    senderPet?.traits?.map((trait) => (
-                      <Badge
-                        variant="outline"
-                        key={trait}
-                        className="whitespace-nowrap bg-white font-bold text-black backdrop-blur-sm"
-                      >
-                        {trait}
-                      </Badge>
-                    ))}
-                  <span className="text-muted-foreground text-xs">
-                    {isEgg &&
-                      senderPet?.layingDate &&
-                      formatDateToYYYYMMDDString(senderPet?.layingDate)}
-                    {isEgg && senderPet?.clutch && `◦ ${senderPet?.clutch}개`}
-                    {isEgg && senderPet?.clutchOrder && `◦ ${senderPet?.clutchOrder}번째`}
-                  </span>
+                  {renderMorphs()}
+                  {renderTraits()}
+                  <span className="text-muted-foreground text-xs">{renderLayingInfo()}</span>
                 </div>
-                {senderPet && "desc" in senderPet && senderPet?.desc && (
-                  <div className="mt-2 text-sm">{senderPet?.desc}</div>
-                )}
+                {safeData && "desc" in safeData && safeData.desc && isString(safeData.desc) ? (
+                  <div className="mt-2 text-sm">{safeData.desc}</div>
+                ) : null}
               </div>
             </div>
           </Link>
@@ -258,6 +302,7 @@ export function NotiDisplay() {
       )}
     </div>
   );
-}
+});
+NotiDisplay.displayName = "NotiDisplay";
 
 export default NotiDisplay;

@@ -5,10 +5,13 @@ import {
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { PairEntity } from '../pair/pair.entity';
 
 @Entity({ name: 'matings' })
-@Index('UNIQUE_MATING', ['userId', 'fatherId', 'motherId', 'matingDate'], {
+@Index('UNIQUE_MATING', ['pairId', 'matingDate'], {
   unique: true,
 })
 export class MatingEntity {
@@ -16,16 +19,14 @@ export class MatingEntity {
   id: number;
 
   @Column()
-  userId: string;
+  pairId: string;
 
-  @Column({ nullable: true })
-  fatherId: string;
+  @ManyToOne(() => PairEntity)
+  @JoinColumn({ name: 'pairId', referencedColumnName: 'id' })
+  pair: PairEntity;
 
-  @Column({ nullable: true })
-  motherId: string;
-
-  @Column()
-  matingDate: number;
+  @Column({ type: 'date', nullable: true })
+  matingDate: Date;
 
   @CreateDateColumn()
   createdAt: Date;

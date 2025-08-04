@@ -11,7 +11,7 @@ import {
   adoptionControllerCreateAdoption,
   adoptionControllerUpdate,
   AdoptionDtoStatus,
-  petControllerFindOne,
+  petControllerFindPetByPetId,
   PetDto,
   UpdateAdoptionDto,
 } from "@repo/api-client";
@@ -38,7 +38,7 @@ const AdoptionStatusControl = memo(({ pet }: AdoptionStatusControlProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [petControllerFindOne.name, pet.petId],
+        queryKey: [petControllerFindPetByPetId.name, pet.petId],
       });
       toast.success("판매 상태가 변경되었습니다.");
     },
@@ -49,7 +49,7 @@ const AdoptionStatusControl = memo(({ pet }: AdoptionStatusControlProps) => {
 
   const handleSuccess = useCallback(() => {
     queryClient.invalidateQueries({
-      queryKey: [petControllerFindOne.name, pet.petId],
+      queryKey: [petControllerFindPetByPetId.name, pet.petId],
     });
     toast.success("판매 상태가 변경되었습니다.");
   }, [queryClient, pet.petId]);

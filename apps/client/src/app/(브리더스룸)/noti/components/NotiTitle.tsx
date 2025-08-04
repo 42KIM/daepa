@@ -1,48 +1,30 @@
-import { cn } from "@/lib/utils";
-import { PetDtoSex } from "@repo/api-client";
 import { ArrowLeftRight } from "lucide-react";
 import LinkButton from "../../components/LinkButton";
-import { NotificationDetailJson } from "../store/noti";
+import { UserNotificationDtoDetailJson } from "@repo/api-client";
 
 const NotiTitle = ({
-  receiverPet,
-  senderPet,
+  detailData,
   hasLink = false,
 }: {
-  receiverPet?: NotificationDetailJson["receiverPet"];
-  senderPet?: NotificationDetailJson["senderPet"];
+  detailData?: UserNotificationDtoDetailJson;
   hasLink?: boolean;
 }) => {
-  if (!receiverPet || !senderPet) return null;
+  if (!detailData) return null;
 
-  const nameStyle = (sex?: PetDtoSex) =>
-    cn(
-      "relative font-bold after:absolute after:bottom-1 after:left-0.5 after:-z-10 after:h-[70%] after:w-full after:opacity-40 ",
-      sex === "F"
-        ? "after:bg-red-400/60"
-        : sex === "M"
-          ? "after:bg-[#247DFE]/50"
-          : "after:bg-muted-foreground/30",
-    );
   return (
     <div className="flex items-center gap-2">
-      {hasLink && "petId" in receiverPet ? (
+      {hasLink && "parentPetId" in detailData ? (
         <LinkButton
-          href={`/pet/${receiverPet?.petId}`}
-          label={receiverPet?.name}
+          href={`/pet/${detailData?.parentPetId}`}
+          label={detailData?.parentPetName as string}
           tooltip="프로필로 이동"
         />
       ) : (
-        <div className={nameStyle("sex" in receiverPet ? receiverPet.sex : PetDtoSex.NON)}>
-          {receiverPet?.name}
-        </div>
+        <div>{detailData?.parentPetName as string}</div>
       )}
       <ArrowLeftRight className="h-4 w-4" />
       <div className="flex items-center">
-        {"eggId" in senderPet && <span className="text-xs">🥚</span>}
-        <div className={nameStyle("sex" in senderPet ? senderPet.sex : PetDtoSex.NON)}>
-          {senderPet?.name}
-        </div>
+        <div>{detailData?.childPetName as string}</div>
       </div>
     </div>
   );

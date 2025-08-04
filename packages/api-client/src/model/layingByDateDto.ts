@@ -5,11 +5,13 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { LayingDto } from "./layingDto";
+import type { PetSummaryWithLayingDto } from "./petSummaryWithLayingDto";
 
 export interface LayingByDateDto {
+  /** 산란 ID */
+  layingId: number;
   /** 산란 날짜 */
-  layingDate: number;
+  layingDate: string;
   /** 산란 정보 */
-  layings: LayingDto[];
+  layings: PetSummaryWithLayingDto[];
 }

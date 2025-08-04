@@ -74,11 +74,8 @@ export class MatingController {
     description: '메이팅 정보 삭제가 완료되었습니다.',
     type: CommonResponseDto,
   })
-  async deleteMating(
-    @Param('matingId') matingId: number,
-    @JwtUser() token: JwtUserPayload,
-  ) {
-    await this.matingService.deleteMating(token.userId, matingId);
+  async deleteMating(@Param('matingId') matingId: number) {
+    await this.matingService.deleteMating(matingId);
     return {
       success: true,
       message: '메이팅 정보 삭제가 완료되었습니다.',

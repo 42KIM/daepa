@@ -7,19 +7,12 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PetEntity } from './pet/pet.entity';
-import { ParentController } from './parent/parent.controller';
 import { UserNotificationEntity } from './user_notification/user_notification.entity';
 import { UserNotificationService } from './user_notification/user_notification.service';
 import { UserNotificationController } from './user_notification/user_notification.controller';
 import { BrPetController } from './pet/br/br.pet.controller';
-import { ParentEntity } from './parent/parent.entity';
-import { ParentService } from './parent/parent.service';
 import { UserEntity } from './user/user.entity';
 import { UserService } from './user/user.service';
-import { EggEntity } from './egg/egg.entity';
-import { EggController } from './egg/egg.controller';
-import { EggService } from './egg/egg.service';
-import { BrEggController } from './egg/br/br.egg.controller';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { KakaoStrategy } from './auth/strategies/kakao.strategy';
@@ -41,16 +34,26 @@ import { MatingController } from './mating/mating.controller';
 import { MatingService } from './mating/mating.service';
 import { MatingEntity } from './mating/mating.entity';
 import { BrMatingController } from './mating/br/br.mating.controller';
+import { ParentRequestEntity } from './parent_request/parent_request.entity';
+import { ParentRequestService } from './parent_request/parent_request.service';
+import { ParentRequestController } from './parent_request/parent_request.controller';
+import { LayingEntity } from './laying/laying.entity';
+import { LayingController } from './laying/laying.controller';
+import { LayingService } from './laying/laying.service';
+import { PairEntity } from './pair/pair.entity';
+import { PairController } from './pair/pair.controller';
+import { PairService } from './pair/pair.service';
 
 const ENTITIES = [
   UserEntity,
   OauthEntity,
   PetEntity,
   UserNotificationEntity,
-  ParentEntity,
-  EggEntity,
   AdoptionEntity,
   MatingEntity,
+  ParentRequestEntity,
+  LayingEntity,
+  PairEntity,
 ];
 
 @Module({
@@ -77,21 +80,20 @@ const ENTITIES = [
       secret: process.env.JWT_SECRET ?? '',
       signOptions: { expiresIn: '1h' },
     }),
-    TypeOrmModule.forFeature(ENTITIES),
   ],
   controllers: [
     AppController,
     PetController,
-    ParentController,
     UserNotificationController,
     BrPetController,
-    EggController,
-    BrEggController,
     AuthController,
     UserController,
     AdoptionController,
     MatingController,
     BrMatingController,
+    ParentRequestController,
+    LayingController,
+    PairController,
   ],
   providers: [
     AppService,
@@ -99,8 +101,6 @@ const ENTITIES = [
     OauthService,
     PetService,
     UserNotificationService,
-    ParentService,
-    EggService,
     AuthService,
     OauthService,
     KakaoStrategy,
@@ -108,6 +108,11 @@ const ENTITIES = [
     JwtStrategy,
     AdoptionService,
     MatingService,
+    ParentRequestService,
+    UserService,
+    UserNotificationService,
+    LayingService,
+    PairService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

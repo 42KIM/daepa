@@ -1,14 +1,4 @@
-import {
-  Bell,
-  Bubbles,
-  DollarSign,
-  Egg,
-  Film,
-  Heart,
-  Home,
-  Inbox,
-  TreeDeciduous,
-} from "lucide-react";
+import { Bell, Bubbles, DollarSign, Film, Heart, Home, Inbox, TreeDeciduous } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
 import {
   PetDtoGrowth,
@@ -108,7 +98,7 @@ export const OPTION_STEPS: FormStep[] = [
   {
     title: "생년월일",
     field: {
-      name: "birthdate",
+      name: "hatchingDate",
       type: "date",
       required: true,
       placeholder: "생년월일을 입력해주세요",
@@ -315,15 +305,11 @@ export const TABLE_HEADER = {
   weight: "몸무게",
   mother: "모",
   father: "부",
-  birthdate: "생년월일",
-  photos: "사진",
+  hatchingDate: "생년월일",
   desc: "설명",
   foods: "먹이",
-  canBreed: "발정 여부",
-  breedingCount: "산란",
-  pairing: "메이팅 상대",
-  status: "판매 상태",
   isPublic: "공개 여부",
+  adoption_status: "분양 상태",
 };
 
 export const SPECIES_KOREAN_INFO: Record<PetDtoSpecies, string> = {
@@ -342,10 +328,12 @@ export const GENDER_KOREAN_INFO: Record<PetDtoSex, string> = {
 };
 
 export const GROWTH_KOREAN_INFO: Record<PetDtoGrowth, string> = {
+  EGG: "알",
   BABY: "베이비",
-  ADULT: "아성체",
-  JUNIOR: "준성체",
-  SENIOR: "성체",
+  JUVENILE: "아성체",
+  PRE_ADULT: "준성체",
+  ADULT: "성체",
+  DEAD: "사망",
 };
 
 export const FOOD_LIST = ["판게아 인섹트", "귀뚜라미", "냉동귀뚜라미", "누에", "지렙 인섹트"];
@@ -360,7 +348,7 @@ export const SELECTOR_CONFIGS: Record<
   },
   growth: {
     title: "크기 선택",
-    selectList: Object.keys(GROWTH_KOREAN_INFO),
+    selectList: ["EGG", "BABY", "JUVENILE", "PRE_ADULT", "ADULT"],
   },
   sex: {
     title: "성별 선택",
@@ -382,11 +370,11 @@ export const SIDEBAR_ITEMS = [
     url: "/pet",
     icon: Home,
   },
-  {
-    title: "알 등록",
-    url: "/register/egg",
-    icon: Egg,
-  },
+  // {
+  //   title: "알 등록",
+  //   url: "/register/egg",
+  //   icon: Egg,
+  // },
   {
     title: "개체 등록",
     url: "/register/1",

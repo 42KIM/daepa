@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Image from "next/image";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
-import { formatDateToYYYYMMDDString } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string }) => {
   const [dragStart, setDragStart] = useState(0);
@@ -128,7 +128,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
               <div className="whitespace-nowrap text-sm text-gray-300">
                 <div>
                   {pet.weight && `${pet.weight}g / `}
-                  {pet.birthdate ? formatDateToYYYYMMDDString(pet.birthdate, "yy.MM.dd") : "-"}
+                  {pet.hatchingDate ? format(pet.hatchingDate, "yy.MM.dd") : "-"}
                 </div>
                 {SPECIES_KOREAN_INFO[pet.species]} / {GENDER_KOREAN_INFO[pet.sex ?? PetDtoSex.NON]}
               </div>

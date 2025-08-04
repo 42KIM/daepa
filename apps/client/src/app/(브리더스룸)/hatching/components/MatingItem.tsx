@@ -1,44 +1,28 @@
-import { formatDateToYYYYMMDDString, getNumberToDate } from "@/lib/utils";
 import {
   brMatingControllerFindAll,
-  eggControllerDelete,
-  eggControllerHatched,
-  eggControllerUpdateLayingDate,
-  LayingDto,
+  layingControllerUpdate,
   MatingByDateDto,
   PetSummaryDto,
 } from "@repo/api-client";
-import {
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  Egg,
-  Thermometer,
-  Edit,
-  Trash2,
-  CheckSquare,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Edit, Trash2 } from "lucide-react";
 import { overlay } from "overlay-kit";
 import { useMemo, useState } from "react";
 import CreateLayingModal from "./CreateLayingModal";
 import EditMatingModal from "./EditMatingModal";
 import DeleteMatingModal from "./DeleteMatingModal";
-import Link from "next/link";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CalendarSelect from "./CalendarSelect";
 import { isAfter, isBefore } from "date-fns";
 import DropdownMenuIcon from "./DropdownMenuIcon";
-import Dialog from "../../components/Form/Dialog";
-import { toast } from "sonner";
-import { AxiosError } from "axios";
-import EditEggModal from "./EditEggModal";
+
+import EggItem from "./EggItem";
 
 interface MatingItemProps {
   mating: MatingByDateDto;
   father?: PetSummaryDto;
   mother?: PetSummaryDto;
-  matingDates: Date[];
+  matingDates: string[];
 }
 
 const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) => {
@@ -46,39 +30,15 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
   const [isExpanded, setIsExpanded] = useState(false);
 
   const layingDates = useMemo(
-    () => mating.layingsByDate?.map((laying) => getNumberToDate(laying.layingDate)) ?? [],
+    () => mating.layingsByDate?.map((laying) => laying.layingDate) ?? [],
     [mating.layingsByDate],
   );
 
   const { mutate: updateLayingDate } = useMutation({
-    mutationFn: eggControllerUpdateLayingDate,
+    mutationFn: ({ id, newLayingDate }: { id: number; newLayingDate: string }) =>
+      layingControllerUpdate(id, { layingDate: newLayingDate }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
-    },
-  });
-
-  const { mutate: deleteEgg } = useMutation({
-    mutationFn: eggControllerDelete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
-    },
-  });
-
-  const { mutate: mutateHatched } = useMutation({
-    mutationFn: eggControllerHatched,
-    onSuccess: (response) => {
-      if (response?.data?.hatchedPetId) {
-        toast.success("해칭 완료");
-        queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
-      }
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Failed to hatch egg:", error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("펫 등록에 실패했습니다.");
-      }
     },
   });
 
@@ -88,9 +48,10 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
         isOpen={isOpen}
         onClose={close}
         matingId={mating.id}
-        father={father}
-        mother={mother}
+        matingDate={mating.matingDate}
         layingData={mating.layingsByDate}
+        fatherId={father?.petId}
+        motherId={mother?.petId}
       />
     ));
   };
@@ -119,20 +80,16 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
         isOpen={isOpen}
         onClose={close}
         matingId={mating.id}
-        matingDate={formatDateToYYYYMMDDString(mating.matingDate, "yy/MM/dd")}
+        matingDate={mating.matingDate}
       />
     ));
   };
 
-  const handleEditEggClick = (e: React.MouseEvent, egg: LayingDto) => {
-    e.stopPropagation();
-    overlay.open(({ isOpen, close }) => <EditEggModal isOpen={isOpen} onClose={close} egg={egg} />);
-  };
-
-  const getDisabledDates = (currentLayingDate: Date) => {
-    const sortedLayingDates = [...layingDates].sort((a, b) => a.getTime() - b.getTime());
+  const getDisabledDates = (currentLayingDate: string) => {
+    const convertedLayingDates = layingDates.map((date) => new Date(date));
+    const sortedLayingDates = [...convertedLayingDates].sort((a, b) => a.getTime() - b.getTime());
     const currentIndex = sortedLayingDates.findIndex(
-      (date) => date.getTime() === currentLayingDate.getTime(),
+      (date) => new Date(date).getTime() === new Date(currentLayingDate).getTime(),
     );
 
     let prevLayingDate: Date | null = null;
@@ -158,46 +115,12 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
       }
 
       // 현재 산란일 자체는 비활성화
-      if (date.getTime() === currentLayingDate.getTime()) {
+      if (date.getTime() === new Date(currentLayingDate).getTime()) {
         return true;
       }
 
       return false;
     };
-  };
-
-  const handleDeleteEggClick = (e: React.MouseEvent, eggId: string) => {
-    e.stopPropagation();
-    overlay.open(({ isOpen, close, unmount }) => (
-      <Dialog
-        isOpen={isOpen}
-        onCloseAction={close}
-        onConfirmAction={() => {
-          deleteEgg(eggId);
-          close();
-        }}
-        onExit={unmount}
-        title="개체 삭제 안내"
-        description={`정말로 삭제하시겠습니까? \n 삭제 후 복구할 수 없습니다.`}
-      />
-    ));
-  };
-
-  const handleHatching = (e: React.MouseEvent, eggId: string) => {
-    e.stopPropagation();
-    overlay.open(({ isOpen, close, unmount }) => (
-      <Dialog
-        isOpen={isOpen}
-        onCloseAction={close}
-        onConfirmAction={() => {
-          mutateHatched(eggId);
-          close();
-        }}
-        onExit={unmount}
-        title="해칭 안내"
-        description={`정말로 해칭 완료하시겠습니까? \n 해칭 후 복구할 수 없습니다.`}
-      />
-    ));
   };
 
   return (
@@ -211,8 +134,7 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <span className="font-bold">
-            {formatDateToYYYYMMDDString(mating.matingDate, "yy/MM/dd")}{" "}
-            <span className="text-sm font-normal text-gray-500">메이팅</span>
+            {mating.matingDate} <span className="text-sm font-normal text-gray-500">메이팅</span>
           </span>
 
           <div className="flex items-center">
@@ -250,71 +172,24 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
       {isExpanded && (
         <div className="mt-2">
           {mating.layingsByDate && mating.layingsByDate.length > 0 ? (
-            mating.layingsByDate.map(({ layingDate, layings }) => (
+            mating.layingsByDate.map(({ layingDate, layings, layingId }) => (
               <div key={layingDate} className="border-gray-200 py-2">
                 <CalendarSelect
                   disabledDates={layingDates}
-                  triggerText={formatDateToYYYYMMDDString(layingDate, "MM/dd")}
+                  triggerText={layingDate}
                   confirmButtonText="산란 추가"
                   onConfirm={(newLayingDate) => {
-                    const matingDateNumber = parseInt(newLayingDate.replace(/-/g, ""), 10);
-
                     updateLayingDate({
-                      matingId: mating.id,
-                      currentLayingDate: layingDate,
-                      newLayingDate: matingDateNumber,
+                      id: layingId,
+                      newLayingDate,
                     });
                   }}
-                  disabled={getDisabledDates(getNumberToDate(layingDate))}
+                  disabled={getDisabledDates(layingDate)}
                 />
 
                 <div className="mt-2 grid gap-1">
-                  {layings.map((laying) => (
-                    <Link
-                      key={laying.eggId}
-                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-3 shadow-sm transition-all hover:bg-gray-100 hover:shadow-md"
-                      href={`/egg/${laying.eggId}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                          <Egg className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-gray-900">
-                            {laying.clutch ?? "@"}-{laying.clutchOrder}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center">
-                        {laying.temperature && (
-                          <div className="flex items-center gap-1 text-sm text-gray-600">
-                            <Thermometer className="h-3 w-3" />
-                            <span>{laying.temperature}°C</span>
-                          </div>
-                        )}
-                        <DropdownMenuIcon
-                          selectedId={laying.eggId}
-                          menuItems={[
-                            {
-                              icon: <CheckSquare className="h-4 w-4 text-green-600" />,
-                              label: "해칭 완료",
-                              onClick: (e) => handleHatching(e, laying.eggId),
-                            },
-                            {
-                              icon: <Edit className="h-4 w-4 text-blue-600" />,
-                              label: "수정",
-                              onClick: (e) => handleEditEggClick(e, laying),
-                            },
-                            {
-                              icon: <Trash2 className="h-4 w-4 text-red-600" />,
-                              label: "삭제",
-                              onClick: (e) => handleDeleteEggClick(e, laying.eggId),
-                            },
-                          ]}
-                        />
-                      </div>
-                    </Link>
+                  {layings.map((pet) => (
+                    <EggItem key={pet.petId} pet={pet} layingDate={layingDate} />
                   ))}
                 </div>
               </div>
