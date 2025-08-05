@@ -109,6 +109,7 @@ export class UserNotificationResponseDto extends CommonResponseDto {
   @ApiProperty({
     description: '알림 정보',
     type: UserNotificationDto,
+    nullable: true,
   })
   data: UserNotificationDto | null;
 }

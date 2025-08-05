@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef } from "react";
 import BottomSheet from "@/components/common/BottomSheet";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import {

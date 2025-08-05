@@ -17,7 +17,7 @@ export class MatingBaseDto {
     example: 'PAIR_XXXXXXXX',
   })
   @IsString()
-  pairId: string;
+  pairId: number;
 
   @ApiProperty({
     description: '아빠 펫 ID',

@@ -205,7 +205,7 @@ export class MatingService {
 
       // 동일한 페어의 동일한 날짜에 메이팅이 있는지 확인 (exists 사용으로 성능 향상)
       const existingMating = await entityManager.existsBy(MatingEntity, {
-        pairId: pair.id.toString(),
+        pairId: pair.id,
         matingDate: createMatingDto.matingDate,
       });
 
@@ -214,7 +214,7 @@ export class MatingService {
       }
 
       const matingEntity = entityManager.create(MatingEntity, {
-        pairId: pair.id.toString(),
+        pairId: pair.id,
         matingDate: createMatingDto.matingDate,
       });
       await entityManager.save(MatingEntity, matingEntity);
@@ -256,7 +256,7 @@ export class MatingService {
 
       // 중복 체크 (자신을 제외하고)
       const existingMating = await entityManager.existsBy(MatingEntity, {
-        pairId: pair.id.toString(),
+        pairId: pair.id,
         matingDate: updateMatingDto.matingDate,
         id: Not(matingId),
       });
@@ -269,7 +269,7 @@ export class MatingService {
         MatingEntity,
         { id: matingId },
         {
-          pairId: pair.id.toString(),
+          pairId: pair.id,
           matingDate: updateMatingDto.matingDate,
         },
       );

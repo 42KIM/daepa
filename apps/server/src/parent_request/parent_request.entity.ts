@@ -27,7 +27,7 @@ export class ParentRequestEntity {
     enum: PARENT_ROLE,
     nullable: false,
   })
-  role?: PARENT_ROLE;
+  role: PARENT_ROLE;
 
   @Column({
     type: 'enum',

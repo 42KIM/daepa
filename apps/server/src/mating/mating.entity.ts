@@ -19,7 +19,7 @@ export class MatingEntity {
   id: number;
 
   @Column()
-  pairId: string;
+  pairId: number;
 
   @ManyToOne(() => PairEntity)
   @JoinColumn({ name: 'pairId', referencedColumnName: 'id' })
