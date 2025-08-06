@@ -2,9 +2,10 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, DataSource, In } from 'typeorm';
+import { EntityManager, DataSource, In, Repository } from 'typeorm';
 import { ParentRequestEntity } from './parent_request.entity';
 import {
   CreateParentRequestDto,
@@ -20,6 +21,7 @@ import { USER_NOTIFICATION_TYPE } from '../user_notification/user_notification.c
 export class ParentRequestService {
   constructor(
     @InjectRepository(ParentRequestEntity)
+    private readonly parentRequestRepository: Repository<ParentRequestEntity>,
     private readonly userNotificationService: UserNotificationService,
     private readonly dataSource: DataSource,
   ) {}
@@ -35,8 +37,8 @@ export class ParentRequestService {
       createParentRequestDto.parentPetId,
     );
 
-    if (!parentPet?.ownerId) {
-      throw new NotFoundException('부모 펫을 찾을 수 없습니다.');
+    if (!parentPet?.ownerId || !childPet?.ownerId) {
+      throw new NotFoundException('주인 정보를 찾을 수 없습니다.');
     }
 
     // parent_request 테이블에 요청 생성
@@ -52,14 +54,14 @@ export class ParentRequestService {
       {
         receiverId: parentPet.ownerId,
         type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
-        targetId: createParentRequestDto.childPetId,
+        targetId: parentRequest.id,
         detailJson: {
           childPet: {
-            id: createParentRequestDto.childPetId,
+            id: childPet?.petId,
             name: childPet?.name,
           },
           parentPet: {
-            id: createParentRequestDto.parentPetId,
+            id: parentPet?.petId,
             name: parentPet.name,
           },
           role: createParentRequestDto.role,
@@ -87,8 +89,19 @@ export class ParentRequestService {
       }
 
       const parentRequest = await entityManager.findOneBy(ParentRequestEntity, {
-        id: Number(notification.targetId),
+        id: notification.targetId,
       });
+
+      //parentRequest의 상태가 pending이 아니면 오류 발생
+      if (parentRequest?.status === PARENT_STATUS.APPROVED) {
+        throw new BadRequestException('이미 수락된 처리된 요청입니다.');
+      }
+      if (parentRequest?.status === PARENT_STATUS.REJECTED) {
+        throw new BadRequestException('이미 거절된 요청입니다.');
+      }
+      if (parentRequest?.status === PARENT_STATUS.CANCELLED) {
+        throw new BadRequestException('이미 취소된 요청입니다.');
+      }
 
       if (!parentRequest) {
         throw new NotFoundException('부모 요청을 찾을 수 없습니다.');
@@ -113,7 +126,7 @@ export class ParentRequestService {
         await this.userNotificationService.createUserNotification(userId, {
           receiverId: notification.senderId,
           type: this.getNotificationTypeByStatus(updateParentRequestDto.status),
-          targetId: parentRequest.id.toString(),
+          targetId: parentRequest.id,
           detailJson: {
             childPet: {
               id: parentRequest.childPetId,
@@ -130,6 +143,17 @@ export class ParentRequestService {
             }),
           },
         });
+
+        await this.userNotificationService.updateUserNotificationDetailJson(
+          notification.id,
+          {
+            ...notification.detailJson,
+            status: updateParentRequestDto.status,
+            ...(updateParentRequestDto.status === PARENT_STATUS.REJECTED && {
+              rejectReason: updateParentRequestDto.rejectReason,
+            }),
+          },
+        );
       }
     });
   }
@@ -150,6 +174,7 @@ export class ParentRequestService {
     const existingRequest = await entityManager.existsBy(ParentRequestEntity, {
       childPetId: createParentRequestDto.childPetId,
       parentPetId: createParentRequestDto.parentPetId,
+      status: PARENT_STATUS.PENDING,
     });
 
     if (existingRequest) {
@@ -249,11 +274,11 @@ export class ParentRequestService {
     const [childPet, parentPet] = await Promise.all([
       entityManager.findOne(PetEntity, {
         where: { petId: childPetId },
-        select: ['name', 'ownerId'],
+        select: ['name', 'petId', 'ownerId'],
       }),
       entityManager.findOne(PetEntity, {
         where: { petId: parentPetId },
-        select: ['name', 'ownerId'],
+        select: ['name', 'petId', 'ownerId'],
       }),
     ]);
     return { childPet, parentPet };
