@@ -7,8 +7,8 @@
  */
 import type { UserNotificationDto } from "./userNotificationDto";
 
-export type UserNotificationControllerFindOne200 = {
-  data: UserNotificationDto;
-  success?: boolean;
-  message?: string;
-};
+/**
+ * 알림 정보
+ * @nullable
+ */
+export type UserNotificationResponseDtoData = UserNotificationDto | null;

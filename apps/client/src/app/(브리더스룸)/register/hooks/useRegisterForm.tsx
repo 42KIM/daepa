@@ -9,7 +9,7 @@ import {
 } from "../../constants";
 import { overlay } from "overlay-kit";
 import MultipleSelector from "../../components/selector/multiple";
-import { ParentDtoRole, PetSummaryDto } from "@repo/api-client";
+import { UnlinkParentDtoRole, PetSummaryDto } from "@repo/api-client";
 import Dialog from "../../components/Form/Dialog";
 
 import { validateStep } from "@/lib/form";
@@ -118,7 +118,9 @@ export const useRegisterForm = ({
       setFormData(newFormData);
 
       if (
-        (![ParentDtoRole.FATHER, ParentDtoRole.MOTHER].includes(type as ParentDtoRole) &&
+        (![UnlinkParentDtoRole.FATHER, UnlinkParentDtoRole.MOTHER].includes(
+          type as UnlinkParentDtoRole,
+        ) &&
           isEggRegister &&
           step < formStep.length - 1) ||
         (!isEggRegister && Number(funnel) === REGISTER_PAGE.FIRST && step <= formStep.length - 1)

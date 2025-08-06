@@ -11,6 +11,7 @@ import { PetService } from '../pet/pet.service';
 import { CreatePetDto } from '../pet/pet.dto';
 import { PET_GROWTH } from 'src/pet/pet.constants';
 import { PARENT_ROLE } from 'src/parent_request/parent_request.constants';
+import { range } from 'es-toolkit';
 
 @Injectable()
 export class LayingService {
@@ -47,28 +48,25 @@ export class LayingService {
         const { clutchCount, temperature, species } = createLayingDto;
 
         // 펫 생성 DTO들을 미리 준비
-        const petDtos: CreatePetDto[] = Array.from(
-          { length: clutchCount },
-          (_, i) => ({
-            species,
-            temperature,
-            layingId: savedLaying.id,
-            clutchOrder: i + 1,
-            growth: PET_GROWTH.EGG,
-            ...(createLayingDto.motherId && {
-              mother: {
-                parentId: createLayingDto.motherId,
-                role: PARENT_ROLE.MOTHER,
-              },
-            }),
-            ...(createLayingDto.fatherId && {
-              father: {
-                parentId: createLayingDto.fatherId,
-                role: PARENT_ROLE.FATHER,
-              },
-            }),
+        const petDtos: CreatePetDto[] = range(1, clutchCount + 1).map((i) => ({
+          species,
+          temperature,
+          layingId: savedLaying.id,
+          clutchOrder: i,
+          growth: PET_GROWTH.EGG,
+          ...(createLayingDto.motherId && {
+            mother: {
+              parentId: createLayingDto.motherId,
+              role: PARENT_ROLE.MOTHER,
+            },
           }),
-        );
+          ...(createLayingDto.fatherId && {
+            father: {
+              parentId: createLayingDto.fatherId,
+              role: PARENT_ROLE.FATHER,
+            },
+          }),
+        }));
 
         await Promise.all(
           petDtos.map((petDto) => this.petService.createPet(petDto, ownerId)),

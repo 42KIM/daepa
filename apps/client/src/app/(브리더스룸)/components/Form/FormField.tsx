@@ -14,7 +14,7 @@ import { usePathname } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { ParentDtoRole, PetDtoGrowth, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
+import { PetDtoGrowth, PetDtoSex, PetDtoSpecies, UnlinkParentDtoRole } from "@repo/api-client";
 interface FormFieldProps {
   label?: string;
   field: FormStep["field"];
@@ -48,12 +48,12 @@ export const FormField = ({
     error && "border-b-red-500 focus:border-b-red-500",
   );
 
-  const handleSelectParent = (type: ParentDtoRole, value: PetParentDtoWithMessage) => {
+  const handleSelectParent = (type: UnlinkParentDtoRole, value: PetParentDtoWithMessage) => {
     handleChange({ type, value });
     toast.success("부모 선택이 완료되었습니다.");
   };
 
-  const handleUnlink = (type: ParentDtoRole) => {
+  const handleUnlink = (type: UnlinkParentDtoRole) => {
     handleChange({ type, value: null });
     toast.success("부모 선택 해제가 완료되었습니다.");
   };
@@ -82,20 +82,20 @@ export const FormField = ({
               label="부"
               data={formData.father}
               onSelect={(item) => {
-                handleSelectParent(ParentDtoRole.FATHER, item);
+                handleSelectParent(UnlinkParentDtoRole.FATHER, item);
               }}
               onUnlink={() => {
-                handleUnlink(ParentDtoRole.FATHER);
+                handleUnlink(UnlinkParentDtoRole.FATHER);
               }}
             />
             <ParentLink
               label="모"
               data={formData.mother}
               onSelect={(item) => {
-                handleSelectParent(ParentDtoRole.MOTHER, item);
+                handleSelectParent(UnlinkParentDtoRole.MOTHER, item);
               }}
               onUnlink={() => {
-                handleUnlink(ParentDtoRole.MOTHER);
+                handleUnlink(UnlinkParentDtoRole.MOTHER);
               }}
             />
           </div>

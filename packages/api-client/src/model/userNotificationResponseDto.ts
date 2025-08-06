@@ -5,13 +5,16 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { UserNotificationDto } from "./userNotificationDto";
+import type { UserNotificationResponseDtoData } from "./userNotificationResponseDtoData";
 
 export interface UserNotificationResponseDto {
   /** 성공 여부 */
   success: boolean;
   /** 메시지 */
   message: string;
-  /** 알림 정보 */
-  data: UserNotificationDto;
+  /**
+   * 알림 정보
+   * @nullable
+   */
+  data: UserNotificationResponseDtoData;
 }

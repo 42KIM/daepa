@@ -44,32 +44,17 @@ export class AdoptionService {
       throw new Error('Pet information is required for adoption');
     }
 
+    const { pet, ...adoptionData } = entity;
+
     return {
-      adoptionId: entity.adoptionId,
-      petId: entity.petId,
-      price: entity.price ? Math.floor(Number(entity.price)) : undefined,
-      adoptionDate: entity.adoptionDate,
-      seller: entity.seller,
-      buyer: entity.buyer,
-      memo: entity.memo,
-      location: entity.location,
-      status: entity.status,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-      pet: this.toPetSummaryDtoOptimized(entity.pet),
+      ...adoptionData,
+      pet: this.toPetSummaryDtoOptimized(pet),
     };
   }
 
   private toPetSummaryDtoOptimized(pet: PetEntity) {
-    return {
-      petId: pet.petId,
-      name: pet.name,
-      species: pet.species,
-      morphs: pet.morphs,
-      traits: pet.traits,
-      hatchingDate: pet.hatchingDate,
-      sex: pet.sex,
-    };
+    const { petId, name, species, morphs, traits, hatchingDate, sex } = pet;
+    return { petId, name, species, morphs, traits, hatchingDate, sex };
   }
 
   private async updatePetStatus(
@@ -84,17 +69,8 @@ export class AdoptionService {
         : ADOPTION_SALE_STATUS.ON_SALE);
 
     if (status === ADOPTION_SALE_STATUS.SOLD) {
-      if (newAdoptionDto.buyerId) {
-        await entityManager.update(
-          'pets',
-          { petId },
-          {
-            ownerId: newAdoptionDto.buyerId,
-          },
-        );
-      } else {
-        await entityManager.update('pets', { petId }, { ownerId: null });
-      }
+      const newOwnerId = newAdoptionDto.buyerId || null;
+      await entityManager.update('pets', { petId }, { ownerId: newOwnerId });
     }
   }
 
@@ -103,12 +79,12 @@ export class AdoptionService {
     updateDto: U,
     fieldMappings: Partial<Record<keyof U, (value: any) => Partial<T>>>,
   ): void {
-    Object.entries(fieldMappings).forEach(([key, mapper]) => {
+    for (const [key, mapper] of Object.entries(fieldMappings)) {
       const value = updateDto[key as keyof U];
       if (value !== undefined && mapper) {
         Object.assign(entity, (mapper as (value: any) => Partial<T>)(value));
       }
-    });
+    }
   }
 
   async createAdoption(
@@ -171,9 +147,9 @@ export class AdoptionService {
     pageOptionsDto: PageOptionsDto,
     userId: string,
   ): Promise<PageDto<AdoptionDto>> {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      const [adoptionEntities, totalCount] = await Promise.all([
-        entityManager
+    const queryBuilder = this.dataSource.transaction(
+      async (entityManager: EntityManager) => {
+        return entityManager
           .createQueryBuilder(AdoptionEntity, 'adoptions')
           .leftJoinAndMapOne(
             'adoptions.pet',
@@ -198,24 +174,19 @@ export class AdoptionService {
           .orderBy('adoptions.createdAt', pageOptionsDto.order)
           .skip(pageOptionsDto.skip)
           .take(pageOptionsDto.itemPerPage)
-          .getMany(),
-        entityManager
-          .createQueryBuilder(AdoptionEntity, 'adoptions')
-          .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
-          .andWhere('adoptions.sellerId = :userId', { userId })
-          .getCount(),
-      ]);
+          .getManyAndCount();
+      },
+    );
 
-      const adoptionDtos = await Promise.all(
-        adoptionEntities.map((adoption) =>
-          this.toAdoptionDtoOptimized(adoption),
-        ),
-      );
+    const [adoptionEntities, totalCount] = await queryBuilder;
 
-      const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+    const adoptionDtos = adoptionEntities.map((adoption) =>
+      this.toAdoptionDtoOptimized(adoption),
+    );
 
-      return new PageDto(adoptionDtos, pageMetaDto);
-    });
+    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+
+    return new PageDto(adoptionDtos, pageMetaDto);
   }
 
   async findOne(
@@ -274,12 +245,12 @@ export class AdoptionService {
         ]);
 
       // where 조건 추가
-      Object.keys(where).forEach((key) => {
+      for (const key of Object.keys(where)) {
         const value = where[key as keyof typeof where];
         if (value !== undefined) {
           queryBuilder.andWhere(`adoptions.${key} = :${key}`, { [key]: value });
         }
-      });
+      }
 
       const adoptionEntity = await queryBuilder.getOne();
 

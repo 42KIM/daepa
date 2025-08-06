@@ -780,7 +780,10 @@ export const getUserNotificationControllerFindAllResponseMock = (
       "owner_accept",
       "owner_reject",
     ] as const),
-    targetId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+    targetId: faker.helpers.arrayElement([
+      faker.number.int({ min: undefined, max: undefined }),
+      undefined,
+    ]),
     status: faker.helpers.arrayElement(["read", "unread", "deleted"] as const),
     detailJson: faker.helpers.arrayElement([{}, undefined]),
     createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
@@ -839,7 +842,10 @@ export const getUserNotificationControllerFindOneResponseMock = (
         "owner_accept",
         "owner_reject",
       ] as const),
-      targetId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+      targetId: faker.helpers.arrayElement([
+        faker.number.int({ min: undefined, max: undefined }),
+        undefined,
+      ]),
       status: faker.helpers.arrayElement(["read", "unread", "deleted"] as const),
       detailJson: faker.helpers.arrayElement([{}, undefined]),
       createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
