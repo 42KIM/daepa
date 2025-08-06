@@ -13,18 +13,18 @@ const NotiTitle = ({
 
   return (
     <div className="flex items-center gap-2">
-      {hasLink && "parentPetId" in detailData ? (
+      {hasLink && detailData?.parentPet?.id ? (
         <LinkButton
           href={`/pet/${detailData?.parentPet?.id}`}
-          label={detailData?.parentPet?.name as string}
+          label={detailData?.parentPet?.name ?? ""}
           tooltip="프로필로 이동"
         />
       ) : (
-        <div>{detailData?.parentPet?.name as string}</div>
+        <div>{detailData?.parentPet?.name ?? ""}</div>
       )}
       <ArrowLeftRight className="h-4 w-4" />
       <div className="flex items-center">
-        <div>{detailData?.childPet?.name as string}</div>
+        <div>{detailData?.childPet?.name ?? ""}</div>
       </div>
     </div>
   );

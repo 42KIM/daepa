@@ -147,7 +147,7 @@ export class AdoptionService {
     pageOptionsDto: PageOptionsDto,
     userId: string,
   ): Promise<PageDto<AdoptionDto>> {
-    const queryBuilder = this.dataSource.transaction(
+    const [adoptionEntities, totalCount] = await this.dataSource.transaction(
       async (entityManager: EntityManager) => {
         return entityManager
           .createQueryBuilder(AdoptionEntity, 'adoptions')
@@ -177,8 +177,6 @@ export class AdoptionService {
           .getManyAndCount();
       },
     );
-
-    const [adoptionEntities, totalCount] = await queryBuilder;
 
     const adoptionDtos = adoptionEntities.map((adoption) =>
       this.toAdoptionDtoOptimized(adoption),
