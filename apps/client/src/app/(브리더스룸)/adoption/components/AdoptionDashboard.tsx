@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 import {
@@ -21,7 +21,7 @@ interface AdoptionDashboardProps {
   data?: AdoptionDto[];
 }
 
-const AdoptionDashboard = memo(({ data = [] }: AdoptionDashboardProps) => {
+const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number | null>(new Date().getMonth() + 1);
 
@@ -218,8 +218,6 @@ const AdoptionDashboard = memo(({ data = [] }: AdoptionDashboardProps) => {
       </Card>
     </div>
   );
-});
-
-AdoptionDashboard.displayName = "AdoptionDashboard";
+};
 
 export default AdoptionDashboard;

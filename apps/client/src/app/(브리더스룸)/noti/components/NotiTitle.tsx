@@ -1,12 +1,12 @@
 import { ArrowLeftRight } from "lucide-react";
 import LinkButton from "../../components/LinkButton";
-import { UserNotificationDtoDetailJson } from "@repo/api-client";
+import { ParentRequestDetailJsonDto } from "../../register/types";
 
 const NotiTitle = ({
   detailData,
   hasLink = false,
 }: {
-  detailData?: UserNotificationDtoDetailJson;
+  detailData?: ParentRequestDetailJsonDto;
   hasLink?: boolean;
 }) => {
   if (!detailData) return null;
@@ -15,16 +15,16 @@ const NotiTitle = ({
     <div className="flex items-center gap-2">
       {hasLink && "parentPetId" in detailData ? (
         <LinkButton
-          href={`/pet/${detailData?.parentPetId}`}
-          label={detailData?.parentPetName as string}
+          href={`/pet/${detailData?.parentPet?.id}`}
+          label={detailData?.parentPet?.name as string}
           tooltip="프로필로 이동"
         />
       ) : (
-        <div>{detailData?.parentPetName as string}</div>
+        <div>{detailData?.parentPet?.name as string}</div>
       )}
       <ArrowLeftRight className="h-4 w-4" />
       <div className="flex items-center">
-        <div>{detailData?.childPetName as string}</div>
+        <div>{detailData?.childPet?.name as string}</div>
       </div>
     </div>
   );

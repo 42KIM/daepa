@@ -35,7 +35,7 @@ const RangeFilterCalendar = memo(() => {
   });
 
   // 날짜 범위별 해칭된 펫 조회
-  const { data: selectedData, isPending: todayIsPending } = useQuery({
+  const { data: selectedData, isFetching: todayIsFetching } = useQuery({
     queryKey: [brPetControllerGetPetsByDateRange.name, dateRange?.from, dateRange?.to],
     queryFn: () => {
       const startDate = dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined;
@@ -46,7 +46,7 @@ const RangeFilterCalendar = memo(() => {
       });
     },
     select: (data) => data.data.data,
-    enabled: !!dateRange?.from && !!dateRange?.to,
+    enabled: !!dateRange?.from || !!dateRange?.to,
   });
 
   // 월별 해칭된 펫 개수 계산
@@ -120,7 +120,7 @@ const RangeFilterCalendar = memo(() => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          {monthlyIsPending && todayIsPending ? (
+          {monthlyIsPending || todayIsFetching ? (
             <Loading />
           ) : (
             Object.entries(visibleData || {})

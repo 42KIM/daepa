@@ -28,6 +28,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { isPlainObject, isString } from "es-toolkit";
 import { isNumber } from "@/lib/typeGuards";
 import { memo } from "react";
+import { ParentRequestDetailJsonDto } from "../../register/types";
+import { overlay } from "overlay-kit";
+import Dialog from "../../components/Form/Dialog";
 
 const NotiDisplay = memo(() => {
   const router = useRouter();
@@ -43,7 +46,7 @@ const NotiDisplay = memo(() => {
     select: (res) => res?.data?.data,
   });
 
-  const detailData = data?.detailJson;
+  const detailData = data?.detailJson as unknown as ParentRequestDetailJsonDto;
 
   const { mutate: updateParentStatus } = useMutation({
     mutationFn: ({ id, status, rejectReason }: UpdateParentRequestDto & { id: number }) =>
@@ -77,13 +80,13 @@ const NotiDisplay = memo(() => {
     },
   });
 
-  const handleUpdate = (status: UpdateParentDtoStatus) => {
+  const handleUpdate = (status: UpdateParentDtoStatus, rejectReason?: string) => {
     if (!data?.senderId || !data?.targetId) return;
 
     updateParentStatus({
       id: data.id,
       status,
-      rejectReason: undefined,
+      rejectReason,
     });
   };
 
@@ -180,7 +183,19 @@ const NotiDisplay = memo(() => {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    handleUpdate(UpdateParentDtoStatus.REJECTED);
+                    overlay.open(({ isOpen, close }) => (
+                      <Dialog
+                        title="요청 거절"
+                        description="요청을 거절하시겠습니까?"
+                        isOpen={isOpen}
+                        onCloseAction={close}
+                        onConfirmAction={() => {
+                          handleUpdate(UpdateParentDtoStatus.REJECTED, "거절합니다.");
+                          close();
+                        }}
+                        onExit={close}
+                      />
+                    ));
                   }}
                   variant="outline"
                   size="sm"
@@ -250,7 +265,7 @@ const NotiDisplay = memo(() => {
           </div>
 
           <Link
-            href={`/pet/${safeData?.childPetId && isString(safeData.childPetId) ? safeData.childPetId : ""}`}
+            href={`/pet/${safeData?.childPet?.id && isString(safeData.childPet.id) ? safeData.childPet.id : ""}`}
             className="group mx-4 mt-4 flex flex-col rounded-lg border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
           >
             <div className="flex flex-col gap-3">
@@ -262,7 +277,11 @@ const NotiDisplay = memo(() => {
                         ? (detailData.photos[0] ?? "/default-pet-image.png")
                         : "/default-pet-image.png"
                     }
-                    alt={safeData?.name && isString(safeData.name) ? safeData.name : "펫 이미지"}
+                    alt={
+                      safeData?.childPet?.name && isString(safeData.childPet.name)
+                        ? safeData.childPet.name
+                        : "펫 이미지"
+                    }
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 384px"
@@ -277,8 +296,8 @@ const NotiDisplay = memo(() => {
                 <div className="flex items-center justify-between">
                   <span className="text-base">
                     <span className="font-bold">
-                      {safeData?.childPetName && isString(safeData.childPetName)
-                        ? safeData.childPetName
+                      {safeData?.childPet?.name && isString(safeData.childPet.name)
+                        ? safeData.childPet.name
                         : ""}
                     </span>
                     프로필로 이동
