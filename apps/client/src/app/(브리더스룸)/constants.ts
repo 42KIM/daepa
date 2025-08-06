@@ -1,4 +1,4 @@
-import { Bell, Bubbles, DollarSign, Film, Heart, Home, Inbox, TreeDeciduous } from "lucide-react";
+import { Bell, Bubbles, DollarSign, Film, Heart, Home, Inbox } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
 import {
   PetDtoGrowth,

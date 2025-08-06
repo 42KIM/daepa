@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { userControllerCreateInitUserInfo, userControllerVerifyName } from "@repo/api-client";
+import { AxiosError } from "axios";
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;
@@ -91,8 +92,8 @@ const RegisterPage = () => {
         setDuplicateCheckStatus("available");
         toast.success("사용 가능한 닉네임입니다.");
       }
-    } catch (error: any) {
-      if (error?.response?.status === 409) {
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.response?.status === 409) {
         setDuplicateCheckStatus("duplicate");
         toast.error("이미 사용중인 닉네임입니다.");
       } else {
