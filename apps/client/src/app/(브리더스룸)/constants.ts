@@ -1,4 +1,4 @@
-import { Bell, Bubbles, DollarSign, Film, Heart, Home, Inbox, TreeDeciduous } from "lucide-react";
+import { Bell, Bubbles, DollarSign, Film, Heart, Home, Inbox } from "lucide-react";
 import { FormStep, SelectorConfig } from "./register/types";
 import {
   PetDtoGrowth,
@@ -405,11 +405,6 @@ export const SIDEBAR_ITEMS = [
     url: "/shorts",
     icon: Film,
   },
-  {
-    title: "가족관계도",
-    url: "/familyTree",
-    icon: TreeDeciduous,
-  },
 ];
 
 export const FOOD_BADGE_COLORS: Record<string, string> = {
@@ -451,6 +446,10 @@ export const NOTIFICATION_TYPE: Record<UserNotificationDtoType, { label: string;
     owner_reject: {
       label: "주인 거절",
       color: "bg-red-600",
+    },
+    parent_cancel: {
+      label: "부모 연동 취소",
+      color: "bg-gray-600",
     },
   };
 

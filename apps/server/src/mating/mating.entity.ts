@@ -19,14 +19,14 @@ export class MatingEntity {
   id: number;
 
   @Column()
-  pairId: string;
+  pairId: number;
 
   @ManyToOne(() => PairEntity)
   @JoinColumn({ name: 'pairId', referencedColumnName: 'id' })
   pair: PairEntity;
 
   @Column({ type: 'date', nullable: true })
-  matingDate: Date;
+  matingDate?: Date;
 
   @CreateDateColumn()
   createdAt: Date;

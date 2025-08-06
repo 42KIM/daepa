@@ -23,7 +23,6 @@ import { nanoid } from 'nanoid';
 import { PageMetaDto, PageOptionsDto } from 'src/common/page.dto';
 import { PageDto } from 'src/common/page.dto';
 import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
-import { PetSummaryDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
 
 @Injectable()
@@ -40,38 +39,22 @@ export class AdoptionService {
     return nanoid(8);
   }
 
-  private async toAdoptionDto(entity: AdoptionEntity): Promise<AdoptionDto> {
+  private toAdoptionDtoOptimized(entity: AdoptionEntity): AdoptionDto {
     if (!entity.pet) {
       throw new Error('Pet information is required for adoption');
     }
+
+    const { pet, ...adoptionData } = entity;
+
     return {
-      adoptionId: entity.adoptionId,
-      petId: entity.petId,
-      price: entity.price ? Math.floor(Number(entity.price)) : undefined,
-      adoptionDate: entity.adoptionDate,
-      seller: entity.seller,
-      buyer: entity.buyer,
-      memo: entity.memo,
-      location: entity.location,
-      status: entity.status,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-      pet: await this.toPetSummaryDto(entity.pet), // await 추가
+      ...adoptionData,
+      pet: this.toPetSummaryDtoOptimized(pet),
     };
   }
 
-  private async toPetSummaryDto(pet: PetEntity): Promise<PetSummaryDto> {
-    const owner = await this.userService.findOneProfile(pet.ownerId);
-    return {
-      petId: pet.petId,
-      name: pet.name,
-      species: pet.species,
-      morphs: pet.morphs,
-      traits: pet.traits,
-      hatchingDate: pet.hatchingDate,
-      sex: pet.sex,
-      owner,
-    };
+  private toPetSummaryDtoOptimized(pet: PetEntity) {
+    const { petId, name, species, morphs, traits, hatchingDate, sex } = pet;
+    return { petId, name, species, morphs, traits, hatchingDate, sex };
   }
 
   private async updatePetStatus(
@@ -86,17 +69,8 @@ export class AdoptionService {
         : ADOPTION_SALE_STATUS.ON_SALE);
 
     if (status === ADOPTION_SALE_STATUS.SOLD) {
-      if (newAdoptionDto.buyerId) {
-        await entityManager.update(
-          'pets',
-          { petId },
-          {
-            ownerId: newAdoptionDto.buyerId,
-          },
-        );
-      } else {
-        await entityManager.update('pets', { petId }, { ownerId: null });
-      }
+      const newOwnerId = newAdoptionDto.buyerId || null;
+      await entityManager.update('pets', { petId }, { ownerId: newOwnerId });
     }
   }
 
@@ -105,12 +79,12 @@ export class AdoptionService {
     updateDto: U,
     fieldMappings: Partial<Record<keyof U, (value: any) => Partial<T>>>,
   ): void {
-    Object.entries(fieldMappings).forEach(([key, mapper]) => {
+    for (const [key, mapper] of Object.entries(fieldMappings)) {
       const value = updateDto[key as keyof U];
       if (value !== undefined && mapper) {
         Object.assign(entity, (mapper as (value: any) => Partial<T>)(value));
       }
-    });
+    }
   }
 
   async createAdoption(
@@ -129,11 +103,9 @@ export class AdoptionService {
       }
 
       // 이미 분양 정보가 있는지 확인
-      const existingAdoption = await entityManager.findOne(AdoptionEntity, {
-        where: {
-          petId: createAdoptionDto.petId,
-          isDeleted: false,
-        },
+      const existingAdoption = await entityManager.existsBy(AdoptionEntity, {
+        petId: createAdoptionDto.petId,
+        isDeleted: false,
       });
 
       if (existingAdoption) {
@@ -175,37 +147,39 @@ export class AdoptionService {
     pageOptionsDto: PageOptionsDto,
     userId: string,
   ): Promise<PageDto<AdoptionDto>> {
-    const queryBuilder = this.adoptionRepository
-      .createQueryBuilder('adoptions')
-      .leftJoinAndMapOne(
-        'adoptions.pet',
-        'pets',
-        'pets',
-        'pets.petId = adoptions.petId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.seller',
-        'users',
-        'seller',
-        'seller.userId = adoptions.sellerId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.buyer',
-        'users',
-        'buyer',
-        'buyer.userId = adoptions.buyerId',
-      )
-      .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
-      .andWhere('adoptions.sellerId = :userId', { userId })
-      .orderBy('adoptions.createdAt', pageOptionsDto.order)
-      .skip(pageOptionsDto.skip)
-      .take(pageOptionsDto.itemPerPage);
+    const [adoptionEntities, totalCount] = await this.dataSource.transaction(
+      async (entityManager: EntityManager) => {
+        return entityManager
+          .createQueryBuilder(AdoptionEntity, 'adoptions')
+          .leftJoinAndMapOne(
+            'adoptions.pet',
+            'pets',
+            'pets',
+            'pets.petId = adoptions.petId',
+          )
+          .leftJoinAndMapOne(
+            'adoptions.seller',
+            'users',
+            'seller',
+            'seller.userId = adoptions.sellerId',
+          )
+          .leftJoinAndMapOne(
+            'adoptions.buyer',
+            'users',
+            'buyer',
+            'buyer.userId = adoptions.buyerId',
+          )
+          .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
+          .andWhere('adoptions.sellerId = :userId', { userId })
+          .orderBy('adoptions.createdAt', pageOptionsDto.order)
+          .skip(pageOptionsDto.skip)
+          .take(pageOptionsDto.itemPerPage)
+          .getManyAndCount();
+      },
+    );
 
-    const totalCount = await queryBuilder.getCount();
-    const adoptionEntities = await queryBuilder.getMany();
-
-    const adoptionDtos = await Promise.all(
-      adoptionEntities.map((adoption) => this.toAdoptionDto(adoption)),
+    const adoptionDtos = adoptionEntities.map((adoption) =>
+      this.toAdoptionDtoOptimized(adoption),
     );
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
@@ -216,43 +190,74 @@ export class AdoptionService {
   async findOne(
     where: FindOptionsWhere<AdoptionEntity>,
   ): Promise<AdoptionDto | null> {
-    const queryBuilder = this.adoptionRepository
-      .createQueryBuilder('adoptions')
-      .leftJoinAndMapOne(
-        'adoptions.pet',
-        'pets',
-        'pets',
-        'pets.petId = adoptions.petId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.seller',
-        'users',
-        'seller',
-        'seller.userId = adoptions.sellerId',
-      )
-      .leftJoinAndMapOne(
-        'adoptions.buyer',
-        'users',
-        'buyer',
-        'buyer.userId = adoptions.buyerId',
-      )
-      .where('adoptions.isDeleted = :isDeleted', { isDeleted: false });
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const queryBuilder = entityManager
+        .createQueryBuilder(AdoptionEntity, 'adoptions')
+        .leftJoinAndMapOne(
+          'adoptions.pet',
+          'pets',
+          'pets',
+          'pets.petId = adoptions.petId',
+        )
+        .leftJoinAndMapOne(
+          'adoptions.seller',
+          'users',
+          'seller',
+          'seller.userId = adoptions.sellerId',
+        )
+        .leftJoinAndMapOne(
+          'adoptions.buyer',
+          'users',
+          'buyer',
+          'buyer.userId = adoptions.buyerId',
+        )
+        .where('adoptions.isDeleted = :isDeleted', { isDeleted: false })
+        .select([
+          'adoptions.adoptionId',
+          'adoptions.petId',
+          'adoptions.price',
+          'adoptions.adoptionDate',
+          'adoptions.memo',
+          'adoptions.location',
+          'adoptions.status',
+          'adoptions.createdAt',
+          'adoptions.updatedAt',
+          'pets.petId',
+          'pets.name',
+          'pets.species',
+          'pets.morphs',
+          'pets.traits',
+          'pets.hatchingDate',
+          'pets.sex',
+          'pets.ownerId',
+          'seller.userId',
+          'seller.name',
+          'seller.role',
+          'seller.isBiz',
+          'seller.status',
+          'buyer.userId',
+          'buyer.name',
+          'buyer.role',
+          'buyer.isBiz',
+          'buyer.status',
+        ]);
 
-    // where 조건 추가
-    Object.keys(where).forEach((key) => {
-      const value = where[key as keyof typeof where];
-      if (value !== undefined) {
-        queryBuilder.andWhere(`adoptions.${key} = :${key}`, { [key]: value });
+      // where 조건 추가
+      for (const key of Object.keys(where)) {
+        const value = where[key as keyof typeof where];
+        if (value !== undefined) {
+          queryBuilder.andWhere(`adoptions.${key} = :${key}`, { [key]: value });
+        }
       }
+
+      const adoptionEntity = await queryBuilder.getOne();
+
+      if (!adoptionEntity) {
+        return null;
+      }
+
+      return this.toAdoptionDtoOptimized(adoptionEntity);
     });
-
-    const adoptionEntity = await queryBuilder.getOne();
-
-    if (!adoptionEntity) {
-      return null;
-    }
-
-    return this.toAdoptionDto(adoptionEntity);
   }
 
   async findByAdoptionId(adoptionId: string): Promise<AdoptionDto> {

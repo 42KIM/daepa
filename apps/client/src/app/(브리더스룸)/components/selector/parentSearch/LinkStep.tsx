@@ -17,7 +17,7 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
   const { user } = useUserStore();
 
   const defaultMessage = (pet: PetParentDtoWithMessage) => {
-    return `안녕하세요, ${pet.name}님.\n${pet.name}를 ${
+    return `안녕하세요, ${pet.owner?.name}님.\n${pet.name}를 ${
       pet.sex?.toString() === PetDtoSex.MALE ? "부" : "모"
     } 개체로 등록하고 싶습니다.`;
   };

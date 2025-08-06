@@ -5,12 +5,13 @@ import {
   IsDate,
   IsEnum,
 } from 'class-validator';
-import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import { UserProfilePublicDto } from '../user/user.dto';
 
-import { PetDto, PetSummaryDto } from '../pet/pet.dto';
+import { PetSummaryWithoutOwnerDto } from '../pet/pet.dto';
 import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
+import { CommonResponseDto } from 'src/common/response.dto';
 
 export class AdoptionBaseDto {
   @ApiProperty({
@@ -34,6 +35,11 @@ export class AdoptionBaseDto {
   })
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : Math.floor(num);
+  })
   price?: number;
 
   @ApiProperty({
@@ -97,6 +103,11 @@ export class CreateAdoptionDto {
   })
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : Math.floor(num);
+  })
   price?: number;
 
   @ApiProperty({
@@ -185,22 +196,12 @@ export class AdoptionDto extends PickType(AdoptionBaseDto, [
   @ApiProperty({
     description: '펫 정보',
   })
-  pet: PetSummaryDto;
-}
-export class AdoptionWithPetDto extends OmitType(AdoptionBaseDto, [
-  'location',
-] as const) {
-  @ApiProperty({
-    description: '펫 정보',
-  })
-  pet: PetDto;
+  pet: PetSummaryWithoutOwnerDto;
 }
 
-export class createAdoptionResponseDto {
+export class AdoptionDetailResponseDto extends CommonResponseDto {
   @ApiProperty({
-    description: '분양 ID',
-    example: 'XXXXXXXX',
+    description: '분양 정보',
   })
-  @IsString()
-  adoptionId: string;
+  data: AdoptionDto;
 }

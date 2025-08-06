@@ -1,10 +1,15 @@
 import { useCallback, useMemo } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { FieldName, FormStep } from "../types";
-import { MORPH_LIST_BY_SPECIES, REGISTER_PAGE, SELECTOR_CONFIGS } from "../../constants";
+import {
+  MORPH_LIST_BY_SPECIES,
+  REGISTER_PAGE,
+  SELECTOR_CONFIGS,
+  TABLE_HEADER,
+} from "../../constants";
 import { overlay } from "overlay-kit";
 import MultipleSelector from "../../components/selector/multiple";
-import { ParentDtoRole, PetSummaryDto } from "@repo/api-client";
+import { UnlinkParentDtoRole, PetSummaryDto } from "@repo/api-client";
 import Dialog from "../../components/Form/Dialog";
 
 import { validateStep } from "@/lib/form";
@@ -48,7 +53,13 @@ export const useRegisterForm = ({
       setErrors(errors);
 
       if (!isValid) {
-        toast.error("에러를 확인해주세요.");
+        toast.error(
+          Object.entries(errors)
+            .map(
+              ([key, error]) => `${TABLE_HEADER[key as keyof typeof TABLE_HEADER]}은(는) ${error}`,
+            )
+            .join("\n"),
+        );
         return;
       }
 
@@ -107,7 +118,9 @@ export const useRegisterForm = ({
       setFormData(newFormData);
 
       if (
-        (![ParentDtoRole.FATHER, ParentDtoRole.MOTHER].includes(type as ParentDtoRole) &&
+        (![UnlinkParentDtoRole.FATHER, UnlinkParentDtoRole.MOTHER].includes(
+          type as UnlinkParentDtoRole,
+        ) &&
           isEggRegister &&
           step < formStep.length - 1) ||
         (!isEggRegister && Number(funnel) === REGISTER_PAGE.FIRST && step <= formStep.length - 1)

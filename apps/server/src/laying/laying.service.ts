@@ -4,13 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager, DataSource } from 'typeorm';
 import { LayingEntity } from './laying.entity';
 import { CreateLayingDto, UpdateLayingDto } from './laying.dto';
 import { PetService } from '../pet/pet.service';
 import { CreatePetDto } from '../pet/pet.dto';
 import { PET_GROWTH } from 'src/pet/pet.constants';
 import { PARENT_ROLE } from 'src/parent_request/parent_request.constants';
+import { range } from 'es-toolkit';
 
 @Injectable()
 export class LayingService {
@@ -18,34 +19,40 @@ export class LayingService {
     @InjectRepository(LayingEntity)
     private readonly layingRepository: Repository<LayingEntity>,
     private readonly petService: PetService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async createLaying(
     createLayingDto: CreateLayingDto,
     ownerId: string,
   ): Promise<LayingEntity> {
-    const exists = await this.layingRepository.existsBy({
-      matingId: createLayingDto.matingId,
-      layingDate: createLayingDto.layingDate,
-    });
-    if (exists) {
-      throw new BadRequestException('이미 해당 날짜에 산란 정보가 존재합니다.');
-    }
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 중복 체크를 transaction 내에서 수행
+      const exists = await entityManager.existsBy(LayingEntity, {
+        matingId: createLayingDto.matingId,
+        layingDate: createLayingDto.layingDate,
+      });
 
-    // 산란 정보 생성
-    const layingEntity = this.layingRepository.create(createLayingDto);
-    const savedLaying = await this.layingRepository.save(layingEntity);
+      if (exists) {
+        throw new BadRequestException(
+          '이미 해당 날짜에 산란 정보가 존재합니다.',
+        );
+      }
 
-    // clutchCount만큼 펫 생성
-    if (createLayingDto.clutchCount && createLayingDto.clutchCount > 0) {
-      const { clutchCount, temperature, species } = createLayingDto;
+      // 산란 정보 생성
+      const layingEntity = entityManager.create(LayingEntity, createLayingDto);
+      const savedLaying = await entityManager.save(LayingEntity, layingEntity);
 
-      for (let i = 0; i < clutchCount; i++) {
-        const createPetDto: CreatePetDto = {
+      // clutchCount만큼 펫을 배치로 생성
+      if (createLayingDto.clutchCount && createLayingDto.clutchCount > 0) {
+        const { clutchCount, temperature, species } = createLayingDto;
+
+        // 펫 생성 DTO들을 미리 준비
+        const petDtos: CreatePetDto[] = range(1, clutchCount + 1).map((i) => ({
           species,
           temperature,
           layingId: savedLaying.id,
-          clutchOrder: i + 1,
+          clutchOrder: i,
           growth: PET_GROWTH.EGG,
           ...(createLayingDto.motherId && {
             mother: {
@@ -59,24 +66,29 @@ export class LayingService {
               role: PARENT_ROLE.FATHER,
             },
           }),
-        };
+        }));
 
-        await this.petService.createPet(createPetDto, ownerId);
+        await Promise.all(
+          petDtos.map((petDto) => this.petService.createPet(petDto, ownerId)),
+        );
       }
-    }
 
-    return savedLaying;
+      return savedLaying;
+    });
   }
 
   async updateLaying(id: number, updateLayingDto: UpdateLayingDto) {
-    const laying = await this.layingRepository.existsBy({
-      id,
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 존재 여부와 업데이트를 한 번에 처리
+      const result = await entityManager.update(
+        LayingEntity,
+        { id },
+        updateLayingDto,
+      );
+
+      if (result.affected === 0) {
+        throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
+      }
     });
-
-    if (!laying) {
-      throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
-    }
-
-    return this.layingRepository.update(id, updateLayingDto);
   }
 }

@@ -130,7 +130,7 @@ const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
                   setSelectedMonth(null); // 연도 변경 시 월 선택 초기화
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-50">
                   <SelectValue placeholder="연도 선택" />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,7 +147,7 @@ const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
                 value={selectedMonth?.toString() || "all"}
                 onValueChange={(value) => setSelectedMonth(value === "all" ? null : Number(value))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-50">
                   <SelectValue placeholder="전체 월" />
                 </SelectTrigger>
                 <SelectContent>

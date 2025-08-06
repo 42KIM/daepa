@@ -7,7 +7,7 @@ import {
   BrPetControllerFindAllFilterType,
   CommonResponseDto,
   matingControllerCreateMating,
-  ParentDtoRole,
+  UnlinkParentDtoRole,
   PetParentDto,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -75,9 +75,9 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
     });
   };
 
-  const handleParentSelect = (role: ParentDtoRole, item: PetParentDtoWithMessage) => {
+  const handleParentSelect = (role: UnlinkParentDtoRole, item: PetParentDtoWithMessage) => {
     setFormData((prev) => ({ ...prev, [role]: item }));
-    toast.success(`${role === ParentDtoRole.FATHER ? "부" : "모"} 개체가 선택되었습니다.`);
+    toast.success(`${role === UnlinkParentDtoRole.FATHER ? "부" : "모"} 개체가 선택되었습니다.`);
   };
 
   const handleFatherUnlink = () => {
@@ -109,7 +109,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
                 <ParentLink
                   label="부"
                   data={formData.father}
-                  onSelect={(item) => handleParentSelect(ParentDtoRole.FATHER, item)}
+                  onSelect={(item) => handleParentSelect(UnlinkParentDtoRole.FATHER, item)}
                   onUnlink={handleFatherUnlink}
                   petListType={BrPetControllerFindAllFilterType.MY}
                 />
@@ -119,7 +119,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
                 <ParentLink
                   label="모"
                   data={formData.mother}
-                  onSelect={(item) => handleParentSelect(ParentDtoRole.MOTHER, item)}
+                  onSelect={(item) => handleParentSelect(UnlinkParentDtoRole.MOTHER, item)}
                   onUnlink={handleMotherUnlink}
                   petListType={BrPetControllerFindAllFilterType.MY}
                 />

@@ -2,11 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ParentLink from "../../../components/ParentLink";
 import { PetParentDtoWithMessage } from "../../../store/parentLink";
 import {
-  ParentDtoRole,
-  ParentDtoStatus,
   petControllerFindPetByPetId,
   petControllerLinkParent,
   petControllerUnlinkParent,
+  UnlinkParentDtoRole,
+  UpdateParentRequestDtoStatus,
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
@@ -23,7 +23,8 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
   const { formData } = usePetStore();
 
   const { mutate: mutateDeleteParent } = useMutation({
-    mutationFn: ({ role }: { role: ParentDtoRole }) => petControllerUnlinkParent(petId, { role }),
+    mutationFn: ({ role }: { role: UnlinkParentDtoRole }) =>
+      petControllerUnlinkParent(petId, { role }),
     onSuccess: () => {
       toast.success("부모 연동 해제가 완료되었습니다.");
       queryClient.invalidateQueries({ queryKey: [petControllerFindPetByPetId.name, petId] });
@@ -44,7 +45,7 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
       message,
     }: {
       parentId: string;
-      role: ParentDtoRole;
+      role: UnlinkParentDtoRole;
       message: string;
     }) =>
       petControllerLinkParent(petId, {
@@ -62,7 +63,7 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
   });
 
   const handleParentSelect = useCallback(
-    (role: ParentDtoRole, value: PetParentDtoWithMessage) => {
+    (role: UnlinkParentDtoRole, value: PetParentDtoWithMessage) => {
       try {
         // 부모 연동 요청
         mutateRequestParent({
@@ -78,7 +79,7 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
   );
 
   const handleUnlink = useCallback(
-    (label: ParentDtoRole) => {
+    (label: UnlinkParentDtoRole) => {
       if (!formData[label]?.petId) return toast.error("부모 연동 해제에 실패했습니다.");
       mutateDeleteParent({ role: label });
     },
@@ -87,24 +88,24 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
 
   const handleFatherSelect = useCallback(
     (item: PetParentDtoWithMessage) => {
-      handleParentSelect(ParentDtoRole.FATHER, item);
+      handleParentSelect(UnlinkParentDtoRole.FATHER, item);
     },
     [handleParentSelect],
   );
 
   const handleMotherSelect = useCallback(
     (item: PetParentDtoWithMessage) => {
-      handleParentSelect(ParentDtoRole.MOTHER, item);
+      handleParentSelect(UnlinkParentDtoRole.MOTHER, item);
     },
     [handleParentSelect],
   );
 
   const handleFatherUnlink = useCallback(() => {
-    handleUnlink(ParentDtoRole.FATHER);
+    handleUnlink(UnlinkParentDtoRole.FATHER);
   }, [handleUnlink]);
 
   const handleMotherUnlink = useCallback(() => {
-    handleUnlink(ParentDtoRole.MOTHER);
+    handleUnlink(UnlinkParentDtoRole.MOTHER);
   }, [handleUnlink]);
 
   return (
@@ -115,7 +116,8 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
         <ParentLink
           label="부"
           data={
-            isMyPet || (!isMyPet && formData.father?.status === ParentDtoStatus.APPROVED)
+            isMyPet ||
+            (!isMyPet && formData.father?.status === UpdateParentRequestDtoStatus.APPROVED)
               ? formData.father
               : null
           }
@@ -126,7 +128,8 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
         <ParentLink
           label="모"
           data={
-            isMyPet || (!isMyPet && formData.mother?.status === ParentDtoStatus.APPROVED)
+            isMyPet ||
+            (!isMyPet && formData.mother?.status === UpdateParentRequestDtoStatus.APPROVED)
               ? formData.mother
               : null
           }

@@ -34,7 +34,7 @@ import {
 import {
   AdoptionDtoStatus,
   BrPetControllerFindAllParams,
-  ParentDtoStatus,
+  UpdateParentRequestDtoStatus,
   PetDto,
   PetDtoGrowth,
   PetDtoSpecies,
@@ -283,7 +283,7 @@ export const columns: ColumnDef<PetDto>[] = [
           // status가 없으면 내 펫
           className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
           icon={
-            status === ParentDtoStatus.APPROVED ? (
+            status === UpdateParentRequestDtoStatus.APPROVED ? (
               <BadgeCheck className="h-4 w-4 text-gray-100" />
             ) : null
           }
@@ -307,7 +307,7 @@ export const columns: ColumnDef<PetDto>[] = [
           tooltip="펫 상세 페이지로 이동"
           className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
           icon={
-            status === ParentDtoStatus.APPROVED ? (
+            status === UpdateParentRequestDtoStatus.APPROVED ? (
               <BadgeCheck className="h-4 w-4 text-gray-100" />
             ) : null
           }

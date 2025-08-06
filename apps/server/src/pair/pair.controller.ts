@@ -17,7 +17,9 @@ export class PairController {
     description: '정보가 성공적으로 추가되었습니다.',
     type: CommonResponseDto,
   })
-  async create(@Body() createPairDto: CreatePairDto) {
+  async create(
+    @Body() createPairDto: CreatePairDto,
+  ): Promise<CommonResponseDto> {
     await this.pairService.createPair(createPairDto);
     return {
       success: true,

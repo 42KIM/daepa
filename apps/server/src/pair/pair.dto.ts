@@ -9,7 +9,7 @@ export class CreatePairDto {
   })
   @IsString()
   @IsNotEmpty()
-  ownerId: string;
+  ownerId?: string;
 
   @ApiProperty({
     description: '아빠 펫 아이디',
@@ -18,7 +18,7 @@ export class CreatePairDto {
   })
   @IsOptional()
   @IsString()
-  fatherId: string;
+  fatherId?: string;
 
   @ApiProperty({
     description: '엄마 펫 아이디',
@@ -27,5 +27,5 @@ export class CreatePairDto {
   })
   @IsOptional()
   @IsString()
-  motherId: string;
+  motherId?: string;
 }

@@ -32,7 +32,7 @@ import {
 import { UserProfilePublicDto } from 'src/user/user.dto';
 import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { PageOptionsDto } from 'src/common/page.dto';
-import { PetEntity } from './pet.entity';
+import { CommonResponseDto } from 'src/common/response.dto';
 
 export class PetBaseDto {
   @ApiProperty({
@@ -153,7 +153,7 @@ export class PetBaseDto {
 
   @IsOptional()
   @IsArray()
-  photos?: any[];
+  photos?: string[];
 
   @ApiProperty({
     description: '펫 소개말',
@@ -197,6 +197,10 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   @Exclude()
   declare isDeleted?: boolean;
 }
+
+export class PetSummaryWithoutOwnerDto extends OmitType(PetSummaryDto, [
+  'owner',
+]) {}
 
 export class PetSummaryWithLayingDto extends PetSummaryDto {
   @ApiProperty({
@@ -324,8 +328,9 @@ export class PetAdoptionDto {
     description: '분양 날짜',
     example: 20240101,
   })
-  @IsNumber()
-  adoptionDate?: number;
+  @IsOptional()
+  @IsDate()
+  adoptionDate?: Date;
 
   @ApiProperty({
     description: '메모',
@@ -378,6 +383,15 @@ export class PetDto extends PetBaseDto {
   @IsObject()
   adoption?: PetAdoptionDto;
 
+  @ApiProperty({
+    description: '부모 관계 상태',
+    enum: PARENT_STATUS,
+    'x-enumNames': Object.keys(PARENT_STATUS),
+  })
+  @IsOptional()
+  @IsEnum(PARENT_STATUS)
+  status?: PARENT_STATUS;
+
   @Exclude()
   declare createdAt?: Date;
 
@@ -426,6 +440,7 @@ export class CreatePetDto extends OmitType(PetBaseDto, [
     required: false,
   })
   @IsOptional()
+  @IsDate()
   layingDate?: Date;
 
   @ApiProperty({
@@ -553,6 +568,7 @@ export class PetFilterDto extends PageOptionsDto {
     required: false,
   })
   @IsOptional()
+  @IsDate()
   startYmd?: Date; // 최소 생년월일
 
   @ApiProperty({
@@ -561,6 +577,7 @@ export class PetFilterDto extends PageOptionsDto {
     required: false,
   })
   @IsOptional()
+  @IsDate()
   endYmd?: Date; // 최대 생년월일
 
   @ApiProperty({
@@ -682,49 +699,34 @@ export class PetHatchingDateRangeDto {
   endDate?: string;
 }
 
-export class PetFamilyPairGroupDto {
+export class FindPetByPetIdResponseDto extends CommonResponseDto {
   @ApiProperty({
-    description: '해당 pair에 속한 펫 리스트',
-    type: 'array',
-    items: { $ref: getSchemaPath(PetEntity) },
+    description: '펫 정보',
+    type: PetDto,
   })
-  @IsArray()
-  petList: PetEntity[];
-
-  @ApiProperty({
-    description: '아버지 펫 정보',
-    type: () => PetFamilyParentDto,
-    nullable: true,
-  })
-  @IsOptional()
-  father: PetFamilyParentDto | null;
-
-  @ApiProperty({
-    description: '어머니 펫 정보',
-    type: () => PetFamilyParentDto,
-    nullable: true,
-  })
-  @IsOptional()
-  mother: PetFamilyParentDto | null;
+  data: PetDto;
 }
 
-export class PetFamilyParentDto {
-  @ApiProperty({ description: '펫 ID', example: 'abc123' })
-  @IsString()
-  petId: string;
-
-  @ApiProperty({ description: '펫 이름', example: '잠원동대파' })
-  @IsString()
-  name: string;
-}
-
-export class PetFamilyTreeResponseDto {
+export class FilterPetListResponseDto extends CommonResponseDto {
   @ApiProperty({
-    description: 'pairId별로 그룹화된 펫 데이터',
+    description: '날짜 범위별 해칭 펫 목록',
     type: 'object',
     additionalProperties: {
-      $ref: getSchemaPath(PetFamilyPairGroupDto),
+      type: 'array',
+      items: { $ref: getSchemaPath(PetDto) },
     },
   })
-  pairData: Record<string, PetFamilyPairGroupDto>;
+  data: Record<string, PetDto[]>;
+}
+
+export class UnlinkParentDto {
+  @ApiProperty({
+    description: '부모 역할',
+    enum: PARENT_ROLE,
+    'x-enumNames': Object.keys(PARENT_ROLE),
+    example: PARENT_ROLE.FATHER,
+  })
+  @IsEnum(PARENT_ROLE)
+  @IsNotEmpty()
+  role: PARENT_ROLE;
 }

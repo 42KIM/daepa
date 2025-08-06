@@ -6,9 +6,6 @@ import {
   Index,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
   OneToOne,
 } from 'typeorm';
 import { PET_GROWTH, PET_SEX, PET_SPECIES } from './pet.constants';
@@ -26,25 +23,19 @@ export class PetEntity {
   petId: string;
 
   @Column({ nullable: true })
-  ownerId: string;
+  ownerId?: string;
 
   @Column({ nullable: true })
-  layingId: number;
+  pairId?: number;
 
-  @Column({ nullable: true })
-  fatherId: string;
-
-  @Column({ nullable: true })
-  motherId: string;
-
-  @Column({ nullable: true })
-  pairId: number;
+  @Column({ type: 'int', nullable: true })
+  layingId?: number;
 
   @Column({ type: 'date', nullable: true })
-  hatchingDate: Date;
+  hatchingDate?: Date;
 
   @Column({ nullable: true })
-  name: string; // 이름
+  name?: string; // 이름
 
   @Column({ type: 'enum', enum: PET_SEX, nullable: true })
   sex?: PET_SEX; // 성별
@@ -87,22 +78,6 @@ export class PetEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // 부모 관계 정의
-  @ManyToOne(() => PetEntity, { nullable: true })
-  @JoinColumn({ name: 'fatherId', referencedColumnName: 'petId' })
-  father?: PetEntity;
-
-  @ManyToOne(() => PetEntity, { nullable: true })
-  @JoinColumn({ name: 'motherId', referencedColumnName: 'petId' })
-  mother?: PetEntity;
-
-  // 자식 관계 정의 (선택사항 - 필요시 사용)
-  @OneToMany(() => PetEntity, (pet) => pet.father)
-  childrenAsFather?: PetEntity[];
-
-  @OneToMany(() => PetEntity, (pet) => pet.mother)
-  childrenAsMother?: PetEntity[];
 
   // 분양 관계 정의
   @OneToOne(() => AdoptionEntity, (adoption) => adoption.pet, {

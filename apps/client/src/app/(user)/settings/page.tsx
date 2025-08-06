@@ -71,7 +71,7 @@ const SettingsPage = () => {
   const { data: userProfile } = useQuery({
     queryKey: [userControllerGetUserProfile.name],
     queryFn: userControllerGetUserProfile,
-    select: (response) => response.data,
+    select: (response) => response.data.data,
   });
 
   const { mutate: signOut } = useMutation({
@@ -315,7 +315,6 @@ const SettingsPage = () => {
                   type="email"
                   value={userProfile?.email ?? ""}
                   placeholder="이메일을 입력하세요"
-                  defaultValue="user@example.com"
                   disabled
                 />
                 {/* TODO: provider가 여러 개인 경우 대응하기 */}

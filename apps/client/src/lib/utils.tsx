@@ -2,8 +2,8 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import QRCode from "qrcode";
 import { format, parse } from "date-fns";
-import { EggDto, PetDtoSaleStatus } from "@repo/api-client";
 import { Badge } from "@/components/ui/badge";
+import { AdoptionDtoStatus } from "@repo/api-client";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -44,13 +44,13 @@ export const formatDateToYYYYMMDDString = (
   return formattedDate;
 };
 
-export const getStatusBadge = (status?: PetDtoSaleStatus) => {
+export const getStatusBadge = (status?: AdoptionDtoStatus) => {
   switch (status) {
-    case PetDtoSaleStatus.ON_SALE:
-      return <Badge className="bg-yellow-500">판매중</Badge>;
-    case PetDtoSaleStatus.ON_RESERVATION:
-      return <Badge className="bg-blue-500">예약중</Badge>;
-    case PetDtoSaleStatus.SOLD:
+    case AdoptionDtoStatus.ON_SALE:
+      return <Badge className="bg-blue-500">판매중</Badge>;
+    case AdoptionDtoStatus.ON_RESERVATION:
+      return <Badge className="bg-yellow-500">예약중</Badge>;
+    case AdoptionDtoStatus.SOLD:
       return <Badge className="bg-green-500">판매완료</Badge>;
     default:
       return <Badge variant="outline">미정</Badge>;
@@ -63,8 +63,4 @@ export const getNumberToDate = (dateNumber: number) => {
   const month = parseInt(dateString.substring(4, 6), 10);
   const day = parseInt(dateString.substring(6, 8), 10);
   return new Date(year, month - 1, day);
-};
-
-export const getEggName = (egg: EggDto) => {
-  return `${egg.father?.name ?? "@"}x${egg.mother?.name ?? "@"}(${egg.clutch ?? "@"}-${egg.clutchOrder})`;
 };

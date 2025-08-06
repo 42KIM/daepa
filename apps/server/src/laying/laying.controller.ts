@@ -28,7 +28,7 @@ export class LayingController {
   async create(
     @Body() createLayingDto: CreateLayingDto,
     @JwtUser() token: JwtUserPayload,
-  ) {
+  ): Promise<CommonResponseDto> {
     await this.layingService.createLaying(createLayingDto, token.userId);
     return {
       success: true,
@@ -45,7 +45,7 @@ export class LayingController {
   async update(
     @Param('id') id: number,
     @Body() updateLayingDto: UpdateLayingDto,
-  ) {
+  ): Promise<CommonResponseDto> {
     await this.layingService.updateLaying(id, updateLayingDto);
     return {
       success: true,

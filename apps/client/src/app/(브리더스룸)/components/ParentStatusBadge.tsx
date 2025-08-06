@@ -1,4 +1,4 @@
-import { ParentDtoStatus } from "@repo/api-client";
+import { UpdateParentRequestDtoStatus } from "@repo/api-client";
 import { STATUS_MAP } from "../constants";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheck } from "lucide-react";
@@ -18,7 +18,9 @@ const ParentStatusBadge = ({ status, isMyPet }: { status: string; isMyPet: boole
         "나의 펫"
       ) : (
         <>
-          {status === ParentDtoStatus.APPROVED && <BadgeCheck className="h-4 w-4 text-gray-100" />}
+          {status === UpdateParentRequestDtoStatus.APPROVED && (
+            <BadgeCheck className="h-4 w-4 text-gray-100" />
+          )}
           {STATUS_MAP[status as keyof typeof STATUS_MAP].label}
         </>
       )}

@@ -23,7 +23,7 @@ const AdoptionDetailModal = ({ isOpen, onClose, adoptionId }: AdoptionDetailModa
   } = useQuery({
     queryKey: [adoptionControllerGetAdoptionByAdoptionId.name, adoptionId],
     queryFn: () => adoptionControllerGetAdoptionByAdoptionId(adoptionId),
-    select: (data) => data.data,
+    select: (data) => data.data.data,
   });
 
   const pet = adoptionData?.pet;
@@ -59,7 +59,7 @@ const AdoptionDetailModal = ({ isOpen, onClose, adoptionId }: AdoptionDetailModa
                   {pet.morphs.map((morph: string) => `#${morph}`).join(" ")}
                 </div>
               )}
-              {pet?.hatchingDate && <p className="text-blue-600">{pet.hatchingDate ?? "-"}</p>}
+              {pet?.hatchingDate && <p className="text-blue-600">{pet.hatchingDate}</p>}
             </div>
           </div>
 
