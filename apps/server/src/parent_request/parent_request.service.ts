@@ -90,19 +90,19 @@ export class ParentRequestService {
         id: notification.targetId,
       });
 
-      //parentRequest의 상태가 pending이 아니면 오류 발생
-      if (parentRequest?.status === PARENT_STATUS.APPROVED) {
-        throw new BadRequestException('이미 수락된 처리된 요청입니다.');
-      }
-      if (parentRequest?.status === PARENT_STATUS.REJECTED) {
-        throw new BadRequestException('이미 거절된 요청입니다.');
-      }
-      if (parentRequest?.status === PARENT_STATUS.CANCELLED) {
-        throw new BadRequestException('이미 취소된 요청입니다.');
-      }
-
       if (!parentRequest) {
         throw new NotFoundException('부모 요청을 찾을 수 없습니다.');
+      }
+
+      //parentRequest의 상태가 pending이 아니면 오류 발생
+      if (parentRequest.status === PARENT_STATUS.APPROVED) {
+        throw new BadRequestException('이미 수락된 처리된 요청입니다.');
+      }
+      if (parentRequest.status === PARENT_STATUS.REJECTED) {
+        throw new BadRequestException('이미 거절된 요청입니다.');
+      }
+      if (parentRequest.status === PARENT_STATUS.CANCELLED) {
+        throw new BadRequestException('이미 취소된 요청입니다.');
       }
 
       const { childPet, parentPet } = await this.getPetInfo(
