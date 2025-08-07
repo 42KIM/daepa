@@ -26,7 +26,7 @@ export class UserNotificationEntity {
   @Column({ type: 'enum', enum: USER_NOTIFICATION_TYPE })
   type: USER_NOTIFICATION_TYPE; // 알림 종류
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'int' })
   targetId?: number; // 알림 대상 객체 Id
 
   @Column({
