@@ -344,7 +344,9 @@ export class PetAdoptionDto {
     example: 'ONLINE',
     enum: PET_ADOPTION_LOCATION,
     'x-enumNames': Object.keys(PET_ADOPTION_LOCATION),
+    required: false,
   })
+  @IsOptional()
   @IsEnum(PET_ADOPTION_LOCATION)
   location?: PET_ADOPTION_LOCATION;
 
@@ -358,9 +360,10 @@ export class PetAdoptionDto {
   @ApiProperty({
     description: '분양 펫 아이디',
     example: 'XXXXXXXX',
+    required: true,
   })
   @IsString()
-  petId?: string;
+  petId: string;
 }
 
 export class PetDto extends PetBaseDto {

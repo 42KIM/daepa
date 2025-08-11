@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Search, User } from "lucide-react";
 import {
+  adoptionControllerCreateAdoption,
   adoptionControllerUpdate,
-  AdoptionDto,
   AdoptionDtoStatus,
+  CreateAdoptionDto,
+  PetAdoptionDtoLocation,
   UpdateAdoptionDto,
 } from "@repo/api-client";
 import { useForm } from "react-hook-form";
@@ -30,12 +32,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SALE_STATUS_KOREAN_INFO } from "../../constants";
+import { isUndefined, omitBy } from "es-toolkit";
+import { AdoptionEditFormDto } from "../types";
 
 const adoptionSchema = z.object({
   price: z.string().optional(),
   adoptionDate: z.date().optional(),
   memo: z.string().optional(),
-  location: z.enum(["online", "offline"]).default("offline"),
+  location: z.enum(["ONLINE", "OFFLINE"]).default("OFFLINE"),
   buyerId: z.string().optional(),
   status: z
     .enum([
@@ -51,7 +55,7 @@ const adoptionSchema = z.object({
 type AdoptionFormData = z.infer<typeof adoptionSchema>;
 
 interface EditAdoptionFormProps {
-  adoptionData?: AdoptionDto;
+  adoptionData?: AdoptionEditFormDto | null;
   handleClose: () => void;
   handleCancel: () => void;
 }
@@ -64,17 +68,17 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
     resolver: zodResolver(adoptionSchema),
     defaultValues: {
       price: adoptionData?.price ? adoptionData.price.toString() : "",
-      memo: (adoptionData?.memo as string) ?? "",
-      location: (adoptionData?.location as "online" | "offline") ?? "offline",
-      buyerId: (adoptionData?.buyer?.userId as string) ?? "",
+      memo: adoptionData?.memo ?? "",
+      location: adoptionData?.location ?? PetAdoptionDtoLocation.OFFLINE,
+      buyerId: adoptionData?.buyerId ?? adoptionData?.buyer?.userId ?? "",
       adoptionDate: adoptionData?.adoptionDate ? new Date(adoptionData.adoptionDate) : undefined,
       status: adoptionData?.status ?? "UNDEFINED",
     },
   });
 
-  const { mutate: updateAdoption, isPending } = useMutation({
-    mutationFn: (data: UpdateAdoptionDto) =>
-      adoptionControllerUpdate(adoptionData?.adoptionId as string, data),
+  const { mutateAsync: updateAdoption, isPending: isUpdatingAdoption } = useMutation({
+    mutationFn: ({ adoptionId, data }: { adoptionId: string; data: UpdateAdoptionDto }) =>
+      adoptionControllerUpdate(adoptionId, data),
     onSuccess: () => {
       handleClose();
     },
@@ -84,34 +88,35 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
     },
   });
 
-  if (!adoptionData) return null;
-
-  const pet = adoptionData?.pet;
+  const { mutateAsync: createAdoption, isPending: isCreatingAdoption } = useMutation({
+    mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
+  });
 
   const onSubmit = async (data: AdoptionFormData) => {
-    if (!pet) return;
+    if (!adoptionData?.petId) return;
 
-    const newAdoptionDto = {
-      petId: pet.petId,
-      ...(data.price && {
-        price: Number(data.price),
-      }),
-      ...(data.adoptionDate && {
-        adoptionDate: data.adoptionDate.toISOString(),
-      }),
-      ...(data.memo && {
+    const petId = adoptionData.petId;
+    const adoptionId = adoptionData?.adoptionId;
+
+    const newAdoptionDto = omitBy(
+      {
+        petId,
+        price: data.price ? Number(data.price) : undefined,
+        adoptionDate: data.adoptionDate?.toISOString(),
         memo: data.memo,
-      }),
-      ...(data.location && {
         location: data.location,
-      }),
-      ...(data.buyerId && {
         buyerId: data.buyerId,
-      }),
-      ...(data.status && data.status !== "UNDEFINED" && { status: data.status }),
-    };
+        status: data.status === "UNDEFINED" ? undefined : data.status,
+      },
+      isUndefined,
+    );
 
-    updateAdoption(newAdoptionDto);
+    if (adoptionId) {
+      await updateAdoption({ adoptionId, data: newAdoptionDto });
+    } else {
+      await createAdoption({ ...newAdoptionDto, petId });
+    }
+    handleClose();
   };
 
   return (
@@ -197,7 +202,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
                           ? new Date(adoptionData.adoptionDate)
                           : undefined)
                       }
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={(date) => date < new Date("1900-01-01")}
                       initialFocus
                     />
                   </PopoverContent>
@@ -259,16 +264,20 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant={field.value === "offline" ? "default" : "outline"}
-                      onClick={() => field.onChange("offline")}
+                      variant={
+                        field.value === PetAdoptionDtoLocation.OFFLINE ? "default" : "outline"
+                      }
+                      onClick={() => field.onChange(PetAdoptionDtoLocation.OFFLINE)}
                       className="flex-1"
                     >
                       오프라인
                     </Button>
                     <Button
                       type="button"
-                      variant={field.value === "online" ? "default" : "outline"}
-                      onClick={() => field.onChange("online")}
+                      variant={
+                        field.value === PetAdoptionDtoLocation.ONLINE ? "default" : "outline"
+                      }
+                      onClick={() => field.onChange(PetAdoptionDtoLocation.ONLINE)}
                       className="flex-1"
                     >
                       온라인
@@ -295,10 +304,14 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
           />
 
           <div className="flex justify-end gap-2">
-            <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-              {isPending ? "저장 중..." : "저장"}
+            <Button
+              type="submit"
+              onClick={form.handleSubmit(onSubmit)}
+              disabled={isUpdatingAdoption || isCreatingAdoption}
+            >
+              {isUpdatingAdoption || isCreatingAdoption ? "저장 중..." : "저장"}
             </Button>
-            <Button variant="outline" onClick={handleCancel}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               취소
             </Button>
           </div>

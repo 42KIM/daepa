@@ -1,4 +1,4 @@
-import CreateAdoptionModal from "@/app/(브리더스룸)/adoption/components/CreateAdoptionModal";
+import EditAdoptionModal from "@/app/(브리더스룸)/adoption/components/EditAdoptionModal";
 import Dialog from "@/app/(브리더스룸)/components/Form/Dialog";
 import {
   Select,
@@ -47,26 +47,25 @@ const AdoptionStatusControl = memo(({ pet }: AdoptionStatusControlProps) => {
     },
   });
 
-  const handleSuccess = useCallback(() => {
-    queryClient.invalidateQueries({
-      queryKey: [petControllerFindPetByPetId.name, pet.petId],
-    });
-    toast.success("판매 상태가 변경되었습니다.");
-  }, [queryClient, pet.petId]);
-
   const handleCreateAdoptionModal = useCallback(
     (newStatus: AdoptionDtoStatus) => {
       overlay.open(({ isOpen, close }) => (
-        <CreateAdoptionModal
+        <EditAdoptionModal
           isOpen={isOpen}
           onClose={close}
           pet={pet}
           status={newStatus}
-          onSuccess={handleSuccess}
+          onSuccess={() => {
+            queryClient.invalidateQueries({
+              queryKey: [petControllerFindPetByPetId.name, pet.petId],
+            });
+            toast.success("판매 상태가 변경되었습니다.");
+            close();
+          }}
         />
       ));
     },
-    [pet, handleSuccess],
+    [pet, queryClient],
   );
 
   const handleStatusChangeDialog = useCallback(

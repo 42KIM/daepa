@@ -4,8 +4,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, DataSource, In, Repository } from 'typeorm';
+import { EntityManager, DataSource, In } from 'typeorm';
 import { ParentRequestEntity } from './parent_request.entity';
 import {
   CreateParentRequestDto,
@@ -20,8 +19,6 @@ import { USER_NOTIFICATION_TYPE } from '../user_notification/user_notification.c
 @Injectable()
 export class ParentRequestService {
   constructor(
-    @InjectRepository(ParentRequestEntity)
-    private readonly parentRequestRepository: Repository<ParentRequestEntity>,
     private readonly userNotificationService: UserNotificationService,
     private readonly dataSource: DataSource,
   ) {}

@@ -670,7 +670,10 @@ export const getPetControllerFindPetByPetIdResponseMock = (
             ] as const),
             adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
             memo: faker.string.alpha(20),
-            location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+            location: faker.helpers.arrayElement([
+              faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+              undefined,
+            ]),
             buyerId: faker.string.alpha(20),
             petId: faker.string.alpha(20),
           },
@@ -1060,7 +1063,10 @@ export const getBrPetControllerFindAllResponseMock = (
           status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
-          location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+          location: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+            undefined,
+          ]),
           buyerId: faker.string.alpha(20),
           petId: faker.string.alpha(20),
         },
@@ -1266,7 +1272,10 @@ export const getBrPetControllerGetPetsByYearResponseMock = (): BrPetControllerGe
           status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
-          location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+          location: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+            undefined,
+          ]),
           buyerId: faker.string.alpha(20),
           petId: faker.string.alpha(20),
         },
@@ -1473,7 +1482,10 @@ export const getBrPetControllerGetPetsByMonthResponseMock = (
             ] as const),
             adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
             memo: faker.string.alpha(20),
-            location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+            location: faker.helpers.arrayElement([
+              faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+              undefined,
+            ]),
             buyerId: faker.string.alpha(20),
             petId: faker.string.alpha(20),
           },
@@ -1682,7 +1694,10 @@ export const getBrPetControllerGetPetsByDateRangeResponseMock = (
             ] as const),
             adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
             memo: faker.string.alpha(20),
-            location: faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+            location: faker.helpers.arrayElement([
+              faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+              undefined,
+            ]),
             buyerId: faker.string.alpha(20),
             petId: faker.string.alpha(20),
           },
@@ -1791,9 +1806,10 @@ export const getAdoptionControllerGetAllAdoptionsResponseMock = (
       undefined,
     ]),
     memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-    location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-    createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-    updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+    location: faker.helpers.arrayElement([
+      faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+      undefined,
+    ]),
     status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
     seller: {
       ...{
@@ -1885,9 +1901,10 @@ export const getAdoptionControllerGetAdoptionByAdoptionIdResponseMock = (
         undefined,
       ]),
       memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-      location: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-      createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-      updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
+      location: faker.helpers.arrayElement([
+        faker.helpers.arrayElement(["ONLINE", "OFFLINE"] as const),
+        undefined,
+      ]),
       status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
       seller: {
         ...{

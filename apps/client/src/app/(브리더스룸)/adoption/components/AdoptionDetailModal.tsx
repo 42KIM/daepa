@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 import { useQuery } from "@tanstack/react-query";
-import { adoptionControllerGetAdoptionByAdoptionId, PetDtoSpecies } from "@repo/api-client";
+import {
+  adoptionControllerGetAdoptionByAdoptionId,
+  PetAdoptionDtoLocation,
+  PetDtoSpecies,
+} from "@repo/api-client";
 import { SPECIES_KOREAN_INFO } from "../../constants";
 import { getStatusBadge } from "@/lib/utils";
 import Loading from "@/components/common/Loading";
@@ -45,6 +49,8 @@ const AdoptionDetailModal = ({
 
   const pet = adoptionData?.pet;
 
+  if (!pet) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -66,11 +72,9 @@ const AdoptionDetailModal = ({
             <div className="mb-2 flex items-center gap-2 font-semibold">
               {pet?.name}
 
-              {pet?.species && (
-                <div className="text-muted-foreground text-sm font-normal">
-                  | {SPECIES_KOREAN_INFO[pet.species as PetDtoSpecies]}
-                </div>
-              )}
+              <div className="text-muted-foreground text-sm font-normal">
+                | {SPECIES_KOREAN_INFO[pet.species as PetDtoSpecies]}
+              </div>
             </div>
             <div className="flex flex-col gap-2 text-sm text-gray-600">
               {pet?.morphs && pet.morphs.length > 0 && (
@@ -98,37 +102,37 @@ const AdoptionDetailModal = ({
             ) : (
               // 읽기 전용 뷰
               <>
-                {adoptionData?.price && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">분양 가격</span>
-                    <span className="text-sm">{adoptionData.price.toLocaleString()}원</span>
-                  </div>
-                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">분양 가격</span>
+                  <span className="text-sm">
+                    {adoptionData?.price ? adoptionData.price.toLocaleString() : "-"}원
+                  </span>
+                </div>
 
-                {adoptionData?.adoptionDate && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">분양 날짜</span>
-                    <span className="text-sm">
-                      {format(adoptionData.adoptionDate, "yyyy. MM. dd", { locale: ko })}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">분양 날짜</span>
+                  <span className="text-sm">
+                    {adoptionData?.adoptionDate
+                      ? format(adoptionData.adoptionDate, "yyyy. MM. dd", { locale: ko })
+                      : "-"}
+                  </span>
+                </div>
 
-                {adoptionData?.location && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">거래 장소</span>
-                    <span className="text-sm">
-                      {adoptionData.location === "offline" ? "오프라인" : "온라인"}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">거래 장소</span>
+                  <span className="text-sm">
+                    {adoptionData?.location
+                      ? adoptionData.location === PetAdoptionDtoLocation.OFFLINE
+                        ? "오프라인"
+                        : "온라인"
+                      : "-"}
+                  </span>
+                </div>
 
-                {adoptionData?.memo && (
-                  <div>
-                    <span className="text-sm font-medium">메모</span>
-                    <p className="text-muted-foreground mt-1 text-sm">{adoptionData.memo}</p>
-                  </div>
-                )}
+                <div>
+                  <span className="text-sm font-medium">메모</span>
+                  <p className="text-muted-foreground mt-1 text-sm">{adoptionData?.memo ?? "-"}</p>
+                </div>
               </>
             )}
           </div>

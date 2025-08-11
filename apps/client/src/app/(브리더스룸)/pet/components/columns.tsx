@@ -1,7 +1,6 @@
 "use client";
 
 import { Column, ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -96,27 +95,6 @@ function TableHeaderSelect({
 
 export const columns: ColumnDef<PetDto>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "isPublic",
     header: ({ column }) => {
       return (
@@ -128,7 +106,7 @@ export const columns: ColumnDef<PetDto>[] = [
         />
       );
     },
-    cell: ({ cell }) => <div className="capitalize">{cell.getValue() ? "✅" : ""}</div>,
+    cell: ({ cell }) => <div className="text-center capitalize">{cell.getValue() ? "✅" : ""}</div>,
   },
   {
     accessorKey: "adoption.status",
@@ -158,7 +136,11 @@ export const columns: ColumnDef<PetDto>[] = [
     header: TABLE_HEADER.name,
     cell: ({ row }) => {
       const name = row.original.name;
-      return <div className="font-semibold">{name}</div>;
+      return (
+        <div className="max-w-[150px] truncate font-semibold" title={name}>
+          {name}
+        </div>
+      );
     },
   },
   {
