@@ -6,13 +6,11 @@ import {
   Get,
   Param,
   Patch,
-  Post,
   Query,
 } from '@nestjs/common';
 import { UserNotificationService } from './user_notification.service';
 import { PageMetaDto, PageOptionsDto } from 'src/common/page.dto';
 import {
-  CreateUserNotificationDto,
   DeleteUserNotificationDto,
   UpdateUserNotificationDto,
   UserNotificationDto,
@@ -56,26 +54,6 @@ export class UserNotificationController {
     );
   }
 
-  @Post()
-  @ApiResponse({
-    status: 200,
-    description: '알림이 생성되었습니다.',
-    type: CommonResponseDto,
-  })
-  async create(
-    @Body() createUserNotificationDto: CreateUserNotificationDto,
-    @JwtUser() token: JwtUserPayload,
-  ): Promise<CommonResponseDto> {
-    await this.userNotificationService.createUserNotification(
-      token.userId,
-      createUserNotificationDto,
-    );
-    return {
-      success: true,
-      message: '알림이 생성되었습니다.',
-    };
-  }
-
   @Patch()
   @ApiResponse({
     status: 200,
@@ -84,10 +62,8 @@ export class UserNotificationController {
   })
   async update(
     @Body() updateUserNotificationDto: UpdateUserNotificationDto,
-    @JwtUser() token: JwtUserPayload,
   ): Promise<CommonResponseDto> {
     await this.userNotificationService.updateUserNotification(
-      token.userId,
       updateUserNotificationDto,
     );
     return {

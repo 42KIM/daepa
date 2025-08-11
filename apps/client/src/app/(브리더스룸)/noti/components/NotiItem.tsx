@@ -15,7 +15,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { NOTIFICATION_TYPE } from "../../constants";
-import { ParentRequestDetailJsonDto } from "../../register/types";
+import StatusBadge from "./StatusBadge";
 
 interface NotiItemProps {
   item: UserNotificationDto;
@@ -77,6 +77,8 @@ const NotiItem = ({ item }: NotiItemProps) => {
             >
               {NOTIFICATION_TYPE[item.type].label}
             </Badge>
+            <StatusBadge item={item} />
+
             {item.status === UserNotificationDtoStatus.UNREAD && (
               <span className="flex h-2 w-2 rounded-full bg-red-500" />
             )}
@@ -93,10 +95,10 @@ const NotiItem = ({ item }: NotiItemProps) => {
             })}
           </div>
         </div>
-        <NotiTitle detailData={item?.detailJson as unknown as ParentRequestDetailJsonDto} />
+        <NotiTitle detailData={item?.detailJson} />
       </div>
       <div className="text-muted-foreground line-clamp-2 text-xs">
-        {(item.detailJson?.message as string)?.substring(0, 300)}
+        {item.detailJson?.message?.substring(0, 300)}
       </div>
     </button>
   );
