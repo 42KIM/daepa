@@ -318,7 +318,13 @@ export class PetService {
         isDeleted: false,
         eggGrowth: PET_GROWTH.EGG,
       })
-      .setParameter('soldStatus', ADOPTION_SALE_STATUS.SOLD);
+      .setParameter('soldStatus', ADOPTION_SALE_STATUS.SOLD)
+      .leftJoin(
+        'adoptions',
+        'soldAd',
+        'soldAd.petId = pets.petId AND soldAd.isDeleted = false AND soldAd.status = :soldStatus',
+      )
+      .andWhere('soldAd.id IS NULL');
 
     if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.ALL) {
       // 기본적으로 모든 공개된 펫과 자신의 펫을 조회
@@ -851,7 +857,6 @@ export class PetService {
             entityManager,
             childPet.ownerId,
             {
-              senderId: childPet.ownerId,
               receiverId: parentPet.ownerId,
               type: USER_NOTIFICATION_TYPE.PARENT_CANCEL,
               targetId: parentRequest.id,

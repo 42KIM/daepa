@@ -8,20 +8,12 @@ interface HeaderProps {
   step: number;
   setStep: (step: number) => void;
   selectedPet?: PetSummaryDto;
-  searchQuery: string;
   className?: string;
   setSearchQuery: (searchQuery: string) => void;
 }
 
-const Header = ({
-  step,
-  setStep,
-  selectedPet,
-  searchQuery,
-  setSearchQuery,
-  className,
-}: HeaderProps) => {
-  const [keyword, setKeyword] = useState(searchQuery);
+const Header = ({ step, setStep, selectedPet, setSearchQuery, className }: HeaderProps) => {
+  const [keyword, setKeyword] = useState("");
 
   return (
     <div className={cn("sticky -top-[12px] z-20 mt-3 bg-white py-4 dark:bg-[#18181B]", className)}>

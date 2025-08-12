@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import { SPECIES_KOREAN_INFO } from "../../constants";
 import {
@@ -122,7 +122,6 @@ const EditAdoptionModal = ({ isOpen, status, pet, onClose, onSuccess }: EditAdop
               step={step}
               setStep={setStep}
               selectedPet={selectedPet}
-              searchQuery={keyword}
               setSearchQuery={setKeyword}
               className="py-0"
             />
@@ -196,7 +195,13 @@ const EditAdoptionModal = ({ isOpen, status, pet, onClose, onSuccess }: EditAdop
                 )}
                 {selectedPet?.hatchingDate && (
                   <p className="text-blue-600">
-                    {format(selectedPet.hatchingDate, "yyyy. MM. dd", { locale: ko })}
+                    {format(
+                      typeof selectedPet.hatchingDate === "string"
+                        ? parseISO(selectedPet.hatchingDate)
+                        : selectedPet.hatchingDate,
+                      "yyyy. MM. dd",
+                      { locale: ko },
+                    )}{" "}
                   </p>
                 )}
               </div>

@@ -1,5 +1,5 @@
 import { SALE_STATUS_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
-import { PetAdoptionDto, petControllerFindPetByPetId } from "@repo/api-client";
+import { AdoptionDto, PetAdoptionDto, petControllerFindPetByPetId } from "@repo/api-client";
 import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useState, memo, useCallback, useMemo } from "react";
@@ -7,48 +7,14 @@ import { PencilIcon } from "lucide-react";
 import AdoptionDetailModal from "@/app/(브리더스룸)/adoption/components/AdoptionDetailModal";
 import { overlay } from "overlay-kit";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMutation } from "@tanstack/react-query";
-import { adoptionControllerUpdate } from "@repo/api-client";
-import { UpdateAdoptionDto } from "@repo/api-client";
-import { toast } from "sonner";
-import Loading from "@/components/common/Loading";
 
 interface AdoptionReceiptProps {
-  adoption: PetAdoptionDto; // 실제 타입에 맞게 수정 필요
+  adoption: AdoptionDto | PetAdoptionDto;
 }
 
 const AdoptionReceipt = memo(({ adoption }: AdoptionReceiptProps) => {
   const [isReceiptVisible, setIsReceiptVisible] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
   const queryClient = useQueryClient();
-
-  const { mutateAsync: updateAdoption, isPending } = useMutation({
-    mutationFn: (data: UpdateAdoptionDto) => adoptionControllerUpdate(adoption.adoptionId, data),
-    onSuccess: async () => {
-      setIsUpdating(true);
-
-      try {
-        await queryClient.invalidateQueries({
-          queryKey: [petControllerFindPetByPetId.name, adoption.petId],
-        });
-
-        toast.success("분양 정보가 성공적으로 업데이트되었습니다.");
-      } catch (error) {
-        console.error("쿼리 무효화 실패:", error);
-        toast.error("데이터 새로고침에 실패했습니다. 페이지를 새로고침해주세요.");
-      } finally {
-        setIsUpdating(false);
-      }
-    },
-    onError: (error) => {
-      console.error("분양 수정 실패:", error);
-      toast.error("분양 수정에 실패했습니다. 다시 시도해주세요.");
-      setIsUpdating(false);
-    },
-  });
-
-  // 로딩 상태가 true일 때 버튼 비활성화 및 로딩 표시
-  const isProcessing = isPending || isUpdating;
 
   const handleReceiptHover = useCallback(() => {
     if (!isReceiptVisible) {
@@ -90,16 +56,16 @@ const AdoptionReceipt = memo(({ adoption }: AdoptionReceiptProps) => {
         isOpen={isOpen}
         onClose={close}
         adoptionId={adoption.adoptionId}
-        onUpdate={async () => {
-          await updateAdoption(adoption);
+        onUpdate={() => {
+          queryClient.invalidateQueries({
+            queryKey: [petControllerFindPetByPetId.name, adoption.petId],
+          });
         }}
       />
     ));
-  }, [adoption, updateAdoption]);
+  }, [adoption, queryClient]);
 
   if (!shouldShowReceipt) return null;
-
-  if (isProcessing) return <Loading />;
 
   return (
     <div className="pb-4 pt-4">

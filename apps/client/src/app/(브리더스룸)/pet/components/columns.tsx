@@ -46,12 +46,12 @@ function TableHeaderSelect({
   column,
   title,
   items,
-  renderItem = (item: string) => item,
+  renderItem = (item: string | number) => item.toString(),
 }: {
   column: Column<PetDto, unknown>;
   title: string;
-  items: string[];
-  renderItem?: (item: string) => string;
+  items: string[] | number[];
+  renderItem?: (item: string | number) => string;
 }) {
   const { searchFilters, setSearchFilters } = useSearchStore();
   const columnId = column.id === "adoption_status" ? "status" : column.id;
@@ -83,7 +83,7 @@ function TableHeaderSelect({
         <SelectContent>
           <SelectItem value="all">전체</SelectItem>
           {items.map((item) => (
-            <SelectItem key={item} value={item}>
+            <SelectItem key={item} value={item.toString()}>
               {renderItem(item)}
             </SelectItem>
           ))}
@@ -101,8 +101,8 @@ export const columns: ColumnDef<PetDto>[] = [
         <TableHeaderSelect
           column={column}
           title={TABLE_HEADER.isPublic || ""}
-          items={["1", "0"]}
-          renderItem={(item) => (item === "1" ? "공개" : "비공개")}
+          items={[1, 0]}
+          renderItem={(item) => (item === 1 ? "공개" : "비공개")}
         />
       );
     },

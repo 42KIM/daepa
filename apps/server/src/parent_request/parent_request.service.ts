@@ -50,7 +50,6 @@ export class ParentRequestService {
         entityManager,
         childPet.ownerId,
         {
-          senderId: childPet.ownerId,
           receiverId: parentPet.ownerId,
           type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
           targetId: parentRequest.id,
@@ -138,7 +137,6 @@ export class ParentRequestService {
           entityManager,
           parentPet.ownerId,
           {
-            senderId: parentPet.ownerId,
             receiverId: notification.senderId,
             type: this.getNotificationTypeByStatus(
               updateParentRequestDto.status,

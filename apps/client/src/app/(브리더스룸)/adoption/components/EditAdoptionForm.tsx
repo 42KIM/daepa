@@ -80,6 +80,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
     mutationFn: ({ adoptionId, data }: { adoptionId: string; data: UpdateAdoptionDto }) =>
       adoptionControllerUpdate(adoptionId, data),
     onSuccess: () => {
+      toast.success("분양 정보가 성공적으로 업데이트되었습니다.");
       handleClose();
     },
     onError: (error) => {
@@ -91,6 +92,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
   const { mutateAsync: createAdoption, isPending: isCreatingAdoption } = useMutation({
     mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
     onSuccess: () => {
+      toast.success("분양 정보가 성공적으로 생성되었습니다.");
       handleClose();
     },
     onError: (error) => {
@@ -313,11 +315,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
           />
 
           <div className="flex justify-end gap-2">
-            <Button
-              type="submit"
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={isUpdatingAdoption || isCreatingAdoption}
-            >
+            <Button type="submit" disabled={isUpdatingAdoption || isCreatingAdoption}>
               {isUpdatingAdoption || isCreatingAdoption ? "저장 중..." : "저장"}
             </Button>
             <Button type="button" variant="outline" onClick={handleCancel}>
