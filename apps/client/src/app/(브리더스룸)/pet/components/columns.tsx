@@ -101,13 +101,22 @@ export const columns: ColumnDef<PetDto>[] = [
         <TableHeaderSelect
           column={column}
           title={TABLE_HEADER.isPublic || ""}
-          items={["true", "false"]}
-          renderItem={(item) => (item === "true" ? "공개" : "비공개")}
+          items={["1", "0"]}
+          renderItem={(item) => (item === "1" ? "공개" : "비공개")}
         />
       );
     },
-    cell: ({ cell }) => <div className="text-center capitalize">{cell.getValue() ? "✅" : ""}</div>,
+    cell: ({ cell }) => {
+      const isPublic = cell.getValue();
+      return (
+        <div className="text-center">
+          <Badge variant={isPublic ? "default" : "outline"}>{isPublic ? "공개" : "비공개"}</Badge>
+          <span className="sr-only">{isPublic ? "공개" : "비공개"}</span>
+        </div>
+      );
+    },
   },
+
   {
     accessorKey: "adoption.status",
     header: ({ column }) => {

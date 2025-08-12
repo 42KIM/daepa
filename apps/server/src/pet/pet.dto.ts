@@ -547,12 +547,12 @@ export class PetFilterDto extends PageOptionsDto {
 
   @ApiProperty({
     description: '펫 공개 여부',
-    example: true,
+    example: 1,
     required: false,
   })
   @IsOptional()
-  @IsBoolean()
-  isPublic?: boolean; // 공개 여부 필터
+  @IsNumber()
+  isPublic?: number; // 공개 여부 필터
 
   @ApiProperty({
     description: '펫 최소 몸무게',

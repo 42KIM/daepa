@@ -90,10 +90,20 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
 
   const { mutateAsync: createAdoption, isPending: isCreatingAdoption } = useMutation({
     mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
+    onSuccess: () => {
+      handleClose();
+    },
+    onError: (error) => {
+      console.error("분양 생성 실패:", error);
+      toast.error("분양 생성에 실패했습니다. 다시 시도해주세요.");
+    },
   });
 
   const onSubmit = async (data: AdoptionFormData) => {
-    if (!adoptionData?.petId) return;
+    if (!adoptionData?.petId) {
+      toast.error("펫 정보를 찾을 수 없습니다. 다시 선택해주세요.");
+      return;
+    }
 
     const petId = adoptionData.petId;
     const adoptionId = adoptionData?.adoptionId;
@@ -116,7 +126,6 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
     } else {
       await createAdoption({ ...newAdoptionDto, petId });
     }
-    handleClose();
   };
 
   return (

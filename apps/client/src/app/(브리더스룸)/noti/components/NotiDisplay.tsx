@@ -86,11 +86,12 @@ const NotiDisplay = memo(() => {
     },
   });
 
+  const handleProcessedRequest = () => {
+    toast.error("이미 처리된 요청입니다.");
+  };
+
   const handleUpdate = async (status: UpdateParentRequestDtoStatus, rejectReason?: string) => {
-    if (alreadyProcessed) {
-      toast.error("이미 처리된 요청입니다.");
-      return;
-    }
+    if (alreadyProcessed) return handleProcessedRequest();
 
     if (!data?.senderId || data?.targetId === undefined || data?.targetId === null) return;
 
@@ -194,10 +195,7 @@ const NotiDisplay = memo(() => {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    if (alreadyProcessed) {
-                      toast.error("이미 처리된 요청입니다.");
-                      return;
-                    }
+                    if (alreadyProcessed) return handleProcessedRequest();
 
                     overlay.open(({ isOpen, close }) => (
                       <RejectModal isOpen={isOpen} close={close} handleUpdate={handleUpdate} />

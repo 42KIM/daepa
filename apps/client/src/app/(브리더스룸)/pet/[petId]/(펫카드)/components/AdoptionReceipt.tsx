@@ -80,10 +80,6 @@ const AdoptionReceipt = memo(({ adoption }: AdoptionReceiptProps) => {
       : "미정";
   }, [adoption?.adoptionDate]);
 
-  const shouldShowDate = useMemo(() => {
-    return ["SOLD", "ON_RESERVATION"].includes(adoption?.status || "");
-  }, [adoption?.status]);
-
   const animationDelay = useMemo(() => {
     return adoption?.memo ? "1.6s" : "1.4s";
   }, [adoption?.memo]);
@@ -174,28 +170,40 @@ const AdoptionReceipt = memo(({ adoption }: AdoptionReceiptProps) => {
             <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{priceText}</span>
           </div>
 
-          {shouldShowDate && (
-            <div
-              className={`flex justify-between ${isReceiptVisible ? "animate-fade-in-up" : ""}`}
-              style={{ animationDelay: "1.0s" }}
-            >
-              <span className="text-sm text-gray-600 dark:text-gray-400">분양 날짜</span>
-              <span className="text-sm text-gray-800 dark:text-gray-200">{adoptionDateText}</span>
-            </div>
-          )}
+          <div
+            className={`flex justify-between ${isReceiptVisible ? "animate-fade-in-up" : ""}`}
+            style={{ animationDelay: "1.0s" }}
+          >
+            <span className="text-sm text-gray-600 dark:text-gray-400">분양 날짜</span>
+            <span className="text-sm text-gray-800 dark:text-gray-200">{adoptionDateText}</span>
+          </div>
+
+          <div
+            className={`flex justify-between ${isReceiptVisible ? "animate-fade-in-up" : ""}`}
+            style={{ animationDelay: "1.2s" }}
+          >
+            <span className="text-sm text-gray-600 dark:text-gray-400">거래 방식</span>
+            <span className="text-sm text-gray-800 dark:text-gray-200">
+              {adoption?.location
+                ? adoption.location === "ONLINE"
+                  ? "온라인"
+                  : "오프라인"
+                : "미정"}
+            </span>
+          </div>
         </div>
 
         <div
           className={`mt-4 border-b border-dashed border-gray-400 pb-2 ${
             isReceiptVisible ? "animate-fade-in-up" : ""
           }`}
-          style={{ animationDelay: "1.2s" }}
+          style={{ animationDelay: "1.4s" }}
         ></div>
 
         {adoption?.memo ? (
           <div
             className={`mt-4 ${isReceiptVisible ? "animate-fade-in-up" : ""}`}
-            style={{ animationDelay: "1.4s" }}
+            style={{ animationDelay: "1.6s" }}
           >
             <div className="mb-2 text-sm text-gray-600 dark:text-gray-400">메모</div>
             <div className="rounded bg-gray-100 p-3 text-sm text-gray-800 dark:bg-gray-700 dark:text-gray-200">

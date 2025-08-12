@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { EntityManager, DataSource, In } from 'typeorm';
 import { ParentRequestEntity } from './parent_request.entity';
@@ -44,26 +45,37 @@ export class ParentRequestService {
       createParentRequestDto,
     );
 
-    // 알림 생성 (병렬 처리로 성능 향상)
+    try {
+      await this.userNotificationService.createUserNotification(
+        entityManager,
+        childPet.ownerId,
+        {
+          senderId: childPet.ownerId,
+          receiverId: parentPet.ownerId,
+          type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
+          targetId: parentRequest.id,
+          detailJson: {
+            childPet: {
+              id: childPet?.petId,
+              name: childPet?.name,
+            },
+            parentPet: {
+              id: parentPet?.petId,
+              name: parentPet.name,
+            },
+            role: createParentRequestDto.role,
+            message: createParentRequestDto.message,
+          },
+        },
+      );
+    } catch (error: unknown) {
+      const err = error as { code?: string };
 
-    await this.userNotificationService.createUserNotification(entityManager, {
-      senderId: childPet.ownerId,
-      receiverId: parentPet.ownerId,
-      type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
-      targetId: parentRequest.id,
-      detailJson: {
-        childPet: {
-          id: childPet?.petId,
-          name: childPet?.name,
-        },
-        parentPet: {
-          id: parentPet?.petId,
-          name: parentPet.name,
-        },
-        role: createParentRequestDto.role,
-        message: createParentRequestDto.message,
-      },
-    });
+      if (err?.code === 'ER_DUP_ENTRY') {
+        throw new ConflictException('동일한 알림이 이미 존재합니다.');
+      }
+      throw new InternalServerErrorException('알림 생성에 실패했습니다.');
+    }
 
     return parentRequest;
   }
@@ -124,6 +136,7 @@ export class ParentRequestService {
         // 새로운 알림 보내기
         await this.userNotificationService.createUserNotification(
           entityManager,
+          parentPet.ownerId,
           {
             senderId: parentPet.ownerId,
             receiverId: notification.senderId,

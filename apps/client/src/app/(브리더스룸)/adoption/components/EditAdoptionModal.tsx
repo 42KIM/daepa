@@ -79,7 +79,7 @@ const EditAdoptionModal = ({ isOpen, status, pet, onClose, onSuccess }: EditAdop
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const handleClose = () => {
-    setStep(1);
+    setStep(CREATE_ADOPTION_MODAL_STEP.PET_SELECT);
     setSelectedPet(undefined);
     setKeyword("");
     onClose();
@@ -92,7 +92,7 @@ const EditAdoptionModal = ({ isOpen, status, pet, onClose, onSuccess }: EditAdop
     }
 
     setSelectedPet(pet);
-    setStep(2);
+    setStep(CREATE_ADOPTION_MODAL_STEP.ADOPTION_INFO);
   };
 
   const getAdoptionData = (): AdoptionEditFormDto | null => {

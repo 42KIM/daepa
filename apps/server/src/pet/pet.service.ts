@@ -40,6 +40,10 @@ import { UserNotificationService } from 'src/user_notification/user_notification
 import { USER_NOTIFICATION_TYPE } from 'src/user_notification/user_notification.constant';
 import { UserNotificationEntity } from 'src/user_notification/user_notification.entity';
 
+const NOTIFICATION_MESSAGES = {
+  PARENT_REQUEST_CANCEL: '부모 요청이 취소되었습니다.',
+};
+
 @Injectable()
 export class PetService {
   private readonly MAX_RETRIES = 3;
@@ -831,9 +835,9 @@ export class PetService {
           .createQueryBuilder()
           .update(UserNotificationEntity)
           .set({
-            detailJson: () =>
-              `JSON_SET(detailJson, '$.status', '"${PARENT_STATUS.CANCELLED}"')`,
+            detailJson: () => `JSON_SET(detailJson, '$.status', :status)`,
           })
+          .setParameter('status', PARENT_STATUS.CANCELLED)
           .where({
             senderId: childPet.ownerId,
             receiverId: parentPet.ownerId,
@@ -842,27 +846,38 @@ export class PetService {
           })
           .execute();
 
-        await this.userNotificationService.createUserNotification(
-          entityManager,
-          {
-            senderId: childPet.ownerId,
-            receiverId: parentPet.ownerId,
-            type: USER_NOTIFICATION_TYPE.PARENT_CANCEL,
-            targetId: parentRequest.id,
-            detailJson: {
-              childPet: {
-                id: parentRequest.childPetId,
-                name: childPet?.name,
+        try {
+          await this.userNotificationService.createUserNotification(
+            entityManager,
+            childPet.ownerId,
+            {
+              senderId: childPet.ownerId,
+              receiverId: parentPet.ownerId,
+              type: USER_NOTIFICATION_TYPE.PARENT_CANCEL,
+              targetId: parentRequest.id,
+              detailJson: {
+                childPet: {
+                  id: parentRequest.childPetId,
+                  name: childPet?.name,
+                },
+                parentPet: {
+                  id: parentRequest.parentPetId,
+                  name: parentPet?.name,
+                },
+                role: parentRequest.role,
+                message: NOTIFICATION_MESSAGES.PARENT_REQUEST_CANCEL,
               },
-              parentPet: {
-                id: parentRequest.parentPetId,
-                name: parentPet?.name,
-              },
-              role: parentRequest.role,
-              message: '부모 요청이 취소되었습니다.',
             },
-          },
-        );
+          );
+        } catch (error: unknown) {
+          const err = error as { code?: string };
+          if (err?.code === 'ER_DUP_ENTRY') {
+            throw new ConflictException('동일한 취소 알림이 이미 존재합니다.');
+          }
+          throw new InternalServerErrorException(
+            '취소 알림 생성에 실패했습니다.',
+          );
+        }
       }
 
       await entityManager.update(
