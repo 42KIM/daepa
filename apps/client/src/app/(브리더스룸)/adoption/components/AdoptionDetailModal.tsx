@@ -4,11 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  adoptionControllerGetAdoptionByAdoptionId,
-  PetAdoptionDtoStatus,
-  PetDtoSpecies,
-} from "@repo/api-client";
+import { adoptionControllerGetAdoptionByAdoptionId, PetAdoptionDtoStatus } from "@repo/api-client";
 import { SPECIES_KOREAN_INFO } from "../../constants";
 import { getStatusBadge } from "@/lib/utils";
 import Loading from "@/components/common/Loading";
@@ -70,10 +66,10 @@ const AdoptionDetailModal = ({
           {adoptionData?.status !== PetAdoptionDtoStatus.SOLD && (
             <Card className="bg-muted p-4">
               <div className="mb-2 flex items-center gap-2 font-semibold">
-                {pet?.name}
+                {pet?.name ?? ""}
 
                 <div className="text-muted-foreground text-sm font-normal">
-                  | {SPECIES_KOREAN_INFO[pet.species as PetDtoSpecies]}
+                  | {SPECIES_KOREAN_INFO[pet.species] || "미분류"}
                 </div>
               </div>
               <div className="flex flex-col gap-2 text-sm text-gray-600">
