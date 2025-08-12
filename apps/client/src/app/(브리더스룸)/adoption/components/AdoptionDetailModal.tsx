@@ -66,19 +66,19 @@ const AdoptionDetailModal = ({
           {adoptionData?.status !== PetAdoptionDtoStatus.SOLD && (
             <Card className="bg-muted p-4">
               <div className="mb-2 flex items-center gap-2 font-semibold">
-                {pet?.name ?? ""}
+                {pet.name}
 
                 <div className="text-muted-foreground text-sm font-normal">
                   | {SPECIES_KOREAN_INFO[pet.species] || "미분류"}
                 </div>
               </div>
               <div className="flex flex-col gap-2 text-sm text-gray-600">
-                {pet?.morphs && pet.morphs.length > 0 && (
+                {pet.morphs && pet.morphs.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {pet.morphs.map((morph: string) => `#${morph}`).join(" ")}
                   </div>
                 )}
-                {pet?.hatchingDate && <p className="text-blue-600">{pet.hatchingDate}</p>}
+                {pet.hatchingDate && <p className="text-blue-600">{pet.hatchingDate}</p>}
               </div>
             </Card>
           )}
