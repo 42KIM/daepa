@@ -10,7 +10,7 @@ export class FileService {
     return await this.r2Service.upload(
       files.map((file, index) => ({
         buffer: file.buffer,
-        fileName: `${petId}_${index + 1}`,
+        fileName: `${petId}/profile_${index + 1}`,
         mimeType: file.mimetype,
       })),
     );
