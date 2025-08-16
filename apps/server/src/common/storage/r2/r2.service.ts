@@ -53,15 +53,16 @@ export class R2Service {
       throw new Error('파일 업로드 중 오류가 발생했습니다.');
     }
 
-    const uploadedFiles = files.map(({ fileName, mimeType }) => ({
-      id: 0,
-      url: '',
+    const baseUrl =
+      this.configService.get<string>('CLOUDFLARE_R2_IMAGE_BASE_URL') ?? '';
+    const uploadSuccessFiles = files.map(({ buffer, fileName, mimeType }) => ({
       fileName,
-      fileSize: 0,
+      url: `${baseUrl}/${fileName}`,
+      size: buffer.byteLength,
       mimeType,
     }));
     // TODO: 업로드 성공 시 파일 정보 저장
 
-    return uploadedFiles;
+    return uploadSuccessFiles;
   }
 }
