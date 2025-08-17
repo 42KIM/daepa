@@ -105,7 +105,6 @@ const ENTITIES = [
   providers: [
     AppService,
     UserService,
-    OauthService,
     PetService,
     UserNotificationService,
     AuthService,
@@ -116,8 +115,6 @@ const ENTITIES = [
     AdoptionService,
     MatingService,
     ParentRequestService,
-    UserService,
-    UserNotificationService,
     LayingService,
     PairService,
     R2Service,
