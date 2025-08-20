@@ -4,6 +4,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Navigation from './src/navigation';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { setupApiClient } from './src/utils/apiSetup';
+import Toast from '@/components/common/Toast';
+import Loading from '@/components/common/Loading';
 
 const queryClient = new QueryClient();
 
@@ -16,6 +18,9 @@ function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <NavigationContainer>
+          <Toast ref={(ref: Toast | null) => Toast.setRef(ref)} />
+          <Loading ref={(ref: Loading | null) => Loading.setRef(ref)} />
+
           <Navigation />
         </NavigationContainer>
       </QueryClientProvider>
