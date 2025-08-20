@@ -4,6 +4,9 @@ import {
   userControllerGetUserProfile,
 } from '@repo/api-client';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '../../store/auth';
+import Loading from '../../components/common/Loading';
+import Toast from '@/components/common/Toast';
 
 const Profile = () => {
   const { data: userProfile } = useQuery({
@@ -15,7 +18,13 @@ const Profile = () => {
   const { mutate: signOut } = useMutation({
     mutationFn: authControllerSignOut,
     onSuccess: () => {
-      tokenStorage.removeToken();
+      useAuthStore.getState().setAccessToken(null);
+      Loading.close();
+      Toast.show('로그아웃에 성공했습니다.');
+    },
+    onError: () => {
+      Loading.close();
+      Toast.show('로그아웃에 실패했습니다. 다시 시도해주세요.');
     },
   });
 
@@ -27,7 +36,13 @@ const Profile = () => {
       <Text>{userProfile?.name}</Text>
       <Text>{userProfile?.email}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={signOut}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          Loading.show();
+          signOut();
+        }}
+      >
         <Text style={styles.buttonText}>로그아웃</Text>
       </TouchableOpacity>
     </View>

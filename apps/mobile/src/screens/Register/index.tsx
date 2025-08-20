@@ -15,11 +15,15 @@ import {
   userControllerVerifyName,
 } from '@repo/api-client';
 import { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation';
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;
 
 const RegisterScreen = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [nickname, setNickname] = useState('');
   const [isBiz, setIsBiz] = useState(false);
   const [duplicateStatus, setDuplicateStatus] = useState<
@@ -67,9 +71,13 @@ const RegisterScreen = () => {
       });
 
       if (response.data.success) {
-        // TODO: 성공 후 이동 처리
+        navigation.navigate('Tabs', {
+          screen: 'Home',
+        });
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
