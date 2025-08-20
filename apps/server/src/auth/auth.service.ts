@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ProviderInfo } from './auth.types';
@@ -36,6 +37,8 @@ export class AuthService {
     private readonly dataSource: DataSource,
   ) {}
 
+  private readonly logger = new Logger(AuthService.name);
+
   async validateAppleNativeAndGetUser({
     identityToken,
     email,
@@ -45,6 +48,7 @@ export class AuthService {
   }): Promise<ValidatedUser> {
     const payload =
       await this.oauthService.verifyAppleIdentityToken(identityToken);
+
     const providerId = String((payload.sub ?? '').toString());
     const emailFromToken = (payload as Record<string, unknown>).email as
       | string
@@ -293,20 +297,24 @@ export class AuthService {
     }
 
     for (const oauth of oauths) {
-      // if (oauth.provider === OAUTH_PROVIDER.KAKAO) {
-      //   const { id: disconnectedId } = await this.oauthService.disconnectKakao(
-      //     oauth.providerId ?? '',
-      //   );
-      //   if (oauth.providerId === disconnectedId.toString()) {
-      //     await this.softDeleteUser({
-      //       userId,
-      //       name: user.name,
-      //       email: user.email,
-      //     });
-      //   }
-      // }
-      if (oauth.provider === OAUTH_PROVIDER.GOOGLE) {
-        await this.oauthService.disconnectGoogle(userId);
+      switch (oauth.provider) {
+        case OAUTH_PROVIDER.KAKAO:
+          try {
+            await this.oauthService.disconnectKakao(oauth.providerId ?? '');
+          } catch (error) {
+            this.logger.warn(
+              `Kakao unlink failed but continuing account deletion: ${
+                (error as Error).message
+              }`,
+            );
+          }
+          break;
+        case OAUTH_PROVIDER.GOOGLE:
+          await this.oauthService.disconnectGoogle(userId);
+          break;
+        case OAUTH_PROVIDER.APPLE:
+          await this.oauthService.disconnectApple(userId);
+          break;
       }
     }
 
