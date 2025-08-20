@@ -25,3 +25,24 @@ export class KakaoNativeLoginRequestDto {
   @IsString()
   refreshToken?: string;
 }
+
+export class AppleNativeLoginRequestDto {
+  @ApiProperty({ description: 'Apple identity token (JWT)' })
+  @IsString()
+  identityToken: string;
+
+  @ApiProperty({ description: 'Authorization code', required: false })
+  @IsOptional()
+  @IsString()
+  authorizationCode?: string;
+
+  @ApiProperty({ description: '사용자 이메일(없을 수 있음)', required: false })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @ApiProperty({ description: 'nonce(raw 또는 hashed)', required: false })
+  @IsOptional()
+  @IsString()
+  nonce?: string;
+}

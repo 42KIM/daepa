@@ -11,6 +11,7 @@ import { plainToInstance } from 'class-transformer';
 import { OauthDto } from './oauth.dto';
 import { OAUTH_PROVIDER } from '../auth.constants';
 import { EntityManager } from 'typeorm';
+import { createRemoteJWKSet, jwtVerify, JWTPayload } from 'jose';
 
 type KakaoDisconnectResponse = {
   id: number;
@@ -132,6 +133,18 @@ export class OauthService {
     );
 
     return response.status === 200;
+  }
+
+  async verifyAppleIdentityToken(identityToken: string): Promise<JWTPayload> {
+    const jwks = createRemoteJWKSet(
+      new URL('https://appleid.apple.com/auth/keys'),
+    );
+    const audience = process.env.APPLE_CLIENT_ID ?? '';
+    const { payload } = await jwtVerify(identityToken, jwks, {
+      issuer: 'https://appleid.apple.com',
+      audience: audience || undefined,
+    });
+    return payload;
   }
 
   // Transaction 처리를 위해 EntityManager를 받는 메서드 추가

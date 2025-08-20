@@ -15,7 +15,11 @@ import { UserService } from 'src/user/user.service';
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/user/user.dto';
 import { JwtUser, PassportValidatedUser, Public } from './auth.decorator';
-import { KakaoNativeLoginRequestDto, TokenResponseDto } from './auth.dto';
+import {
+  AppleNativeLoginRequestDto,
+  KakaoNativeLoginRequestDto,
+  TokenResponseDto,
+} from './auth.dto';
 import { JwtUserPayload } from './strategies/jwt.strategy';
 import { RequestWithCookies } from 'src/types/request';
 import { CommonResponseDto } from 'src/common/response.dto';
@@ -64,6 +68,45 @@ export class AuthController {
       userId: validatedUser.userId,
     });
     return user as UserDto;
+  }
+
+  @Post('sign-in/apple/native')
+  @Public()
+  @ApiResponse({
+    status: 200,
+    description: '애플 네이티브 로그인 성공',
+    type: UserDto,
+  })
+  async appleNative(
+    @Req() _req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: AppleNativeLoginRequestDto,
+  ) {
+    const { identityToken, email } = body;
+
+    const validatedUser = await this.authService.validateAppleNativeAndGetUser({
+      identityToken,
+      email,
+    });
+
+    const jwtRefreshToken = await this.authService.createJwtRefreshToken(
+      validatedUser.userId,
+    );
+
+    res.cookie('refreshToken', jwtRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 180 * 24 * 60 * 60 * 1000,
+    });
+
+    const user = await this.userService.findOne({
+      userId: validatedUser.userId,
+    });
+    if (!user) {
+      throw new UnauthorizedException('사용자를 찾을 수 없습니다.');
+    }
+    return user;
   }
 
   @Get('sign-in/kakao')

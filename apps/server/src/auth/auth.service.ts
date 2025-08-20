@@ -36,6 +36,35 @@ export class AuthService {
     private readonly dataSource: DataSource,
   ) {}
 
+  async validateAppleNativeAndGetUser({
+    identityToken,
+    email,
+  }: {
+    identityToken: string;
+    email?: string;
+  }): Promise<ValidatedUser> {
+    const payload =
+      await this.oauthService.verifyAppleIdentityToken(identityToken);
+    const providerId = String((payload.sub ?? '').toString());
+    const emailFromToken = (payload as Record<string, unknown>).email as
+      | string
+      | undefined;
+    const resolvedEmail = email ?? emailFromToken;
+
+    if (!providerId) {
+      throw new UnauthorizedException('유효하지 않은 Apple 토큰입니다.');
+    }
+    if (!resolvedEmail) {
+      throw new UnauthorizedException('Apple 이메일이 필요합니다.');
+    }
+
+    return this.validateUser({
+      email: resolvedEmail,
+      provider: OAUTH_PROVIDER.APPLE,
+      providerId,
+    });
+  }
+
   async validateUser(providerInfo: ProviderInfo): Promise<ValidatedUser> {
     // 기존 OAuth 계정 확인
     const oauthFound = await this.getOAuthWithUserByProviderInfo(providerInfo);
