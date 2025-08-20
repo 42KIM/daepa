@@ -1,4 +1,3 @@
-// apps/mobile/src/components/CardBack.tsx
 import React, { useMemo } from 'react';
 import {
   ImageBackground,
@@ -19,11 +18,13 @@ import {
   SPECIES_KOREAN_INFO,
   GROWTH_KOREAN_INFO,
   FIELD_LABELS,
-} from '../../../../services/constant/form';
-import { formatYyMmDd } from '../../../../utils/format';
+} from '@/services/constant/form';
+import { formatYyMmDd } from '@/utils/format';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../../../navigation';
+import { RootStackParamList } from '@/navigation';
+import DefaultPetImage from '@/assets/images/default-pet-image.png';
+import DefaultPetImage2 from '@/assets/images/default-pet-image_1.png';
 
 type FormField =
   | {
@@ -119,7 +120,7 @@ const CardBack: React.FC<Props> = ({ pet, onCloseBack }) => {
           <View style={styles.grid2}>
             {pet.father?.name ? (
               <ImageBackground
-                source={require('../../../../assets/images/default-pet-image.png')}
+                source={DefaultPetImage}
                 style={styles.backgroundImage}
                 resizeMode="cover"
               >
@@ -153,7 +154,7 @@ const CardBack: React.FC<Props> = ({ pet, onCloseBack }) => {
 
             {pet.mother?.name ? (
               <ImageBackground
-                source={require('../../../../assets/images/default-pet-image_1.png')}
+                source={DefaultPetImage2}
                 style={styles.backgroundImage}
                 resizeMode="cover"
               >

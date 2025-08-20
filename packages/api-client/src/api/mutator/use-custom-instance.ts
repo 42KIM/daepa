@@ -43,6 +43,7 @@ AXIOS_INSTANCE.interceptors.request.use(
     if (tokenProvider) {
       const token = await tokenProvider.getToken();
       if (token) {
+        config.headers = config.headers ?? {};
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
