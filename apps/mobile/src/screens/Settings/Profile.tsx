@@ -18,10 +18,10 @@ const Profile = () => {
     select: data => data.data.data,
   });
 
-  const { mutate: signOut } = useMutation({
+  const { mutate: signOut, isPending: isSignOutPending } = useMutation({
     mutationFn: authControllerSignOut,
     onSuccess: () => {
-      useAuthStore.getState().setAccessToken(null);
+      useAuthStore.getState().clear();
       Loading.close();
       Toast.show('로그아웃에 성공했습니다.');
     },
@@ -34,7 +34,7 @@ const Profile = () => {
   const { mutate: deleteAccount } = useMutation({
     mutationFn: authControllerDeleteAccount,
     onSuccess: () => {
-      useAuthStore.getState().setAccessToken(null);
+      useAuthStore.getState().clear();
       Loading.close();
       Toast.show('회원 탈퇴에 성공했습니다.');
     },
@@ -72,6 +72,8 @@ const Profile = () => {
       <TouchableButton
         label="로그아웃"
         onPress={() => {
+          if (isSignOutPending) return;
+
           Loading.show();
           signOut();
         }}

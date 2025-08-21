@@ -11,13 +11,7 @@ import { plainToInstance } from 'class-transformer';
 import { OauthDto } from './oauth.dto';
 import { OAUTH_PROVIDER } from '../auth.constants';
 import { EntityManager } from 'typeorm';
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTPayload,
-  SignJWT,
-  importPKCS8,
-} from 'jose';
+import type { JWTPayload } from 'jose';
 
 type KakaoDisconnectResponse = {
   id: number;
@@ -165,15 +159,29 @@ export class OauthService {
   }
 
   async verifyAppleIdentityToken(identityToken: string): Promise<JWTPayload> {
-    const jwks = createRemoteJWKSet(
-      new URL('https://appleid.apple.com/auth/keys'),
-    );
-    const audience = process.env.APPLE_CLIENT_ID ?? '';
-    const { payload } = await jwtVerify(identityToken, jwks, {
-      issuer: 'https://appleid.apple.com',
-      audience: audience || undefined,
-    });
-    return payload;
+    try {
+      const { jwtVerify, createRemoteJWKSet } = await import('jose');
+
+      const jwks = createRemoteJWKSet(
+        new URL('https://appleid.apple.com/auth/keys'),
+      );
+      const audiencesEnv = process.env.APPLE_CLIENT_ID?.trim();
+      if (!audiencesEnv) {
+        throw new BadRequestException(
+          'Server misconfiguration: APPLE_CLIENT_ID is required for Apple ID token verification',
+        );
+      }
+
+      const { payload } = await jwtVerify(identityToken, jwks, {
+        issuer: 'https://appleid.apple.com',
+        audience: audiencesEnv,
+      });
+
+      return payload;
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
   }
 
   private async generateAppleClientSecret(): Promise<string> {
@@ -191,6 +199,7 @@ export class OauthService {
     // Support env with escaped newlines
     privateKey = privateKey.replace(/\\n/g, '\n');
 
+    const { SignJWT, importPKCS8 } = await import('jose');
     const key = await importPKCS8(privateKey, 'ES256');
     const clientSecret = await new SignJWT({})
       .setIssuer(teamId)

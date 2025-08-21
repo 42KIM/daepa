@@ -53,12 +53,30 @@ export class AuthService {
     const emailFromToken = (payload as Record<string, unknown>).email as
       | string
       | undefined;
-    const resolvedEmail = email ?? emailFromToken;
+
+    if (emailFromToken && email && emailFromToken !== email) {
+      throw new UnauthorizedException(
+        '토큰의 이메일과 요청 이메일이 일치하지 않습니다.',
+      );
+    }
+    const resolvedEmail = emailFromToken ?? email;
 
     if (!providerId) {
       throw new UnauthorizedException('유효하지 않은 Apple 토큰입니다.');
     }
     if (!resolvedEmail) {
+      // 이메일이 없으면 기존 APPLE OAuth를 providerId로 조회하여 로그인 허용
+      const existing = await this.getOAuthWithUserByProviderId({
+        provider: OAUTH_PROVIDER.APPLE,
+        providerId,
+      });
+      if (existing?.user) {
+        return {
+          userId: existing.user.userId,
+          userStatus: existing.user.status,
+        };
+      }
+      // 신규 가입이 필요한 경우 이메일 요구
       throw new UnauthorizedException('Apple 이메일이 필요합니다.');
     }
 
@@ -363,6 +381,43 @@ export class AuthService {
         'oauth.email = :email AND oauth.provider = :provider AND oauth.providerId = :providerId AND user.status != :status',
         {
           email,
+          provider,
+          providerId,
+          status: USER_STATUS.DELETED,
+        },
+      )
+      .getOne()) as OauthEntity & { user: UserEntity };
+
+    if (!entity) return null;
+
+    const { user, ...oauthEntity } = entity;
+    const oauthDto = plainToInstance(OauthDto, oauthEntity);
+    const userDto = plainToInstance(UserDto, user);
+
+    return {
+      ...oauthDto,
+      user: userDto,
+    };
+  }
+
+  async getOAuthWithUserByProviderId({
+    provider,
+    providerId,
+  }: {
+    provider: OAUTH_PROVIDER;
+    providerId: string;
+  }) {
+    const entity = (await this.oauthRepository
+      .createQueryBuilder('oauth')
+      .innerJoinAndMapOne(
+        'oauth.user',
+        UserEntity,
+        'user',
+        'user.email = oauth.email',
+      )
+      .where(
+        'oauth.provider = :provider AND oauth.providerId = :providerId AND user.status != :status',
+        {
           provider,
           providerId,
           status: USER_STATUS.DELETED,

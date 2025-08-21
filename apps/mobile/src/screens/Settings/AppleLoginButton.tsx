@@ -27,7 +27,8 @@ const AppleLoginButton = () => {
       Loading.close();
       Toast.show('로그인에 성공했습니다.');
     },
-    onError: () => {
+    onError: error => {
+      console.log('getToken error', error);
       Loading.close();
       Toast.show('로그인에 실패했습니다. 다시 시도해주세요.');
     },
@@ -39,7 +40,7 @@ const AppleLoginButton = () => {
       mutateGetToken(data.data.status);
     },
     onError: error => {
-      console.log(error);
+      console.log('appleLogin error', error);
       Loading.close();
       Toast.show('로그인에 실패했습니다. 다시 시도해주세요.');
     },
@@ -59,8 +60,11 @@ const AppleLoginButton = () => {
       //   });
       //   const appleAuthRequestResponse = await appleAuthAndroid.signIn();
       //   const { code, id_token, state, nonce } = appleAuthRequestResponse;
-    } catch (e: any) {
-      console.log(e);
+      Toast.show('아직 지원되지 않는 기능입니다. 곧 제공될 예정입니다.');
+      Loading.close();
+      return;
+    } catch (e) {
+      console.log('handleAppleLoginOnIOS error', e);
       Loading.close();
       Toast.show('로그인에 실패했습니다. 다시 시도해주세요.');
     }
@@ -88,6 +92,9 @@ const AppleLoginButton = () => {
           authorizationCode: authorizationCode ?? undefined,
           nonce: nonce ?? undefined,
         });
+      } else {
+        Loading.close();
+        Toast.show('로그인에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (e: any) {
       console.log(e);
