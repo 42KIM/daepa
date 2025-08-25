@@ -73,7 +73,7 @@ export class OauthService {
     });
   }
 
-  async disconnectKakao(providerId: string): Promise<KakaoDisconnectResponse> {
+  async disconnectKakao(providerId: string) {
     const adminKey = process.env.KAKAO_SERVICE_APP_ADMIN_KEY;
     if (!adminKey) {
       throw new BadRequestException('Kakao admin key is not configured');
@@ -84,7 +84,7 @@ export class OauthService {
     form.append('target_id', providerId);
 
     try {
-      const response = await firstValueFrom(
+      await firstValueFrom(
         this.httpService.post<KakaoDisconnectResponse>(
           'https://kapi.kakao.com/v1/user/unlink',
           form.toString(),
@@ -96,7 +96,6 @@ export class OauthService {
           },
         ),
       );
-      return response.data;
     } catch (err) {
       const error = err as AxiosError;
       const status = error.response?.status;
@@ -109,7 +108,6 @@ export class OauthService {
         this.logger.warn(
           `Kakao unlink: user not registered (providerId=${providerId}). Treating as success`,
         );
-        return { id: Number(providerId) };
       }
 
       this.logger.error(data ?? error.message);
