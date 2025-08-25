@@ -10,7 +10,12 @@ import { FormField } from "../../components/Form/FormField";
 import FloatingButton from "../../components/FloatingButton";
 import { useSelect } from "../hooks/useSelect";
 import { useMutation } from "@tanstack/react-query";
-import { CreatePetDto, petControllerCreate } from "@repo/api-client";
+import {
+  CreatePetDto,
+  fileControllerUploadImages,
+  petControllerCreate,
+  UploadImagesRequestDto,
+} from "@repo/api-client";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -25,12 +30,31 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
   const funnel = Number(resolvedParams.funnel);
   const visibleSteps = FORM_STEPS.slice(-step - 1);
 
-  const { mutate: mutateCreatePet, isPending } = useMutation({
-    mutationFn: (data: CreatePetDto) => petControllerCreate(data),
+  const { mutate: mutateUploadImages, isPending: isUploading } = useMutation({
+    mutationFn: (data: UploadImagesRequestDto) => fileControllerUploadImages(data),
     onSuccess: () => {
       toast.success("개체 등록이 완료되었습니다.");
       router.push(`/pet`);
       resetForm();
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      console.error("Failed to upload images:", error);
+      toast.error(error.response?.data?.message || "이미지 업로드에 실패했습니다.");
+    },
+  });
+
+  const { mutate: mutateCreatePet, isPending } = useMutation({
+    mutationFn: (data: CreatePetDto) => petControllerCreate(data),
+    onSuccess: async (res) => {
+      try {
+        const petId = (res?.data as unknown as { id?: string })?.id;
+        const files = (formData.photoFiles as File[]) || [];
+        if (petId && files.length > 0) {
+          mutateUploadImages({ petId, files });
+        }
+      } catch (e) {
+        console.error(e);
+      }
     },
     onError: (error: AxiosError<{ message: string }>) => {
       console.error("Failed to create pet:", error);
@@ -152,7 +176,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
     handleSubmit: createPet,
   });
 
-  if (isPending) {
+  if (isPending || isUploading) {
     return <Loading />;
   }
 

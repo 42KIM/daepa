@@ -66,3 +66,56 @@ export const getNumberToDate = (dateNumber: number) => {
   const day = parseInt(dateString.substring(6, 8), 10);
   return new Date(year, month - 1, day);
 };
+
+export const buildTransformedUrl = (
+  raw: string | undefined,
+  transform: string = "width=460,height=700,format=webp",
+) => {
+  if (!raw) return "/default-pet-image.png";
+  const cdnBase = process.env.NEXT_PUBLIC_CDN_URL;
+
+  // 절대 URL이면 hostname 확인 후 path만 추출
+  try {
+    const u = new URL(raw);
+    const hostname = u.hostname;
+    const path = u.pathname.replace(/^\/+/, "");
+    if (cdnBase && hostname.endsWith("daepa.store")) {
+      return `${cdnBase}/${transform}/${path}`;
+    }
+    // 다른 호스트면 변환 없이 원본 사용 (next.config.ts에 허용된 경우만 렌더)
+    return raw;
+  } catch {
+    // 상대경로("/petId/profile_1" 등)인 경우
+    const path = raw.replace(/^\/+/, "");
+    return cdnBase ? `${cdnBase}/${transform}/${path}` : raw;
+  }
+};
+
+export const resizeImageFile = (file: File, maxWidth = 1280, quality = 0.82): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const targetW = Math.max(1, Math.floor(img.width * scale));
+        const targetH = Math.max(1, Math.floor(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = targetW;
+        canvas.height = targetH;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(reader.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, targetW, targetH);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => resolve(reader.result as string);
+      img.src = String(reader.result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};

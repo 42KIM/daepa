@@ -1,12 +1,12 @@
 import { PetDto, PetDtoSex } from "@repo/api-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import { Expand, Shrink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { buildTransformedUrl, cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string }) => {
@@ -14,10 +14,18 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
   const [dragStart, setDragStart] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const allImages =
-    "photos" in pet && pet.photos && Array.isArray(pet.photos)
-      ? pet.photos
-      : ["/default-pet-image.png", "/default-pet-image_1.png", "/default-pet-image_2.png"];
+  const allImages = useMemo(
+    () =>
+      pet.photos && Array.isArray(pet.photos)
+        ? pet.photos
+        : ["/default-pet-image.png", "/default-pet-image_1.png", "/default-pet-image_2.png"],
+    [pet.photos],
+  );
+
+  const currentImageUrl = useMemo(
+    () => buildTransformedUrl(allImages[currentImageIndex]),
+    [allImages, currentImageIndex],
+  );
 
   const changeImage = (direction: "prev" | "next") => {
     if (direction === "prev") {
@@ -64,12 +72,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Image
-                src={allImages[currentImageIndex] || "/default-pet-image.png"}
-                alt={pet.name ?? ""}
-                fill
-                className="object-cover"
-              />
+              <Image src={currentImageUrl} alt={pet.name ?? ""} fill className="object-cover" />
             </motion.div>
           </AnimatePresence>
 

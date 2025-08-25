@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { FieldName, FormErrors, FormStep } from "../../register/types";
-import FileField from "./FileField";
 import NumberField from "./NumberField";
 import Close from "@mui/icons-material/Close";
 import ParentLink from "../../pet/components/ParentLink";
@@ -15,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { PetDtoGrowth, PetDtoSex, PetDtoSpecies, UnlinkParentDtoRole } from "@repo/api-client";
+import DndImagePicker from "./DndImagePicker";
 interface FormFieldProps {
   label?: string;
   field: FormStep["field"];
@@ -61,7 +61,7 @@ export const FormField = ({
   const renderField = () => {
     switch (type) {
       case "file":
-        return <FileField />;
+        return <DndImagePicker disabled={disabled} />;
       case "number":
         return disabled && !value ? (
           <div className="h-9 w-full text-left text-gray-400">-</div>
