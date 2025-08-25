@@ -1,4 +1,11 @@
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  TouchSensor,
+  MouseSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useDropzone } from "react-dropzone";
@@ -20,6 +27,24 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
   const photos: string[] = formData.photos ?? [];
   const ids = photos.map((p, idx) => `${idx}:${p}`);
 
+  // 터치와 마우스 센서 설정
+  const mouseSensor = useSensor(MouseSensor, {
+    // 마우스 드래그 시작을 위한 최소 이동 거리
+    activationConstraint: {
+      distance: 8,
+    },
+  });
+
+  const touchSensor = useSensor(TouchSensor, {
+    // 터치 드래그 시작을 위한 설정
+    activationConstraint: {
+      delay: 200, // 200ms 지연 후 드래그 시작
+      tolerance: 8, // 8px 이동까지는 허용
+    },
+  });
+
+  const sensors = useSensors(mouseSensor, touchSensor);
+
   const ACCEPT: Record<string, string[]> = {
     "image/jpeg": [".jpg", ".jpeg"],
     "image/png": [".png"],
@@ -32,7 +57,7 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
     if (!files || files.length === 0 || isLoading) return;
 
     const currentPhotos: string[] = (formData.photos ?? []) as string[];
-    const remain = Math.max(0, 3 - currentPhotos.length);
+    const remain = Math.max(0, max - currentPhotos.length);
     const picked = files.slice(0, remain);
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -44,13 +69,22 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
       return true;
     });
 
-    const promises = targetFiles.map((file) => resizeImageFile(file, 1280, 0.82));
-    const results = await Promise.all(promises);
-    setFormData((prev: { photos?: string[]; photoFiles?: File[] }) => ({
-      ...prev,
-      photos: [...(prev?.photos ?? []), ...results].slice(0, 3),
-      photoFiles: [...(prev?.photoFiles ?? []), ...targetFiles],
-    }));
+    if (targetFiles.length === 0) return;
+
+    setIsLoading(true);
+    try {
+      const promises = targetFiles.map((file) => resizeImageFile(file, 1280, 0.82));
+      const results = await Promise.all(promises);
+      setFormData((prev: { photos?: string[]; photoFiles?: File[] }) => ({
+        ...prev,
+        photos: [...(prev?.photos ?? []), ...results].slice(0, max),
+        photoFiles: [...(prev?.photoFiles ?? []), ...targetFiles],
+      }));
+    } catch {
+      toast.error("이미지 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -58,9 +92,11 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
 
     const { active, over } = event;
     if (!over || active.id === over.id) return;
+
     const oldIndex = ids.indexOf(String(active.id));
     const newIndex = ids.indexOf(String(over.id));
     if (oldIndex === -1 || newIndex === -1) return;
+
     // indices 매핑 반환
     const orderIndices = arrayMove(
       photos.map((_, i) => i),
@@ -86,10 +122,11 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
     noClick: true,
     onDropAccepted: async (accepted) => {
       const remain = Math.max(0, max - photos.length);
-      if (remain <= 0) return;
-      setIsLoading(true);
+      if (remain <= 0) {
+        toast.error(`최대 ${max}장까지만 업로드할 수 있습니다.`);
+        return;
+      }
       await onAdd(accepted.slice(0, remain));
-      setIsLoading(false);
     },
     onDropRejected: (rejections) => {
       const names = rejections.map((r) => r.file.name).join(", ");
@@ -99,17 +136,25 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
 
   return (
     <div>
-      <p className="text-sm text-blue-500">
-        최대 3장까지 업로드 가능합니다. (jpg, jpeg, png, gif, webp, avif, heic, heif)
-      </p>
-      <div className="mb-2 flex items-center gap-1 text-gray-600">
-        <Info className="h-3 w-3" />
-        <p className="text-xs">사진을 눌러 순서를 변경할 수 있습니다.</p>
-      </div>
-
+      {!disabled && (
+        <>
+          <p className="text-sm text-blue-500">
+            최대 {max}장까지 업로드 가능합니다. (jpg, jpeg, png, gif, webp, avif, heic, heif)
+          </p>
+          <div className="mb-2 flex items-center gap-1 text-gray-600">
+            <Info className="h-3 w-3" />
+            <p className="text-xs">사진을 길게 눌러 순서를 변경할 수 있습니다.</p>
+          </div>
+        </>
+      )}
       <div {...getRootProps()} className="relative">
         <input {...getInputProps()} />
-        <DndContext onDragEnd={onDragEnd}>
+        <DndContext
+          sensors={sensors}
+          onDragEnd={onDragEnd}
+          // 모바일에서 스크롤과 드래그가 충돌하지 않도록 설정
+          autoScroll={false}
+        >
           <SortableContext items={ids} strategy={rectSortingStrategy}>
             <div className={cn("grid grid-cols-3 gap-2", isDragActive && "ring-2 ring-blue-400")}>
               {photos.map((u, index) => {
@@ -131,7 +176,7 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
                   <button
                     type="button"
                     onClick={open}
-                    className="flex h-24 w-full items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50"
+                    className="flex h-24 w-full items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100"
                   >
                     <Plus className="h-5 w-5" />
                   </button>
@@ -162,7 +207,12 @@ function SortableThumb({
   isLoading?: boolean;
 }) {
   const { formData, setFormData } = usePetStore();
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    // 드래그 중일 때 다른 스타일 적용을 위해
+    disabled: disabled || isLoading,
+  });
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -177,26 +227,54 @@ function SortableThumb({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative h-24 w-full select-none">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "relative h-24 w-full select-none",
+        isDragging && "z-50 rotate-3 scale-105 shadow-xl", // 드래그 중 스타일
+      )}
+    >
       <div
         {...attributes}
         {...listeners}
-        className="absolute inset-0 cursor-grab overflow-hidden rounded-xl"
+        className={cn(
+          "absolute inset-0 overflow-hidden rounded-xl border-2 transition-all duration-200",
+          isDragging
+            ? "cursor-grabbing border-blue-400"
+            : "cursor-grab border-gray-200 hover:border-gray-300",
+        )}
+        // 터치 이벤트 최적화
+        style={{
+          touchAction: "none", // 브라우저의 기본 터치 동작 방지
+        }}
       >
         {isLoading ? (
-          <div className="flex h-full w-full items-center justify-center">
-            <Loader2 className="h-5 w-5 animate-spin" />
+          <div className="flex h-full w-full items-center justify-center bg-gray-50">
+            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
           </div>
         ) : (
-          <Image src={buildTransformedUrl(src)} alt="photo" fill className="object-cover" />
+          <Image
+            src={buildTransformedUrl(src)}
+            alt={`사진 ${index + 1}`}
+            fill
+            className="object-cover"
+            // 이미지 드래그 방지
+            draggable={false}
+          />
         )}
       </div>
+
       {!disabled && !isLoading && (
         <button
           type="button"
           onClick={onDelete}
-          className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
-          aria-label="삭제"
+          className={cn(
+            "absolute right-1 top-1 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-sm transition-all duration-200",
+            "hover:bg-red-600 active:scale-95",
+            isDragging && "opacity-0", // 드래그 중에는 삭제 버튼 숨김
+          )}
+          aria-label="사진 삭제"
         >
           <X className="h-3.5 w-3.5" />
         </button>
