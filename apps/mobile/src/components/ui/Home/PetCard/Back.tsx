@@ -1,4 +1,3 @@
-// apps/mobile/src/components/CardBack.tsx
 import React, { useMemo } from 'react';
 import {
   ImageBackground,
@@ -19,11 +18,12 @@ import {
   SPECIES_KOREAN_INFO,
   GROWTH_KOREAN_INFO,
   FIELD_LABELS,
-} from '../../../../services/constant/form';
-import { formatYyMmDd } from '../../../../utils/format';
+} from '@/services/constant/form';
+import { formatYyMmDd } from '@/utils/format';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../../../navigation';
+import { RootStackParamList } from '@/navigation';
+import DefaultPetImage from '@/assets/images/default-pet-image.png';
 
 type FormField =
   | {
@@ -117,63 +117,59 @@ const CardBack: React.FC<Props> = ({ pet, onCloseBack }) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>혈통 정보</Text>
           <View style={styles.grid2}>
-            {pet.father?.name ? (
-              <ImageBackground
-                source={require('../../../../assets/images/default-pet-image.png')}
-                style={styles.backgroundImage}
-                resizeMode="cover"
-              >
-                <Pressable
-                  style={styles.parentCard}
-                  onPress={e => {
-                    e?.stopPropagation?.();
-                    if (pet.father?.petId) {
+            <View style={styles.card}>
+              <Text style={styles.parentLabel}>부</Text>
+              {pet.father ? (
+                <ImageBackground
+                  source={DefaultPetImage}
+                  style={styles.backgroundImage}
+                  resizeMode="cover"
+                >
+                  <Pressable
+                    style={styles.parentCard}
+                    onPress={e => {
+                      e?.stopPropagation?.();
+                      if (!pet.father) return;
+
                       navigation.navigate('PetDetail', {
                         petId: pet.father.petId,
                       });
-                    }
-                  }}
-                >
-                  <Text style={styles.parentLabel}>부</Text>
-                  <Text style={styles.parentName}>
-                    {pet.father?.name ?? '-'}
-                  </Text>
-                </Pressable>
-              </ImageBackground>
-            ) : (
-              <View style={styles.backgroundImage}>
-                <View style={styles.parentCard}>
-                  <Text style={styles.parentLabel}>부</Text>
-                  <Text style={styles.parentName}>
-                    {pet.father?.name ?? '-'}
-                  </Text>
-                </View>
-              </View>
-            )}
+                    }}
+                  >
+                    <Text style={styles.parentName}>{pet.father.name}</Text>
+                  </Pressable>
+                </ImageBackground>
+              ) : (
+                <View style={styles.emptyBackgroundImage} />
+              )}
+            </View>
 
-            {pet.mother?.name ? (
-              <ImageBackground
-                source={require('../../../../assets/images/default-pet-image_1.png')}
-                style={styles.backgroundImage}
-                resizeMode="cover"
-              >
-                <View style={styles.parentCard}>
-                  <Text style={styles.parentLabel}>모</Text>
-                  <Text style={styles.parentName}>
-                    {pet.mother?.name ?? '-'}
-                  </Text>
-                </View>
-              </ImageBackground>
-            ) : (
-              <View style={styles.backgroundImage}>
-                <View style={styles.parentCard}>
-                  <Text style={styles.parentLabel}>모</Text>
-                  <Text style={styles.parentName}>
-                    {pet.mother?.name ?? '-'}
-                  </Text>
-                </View>
-              </View>
-            )}
+            <View style={styles.card}>
+              <Text style={styles.parentLabel}>모</Text>
+              {pet.mother ? (
+                <ImageBackground
+                  source={DefaultPetImage}
+                  style={styles.backgroundImage}
+                  resizeMode="cover"
+                >
+                  <Pressable
+                    style={styles.parentCard}
+                    onPress={e => {
+                      e?.stopPropagation?.();
+                      if (!pet.mother) return;
+
+                      navigation.navigate('PetDetail', {
+                        petId: pet.mother.petId,
+                      });
+                    }}
+                  >
+                    <Text style={styles.parentName}>{pet.mother.name}</Text>
+                  </Pressable>
+                </ImageBackground>
+              ) : (
+                <View style={styles.emptyBackgroundImage} />
+              )}
+            </View>
           </View>
         </View>
 
@@ -229,6 +225,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
+  card: {
+    flex: 1,
+  },
   parentCard: {
     flex: 1,
     aspectRatio: 1,
@@ -245,13 +244,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
   },
+  emptyBackgroundImage: {
+    flex: 1,
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#F3F4F6',
+  },
   parentLabel: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    fontSize: 12,
-    color: '#FFFFFF',
-    marginBottom: 6,
+    color: '#111827',
+    fontWeight: '600',
+    paddingLeft: 4,
+    paddingBottom: 4,
   },
   parentName: {
     position: 'absolute',

@@ -40,6 +40,7 @@ import { USER_STATUS_MAP } from "@/app/(브리더스룸)/constants";
 import { cn } from "@/lib/utils";
 import { AxiosError } from "axios";
 import { tokenStorage } from "@/lib/tokenStorage";
+import { providerIconMap } from "../constants";
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;
@@ -328,7 +329,7 @@ const SettingsPage = () => {
                   {normalizedProviders.map((provider) => (
                     <Image
                       key={provider}
-                      src={`/${provider}_icon.svg`}
+                      src={providerIconMap[provider]}
                       alt={provider}
                       width={24}
                       height={24}

@@ -15,7 +15,7 @@ import {
   PetDto,
 } from '@repo/api-client';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import PetCard from '../../components/ui/Home/PetCard';
+import PetCard from '@/components/ui/Home/PetCard';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
