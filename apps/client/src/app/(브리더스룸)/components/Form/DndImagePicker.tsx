@@ -1,3 +1,5 @@
+"use client";
+
 import {
   DndContext,
   DragEndEvent,
@@ -14,7 +16,9 @@ import { buildTransformedUrl, cn, resizeImageFile } from "@/lib/utils";
 import { X, Plus, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { usePetStore } from "../../register/store/pet";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { isNil, range } from "es-toolkit";
+import { ACCEPT_IMAGE_FORMATS } from "../../constants";
 
 interface DndImagePickerProps {
   max?: number;
@@ -44,14 +48,6 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
   });
 
   const sensors = useSensors(mouseSensor, touchSensor);
-
-  const ACCEPT: Record<string, string[]> = {
-    "image/jpeg": [".jpg", ".jpeg"],
-    "image/png": [".png"],
-    "image/gif": [".gif"],
-    "image/webp": [".webp"],
-    "image/avif": [".avif"],
-  };
 
   const onAdd = async (files: File[]) => {
     if (!files || files.length === 0 || isLoading) return;
@@ -91,55 +87,73 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
     if (disabled || isLoading) return;
 
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (isNil(over) || active.id === over.id) return;
 
-    const oldIndex = ids.indexOf(String(active.id));
-    const newIndex = ids.indexOf(String(over.id));
+    const [oldIndex, newIndex] = [ids.indexOf(String(active.id)), ids.indexOf(String(over.id))];
     if (oldIndex === -1 || newIndex === -1) return;
 
     // indices 매핑 반환
-    const orderIndices = arrayMove(
-      photos.map((_, i) => i),
-      oldIndex,
-      newIndex,
-    );
+    const orderIndices = arrayMove(range(photos.length), oldIndex, newIndex);
     onReorder(orderIndices);
   };
 
-  const onReorder = (order: number[]) => {
-    if (disabled || isLoading) return;
+  const onReorder = useCallback(
+    (order: number[]) => {
+      if (disabled || isLoading) return;
 
-    const photos = [...(formData.photos ?? [])];
-    const files = [...(formData.photoFiles ?? [])];
-    const nextPhotos = order.map((i) => photos[i]);
-    const nextFiles = order.filter((i) => i < files.length).map((i) => files[i]);
-    setFormData({ ...formData, photos: nextPhotos, photoFiles: nextFiles });
-  };
+      setFormData((prev) => {
+        const photos = [...(prev.photos ?? [])];
+        const files = [...(prev.photoFiles ?? [])];
+        const nextPhotos = order.map((i) => photos[i]);
+        const nextFiles = order.filter((i) => i < files.length).map((i) => files[i]);
+
+        return { ...prev, photos: nextPhotos, photoFiles: nextFiles };
+      });
+    },
+    [disabled, isLoading, setFormData],
+  );
 
   const { getRootProps, getInputProps, open, isDragActive } = useDropzone({
-    accept: ACCEPT,
+    accept: ACCEPT_IMAGE_FORMATS,
     multiple: true,
     noClick: true,
+    disabled: disabled || isLoading,
     onDropAccepted: async (accepted) => {
-      const remain = Math.max(0, max - photos.length);
-      if (remain <= 0) {
+      if (disabled || isLoading) return;
+
+      const remain = max - photos.length;
+      if (remain < accepted.length) {
         toast.error(`최대 ${max}장까지만 업로드할 수 있습니다.`);
-        return;
       }
       await onAdd(accepted.slice(0, remain));
     },
     onDropRejected: (rejections) => {
+      if (disabled || isLoading) return;
+
       const names = rejections.map((r) => r.file.name).join(", ");
       toast.error(`허용되지 않는 이미지 형식입니다: ${names}`);
     },
   });
+
+  const handleDelete = useCallback(
+    (index: number) => {
+      setFormData((prev) => {
+        const photos = [...(prev.photos ?? [])];
+        const files = [...(prev.photoFiles ?? [])];
+        if (index < photos.length) photos.splice(index, 1);
+        if (index < files.length) files.splice(index, 1);
+        return { ...prev, photos, photoFiles: files };
+      });
+    },
+    [setFormData],
+  );
 
   return (
     <div>
       {!disabled && (
         <>
           <p className="text-sm text-blue-500">
-            최대 {max}장까지 업로드 가능합니다. (jpg, jpeg, png, gif, webp, avif, heic, heif)
+            최대 {max}장까지 업로드 가능합니다. (jpg, jpeg, png, gif, webp, avif)
           </p>
           <div className="mb-2 flex items-center gap-1 text-gray-600">
             <Info className="h-3 w-3" />
@@ -165,8 +179,8 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
                     id={String(ids[index])}
                     src={url}
                     disabled={disabled}
-                    index={index}
                     isLoading={isLoading}
+                    onDelete={() => handleDelete(index)}
                   />
                 );
               })}
@@ -197,16 +211,15 @@ function SortableThumb({
   id,
   src,
   disabled,
-  index,
   isLoading,
+  onDelete,
 }: {
   id: string;
   src: string;
   disabled?: boolean;
-  index: number;
   isLoading?: boolean;
+  onDelete: () => void;
 }) {
-  const { formData, setFormData } = usePetStore();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     // 드래그 중일 때 다른 스타일 적용을 위해
@@ -217,14 +230,6 @@ function SortableThumb({
     transform: CSS.Transform.toString(transform),
     transition,
   } as const;
-
-  const onDelete = () => {
-    const updatedPhotos = [...(formData.photos ?? [])];
-    updatedPhotos.splice(index, 1);
-    const updatedFiles = [...(formData.photoFiles ?? [])];
-    if (index < updatedFiles.length) updatedFiles.splice(index, 1);
-    setFormData({ ...formData, photos: updatedPhotos, photoFiles: updatedFiles });
-  };
 
   return (
     <div
@@ -256,7 +261,7 @@ function SortableThumb({
         ) : (
           <Image
             src={buildTransformedUrl(src)}
-            alt={`사진 ${index + 1}`}
+            alt={`사진 ${id + 1}`}
             fill
             className="object-cover"
             // 이미지 드래그 방지

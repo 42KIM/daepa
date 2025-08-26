@@ -1,12 +1,14 @@
+"use client";
+
 import { PetDto, PetDtoSex } from "@repo/api-client";
 import { motion } from "framer-motion";
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import { Expand, Shrink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { buildTransformedUrl, cn } from "@/lib/utils";
+import { buildTransformedUrl, cn, getNumberToDate } from "@/lib/utils";
 import { format } from "date-fns";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, EffectFade } from "swiper/modules";
@@ -31,9 +33,9 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
     [pet.photos],
   );
 
-  const handleSlideChange = (swiper: SwiperType) => {
+  const handleSlideChange = useCallback((swiper: SwiperType) => {
     setCurrentImageIndex(swiper.realIndex);
-  };
+  }, []);
 
   return (
     <div className="relative h-full w-full">
@@ -206,7 +208,14 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
                 )}
                 {pet.hatchingDate && (
                   <span className="inline-flex items-center gap-1">
-                    <span>{format(pet.hatchingDate, "yy.MM.dd")}</span>
+                    <span>
+                      {format(
+                        typeof pet.hatchingDate === "number"
+                          ? getNumberToDate(pet.hatchingDate)
+                          : new Date(pet.hatchingDate),
+                        "yy.MM.dd",
+                      )}
+                    </span>
                   </span>
                 )}
                 <span>

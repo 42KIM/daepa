@@ -10,16 +10,12 @@ import { FormField } from "../../components/Form/FormField";
 import FloatingButton from "../../components/FloatingButton";
 import { useSelect } from "../hooks/useSelect";
 import { useMutation } from "@tanstack/react-query";
-import {
-  CreatePetDto,
-  fileControllerUploadImages,
-  petControllerCreate,
-  UploadImagesRequestDto,
-} from "@repo/api-client";
+import { fileControllerUploadImages, petControllerCreate } from "@repo/api-client";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/common/Loading";
+import { isNil, pick, pickBy } from "es-toolkit";
 
 export default function RegisterPage({ params }: { params: Promise<{ funnel: string }> }) {
   const router = useRouter();
@@ -30,40 +26,12 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
   const funnel = Number(resolvedParams.funnel);
   const visibleSteps = FORM_STEPS.slice(-step - 1);
 
-  const { mutate: mutateUploadImages, isPending: isUploading } = useMutation({
-    mutationFn: (data: UploadImagesRequestDto) => fileControllerUploadImages(data),
-    onSuccess: () => {
-      toast.success("개체 등록이 완료되었습니다.");
-      router.push(`/pet`);
-      resetForm();
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Failed to upload images:", error);
-      toast.error(error.response?.data?.message || "이미지 업로드에 실패했습니다.");
-    },
+  const { mutateAsync: mutateUploadImages, isPending: isUploading } = useMutation({
+    mutationFn: fileControllerUploadImages,
   });
 
-  const { mutate: mutateCreatePet, isPending } = useMutation({
-    mutationFn: (data: CreatePetDto) => petControllerCreate(data),
-    onSuccess: async (res) => {
-      try {
-        const petId = (res?.data as unknown as { id?: string })?.id;
-        const files = (formData.photoFiles as File[]) || [];
-        if (petId && files.length > 0) {
-          mutateUploadImages({ petId, files });
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Failed to create pet:", error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("개체 등록에 실패했습니다.");
-      }
-    },
+  const { mutateAsync: mutateCreatePet, isPending: isCreating } = useMutation({
+    mutationFn: petControllerCreate,
   });
 
   useEffect(() => {
@@ -112,53 +80,68 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
     }
   }, [step, funnel]);
 
-  const createPet = (formData: FormData) => {
+  const createPet = async (formData: FormData) => {
     try {
-      const transformedFormData = { ...formData };
-      if (transformedFormData.sex && typeof transformedFormData.sex === "string") {
+      const data = { ...formData };
+      if (data.sex && typeof data.sex === "string") {
         const genderEntry = Object.entries(GENDER_KOREAN_INFO).find(
-          ([, koreanValue]) => koreanValue === transformedFormData.sex,
+          ([, koreanValue]) => koreanValue === data.sex,
         );
         if (genderEntry) {
-          transformedFormData.sex = genderEntry[0];
+          data.sex = genderEntry[0];
         }
       }
 
-      const { growth, morphs, name, sex, species, desc, ...rest } = transformedFormData;
+      const baseFields = pick(data, ["growth", "morphs", "name", "sex"]);
 
-      const requestData: CreatePetDto = {
-        growth,
-        morphs,
-        name,
-        sex,
-        species,
-        ...(desc && { desc }),
-        ...(rest?.hatchingDate && {
-          hatchingDate: rest.hatchingDate,
-        }),
-        ...(rest?.weight && { weight: Number(rest.weight) }),
-        ...(rest?.father?.petId && {
-          father: {
-            parentId: rest.father.petId,
-            role: "father",
-            isMyPet: false,
-            message: rest.father?.message,
-          },
-        }),
-        ...(rest?.mother?.petId && {
-          mother: {
-            parentId: rest.mother.petId,
-            role: "mother",
-            isMyPet: false,
-            message: rest.mother?.message,
-          },
-        }),
-        ...(rest?.foods && { foods: rest.foods }),
-        ...(rest?.traits && { traits: rest.traits }),
-      };
-      mutateCreatePet(requestData);
+      const requestData = pickBy(
+        {
+          desc: data?.desc,
+          hatchingDate: data?.hatchingDate,
+          weight: data?.weight ? Number(data.weight) : undefined,
+          father: data?.father?.petId
+            ? {
+                parentId: data.father.petId,
+                role: "father",
+                isMyPet: false,
+                message: data.father?.message,
+              }
+            : undefined,
+          mother: data?.mother?.petId
+            ? {
+                parentId: data.mother.petId,
+                role: "mother",
+                isMyPet: false,
+                message: data.mother?.message,
+              }
+            : undefined,
+          foods: data?.foods,
+          traits: data?.traits,
+        },
+        (value) => !isNil(value),
+      );
+
+      const petResponse = await mutateCreatePet({
+        ...baseFields,
+        ...requestData,
+        species: data.species,
+      });
+
+      const petId = petResponse.data.id;
+      const files = (formData.photoFiles as File[]) || [];
+      if (petId && files.length > 0) {
+        await mutateUploadImages({ petId, files });
+        toast.success("개체 등록이 완료되었습니다.");
+        router.push(`/pet`);
+        resetForm();
+      }
     } catch (error) {
       console.error("Failed to create pet:", error);
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message || "개체 등록에 실패했습니다.");
+      } else {
+        toast.error("개체 등록에 실패했습니다.");
+      }
     }
   };
 
@@ -176,7 +159,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
     handleSubmit: createPet,
   });
 
-  if (isPending || isUploading) {
+  if (isCreating || isUploading) {
     return <Loading />;
   }
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import {

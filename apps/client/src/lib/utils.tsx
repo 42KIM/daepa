@@ -76,9 +76,9 @@ export const buildTransformedUrl = (
 
   // 절대 URL이면 hostname 확인 후 path만 추출
   try {
-    const u = new URL(raw);
-    const hostname = u.hostname;
-    const path = u.pathname.replace(/^\/+/, "");
+    const url = new URL(raw);
+    const hostname = url.hostname;
+    const path = url.pathname.replace(/^\/+/, "");
     if (cdnBase && hostname.endsWith("daepa.store")) {
       return `${cdnBase}/${transform}/${path}`;
     }
