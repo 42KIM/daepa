@@ -84,4 +84,7 @@ export class PetEntity {
     nullable: true,
   })
   adoption?: AdoptionEntity;
+
+  // @OneToMany(() => PetImageEntity, (image) => image.petId)
+  // photos?: PetImageEntity[];
 }

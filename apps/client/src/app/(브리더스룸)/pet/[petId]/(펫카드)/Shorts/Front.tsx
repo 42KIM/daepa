@@ -10,10 +10,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
   const [dragStart, setDragStart] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const allImages =
-    "photos" in pet && pet.photos && Array.isArray(pet.photos)
-      ? pet.photos
-      : ["/default-pet-image.png", "/default-pet-image_1.png", "/default-pet-image_2.png"];
+  const allImages = pet.photos ?? [];
 
   const changeImage = (direction: "prev" | "next") => {
     if (direction === "prev") {
@@ -65,7 +62,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
                 className="absolute h-full w-full"
               >
                 <Image
-                  src={allImages[currentImageIndex] || "/default-pet-image.png"}
+                  src={allImages[currentImageIndex] ?? ""}
                   alt={pet.name || "Pet Image"}
                   fill
                   className="object-cover"

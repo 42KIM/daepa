@@ -33,6 +33,15 @@ export class NotificationPetDto {
   @IsString()
   @IsOptional()
   name?: string;
+
+  @ApiProperty({
+    description: '개체 이미지',
+    example: 'https://example.com/image.jpg',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  photo?: string;
 }
 
 export class UserNotificationDetailJson {

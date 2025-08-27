@@ -2,7 +2,7 @@
 
 import { PetDto, PetDtoSex } from "@repo/api-client";
 import { motion } from "framer-motion";
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import { Expand, Shrink } from "lucide-react";
@@ -25,13 +25,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const swiperRef = useRef<SwiperType>(null);
 
-  const allImages = useMemo(
-    () =>
-      pet.photos && Array.isArray(pet.photos) && pet.photos.length > 0
-        ? pet.photos
-        : ["/default-pet-image.png"],
-    [pet.photos],
-  );
+  const allImages = pet.photos ?? [];
 
   const handleSlideChange = useCallback((swiper: SwiperType) => {
     setCurrentImageIndex(swiper.realIndex);

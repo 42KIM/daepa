@@ -849,6 +849,7 @@ export const getUserNotificationControllerFindAllResponseMock = (
               ...{
                 id: faker.string.alpha(20),
                 name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+                photo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
               },
             },
             undefined,
@@ -858,6 +859,7 @@ export const getUserNotificationControllerFindAllResponseMock = (
               ...{
                 id: faker.string.alpha(20),
                 name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+                photo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
               },
             },
             undefined,
@@ -941,6 +943,7 @@ export const getUserNotificationControllerFindOneResponseMock = (
                 ...{
                   id: faker.string.alpha(20),
                   name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+                  photo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
                 },
               },
               undefined,
@@ -950,6 +953,7 @@ export const getUserNotificationControllerFindOneResponseMock = (
                 ...{
                   id: faker.string.alpha(20),
                   name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+                  photo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
                 },
               },
               undefined,

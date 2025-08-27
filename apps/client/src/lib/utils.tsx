@@ -71,7 +71,7 @@ export const buildTransformedUrl = (
   raw: string | undefined,
   transform: string = "width=460,height=700,format=webp",
 ) => {
-  if (!raw) return "/default-pet-image.png";
+  if (!raw) return "";
   const cdnBase = process.env.NEXT_PUBLIC_CDN_URL;
 
   // 절대 URL이면 hostname 확인 후 path만 추출

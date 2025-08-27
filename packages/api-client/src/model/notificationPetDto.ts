@@ -11,4 +11,6 @@ export interface NotificationPetDto {
   id: string;
   /** 개체 이름 */
   name?: string;
+  /** 개체 이미지 */
+  photo?: string;
 }

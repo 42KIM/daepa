@@ -40,7 +40,6 @@ import { UserNotificationService } from 'src/user_notification/user_notification
 import { USER_NOTIFICATION_TYPE } from 'src/user_notification/user_notification.constant';
 import { UserNotificationEntity } from 'src/user_notification/user_notification.entity';
 import { PetImageEntity } from 'src/pet/image/pet.image.entity';
-import { FileService } from 'src/file/file.service';
 
 const NOTIFICATION_MESSAGES = {
   PARENT_REQUEST_CANCEL: '부모 요청이 취소되었습니다.',
@@ -60,7 +59,8 @@ export class PetService {
     private readonly pairService: PairService,
     private readonly userNotificationService: UserNotificationService,
     private readonly dataSource: DataSource,
-    private readonly fileService: FileService,
+    @InjectRepository(PetImageEntity)
+    private readonly petImageRepository: Repository<PetImageEntity>,
   ) {}
 
   async createPet(
@@ -471,11 +471,19 @@ export class PetService {
             pet.petId,
           );
 
+        const petImages = await this.petImageRepository.find({
+          where: { petId: pet.petId },
+          select: ['url'],
+          order: { id: 'ASC' },
+        });
+        const photos = petImages.map((img) => img.url).slice(0, 3);
+
         return plainToInstance(PetDto, {
           ...pet,
           owner,
           father,
           mother,
+          photos,
         });
       }),
     );

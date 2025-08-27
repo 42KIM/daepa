@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import type { PetDto } from '@repo/api-client';
-import { formatYyMmDd } from '@/utils/format';
+import { buildTransformedUrl, formatYyMmDd } from '@/utils/format';
 import {
   GENDER_KOREAN_INFO,
   SPECIES_KOREAN_INFO,
@@ -29,12 +29,7 @@ const CardFront: React.FC<Props> = ({
   qrCodeDataUrl,
   height = SCREEN_HEIGHT,
 }) => {
-  const allImages = useMemo(() => {
-    const photos =
-      'photos' in pet && Array.isArray(pet.photos) ? pet.photos : [];
-    return photos;
-  }, [pet]);
-
+  const allImages = pet.photos ?? [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 60,
@@ -59,7 +54,7 @@ const CardFront: React.FC<Props> = ({
               viewabilityConfig={viewabilityConfig}
               renderItem={({ item }) => (
                 <Image
-                  source={{ uri: item }}
+                  source={{ uri: buildTransformedUrl(item) }}
                   style={styles.image}
                   resizeMode="cover"
                 />

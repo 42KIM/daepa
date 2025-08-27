@@ -300,6 +300,18 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
   })
   @IsEnum(PARENT_STATUS)
   status: PARENT_STATUS;
+
+  @ApiProperty({
+    description: '펫 이미지 목록',
+    example: [
+      'https://example.com/image1.jpg',
+      'https://example.com/image2.jpg',
+    ],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  photos?: string[];
 }
 
 export class PetAdoptionDto {
