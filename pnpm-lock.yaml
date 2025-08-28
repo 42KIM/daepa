@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.864.0
+        version: 3.864.0
       '@nestjs/jwt':
         specifier: ^11.0.0
         version: 11.0.0(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))
@@ -23,6 +26,12 @@ importers:
       es-toolkit:
         specifier: ^1.39.7
         version: 1.39.7
+      jose:
+        specifier: ^5.9.6
+        version: 5.10.0
+      nanoid:
+        specifier: '3'
+        version: 3.3.11
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -447,9 +456,6 @@ importers:
 
   apps/server:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.864.0
-        version: 3.864.0
       '@nestjs/axios':
         specifier: ^4.0.0
         version: 4.0.0(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.10.0)(rxjs@7.8.2)
@@ -480,15 +486,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      jose:
-        specifier: ^5.9.6
-        version: 5.10.0
       mysql2:
         specifier: ^3.14.1
         version: 3.14.1
-      nanoid:
-        specifier: '3'
-        version: 3.3.11
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
