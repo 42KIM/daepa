@@ -35,9 +35,8 @@ class R2Service {
     mimeType: string;
     size: number;
   }) {
-    const ext = (mimeType.split("/")[1] || "bin").toLowerCase();
     const file = {
-      name: `${petId}/${nanoid()}.${ext}`,
+      name: `${petId}/${nanoid(10)}`,
       buffer: buffer,
       mimeType: mimeType,
       size: size,
