@@ -35,14 +35,14 @@ export async function POST(request: NextRequest) {
     const ab = await file.arrayBuffer();
     const buffer = Buffer.from(ab);
 
-    const uploadedPendingFiles = await r2Service.upload({
+    const uploadedFile = await r2Service.upload({
       petId,
       buffer: Buffer.from(buffer),
       mimeType,
       size,
     });
 
-    return NextResponse.json(uploadedPendingFiles);
+    return NextResponse.json(uploadedFile);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
