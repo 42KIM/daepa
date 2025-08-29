@@ -74,7 +74,7 @@ export class PetEntity {
   isDeleted: boolean;
 
   @Column('json', { nullable: true })
-  photos?: string[];
+  photoOrder: number[] | null;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -161,7 +161,7 @@ export class PetBaseDto {
   })
   @IsOptional()
   @IsArray()
-  photos?: string[];
+  photoOrder?: number[];
 
   @ApiProperty({
     description: '펫 소개말',
@@ -181,7 +181,7 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   'morphs',
   'traits',
   'sex',
-  'photos',
+  'photoOrder',
   'hatchingDate',
 ]) {
   @Exclude()

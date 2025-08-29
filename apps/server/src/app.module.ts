@@ -46,6 +46,7 @@ import { PairService } from './pair/pair.service';
 import { FileController } from './file/file.controller';
 import { FileService } from './file/file.service';
 import { R2Service } from './common/cloudflare/r2.service';
+import { PetImageEntity } from './pet_image/pet_image.entity';
 
 const ENTITIES = [
   UserEntity,
@@ -57,6 +58,7 @@ const ENTITIES = [
   ParentRequestEntity,
   LayingEntity,
   PairEntity,
+  PetImageEntity,
 ];
 
 @Module({
