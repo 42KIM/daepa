@@ -60,7 +60,9 @@ class R2Service {
     }
 
     return {
-      name: file.name,
+      fileName: file.name,
+      size: file.size,
+      mimeType: file.mimeType,
       url: `${this.r2ImageBaseUrl}/${file.name}`,
     };
   }
