@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import CreateMatingForm from "./CreateMatingForm";
 import { AxiosError } from "axios";
 import { useInView } from "react-intersection-observer";
-import Filters from "./Filters";
 
 const MatingList = memo(() => {
   const { ref, inView } = useInView();
@@ -145,7 +144,6 @@ const MatingList = memo(() => {
       {/* 폴더블 폼 */}
       {isCreateFormOpen && <CreateMatingForm onClose={() => setIsCreateFormOpen(false)} />}
 
-      <Filters />
       <div className="m-2 text-sm text-gray-600 dark:text-gray-400">검색 결과: {totalCount}개</div>
 
       <ScrollArea>
