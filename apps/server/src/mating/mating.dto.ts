@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsDateString, IsNumber, IsString } from 'class-validator';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { LayingByDateDto } from 'src/laying/laying.dto';
 import { PetSummaryDto } from 'src/pet/pet.dto';
@@ -39,8 +39,8 @@ export class MatingBaseDto {
     description: '메이팅 날짜',
     example: '2025-01-01',
   })
-  @IsDate()
-  matingDate: Date;
+  @IsDateString()
+  matingDate: string;
 
   @ApiProperty({
     description: '생성일',
@@ -85,8 +85,8 @@ class MatingByDateDto {
     description: '메이팅 날짜',
     example: '2025-01-01',
   })
-  @IsDate()
-  matingDate: Date;
+  @IsDateString()
+  matingDate: string;
 
   @ApiProperty({
     description: '산란 정보',

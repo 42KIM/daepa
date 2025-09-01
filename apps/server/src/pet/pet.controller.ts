@@ -6,6 +6,9 @@ import {
   Param,
   Patch,
   Delete,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   CompleteHatchingDto,
@@ -13,6 +16,7 @@ import {
   UpdatePetDto,
   FindPetByPetIdResponseDto,
   UnlinkParentDto,
+  VerifyPetNameDto,
 } from './pet.dto';
 import { PetService } from './pet.service';
 import { ApiResponse, ApiParam } from '@nestjs/swagger';
@@ -260,5 +264,38 @@ export class PetController {
       success: true,
       message: '해칭이 완료되었습니다.',
     };
+  }
+
+  @Post('/duplicate-check')
+  @ApiResponse({
+    status: 200,
+    description: '닉네임 중복 확인 성공',
+    type: CommonResponseDto,
+  })
+  async verifyName(
+    @Body() verifyNameDto: VerifyPetNameDto,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<CommonResponseDto> {
+    if (!verifyNameDto.name) {
+      throw new BadRequestException('펫 이름을 입력해주세요.');
+    }
+    const isExist = await this.petService.isPetNameExist(
+      verifyNameDto.name,
+      token.userId,
+    );
+    if (!isExist) {
+      return {
+        success: true,
+        message: '사용 가능한 닉네임입니다.',
+      };
+    } else {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.CONFLICT,
+          message: '이미 사용중인 닉네임입니다.',
+        },
+        HttpStatus.CONFLICT,
+      );
+    }
   }
 }

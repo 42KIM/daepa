@@ -351,11 +351,13 @@ export class PetAdoptionDto {
   location?: PET_ADOPTION_LOCATION;
 
   @ApiProperty({
-    description: '분양 구매자 아이디',
-    example: 'XXXXXXXX',
+    description: '분양 구매자',
+    example: {},
+    required: false,
   })
-  @IsString()
-  buyerId?: string;
+  @IsOptional()
+  @IsObject()
+  buyer?: UserProfilePublicDto;
 
   @ApiProperty({
     description: '분양 펫 아이디',
@@ -740,3 +742,5 @@ export class UnlinkParentDto {
   @IsNotEmpty()
   role: PARENT_ROLE;
 }
+
+export class VerifyPetNameDto extends PickType(PetBaseDto, ['name']) {}

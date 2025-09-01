@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Not, Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { CreateInitUserInfoDto, UserDto } from './user.dto';
+import { CreateInitUserInfoDto, UserDto, UserFilterDto } from './user.dto';
 import { ProviderInfo } from 'src/auth/auth.types';
 import { USER_ROLE, USER_STATUS } from './user.constant';
 import { nanoid } from 'nanoid';
@@ -16,6 +16,7 @@ import { OauthService } from 'src/auth/oauth/oauth.service';
 import { EntityManager } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { OauthEntity } from 'src/auth/oauth/oauth.entity';
+import { PageDto, PageMetaDto } from 'src/common/page.dto';
 
 @Injectable()
 export class UserService {
@@ -194,5 +195,33 @@ export class UserService {
       createUserEntity,
     );
     return this.toUserDto(savedUserEntity);
+  }
+
+  async getUsers(
+    query: UserFilterDto,
+    userId: string,
+  ): Promise<PageDto<UserDto>> {
+    const queryBuilder = this.userRepository.createQueryBuilder('users');
+
+    queryBuilder.where('users.status = :status', {
+      status: USER_STATUS.ACTIVE,
+    });
+
+    queryBuilder.andWhere('users.userId != :userId', { userId });
+
+    if (query.keyword) {
+      queryBuilder.andWhere('users.name LIKE :keyword', {
+        keyword: `%${query.keyword}%`,
+      });
+    }
+
+    const [users, total] = await queryBuilder.getManyAndCount();
+
+    const pageMetaDto = new PageMetaDto({
+      totalCount: total,
+      pageOptionsDto: query,
+    });
+
+    return new PageDto(users, pageMetaDto);
   }
 }

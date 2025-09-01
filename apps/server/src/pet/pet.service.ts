@@ -39,6 +39,7 @@ import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
 import { UserNotificationService } from 'src/user_notification/user_notification.service';
 import { USER_NOTIFICATION_TYPE } from 'src/user_notification/user_notification.constant';
 import { UserNotificationEntity } from 'src/user_notification/user_notification.entity';
+import { UserEntity } from 'src/user/user.entity';
 
 const NOTIFICATION_MESSAGES = {
   PARENT_REQUEST_CANCEL: '부모 요청이 취소되었습니다.',
@@ -150,6 +151,9 @@ export class PetService {
       const adoption = await entityManager.findOne(AdoptionEntity, {
         where: { petId, isDeleted: false },
       });
+      const buyer = await entityManager.findOne(UserEntity, {
+        where: { userId: adoption?.buyerId },
+      });
 
       if (!pet.ownerId) {
         throw new NotFoundException('펫의 소유자를 찾을 수 없습니다.');
@@ -166,7 +170,10 @@ export class PetService {
         owner,
         father,
         mother,
-        adoption,
+        adoption: {
+          ...adoption,
+          buyer,
+        },
       });
     });
   }
@@ -281,19 +288,21 @@ export class PetService {
     }
 
     // parent_request 테이블에 요청 생성 및 알림 발송
-    await this.parentRequestService.createParentRequestWithNotification(
-      entityManager,
-      {
-        childPetId,
-        parentPetId: parentPet.petId,
-        role: parentInfo.role,
-        message: parentInfo.message,
-        status:
-          requesterId === parentPet.ownerId
-            ? PARENT_STATUS.APPROVED
-            : PARENT_STATUS.PENDING,
-      },
-    );
+    if (requesterId !== parentPet.ownerId) {
+      await this.parentRequestService.createParentRequestWithNotification(
+        entityManager,
+        {
+          childPetId,
+          parentPetId: parentPet.petId,
+          role: parentInfo.role,
+          message: parentInfo.message,
+          status:
+            requesterId === parentPet.ownerId
+              ? PARENT_STATUS.APPROVED
+              : PARENT_STATUS.PENDING,
+        },
+      );
+    }
   }
 
   async getPetListFull(
@@ -911,5 +920,16 @@ export class PetService {
     throw new InternalServerErrorException(
       '펫 아이디 생성 중 오류가 발생했습니다. 나중에 다시 시도해주세요.',
     );
+  }
+
+  async isPetNameExist(name: string, ownerId: string) {
+    const isExist = await this.petRepository.exists({
+      where: {
+        name,
+        ownerId,
+        isDeleted: false,
+      },
+    });
+    return !!isExist;
   }
 }

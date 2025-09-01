@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  CreateMatingDto,
-  MatingBaseDto,
-  MatingByParentsDto,
-  MatingDto,
-} from './mating.dto';
+import { CreateMatingDto, MatingByParentsDto, MatingDto } from './mating.dto';
 import { MatingEntity } from './mating.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, EntityManager, DataSource } from 'typeorm';
+import {
+  Repository,
+  EntityManager,
+  DataSource,
+  FindOptionsWhere,
+  Raw,
+} from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { PetSummaryWithLayingDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
@@ -203,10 +204,13 @@ export class MatingService {
         pair = await entityManager.save(PairEntity, pair);
       }
 
-      // 동일한 페어의 동일한 날짜에 메이팅이 있는지 확인 (exists 사용으로 성능 향상)
+      // 동일한 페어의 동일한 날짜에 메이팅이 있는지 확인
+      const date = new Date(createMatingDto.matingDate);
+      const ymd = date.toISOString().slice(0, 10);
+
       const existingMating = await entityManager.existsBy(MatingEntity, {
         pairId: pair.id,
-        matingDate: createMatingDto.matingDate,
+        matingDate: Raw((alias) => `DATE(${alias}) = :d`, { d: ymd }),
       });
 
       if (existingMating) {
@@ -215,7 +219,7 @@ export class MatingService {
 
       const matingEntity = entityManager.create(MatingEntity, {
         pairId: pair.id,
-        matingDate: createMatingDto.matingDate,
+        matingDate: ymd,
       });
       await entityManager.save(MatingEntity, matingEntity);
     });
@@ -257,7 +261,7 @@ export class MatingService {
       // 중복 체크 (자신을 제외하고)
       const existingMating = await entityManager.existsBy(MatingEntity, {
         pairId: pair.id,
-        matingDate: updateMatingDto.matingDate,
+        matingDate: new Date(updateMatingDto.matingDate),
         id: Not(matingId),
       });
 
@@ -412,7 +416,7 @@ export class MatingService {
     });
   }
 
-  async isMatingExist(criteria: Partial<MatingBaseDto>) {
+  async isMatingExist(criteria: FindOptionsWhere<MatingEntity>) {
     const isExist = await this.matingRepository.existsBy(criteria);
     return isExist;
   }
