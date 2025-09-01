@@ -35,7 +35,7 @@ const ParentLink = ({
   const { user } = useUserStore();
   const pathname = usePathname();
   const isMyPet = data?.owner?.userId === user?.userId;
-  const isRegisterPage = pathname.includes("register");
+  const isClickDisabled = pathname.includes("register") || pathname.includes("hatching");
   const deleteParent = () => {
     if (!data?.petId) return;
 
@@ -44,6 +44,11 @@ const ParentLink = ({
 
   const handleUnlink = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (isClickDisabled) {
+      deleteParent();
+      return;
+    }
 
     overlay.open(({ isOpen, close, unmount }) => (
       <Dialog
@@ -120,7 +125,7 @@ const ParentLink = ({
             passHref={false}
             onClick={(e) => {
               e.stopPropagation();
-              if (isRegisterPage) e.preventDefault();
+              if (isClickDisabled) e.preventDefault();
             }}
             className="flex flex-col items-center gap-2"
           >

@@ -16,6 +16,7 @@ import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/paren
 
 interface ParentSearchProps {
   isOpen: boolean;
+  onlySelect?: boolean;
   onClose: () => void;
   onSelect: (item: PetParentDtoWithMessage) => void;
   onExit: () => void;
@@ -25,6 +26,7 @@ interface ParentSearchProps {
 
 const ParentSearchSelector = ({
   isOpen,
+  onlySelect = false,
   onClose,
   onSelect,
   onExit,
@@ -77,13 +79,13 @@ const ParentSearchSelector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // const searchResults = data?.filter((item) =>
-  //   item.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  // );
-
   const handlePetSelect = (pet: PetParentDtoWithMessage) => {
-    setSelectedPet(pet);
-    setStep(2);
+    if (onlySelect) {
+      onSelect(pet);
+    } else {
+      setSelectedPet(pet);
+      setStep(2);
+    }
   };
 
   return (

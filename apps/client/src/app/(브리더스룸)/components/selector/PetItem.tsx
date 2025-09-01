@@ -1,19 +1,25 @@
 import { Badge } from "@/components/ui/badge";
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const PetItem = ({
   item,
   handlePetSelect,
+  disabled,
 }: {
   item: PetParentDtoWithMessage;
   handlePetSelect: (pet: PetParentDtoWithMessage) => void;
+  disabled?: boolean;
 }) => {
   return (
     <button
       key={item.petId}
       type="button"
-      className="group flex cursor-pointer flex-col rounded-xl p-2 text-left"
+      className={cn(
+        "group flex cursor-pointer flex-col rounded-xl p-2 text-left",
+        disabled && "opacity-60",
+      )}
       onClick={() => handlePetSelect(item)}
     >
       <div className="flex w-full flex-col items-center gap-1">
