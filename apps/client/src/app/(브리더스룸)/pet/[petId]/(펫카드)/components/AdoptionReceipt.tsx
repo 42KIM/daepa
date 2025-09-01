@@ -1,5 +1,10 @@
 import { SALE_STATUS_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
-import { AdoptionDto, PetAdoptionDto, petControllerFindPetByPetId } from "@repo/api-client";
+import {
+  AdoptionDto,
+  PetAdoptionDto,
+  PetAdoptionDtoStatus,
+  petControllerFindPetByPetId,
+} from "@repo/api-client";
 import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useState, memo, useCallback, useMemo } from "react";
@@ -22,10 +27,6 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
       setIsReceiptVisible(true);
     }
   }, [isReceiptVisible]);
-
-  const shouldShowReceipt = useMemo(() => {
-    return ["ON_SALE", "ON_RESERVATION", "SOLD"].includes(adoption?.status || "");
-  }, [adoption?.status]);
 
   const statusText = useMemo(() => {
     return adoption?.status &&
@@ -66,8 +67,6 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
     ));
   }, [adoption, queryClient]);
 
-  if (!shouldShowReceipt) return null;
-
   return (
     <div className="pb-4 pt-4">
       <div
@@ -83,7 +82,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
         ></div>
 
         <div
-          className={`mb-2 flex items-center justify-center text-center ${
+          className={`mb-2 flex flex-col items-center justify-center text-center ${
             isReceiptVisible ? "animate-fade-in-up" : ""
           }`}
           style={{ animationDelay: "0.2s" }}
@@ -111,6 +110,12 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
               </div>
             )}
           </div>
+
+          {adoption?.status === PetAdoptionDtoStatus.SOLD && (
+            <div className="text-sm text-red-500 dark:text-red-400">
+              판매 완료된 개체는 수정할 수 없습니다.
+            </div>
+          )}
         </div>
 
         <div
@@ -160,19 +165,29 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
                 : "미정"}
             </span>
           </div>
+
+          <div
+            className={`flex justify-between ${isReceiptVisible ? "animate-fade-in-up" : ""}`}
+            style={{ animationDelay: "1.4s" }}
+          >
+            <span className="text-sm text-gray-600 dark:text-gray-400">구매자 </span>
+            <span className="text-sm text-gray-800 dark:text-gray-200">
+              {adoption?.buyer?.name ?? "미정"}
+            </span>
+          </div>
         </div>
 
         <div
           className={`mt-4 border-b border-dashed border-gray-400 pb-2 ${
             isReceiptVisible ? "animate-fade-in-up" : ""
           }`}
-          style={{ animationDelay: "1.4s" }}
+          style={{ animationDelay: "1.6s" }}
         ></div>
 
         {adoption?.memo ? (
           <div
             className={`mt-4 ${isReceiptVisible ? "animate-fade-in-up" : ""}`}
-            style={{ animationDelay: "1.6s" }}
+            style={{ animationDelay: "1.8s" }}
           >
             <div className="mb-2 text-sm text-gray-600 dark:text-gray-400">메모</div>
             <div className="rounded bg-gray-100 p-3 text-sm text-gray-800 dark:bg-gray-700 dark:text-gray-200">

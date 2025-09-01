@@ -86,8 +86,9 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
   }, [isEditing]);
 
   const handleCancel = useCallback(() => {
+    setFormData(pet);
     setIsEditing(false);
-  }, []);
+  }, [pet, setFormData]);
 
   return (
     <div className="relative h-full w-full">
