@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { NOTIFICATION_TYPE } from "../../constants";
 import { Badge } from "@/components/ui/badge";
 import NotiTitle from "./NotiTitle";
-import { cn, formatDateToYYYYMMDDString } from "@/lib/utils";
+import { buildR2TransformedUrl, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { isPlainObject, isString } from "es-toolkit";
 import { isNumber } from "@/lib/typeGuards";
@@ -310,7 +310,7 @@ const NotiDisplay = memo(() => {
               {detailData?.childPet?.photos ? (
                 <div className="relative w-full overflow-hidden rounded-lg">
                   <PetThumbnail
-                    imageUrl={detailData?.childPet?.photos[0]}
+                    imageUrl={buildR2TransformedUrl(detailData?.childPet?.photos[0]?.url)}
                     alt={detailData?.childPet?.name}
                   />
                 </div>
