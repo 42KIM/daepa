@@ -19,7 +19,7 @@ export class PairEntity {
   @Column()
   ownerId: string;
 
-  @Column({ type: 'enum', enum: PET_SPECIES })
+  @Column({ type: 'enum', enum: PET_SPECIES, nullable: false })
   species: PET_SPECIES; // 종
 
   @Column()

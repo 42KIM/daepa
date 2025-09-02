@@ -46,8 +46,7 @@ export const DataTable = ({
   isClickable = true,
 }: DataTableProps<PetDto>) => {
   const { columnFilters } = useFilterStore();
-  const { sorting, rowSelection, setSorting, setColumnVisibility, setRowSelection } =
-    useTableStore();
+  const { sorting, rowSelection, setSorting, setRowSelection } = useTableStore();
 
   const router = useRouter();
 
@@ -58,7 +57,6 @@ export const DataTable = ({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,

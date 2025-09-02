@@ -91,13 +91,12 @@ const NotiDisplay = memo(() => {
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         toast.error(error?.response?.data?.message ?? "부모 연동 상태 변경에 실패했습니다.");
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindOne.name, id] });
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
       }
     } finally {
-      queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindOne.name, id] });
-      queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
-
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindOne.name, id] }),
+        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] }),
+      ]);
       close?.();
     }
   };
@@ -201,7 +200,7 @@ const NotiDisplay = memo(() => {
                       onExit={unmount}
                       isOpen={isOpen}
                       onCloseAction={close}
-                      onConfirmAction={handleDeleteNotification}
+                      onConfirmAction={() => handleDeleteNotification(close)}
                     />
                   ));
                 }
@@ -242,7 +241,7 @@ const NotiDisplay = memo(() => {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    handleUpdate(UpdateParentRequestDtoStatus.APPROVED, undefined, close);
+                    handleUpdate(UpdateParentRequestDtoStatus.APPROVED);
                   }}
                   disabled={alreadyProcessed}
                   size="sm"

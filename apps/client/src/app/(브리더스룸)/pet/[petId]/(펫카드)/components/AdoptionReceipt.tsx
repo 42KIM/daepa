@@ -2,6 +2,7 @@ import { SALE_STATUS_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import {
   AdoptionDto,
   PetAdoptionDto,
+  PetAdoptionDtoLocation,
   PetAdoptionDtoStatus,
   petControllerFindPetByPetId,
 } from "@repo/api-client";
@@ -88,13 +89,13 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
           style={{ animationDelay: "0.2s" }}
         >
           <div className="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-200">
-            {adoption?.status === "SOLD" && (
+            {adoption?.status === PetAdoptionDtoStatus.SOLD && (
               <div className="opacity-0 transition-all duration-300 group-hover:opacity-100">
                 <span className="animate-bounce text-2xl">✨</span>
               </div>
             )}
             분양 영수증{" "}
-            {adoption?.status !== "SOLD" && (
+            {adoption?.status !== PetAdoptionDtoStatus.SOLD && (
               <>
                 {isEditable && (
                   <button className="cursor-pointer" onClick={handleEditAdoption}>
@@ -104,7 +105,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
                 <span className="text-sm font-light text-gray-600 dark:text-gray-400">(예정)</span>
               </>
             )}
-            {adoption?.status === "SOLD" && (
+            {adoption?.status === PetAdoptionDtoStatus.SOLD && (
               <div className="opacity-0 transition-all duration-300 group-hover:opacity-100">
                 <span className="animate-bounce text-2xl">✨</span>
               </div>
@@ -159,7 +160,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
             <span className="text-sm text-gray-600 dark:text-gray-400">거래 방식</span>
             <span className="text-sm text-gray-800 dark:text-gray-200">
               {adoption?.location
-                ? adoption.location === "ONLINE"
+                ? adoption.location === PetAdoptionDtoLocation.ONLINE
                   ? "온라인"
                   : "오프라인"
                 : "미정"}

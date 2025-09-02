@@ -295,10 +295,13 @@ export class MatingService {
         pair = await entityManager.save(PairEntity, pair);
       }
 
+      const date = new Date(updateMatingDto.matingDate);
+      const ymd = date.toISOString().slice(0, 10);
+
       // 중복 체크 (자신을 제외하고)
       const existingMating = await entityManager.existsBy(MatingEntity, {
         pairId: pair.id,
-        matingDate: new Date(updateMatingDto.matingDate),
+        matingDate: Raw((alias) => `DATE(${alias}) = :d`, { d: ymd }),
         id: Not(matingId),
       });
 

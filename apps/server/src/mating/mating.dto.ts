@@ -164,8 +164,8 @@ export class MatingFilterDto extends PageOptionsDto {
     required: false,
   })
   @IsOptional()
-  @IsDate()
-  startYmd?: Date; // 최소 생년월일
+  @IsDateString()
+  startYmd?: string; // 최소 생년월일
 
   @ApiProperty({
     description: '펫 최대 생년월일',
@@ -173,8 +173,8 @@ export class MatingFilterDto extends PageOptionsDto {
     required: false,
   })
   @IsOptional()
-  @IsDate()
-  endYmd?: Date; // 최대 생년월일
+  @IsDateString()
+  endYmd?: string; // 최대 생년월일
 
   @ApiProperty({
     description: '아빠 펫 ID',
