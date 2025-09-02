@@ -11,13 +11,20 @@ import {
   USER_NOTIFICATION_STATUS,
   USER_NOTIFICATION_TYPE,
 } from './user_notification.constant';
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiProperty,
+  getSchemaPath,
+  PickType,
+} from '@nestjs/swagger';
 import { CommonResponseDto } from 'src/common/response.dto';
 import {
   PARENT_ROLE,
   PARENT_STATUS,
 } from 'src/parent_request/parent_request.constants';
+import { PetImageDto } from 'src/pet_image/pet_image.dto';
 
+@ApiExtraModels(PetImageDto)
 export class NotificationPetDto {
   @ApiProperty({
     description: '개체 아이디',
@@ -37,12 +44,13 @@ export class NotificationPetDto {
 
   @ApiProperty({
     description: '개체 이미지',
-    example: ['example.com/image1.jpg', 'example.com/image2.jpg'],
     required: false,
+    type: 'array',
+    items: { $ref: getSchemaPath(PetImageDto) },
   })
   @IsOptional()
   @IsArray()
-  photos?: string[];
+  photos?: PetImageDto[];
 }
 
 export class UserNotificationDetailJson {

@@ -51,7 +51,6 @@ export class PetImageBaseDto {
   updatedAt: Date;
 }
 
-@ApiExtraModels()
 export class UpsertPetImageDto extends OmitType(PetImageBaseDto, [
   'id',
   'createdAt',
@@ -66,6 +65,7 @@ export class UpsertPetImageDto extends OmitType(PetImageBaseDto, [
   petId?: string;
 }
 
+@ApiExtraModels(PetImageBaseDto)
 export class PetImageDto extends PickType(PetImageBaseDto, [
   'fileName',
   'url',
