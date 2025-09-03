@@ -19,13 +19,24 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
+import { orderBy } from "es-toolkit";
 
 const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const swiperRef = useRef<SwiperType>(null);
 
-  const allImages = pet.photos ?? [];
+  const imagesInOrder = orderBy(
+    pet.photos ?? [],
+    [
+      (photo) => {
+        const fileKey = photo.fileName;
+        const index = pet.photoOrder?.indexOf(fileKey);
+        return index === -1 ? Infinity : index;
+      },
+    ],
+    ["asc"],
+  );
 
   const handleSlideChange = useCallback((swiper: SwiperType) => {
     setCurrentImageIndex(swiper.realIndex);
@@ -50,7 +61,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
           modules={[Navigation, Pagination, EffectFade]}
           spaceBetween={0}
           slidesPerView={1}
-          loop={allImages.length > 1}
+          loop={imagesInOrder.length > 1}
           speed={300}
           // 터치/드래그 설정
           touchRatio={1}
@@ -71,7 +82,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
           }}
           className="h-full w-full"
         >
-          {allImages.map((image, index) => (
+          {imagesInOrder.map((image, index) => (
             <SwiperSlide key={image.fileName} className="relative">
               <div className="relative h-full w-full">
                 <Image
@@ -87,9 +98,9 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
         </Swiper>
 
         {/* 커스텀 인디케이터 */}
-        {allImages.length > 1 && (
+        {imagesInOrder.length > 1 && (
           <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-            {allImages.map((_, index) => (
+            {imagesInOrder.map((_, index) => (
               <button
                 key={index}
                 onClick={() => swiperRef.current?.slideTo(index)}
@@ -106,7 +117,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
         )}
 
         {/* 좌우 네비게이션 버튼 (데스크톱용) */}
-        {allImages.length > 1 && (
+        {imagesInOrder.length > 1 && (
           <>
             <button
               onClick={() => swiperRef.current?.slidePrev()}
@@ -271,10 +282,10 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
       </div>
 
       {/* 이미지 카운터 (선택사항) */}
-      {allImages.length > 1 && (
+      {imagesInOrder.length > 1 && (
         <div className="absolute right-4 top-20 z-10">
           <div className="rounded-full bg-black/50 px-2 py-1 text-xs text-white backdrop-blur-sm">
-            {currentImageIndex + 1} / {allImages.length}
+            {currentImageIndex + 1} / {imagesInOrder.length}
           </div>
         </div>
       )}

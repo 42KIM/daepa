@@ -163,7 +163,7 @@ export class PetBaseDto {
   })
   @IsOptional()
   @IsArray()
-  photoOrder?: number[];
+  photoOrder?: string[];
 
   @ApiProperty({
     description: '펫 소개말',

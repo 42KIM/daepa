@@ -18,7 +18,7 @@ import BreedingInfoSection from "./components/BreedingInfoSection";
 import CardBackActions from "./components/CardBackActions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
-import { isNil, pick, pickBy } from "es-toolkit";
+import { isNil, orderBy, pick, pickBy } from "es-toolkit";
 
 interface CardBackProps {
   pet: PetDto;
@@ -31,9 +31,26 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
   const { formData, setFormData, setPage } = usePetStore();
   const { user } = useUserStore();
   const isMyPet = !!user && user.userId === pet.owner.userId;
-
   const [isEditing, setIsEditing] = useState(from === "egg");
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const initialPetData = useMemo(
+    () => ({
+      ...pet,
+      photos: orderBy(
+        pet.photos ?? [],
+        [
+          (photo) => {
+            const fileKey = photo.fileName;
+            const index = pet.photoOrder?.indexOf(fileKey);
+            return index === -1 ? Infinity : index;
+          },
+        ],
+        ["asc"],
+      ),
+    }),
+    [pet],
+  );
 
   const { mutateAsync: mutateUpdatePet } = useMutation({
     mutationFn: (updateData: UpdatePetDto) => petControllerUpdate(pet.petId, updateData),
@@ -52,9 +69,9 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
   }, [formData, from]);
 
   useEffect(() => {
-    setFormData(pet);
+    setFormData(initialPetData);
     setPage("detail");
-  }, [pet, setFormData, setPage]);
+  }, [initialPetData, setFormData, setPage]);
 
   const handleSave = useCallback(async () => {
     try {
@@ -91,8 +108,9 @@ const CardBack = memo(({ pet, from, isWideScreen }: CardBackProps) => {
   }, [isEditing]);
 
   const handleCancel = useCallback(() => {
+    setFormData(initialPetData);
     setIsEditing(false);
-  }, []);
+  }, [initialPetData, setFormData]);
 
   return (
     <div className="relative h-full w-full">

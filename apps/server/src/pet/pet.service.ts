@@ -201,7 +201,19 @@ export class PetService {
         throw new ForbiddenException('펫의 소유자가 아닙니다.');
       }
 
-      const { father, mother, ...petData } = updatePetDto;
+      const { father, mother, photos, ...petData } = updatePetDto;
+      if (photos) {
+        const newPhotoOrder = updatePetDto.photos?.map(
+          (photo) => photo.fileName,
+        );
+        petData.photoOrder = newPhotoOrder;
+
+        await this.petImageService.saveAndUploadConfirmedImages(
+          entityManager,
+          petId,
+          photos,
+        );
+      }
 
       try {
         // 펫 정보 업데이트
