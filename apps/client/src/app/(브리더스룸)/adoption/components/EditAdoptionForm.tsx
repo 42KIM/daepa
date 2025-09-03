@@ -78,26 +78,10 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
   const { mutateAsync: updateAdoption, isPending: isUpdatingAdoption } = useMutation({
     mutationFn: ({ adoptionId, data }: { adoptionId: string; data: UpdateAdoptionDto }) =>
       adoptionControllerUpdate(adoptionId, data),
-    onSuccess: () => {
-      toast.success("분양 정보가 성공적으로 업데이트되었습니다.");
-      handleClose();
-    },
-    onError: (error) => {
-      console.error("분양 수정 실패:", error);
-      toast.error("분양 수정에 실패했습니다. 다시 시도해주세요.");
-    },
   });
 
   const { mutateAsync: createAdoption, isPending: isCreatingAdoption } = useMutation({
     mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
-    onSuccess: () => {
-      toast.success("분양 정보가 성공적으로 생성되었습니다.");
-      handleClose();
-    },
-    onError: (error) => {
-      console.error("분양 생성 실패:", error);
-      toast.error("분양 생성에 실패했습니다. 다시 시도해주세요.");
-    },
   });
 
   const onSubmit = async (data: AdoptionFormData) => {
@@ -122,10 +106,18 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
       isUndefined,
     );
 
-    if (adoptionId) {
-      await updateAdoption({ adoptionId, data: newAdoptionDto });
-    } else {
-      await createAdoption({ ...newAdoptionDto, petId });
+    try {
+      if (adoptionId) {
+        await updateAdoption({ adoptionId, data: newAdoptionDto });
+      } else {
+        await createAdoption({ ...newAdoptionDto, petId });
+      }
+
+      toast.success("분양 정보가 성공적으로 생성되었습니다.");
+      handleClose();
+    } catch (error) {
+      console.error("분양 생성 실패:", error);
+      toast.error("분양 생성에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
