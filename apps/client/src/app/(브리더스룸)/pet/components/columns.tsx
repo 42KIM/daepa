@@ -35,15 +35,15 @@ import { format } from "date-fns";
 import TableHeaderSelect from "../../components/TableHeaderSelect";
 import { useFilterStore } from "../../store/filter";
 
-const HeaderSelect = ({
+const HeaderSelect = <TData,>({
   column,
   title,
   items,
   renderItem,
 }: {
-  column: Column<any, unknown>;
+  column: Column<TData, unknown>;
   title: string;
-  items: string[] | number[];
+  items: Array<string | number>;
   renderItem?: (item: string | number) => string;
 }) => {
   const { searchFilters, setSearchFilters } = useFilterStore();

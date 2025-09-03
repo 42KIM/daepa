@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Column } from "@tanstack/react-table";
 
-const TableHeaderSelect = ({
+const TableHeaderSelect = <TData,>({
   column,
   title,
   items,
@@ -16,9 +16,9 @@ const TableHeaderSelect = ({
   setSearchFilters,
   renderItem = (item: string | number) => item.toString(),
 }: {
-  column: Column<unknown, unknown>;
+  column: Column<TData, unknown>;
   title: string;
-  items: string[] | number[];
+  items: Array<string | number>;
   searchFilters: Record<string, unknown>;
   setSearchFilters: (filters: Record<string, unknown>) => void;
   renderItem?: (item: string | number) => string;

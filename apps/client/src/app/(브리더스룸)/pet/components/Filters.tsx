@@ -12,22 +12,24 @@ import { ChevronDown, Search } from "lucide-react";
 import { TABLE_HEADER } from "../../constants";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { BrPetControllerFindAllParams, PetDto } from "@repo/api-client";
+import { PetDto } from "@repo/api-client";
 import { FilterStore } from "../../store/filter";
 
-interface FiltersProps<TData> extends FilterStore {
+type AnyParams = Record<string, string | number | string[] | number[]>;
+interface FiltersProps<TData, TParams extends AnyParams = AnyParams> extends FilterStore<TParams> {
   table: Table<TData>;
+  placeholder?: string;
 }
 
-export function Filters<TData>({
+export function Filters<TData, TParams extends AnyParams = AnyParams>({
   table,
   searchFilters,
   setSearchFilters,
   columnFilters,
   setColumnFilters,
-}: FiltersProps<TData>) {
-  const [filters, setFilters] = useState<Partial<BrPetControllerFindAllParams>>(
-    searchFilters ?? {},
+}: FiltersProps<TData, TParams>) {
+  const [filters, setFilters] = useState<Partial<TParams>>(
+    (searchFilters as Partial<TParams>) ?? ({} as Partial<TParams>),
   );
   const handleSearch = () => {
     setSearchFilters(filters);
@@ -65,7 +67,7 @@ export function Filters<TData>({
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
             placeholder="펫 이름으로 검색"
-            value={filters.keyword || ""}
+            value={typeof filters.keyword === "string" ? filters.keyword : ""}
             onChange={(e) => setFilters((prev) => ({ ...prev, keyword: e.target.value }))}
             className="pl-10"
             onKeyDown={(e) => {
