@@ -36,6 +36,7 @@ const AdoptionDetailModal = ({
   } = useQuery({
     queryKey: [adoptionControllerGetAdoptionByAdoptionId.name, adoptionId],
     queryFn: () => adoptionControllerGetAdoptionByAdoptionId(adoptionId),
+    enabled: !!adoptionId,
     select: (data) => data.data.data,
   });
 

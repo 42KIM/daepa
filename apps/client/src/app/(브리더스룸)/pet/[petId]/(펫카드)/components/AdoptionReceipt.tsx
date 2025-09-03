@@ -95,7 +95,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
               </div>
             )}
             분양 영수증{" "}
-            {adoption?.status !== PetAdoptionDtoStatus.SOLD && (
+            {adoption?.adoptionId && (
               <>
                 {isEditable && (
                   <button className="cursor-pointer" onClick={handleEditAdoption}>
@@ -103,12 +103,13 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
                   </button>
                 )}
                 <span className="text-sm font-light text-gray-600 dark:text-gray-400">(예정)</span>
+
+                {adoption?.status === PetAdoptionDtoStatus.SOLD && (
+                  <div className="opacity-0 transition-all duration-300 group-hover:opacity-100">
+                    <span className="animate-bounce text-2xl">✨</span>
+                  </div>
+                )}
               </>
-            )}
-            {adoption?.status === PetAdoptionDtoStatus.SOLD && (
-              <div className="opacity-0 transition-all duration-300 group-hover:opacity-100">
-                <span className="animate-bounce text-2xl">✨</span>
-              </div>
             )}
           </div>
 
