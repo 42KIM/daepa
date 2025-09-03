@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import PetThumbnail from "../PetThumbnail";
-import { buildR2TransformedUrl } from "@/lib/utils";
 
 const PetItem = ({
   item,
@@ -19,7 +18,7 @@ const PetItem = ({
     >
       <div className="flex w-full flex-col items-center gap-1">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-          <PetThumbnail imageUrl={buildR2TransformedUrl(item.photos?.[0]?.url)} alt={item.name} />
+          <PetThumbnail imageUrl={item.photos?.[0]?.url} alt={item.name} />
         </div>
         <div className="flex w-full flex-col items-center gap-1">
           <div className="relative">
