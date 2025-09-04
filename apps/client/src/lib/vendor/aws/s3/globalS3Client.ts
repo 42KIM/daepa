@@ -10,14 +10,10 @@ export class GlobalS3ClientSingleton {
 
   public static getInstance(): S3Client {
     if (!GlobalS3ClientSingleton.instance) {
-      const endpoint = process.env.CLOUDFLARE_R2_API_BASE_URL;
-      const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-      const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-      if (!endpoint || !accessKeyId || !secretAccessKey) {
-        throw new Error(
-          "R2 환경변수(CLOUDFLARE_R2_API_BASE_URL, CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY)가 설정되지 않았습니다.",
-        );
-      }
+      const endpoint = process.env.CLOUDFLARE_R2_API_BASE_URL ?? "";
+      const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ?? "";
+      const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY ?? "";
+
       GlobalS3ClientSingleton.instance = new S3Client({
         region: "auto",
         endpoint,

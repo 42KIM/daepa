@@ -9,13 +9,8 @@ class R2Service {
 
   private constructor(s3Client: S3Client) {
     this.s3Client = s3Client;
-    const baseUrl = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_IMAGE_BASE_URL;
-    const bucket = process.env.CLOUDFLARE_R2_IMAGE_BUCKET_NAME;
-    if (!baseUrl || !bucket) {
-      throw new Error(
-        "R2 이미지 업로드 설정이 누락되었습니다. CLOUDFLARE_R2_IMAGE_BASE_URL, CLOUDFLARE_R2_IMAGE_BUCKET_NAME를 확인하세요.",
-      );
-    }
+    const baseUrl = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_IMAGE_BASE_URL ?? "";
+    const bucket = process.env.CLOUDFLARE_R2_IMAGE_BUCKET_NAME ?? "";
     this.r2ImageBaseUrl = baseUrl.replace(/\/+$/, "");
     this.r2ImageBucketName = bucket;
   }
