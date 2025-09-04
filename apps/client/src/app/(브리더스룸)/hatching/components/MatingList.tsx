@@ -2,7 +2,6 @@ import Loading from "@/components/common/Loading";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   brMatingControllerFindAll,
-  CommonResponseDto,
   MatingByDateDto,
   matingControllerCreateMating,
   PetDtoSpecies,
@@ -78,15 +77,8 @@ const MatingList = memo(() => {
   });
 
   // 메이팅 추가
-  const { mutate: createMating } = useMutation({
+  const { mutateAsync: createMating } = useMutation({
     mutationFn: matingControllerCreateMating,
-    onSuccess: () => {
-      toast.success("메이팅이 추가되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
-    },
-    onError: (error: AxiosError<CommonResponseDto>) => {
-      toast.error(error.response?.data?.message ?? "메이팅 추가에 실패했습니다.");
-    },
   });
 
   // 메이팅 날짜들을 추출하여 Calendar용 날짜 배열 생성
@@ -131,7 +123,7 @@ const MatingList = memo(() => {
     );
   }
 
-  const handleAddMatingClick = ({
+  const handleAddMatingClick = async ({
     species,
     fatherId,
     motherId,
@@ -152,12 +144,25 @@ const MatingList = memo(() => {
       return;
     }
 
-    createMating({
-      species,
-      matingDate,
-      fatherId,
-      motherId,
-    });
+    try {
+      await createMating({
+        species,
+        matingDate,
+        fatherId,
+        motherId,
+      });
+
+      toast.success("메이팅이 추가되었습니다.");
+      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "메이팅 추가에 실패했습니다.");
+      } else {
+        toast.error("메이팅 추가에 실패했습니다.");
+      }
+    } finally {
+      setIsCreateFormOpen(false);
+    }
   };
 
   return (
@@ -222,7 +227,7 @@ const MatingList = memo(() => {
                     disabledDates={matingDates(matingGroup?.matingsByDate ?? [])}
                     onConfirm={(matingDate) =>
                       handleAddMatingClick({
-                        species: matingGroup.species,
+                        species: matingGroup.father?.species,
                         fatherId: matingGroup.father?.petId,
                         motherId: matingGroup.mother?.petId,
                         matingDate,

@@ -4,7 +4,7 @@ import { FORM_STEPS, GENDER_KOREAN_INFO, OPTION_STEPS, REGISTER_PAGE } from "../
 import { FormHeader } from "../../components/Form/FormHeader";
 import { useRegisterForm } from "../hooks/useRegisterForm";
 import { FormData, usePetStore } from "../store/pet";
-import { useEffect, use } from "react";
+import { useEffect, use, useCallback } from "react";
 import { FormField } from "../../components/Form/FormField";
 
 import FloatingButton from "../../components/FloatingButton";
@@ -25,21 +25,8 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
   const funnel = Number(resolvedParams.funnel);
   const visibleSteps = FORM_STEPS.slice(-step - 1);
 
-  const { mutate: mutateCreatePet, isPending } = useMutation({
+  const { mutateAsync: mutateCreatePet, isPending } = useMutation({
     mutationFn: (data: CreatePetDto) => petControllerCreate(data),
-    onSuccess: () => {
-      toast.success("개체 등록이 완료되었습니다.");
-      router.push(`/pet`);
-      resetForm();
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Failed to create pet:", error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("개체 등록에 실패했습니다.");
-      }
-    },
   });
 
   useEffect(() => {
@@ -88,7 +75,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
     }
   }, [step, funnel]);
 
-  const createPet = (formData: FormData) => {
+  const formatFormData = useCallback((formData: FormData): CreatePetDto | undefined => {
     try {
       const transformedFormData = { ...formData };
       if (transformedFormData.sex && typeof transformedFormData.sex === "string") {
@@ -102,7 +89,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
 
       const { growth, morphs, name, sex, species, desc, ...rest } = transformedFormData;
 
-      const requestData: CreatePetDto = {
+      return {
         growth,
         morphs,
         name,
@@ -132,9 +119,29 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
         ...(rest?.foods && { foods: rest.foods }),
         ...(rest?.traits && { traits: rest.traits }),
       };
-      mutateCreatePet(requestData);
     } catch (error) {
       console.error("Failed to create pet:", error);
+    }
+  }, []);
+
+  const createPet = async (formData: FormData) => {
+    try {
+      const formattedData = formatFormData(formData);
+      if (!formattedData) {
+        toast.error("개체 등록에 실패했습니다.");
+        return;
+      }
+
+      await mutateCreatePet(formattedData);
+      toast.success("개체 등록이 완료되었습니다.");
+      router.push(`/pet`);
+      resetForm();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "개체 등록에 실패했습니다.");
+      } else {
+        toast.error("개체 등록에 실패했습니다.");
+      }
     }
   };
 

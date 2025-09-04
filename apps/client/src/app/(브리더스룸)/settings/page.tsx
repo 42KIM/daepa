@@ -69,37 +69,32 @@ const SettingsPage = () => {
     select: (response) => response.data.data,
   });
 
-  const { mutate: signOut } = useMutation({
+  const { mutateAsync: signOut } = useMutation({
     mutationFn: authControllerSignOut,
-    onSuccess: () => {
-      tokenStorage.removeToken();
-      toast.success("로그아웃 되었습니다.");
-      router.replace("/pet");
-    },
   });
 
   const { mutateAsync: updateNickname, isPending: isUpdatingNickname } = useMutation({
     mutationFn: userControllerCreateInitUserInfo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [userControllerGetUserProfile.name] });
-      toast.success("닉네임이 성공적으로 변경되었습니다.");
-      setIsEditingNickname(false);
-      setNewNickname("");
-      setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
-    },
-    onError: (error: AxiosError<CommonResponseDto>) => {
-      if (error?.response?.status === 409) {
-        toast.error("이미 사용중인 닉네임입니다.");
-      } else {
-        toast.error("닉네임 변경 중 오류가 발생했습니다.");
-      }
-    },
   });
 
   const { mutateAsync: verifyName, isPending: isVerifyingName } = useMutation({
     mutationFn: userControllerVerifyName,
   });
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      tokenStorage.removeToken();
+      toast.success("로그아웃 되었습니다.");
+      router.replace("/pet");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "로그아웃에 실패했습니다.");
+      } else {
+        toast.error("로그아웃에 실패했습니다.");
+      }
+    }
+  };
   const toggleNotification = (type: keyof typeof notifications) => {
     setNotifications((prev) => ({
       ...prev,
@@ -192,7 +187,21 @@ const SettingsPage = () => {
       return;
     }
 
-    await updateNickname({ name: newNickname });
+    try {
+      await updateNickname({ name: newNickname });
+
+      queryClient.invalidateQueries({ queryKey: [userControllerGetUserProfile.name] });
+      toast.success("닉네임이 성공적으로 변경되었습니다.");
+      setIsEditingNickname(false);
+      setNewNickname("");
+      setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
+    } catch (error) {
+      if (error instanceof AxiosError && error?.response?.status === 409) {
+        toast.error("이미 사용중인 닉네임입니다.");
+      } else {
+        toast.error("닉네임 변경 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   return (
@@ -498,7 +507,7 @@ const SettingsPage = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => signOut()}
+              onClick={handleSignOut}
               className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
             >
               로그아웃
