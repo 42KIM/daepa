@@ -255,7 +255,7 @@ export class PetController {
     await this.petService.completeHatching(
       petId,
       token.userId,
-      completeHatchingDto.hatchingDate,
+      completeHatchingDto,
     );
 
     return {

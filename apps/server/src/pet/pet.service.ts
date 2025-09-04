@@ -11,7 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, EntityManager, DataSource } from 'typeorm';
 import { nanoid } from 'nanoid';
 import { plainToInstance } from 'class-transformer';
-import { CreatePetDto, PetDto } from './pet.dto';
+import { CompleteHatchingDto, CreatePetDto, PetDto } from './pet.dto';
 import {
   PET_GROWTH,
   PET_SEX,
@@ -41,6 +41,9 @@ import { USER_NOTIFICATION_TYPE } from 'src/user_notification/user_notification.
 import { UserNotificationEntity } from 'src/user_notification/user_notification.entity';
 import { PetImageService } from 'src/pet_image/pet_image.service';
 import { PetImageEntity } from 'src/pet_image/pet_image.entity';
+import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
+import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
+import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 
 const NOTIFICATION_MESSAGES = {
   PARENT_REQUEST_CANCEL: '부모 요청이 취소되었습니다.',
@@ -66,9 +69,21 @@ export class PetService {
   async createPet(createPetDto: CreatePetDto, ownerId: string) {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       const petId = await this.generateUniquePetId(entityManager);
-      const { father, mother, photos, ...petData } = createPetDto;
+      const {
+        father,
+        mother,
+        sex,
+        morphs,
+        traits,
+        foods,
+        weight,
+        temperature,
+        eggStatus,
+        photos,
+        ...petData
+      } = createPetDto;
 
-      // 펫 데이터 준비
+      // 공통 펫 데이터 준비
       const petEntityData = plainToInstance(PetEntity, {
         ...petData,
         petId,
@@ -86,6 +101,24 @@ export class PetService {
       try {
         // 펫 생성
         await entityManager.insert(PetEntity, petEntityData);
+
+        // growth에 따라 적절한 details 테이블에 데이터 저장
+        if (petData.growth === PET_GROWTH.EGG) {
+          await entityManager.insert(EggDetailEntity, {
+            petId,
+            temperature,
+            status: eggStatus || EGG_STATUS.FERTILIZED,
+          });
+        } else {
+          await entityManager.insert(PetDetailEntity, {
+            petId,
+            sex,
+            morphs,
+            traits,
+            foods,
+            weight,
+          });
+        }
 
         // 부모 연동 요청 처리
         if (father) {
@@ -152,6 +185,19 @@ export class PetService {
         throw new NotFoundException('펫을 찾을 수 없습니다.');
       }
 
+      let petDetail: PetDetailEntity | null = null;
+      let eggDetail: EggDetailEntity | null = null;
+
+      if (pet.growth === PET_GROWTH.EGG) {
+        eggDetail = await entityManager.findOne(EggDetailEntity, {
+          where: { petId },
+        });
+      } else {
+        petDetail = await entityManager.findOne(PetDetailEntity, {
+          where: { petId },
+        });
+      }
+
       // adoption 정보를 petId로 조회
       const adoption = await entityManager.findOne(AdoptionEntity, {
         where: { petId, isDeleted: false },
@@ -183,6 +229,17 @@ export class PetService {
 
       return plainToInstance(PetDto, {
         ...pet,
+        ...(petDetail && {
+          sex: petDetail.sex,
+          morphs: petDetail.morphs,
+          traits: petDetail.traits,
+          foods: petDetail.foods,
+          weight: petDetail.weight,
+        }),
+        ...(eggDetail && {
+          temperature: eggDetail.temperature,
+          eggStatus: eggDetail.status,
+        }),
         owner,
         father,
         mother,
@@ -216,31 +273,55 @@ export class PetService {
         throw new ForbiddenException('펫의 소유자가 아닙니다.');
       }
 
-      const { father, mother, photos, ...petData } = updatePetDto;
-      if (photos) {
-        const newPhotoOrder = updatePetDto.photos?.map(
-          (photo) => photo.fileName,
-        );
-        petData.photoOrder = newPhotoOrder;
-
-        await this.petImageService.saveAndUploadConfirmedImages(
-          entityManager,
-          petId,
-          photos,
-        );
-      }
+      const {
+        sex,
+        morphs,
+        traits,
+        foods,
+        weight,
+        temperature,
+        eggStatus,
+        photos,
+        ...petData
+      } = updatePetDto;
 
       try {
-        // 펫 정보 업데이트
-        await entityManager.update(PetEntity, { petId }, petData);
+        if (photos) {
+          const newPhotoOrder = updatePetDto.photos?.map(
+            (photo) => photo.fileName,
+          );
+          petData.photoOrder = newPhotoOrder;
 
-        // 부모 연동 요청 처리
-        if (father) {
-          await this.handleParentRequest(entityManager, petId, userId, father);
+          await this.petImageService.saveAndUploadConfirmedImages(
+            entityManager,
+            petId,
+            photos,
+          );
         }
 
-        if (mother) {
-          await this.handleParentRequest(entityManager, petId, userId, mother);
+        // 펫 기본 정보 업데이트
+        await entityManager.update(PetEntity, { petId }, petData);
+
+        if (existingPet.growth === PET_GROWTH.EGG) {
+          await entityManager.update(
+            EggDetailEntity,
+            { petId },
+            {
+              ...(temperature && { temperature }),
+              ...(eggStatus && { status: eggStatus }),
+            },
+          );
+        } else {
+          const updateData: Partial<PetDetailEntity> = {};
+          if (sex) updateData.sex = sex;
+          if (morphs) updateData.morphs = morphs;
+          if (traits) updateData.traits = traits;
+          if (foods) updateData.foods = foods;
+          if (weight) updateData.weight = weight;
+
+          if (Object.keys(updateData).length > 0) {
+            await entityManager.update(PetDetailEntity, { petId }, updateData);
+          }
         }
 
         return { petId };
@@ -268,7 +349,7 @@ export class PetService {
     // 부모 펫 정보 조회
     const parentPet = await this.petRepository.findOne({
       where: { petId: parentInfo.parentId },
-      select: ['petId', 'sex', 'ownerId', 'name'],
+      select: ['petId', 'ownerId', 'name', 'growth'],
     });
 
     if (!parentPet?.petId) {
@@ -276,16 +357,28 @@ export class PetService {
     }
 
     // 성별 검증
-    if (
-      parentInfo.role === PARENT_ROLE.FATHER &&
-      parentPet.sex !== PET_SEX.MALE
-    ) {
+    let parentSex: PET_SEX | undefined;
+    if (parentPet.growth !== PET_GROWTH.EGG) {
+      const parentDetails = await entityManager.findOne(PetDetailEntity, {
+        where: { petId: parentPet.petId },
+        select: ['sex'],
+      });
+      parentSex = parentDetails?.sex;
+    } else {
+      throw new BadRequestException('알은 부모로 지정할 수 없습니다.');
+    }
+
+    if (!parentSex) {
+      throw new BadRequestException('부모 펫의 성별을 찾을 수 없습니다.');
+    }
+
+    if (parentInfo.role === PARENT_ROLE.FATHER && parentSex !== PET_SEX.MALE) {
       throw new BadRequestException('아버지로 지정된 펫은 수컷이어야 합니다.');
     }
 
     if (
       parentInfo.role === PARENT_ROLE.MOTHER &&
-      parentPet.sex !== PET_SEX.FEMALE
+      parentSex !== PET_SEX.FEMALE
     ) {
       throw new BadRequestException('어머니로 지정된 펫은 암컷이어야 합니다.');
     }
@@ -294,7 +387,7 @@ export class PetService {
       entityManager,
       childPetId,
       requesterId,
-      parentPet,
+      { ...parentPet, sex: parentSex },
       parentInfo,
     );
   }
@@ -303,7 +396,7 @@ export class PetService {
     entityManager: EntityManager,
     childPetId: string,
     requesterId: string,
-    parentPet: PetEntity,
+    parentPet: PetEntity & { sex: PET_SEX },
     parentInfo: CreateParentDto,
   ): Promise<void> {
     // 기존 대기 중인 요청이 있는지 확인
@@ -351,6 +444,12 @@ export class PetService {
         'users',
         'users',
         'users.userId = pets.ownerId',
+      )
+      .leftJoinAndMapOne(
+        'pets.petDetail',
+        'pet_details',
+        'petDetail',
+        'petDetail.petId = pets.petId',
       )
       .leftJoinAndMapOne(
         'pets.adoption',
@@ -404,7 +503,9 @@ export class PetService {
 
     // 성별 필터링
     if (pageOptionsDto.sex) {
-      queryBuilder.andWhere('pets.sex = :sex', { sex: pageOptionsDto.sex });
+      queryBuilder.andWhere('petDetail.sex = :sex', {
+        sex: pageOptionsDto.sex,
+      });
     }
 
     // 소유자 필터링
@@ -423,13 +524,13 @@ export class PetService {
 
     // 몸무게 범위 필터링
     if (pageOptionsDto.minWeight !== undefined) {
-      queryBuilder.andWhere('pets.weight >= :minWeight', {
+      queryBuilder.andWhere('petDetail.weight >= :minWeight', {
         minWeight: pageOptionsDto.minWeight,
       });
     }
 
     if (pageOptionsDto.maxWeight !== undefined) {
-      queryBuilder.andWhere('pets.weight <= :maxWeight', {
+      queryBuilder.andWhere('petDetail.weight <= :maxWeight', {
         maxWeight: pageOptionsDto.maxWeight,
       });
     }
@@ -450,24 +551,30 @@ export class PetService {
     // 모프 필터링
     if (pageOptionsDto.morphs && pageOptionsDto.morphs.length > 0) {
       pageOptionsDto.morphs.forEach((morph, index) => {
-        queryBuilder.andWhere(`JSON_CONTAINS(pets.morphs, :morph${index})`, {
-          [`morph${index}`]: JSON.stringify(morph),
-        });
+        queryBuilder.andWhere(
+          `JSON_CONTAINS(petDetail.morphs, :morph${index})`,
+          {
+            [`morph${index}`]: JSON.stringify(morph),
+          },
+        );
       });
     }
 
     // 형질 필터링
     if (pageOptionsDto.traits && pageOptionsDto.traits.length > 0) {
       pageOptionsDto.traits.forEach((trait, index) => {
-        queryBuilder.andWhere(`JSON_CONTAINS(pets.traits, :trait${index})`, {
-          [`trait${index}`]: JSON.stringify(trait),
-        });
+        queryBuilder.andWhere(
+          `JSON_CONTAINS(petDetail.traits, :trait${index})`,
+          {
+            [`trait${index}`]: JSON.stringify(trait),
+          },
+        );
       });
     }
 
     // 먹이 필터링
     if (pageOptionsDto.foods) {
-      queryBuilder.andWhere(`JSON_CONTAINS(pets.foods, :food)`, {
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.foods, :food)`, {
         food: JSON.stringify(pageOptionsDto.foods),
       });
     }
@@ -509,7 +616,7 @@ export class PetService {
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(petId);
 
-        return plainToInstance(PetDto, {
+        const petDto = plainToInstance(PetDto, {
           ...pet,
           petId,
           owner,
@@ -517,6 +624,18 @@ export class PetService {
           mother,
           photos: photos?.files,
         });
+
+        if (pet.petDetail) {
+          Object.assign(petDto, {
+            sex: pet.petDetail.sex,
+            morphs: pet.petDetail.morphs,
+            traits: pet.petDetail.traits,
+            foods: pet.petDetail.foods,
+            weight: pet.petDetail.weight,
+          });
+        }
+
+        return petDto;
       }),
     );
 
@@ -590,36 +709,51 @@ export class PetService {
   async completeHatching(
     petId: string,
     userId: string,
-    hatchingDate?: number | Date,
+    hatchingData: CompleteHatchingDto,
   ): Promise<{ petId: string }> {
-    const existingPet = await this.petRepository.findOne({
-      where: { petId, isDeleted: false },
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      const existingPet = await entityManager.findOne(PetEntity, {
+        where: { petId, isDeleted: false },
+      });
+
+      if (!existingPet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
+
+      if (existingPet.ownerId !== userId) {
+        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      }
+
+      if (existingPet.growth !== PET_GROWTH.EGG) {
+        throw new BadRequestException('이미 부화한 펫입니다.');
+      }
+
+      const { hatchingDate, name, growth, desc } = hatchingData;
+
+      await entityManager.update(
+        PetEntity,
+        { petId },
+        {
+          hatchingDate,
+          name,
+          growth,
+          desc,
+        },
+      );
+
+      await entityManager.update(
+        EggDetailEntity,
+        { petId },
+        { status: EGG_STATUS.HATCHED },
+      );
+
+      await entityManager.insert(PetDetailEntity, {
+        petId,
+        sex: PET_SEX.NON,
+      });
+
+      return { petId };
     });
-
-    if (!existingPet) {
-      throw new NotFoundException('펫을 찾을 수 없습니다.');
-    }
-
-    if (existingPet.ownerId !== userId) {
-      throw new ForbiddenException('펫의 소유자가 아닙니다.');
-    }
-
-    // hatchingDate가 있으면 사용하고, 없으면 현재 시간으로 설정
-    const finalHatchingDate = hatchingDate
-      ? hatchingDate instanceof Date
-        ? Number(hatchingDate.toISOString().slice(0, 10).replace(/-/g, ''))
-        : hatchingDate
-      : Number(new Date().toISOString().slice(0, 10).replace(/-/g, ''));
-
-    await this.petRepository.update(
-      { petId },
-      {
-        hatchingDate: finalHatchingDate,
-        growth: PET_GROWTH.BABY,
-      },
-    );
-
-    return { petId };
   }
 
   async getPetListByHatchingDate(
@@ -640,6 +774,18 @@ export class PetService {
         'layings',
         'layings.id = pets.layingId',
       )
+      .leftJoinAndMapOne(
+        'pets.petDetail',
+        'pet_details',
+        'petDetail',
+        'petDetail.petId = pets.petId',
+      )
+      .leftJoinAndMapOne(
+        'pets.eggDetail',
+        'egg_details',
+        'eggDetail',
+        'eggDetail.petId = pets.petId',
+      )
       .where('pets.isDeleted = :isDeleted', { isDeleted: false })
       .select([
         'pets',
@@ -649,6 +795,13 @@ export class PetService {
         'users.isBiz',
         'users.status',
         'layings.layingDate',
+        'petDetail.sex',
+        'petDetail.morphs',
+        'petDetail.traits',
+        'petDetail.foods',
+        'petDetail.weight',
+        'eggDetail.temperature',
+        'eggDetail.status',
       ]);
 
     const startDate = dateRange?.startDate ?? startOfMonth(new Date());
@@ -684,6 +837,17 @@ export class PetService {
           owner,
           father,
           mother,
+          ...(pet.petDetail && {
+            sex: pet.petDetail.sex,
+            morphs: pet.petDetail.morphs,
+            traits: pet.petDetail.traits,
+            foods: pet.petDetail.foods,
+            weight: pet.petDetail.weight,
+          }),
+          ...(pet.eggDetail && {
+            temperature: pet.eggDetail.temperature,
+            eggStatus: pet.eggDetail.status,
+          }),
         });
       }),
     );
@@ -791,14 +955,25 @@ export class PetService {
         throw new NotFoundException('부모로 지정된 펫을 찾을 수 없습니다.');
       }
 
+      let parentSex: PET_SEX | undefined;
+      if (parentPet.growth !== PET_GROWTH.EGG) {
+        const parentDetails = await entityManager.findOne(PetDetailEntity, {
+          where: { petId: parentPet.petId },
+          select: ['sex'],
+        });
+        parentSex = parentDetails?.sex;
+      } else {
+        throw new BadRequestException('알은 부모로 지정할 수 없습니다.');
+      }
+
       // 성별 검증
-      if (role === PARENT_ROLE.FATHER && parentPet.sex !== PET_SEX.MALE) {
+      if (role === PARENT_ROLE.FATHER && parentSex !== PET_SEX.MALE) {
         throw new BadRequestException(
           '아버지로 지정된 펫은 수컷이어야 합니다.',
         );
       }
 
-      if (role === PARENT_ROLE.MOTHER && parentPet.sex !== PET_SEX.FEMALE) {
+      if (role === PARENT_ROLE.MOTHER && parentSex !== PET_SEX.FEMALE) {
         throw new BadRequestException(
           '어머니로 지정된 펫은 암컷이어야 합니다.',
         );

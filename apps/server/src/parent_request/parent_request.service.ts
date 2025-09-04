@@ -17,6 +17,8 @@ import { PET_SEX } from '../pet/pet.constants';
 import { UserNotificationService } from '../user_notification/user_notification.service';
 import { USER_NOTIFICATION_TYPE } from '../user_notification/user_notification.constant';
 import { PetImageEntity } from 'src/pet_image/pet_image.entity';
+import { PetParentDto } from 'src/pet/pet.dto';
+import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 
 @Injectable()
 export class ParentRequestService {
@@ -71,9 +73,9 @@ export class ParentRequestService {
         },
       );
     } catch (error: unknown) {
-      const err = error as { code?: string };
+      const err = error as Partial<{ code: string }>;
 
-      if (err?.code === 'ER_DUP_ENTRY') {
+      if (err && err.code === 'ER_DUP_ENTRY') {
         throw new ConflictException('동일한 알림이 이미 존재합니다.');
       }
       throw new InternalServerErrorException('알림 생성에 실패했습니다.');
@@ -341,76 +343,80 @@ export class ParentRequestService {
 
   async getParentsWithRequestStatus(petId: string): Promise<{
     father:
-      | (Omit<PetEntity, 'photos'> & {
-          status: PARENT_STATUS;
+      | (Omit<PetParentDto, 'photos'> & {
           photos?: PetImageEntity['files'];
         })
       | null;
     mother:
-      | (Omit<PetEntity, 'photos'> & {
+      | (Omit<PetParentDto, 'photos'> & {
           status: PARENT_STATUS;
           photos?: PetImageEntity['files'];
         })
       | null;
   }> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      const parentRequests = await entityManager.find(ParentRequestEntity, {
-        where: {
-          childPetId: petId,
-          status: In([PARENT_STATUS.PENDING, PARENT_STATUS.APPROVED]),
-        },
-        select: ['parentPetId', 'status'],
-      });
+      interface ParentRawData {
+        pr_status: PARENT_STATUS;
+        p_pet_id: string;
+        p_name: string | null;
+        p_species: string;
+        p_hatching_date: Date | null;
+        pd_sex: PET_SEX | null;
+        pd_morphs: string[] | null;
+        pd_traits: string[] | null;
+        img_files: PetImageEntity['files'] | null;
+      }
 
-      if (parentRequests.length === 0) {
+      const parentData = await entityManager
+        .createQueryBuilder(ParentRequestEntity, 'pr')
+        .leftJoin(PetEntity, 'p', 'p.petId = pr.parentPetId')
+        .leftJoin(PetDetailEntity, 'pd', 'pd.petId = pr.parentPetId')
+        .leftJoin(PetImageEntity, 'img', 'img.petId = pr.parentPetId')
+        .select([
+          'pr.status',
+          'p.petId',
+          'p.name',
+          'p.species',
+          'p.hatchingDate',
+          'pd.sex',
+          'pd.morphs',
+          'pd.traits',
+          'img.files',
+        ])
+        .where('pr.childPetId = :petId', { petId })
+        .andWhere('pr.status IN (:...statuses)', {
+          statuses: [PARENT_STATUS.PENDING, PARENT_STATUS.APPROVED],
+        })
+        .getRawMany<ParentRawData>();
+
+      if (parentData.length === 0) {
         return { father: null, mother: null };
       }
 
-      // 부모 펫 정보를 한 번에 가져옴
-      const parentPetIds = parentRequests.map((req) => req.parentPetId);
-      const parentPets = await entityManager.find(PetEntity, {
-        where: { petId: In(parentPetIds) },
-        select: ['petId', 'name', 'species', 'morphs', 'sex', 'hatchingDate'],
-      });
+      let father:
+        | (Omit<PetParentDto, 'photos'> & { photos?: PetImageEntity['files'] })
+        | null = null;
+      let mother:
+        | (Omit<PetParentDto, 'photos'> & { photos?: PetImageEntity['files'] })
+        | null = null;
 
-      const requestMap = new Map(
-        parentRequests.map((req) => [req.parentPetId, req.status]),
-      );
+      for (const row of parentData) {
+        const base: Omit<PetParentDto, 'photos'> = {
+          petId: row.p_pet_id,
+          name: row.p_name ?? '',
+          species: row.p_species,
+          morphs: row.pd_morphs,
+          traits: row.pd_traits,
+          hatchingDate: row.p_hatching_date,
+          sex: row.pd_sex,
+          status: row.pr_status,
+        } as Omit<PetParentDto, 'photos'>;
 
-      // father와 mother 분리
-      const fatherPet = parentPets.find((pet) => pet.sex === PET_SEX.MALE);
-      const motherPet = parentPets.find((pet) => pet.sex === PET_SEX.FEMALE);
+        const info = { ...base, photos: row.img_files ?? undefined };
 
-      const [fatherPetPhotos, motherPetPhotos] = await Promise.all([
-        fatherPet
-          ? entityManager.findOne(PetImageEntity, {
-              where: { petId: fatherPet.petId },
-              select: ['files'],
-            })
-          : undefined,
-        motherPet
-          ? entityManager.findOne(PetImageEntity, {
-              where: { petId: motherPet.petId },
-              select: ['files'],
-            })
-          : undefined,
-      ]);
-
-      const father = fatherPet
-        ? {
-            ...fatherPet,
-            status: requestMap.get(fatherPet.petId) || PARENT_STATUS.PENDING,
-            photos: fatherPetPhotos?.files ?? undefined,
-          }
-        : null;
-
-      const mother = motherPet
-        ? {
-            ...motherPet,
-            status: requestMap.get(motherPet.petId) || PARENT_STATUS.PENDING,
-            photos: motherPetPhotos?.files ?? undefined,
-          }
-        : null;
+        if (row.pd_sex === PET_SEX.MALE) father = info;
+        else if (row.pd_sex === PET_SEX.FEMALE) mother = info;
+      }
 
       return { father, mother };
     });

@@ -21,7 +21,6 @@ import {
   ADOPTION_SALE_STATUS,
   PET_ADOPTION_LOCATION,
 } from 'src/pet/pet.constants';
-import { PetEntity } from 'src/pet/pet.entity';
 
 @Injectable()
 export class AdoptionService {
@@ -40,17 +39,20 @@ export class AdoptionService {
       throw new Error('Pet information is required for adoption');
     }
 
-    const { pet, ...adoptionData } = entity;
+    const { pet, petDetail, ...adoptionData } = entity;
 
     return {
       ...adoptionData,
-      pet: this.toPetSummaryDtoOptimized(pet),
+      pet: {
+        petId: pet.petId,
+        name: pet.name,
+        species: pet.species,
+        morphs: petDetail.morphs,
+        traits: petDetail.traits,
+        hatchingDate: pet.hatchingDate,
+        sex: petDetail.sex,
+      },
     };
-  }
-
-  private toPetSummaryDtoOptimized(pet: PetEntity) {
-    const { petId, name, species, morphs, traits, hatchingDate, sex } = pet;
-    return { petId, name, species, morphs, traits, hatchingDate, sex };
   }
 
   private async updatePetStatus(
@@ -154,6 +156,12 @@ export class AdoptionService {
             'pets.petId = adoptions.petId',
           )
           .leftJoinAndMapOne(
+            'adoptions.petDetail',
+            'pet_details',
+            'petDetails',
+            'petDetails.petId = pets.petId',
+          )
+          .leftJoinAndMapOne(
             'adoptions.seller',
             'users',
             'seller',
@@ -215,6 +223,12 @@ export class AdoptionService {
           'pets.petId = adoptions.petId',
         )
         .leftJoinAndMapOne(
+          'adoptions.petDetail',
+          'pet_details',
+          'petDetail',
+          'petDetail.petId = pets.petId',
+        )
+        .leftJoinAndMapOne(
           'adoptions.seller',
           'users',
           'seller',
@@ -240,10 +254,10 @@ export class AdoptionService {
           'pets.petId',
           'pets.name',
           'pets.species',
-          'pets.morphs',
-          'pets.traits',
           'pets.hatchingDate',
-          'pets.sex',
+          'petDetail.morphs',
+          'petDetail.traits',
+          'petDetail.sex',
           'pets.ownerId',
           'seller.userId',
           'seller.name',

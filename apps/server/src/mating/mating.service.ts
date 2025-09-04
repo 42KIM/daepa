@@ -17,21 +17,37 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { PetSummaryWithLayingDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
+import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
+import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { groupBy } from 'es-toolkit';
-import { PET_SEX } from 'src/pet/pet.constants';
+import { PET_GROWTH, PET_SEX } from 'src/pet/pet.constants';
 import { LayingEntity } from 'src/laying/laying.entity';
 import { LayingDto } from 'src/laying/laying.dto';
 import { UpdateMatingDto } from './mating.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { PairEntity } from 'src/pair/pair.entity';
 import { Not } from 'typeorm';
+import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
+
+interface PetWithRelations extends PetEntity {
+  eggDetail?: EggDetailEntity;
+  petDetail?: PetDetailEntity;
+}
 
 interface MatingWithRelations extends Omit<MatingEntity, 'pair'> {
   layings?: Partial<LayingEntity>[];
   pair?: Partial<PairEntity>;
-  parents?: Partial<PetEntity>[];
-  children?: Partial<PetEntity>[];
+  parents?: PetWithRelations[];
+  children?: PetWithRelations[];
 }
+
+type MergedPet = Partial<PetEntity> & {
+  temperature?: number;
+  eggStatus?: EGG_STATUS;
+  morphs?: string[];
+  sex?: PET_SEX;
+  weight?: number;
+};
 
 @Injectable()
 export class MatingService {
@@ -46,59 +62,6 @@ export class MatingService {
     private readonly petRepository: Repository<PetEntity>,
     private readonly dataSource: DataSource,
   ) {}
-
-  async findAll(userId: string): Promise<MatingByParentsDto[]> {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      const entities = (await entityManager
-        .createQueryBuilder(MatingEntity, 'matings')
-        .leftJoinAndMapMany(
-          'matings.layings',
-          LayingEntity,
-          'layings',
-          'layings.matingId = matings.id',
-        )
-        .leftJoinAndMapOne(
-          'matings.pair',
-          PairEntity,
-          'pairs',
-          'pairs.id = matings.pairId',
-        )
-        .leftJoinAndMapMany(
-          'matings.parents',
-          PetEntity,
-          'parents',
-          'parents.petId IN (pairs.fatherId, pairs.motherId)',
-        )
-        .select([
-          'matings.id',
-          'matings.matingDate',
-          'matings.pairId',
-          'matings.createdAt',
-          'layings.id',
-          'layings.layingDate',
-          'layings.clutch',
-          'pairs.id',
-          'pairs.species',
-          'pairs.fatherId',
-          'pairs.motherId',
-          'pairs.ownerId',
-          'parents.petId',
-          'parents.name',
-          'parents.morphs',
-          'parents.species',
-          'parents.sex',
-          'parents.hatchingDate',
-          'parents.growth',
-          'parents.weight',
-        ])
-        .where('pairs.ownerId = :userId', { userId })
-        .orderBy('matings.createdAt', 'DESC')
-        .addOrderBy('layings.layingDate', 'ASC')
-        .getMany()) as MatingWithRelations[];
-
-      return this.formatResponseByDate(entities);
-    });
-  }
 
   async getMatingListFull(
     pageOptionsDto: MatingFilterDto,
@@ -126,11 +89,29 @@ export class MatingService {
           'parents',
           'parents.petId IN (pairs.fatherId, pairs.motherId)',
         )
+        .leftJoinAndMapOne(
+          'parents.petDetail',
+          PetDetailEntity,
+          'ppd',
+          'ppd.petId = parents.petId',
+        )
         .leftJoinAndMapMany(
           'matings.children',
           PetEntity,
           'children',
           'children.layingId IN (SELECT layings.id FROM layings WHERE layings.matingId = matings.id) AND children.isDeleted = false',
+        )
+        .leftJoinAndMapOne(
+          'children.petDetail',
+          PetDetailEntity,
+          'cpd',
+          'cpd.petId = children.petId',
+        )
+        .leftJoinAndMapOne(
+          'children.eggDetail',
+          EggDetailEntity,
+          'ced',
+          'ced.petId = children.petId',
         )
         .select([
           'matings.id',
@@ -147,23 +128,24 @@ export class MatingService {
           'pairs.ownerId',
           'parents.petId',
           'parents.name',
-          'parents.morphs',
           'parents.species',
-          'parents.sex',
           'parents.hatchingDate',
           'parents.growth',
-          'parents.weight',
+          'ppd.morphs',
+          'ppd.sex',
+          'ppd.weight',
           'children.petId',
           'children.name',
           'children.species',
-          'children.morphs',
-          'children.sex',
           'children.hatchingDate',
           'children.growth',
-          'children.weight',
           'children.clutchOrder',
           'children.layingId',
-          'children.temperature',
+          'cpd.sex',
+          'cpd.morphs',
+          'cpd.traits',
+          'ced.temperature',
+          'ced.status',
         ])
         .where('pairs.ownerId = :userId', { userId })
         .orderBy('matings.id', pageOptionsDto.order);
@@ -198,12 +180,16 @@ export class MatingService {
         });
       }
 
+      if (pageOptionsDto.eggStatus) {
+        allQueryBuilder.andWhere('ced.status = :eggStatus', {
+          eggStatus: pageOptionsDto.eggStatus,
+        });
+      }
+
       const { entities } = await allQueryBuilder.getRawAndEntities();
 
       // 가공된 데이터 생성
-      const allMatingList = this.formatResponseByDate(
-        entities as MatingWithRelations[],
-      );
+      const allMatingList = this.formatResponseByDate(entities);
 
       // 가공 후 데이터로 페이지네이션 적용
       const totalCount = allMatingList.length;
@@ -366,12 +352,15 @@ export class MatingService {
         plainToInstance(LayingDto, laying),
       );
 
-      const parentsDto = mating.parents?.map((parent) =>
-        plainToInstance(PetSummaryWithLayingDto, parent),
-      );
-      const childrenDto = mating.children?.map((child) =>
-        plainToInstance(PetSummaryWithLayingDto, child),
-      );
+      const parentsDto = mating.parents?.map((parent) => {
+        const merged = this.mergePetWithDetail(parent);
+        return plainToInstance(PetSummaryWithLayingDto, merged);
+      });
+      const childrenDto = mating.children?.map((child) => {
+        const merged = this.mergePetWithDetail(child);
+        return plainToInstance(PetSummaryWithLayingDto, merged);
+      });
+
       return {
         ...matingDto,
         layings: layingDto,
@@ -459,5 +448,27 @@ export class MatingService {
   async isMatingExist(criteria: FindOptionsWhere<MatingEntity>) {
     const isExist = await this.matingRepository.existsBy(criteria);
     return isExist;
+  }
+
+  private mergePetWithDetail(pet: PetWithRelations) {
+    if (!pet) return pet;
+
+    const { eggDetail, petDetail, ...rest } = pet;
+    const merged: MergedPet = { ...(rest as Partial<PetEntity>) };
+    if (pet.growth === PET_GROWTH.EGG) {
+      if (eggDetail) {
+        merged.temperature = eggDetail.temperature;
+        merged.eggStatus = eggDetail.status;
+      }
+    } else {
+      if (petDetail) {
+        const { morphs, sex, weight } = petDetail;
+        if (morphs) merged.morphs = morphs;
+        if (sex) merged.sex = sex;
+        if (weight) merged.weight = weight;
+      }
+    }
+
+    return merged;
   }
 }

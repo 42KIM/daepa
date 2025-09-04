@@ -36,6 +36,7 @@ import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { PageOptionsDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { PetImageItem, UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
+import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 
 export class PetBaseDto {
   @ApiProperty({
@@ -265,46 +266,27 @@ export class PetSummaryWithLayingDto extends PetSummaryDto {
     return num % 1 === 0 ? Math.floor(num) : num;
   })
   temperature?: number;
+
+  @ApiProperty({
+    description: '펫 상태',
+    example: 'HATCHED',
+    enum: EGG_STATUS,
+    'x-enumNames': Object.keys(EGG_STATUS),
+  })
+  @IsOptional()
+  @IsEnum(EGG_STATUS)
+  eggStatus?: EGG_STATUS;
 }
 
-export class PetParentDto extends PartialType(PetSummaryDto) {
-  @ApiProperty({
-    description: '펫 아이디',
-    example: 'XXXXXXXX',
-    required: true,
-  })
-  @IsString()
-  petId: string;
-
-  @ApiProperty({ description: '부모 관계 테이블 row id' })
-  @IsNumber()
-  relationId: number;
-
-  @ApiProperty({
-    description: '펫 주인 정보',
-    required: true,
-  })
-  @IsObject()
-  owner: UserProfilePublicDto;
-
-  @ApiProperty({
-    description: '펫 이름',
-    example: '대파',
-    required: true,
-  })
-  @IsString()
-  name: string;
-
-  @ApiProperty({
-    description: '펫 종',
-    example: '크레스티드게코',
-    required: true,
-    enum: PET_SPECIES,
-    'x-enumNames': Object.keys(PET_SPECIES),
-  })
-  @IsEnum(PET_SPECIES)
-  species: PET_SPECIES;
-
+export class PetParentDto extends PickType(PetSummaryDto, [
+  'petId',
+  'name',
+  'species',
+  'morphs',
+  'traits',
+  'sex',
+  'hatchingDate',
+]) {
   @ApiProperty({
     description: '부모 관계 상태',
     enum: PARENT_STATUS,
@@ -533,6 +515,14 @@ export class CreatePetDto extends OmitType(PetBaseDto, [
   @IsOptional()
   @IsArray()
   photos?: UpsertPetImageDto[];
+
+  @ApiProperty({
+    description: '알 상태',
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(EGG_STATUS)
+  eggStatus?: EGG_STATUS;
 }
 
 export class UpdatePetDto extends PartialType(CreatePetDto) {}
@@ -737,14 +727,12 @@ export class LinkParentDto {
   message?: string;
 }
 
-export class CompleteHatchingDto {
-  @ApiProperty({
-    description: '해칭 날짜',
-    example: '2024-01-01',
-  })
-  @IsDate()
-  hatchingDate?: Date;
-}
+export class CompleteHatchingDto extends PickType(UpdatePetDto, [
+  'hatchingDate',
+  'name',
+  'desc',
+  'growth',
+]) {}
 
 export class PetHatchingDateRangeDto {
   @ApiProperty({

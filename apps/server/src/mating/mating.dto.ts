@@ -12,6 +12,7 @@ import { CommonResponseDto } from 'src/common/response.dto';
 import { LayingByDateDto } from 'src/laying/laying.dto';
 import { PetSummaryDto } from 'src/pet/pet.dto';
 import { PET_SPECIES } from 'src/pet/pet.constants';
+import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 
 export class MatingBaseDto {
   @ApiProperty({
@@ -193,4 +194,15 @@ export class MatingFilterDto extends PageOptionsDto {
   @IsOptional()
   @IsString()
   motherId?: string;
+
+  @ApiProperty({
+    description: '알 상태',
+    example: 'UNFERTILIZED',
+    enum: EGG_STATUS,
+    'x-enumNames': Object.keys(EGG_STATUS),
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(EGG_STATUS)
+  eggStatus?: EGG_STATUS;
 }
