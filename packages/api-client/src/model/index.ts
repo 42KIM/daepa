@@ -122,3 +122,4 @@ export * from "./userProfilePublicDtoStatus";
 export * from "./userProfileResponseDto";
 export * from "./verifyEmailDto";
 export * from "./verifyNameDto";
+export * from "./petImageItem";

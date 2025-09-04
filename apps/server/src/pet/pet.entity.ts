@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { PET_GROWTH, PET_SEX, PET_SPECIES } from './pet.constants';
 import { AdoptionEntity } from '../adoption/adoption.entity';
+import { PetImageEntity } from 'src/pet_image/pet_image.entity';
 
 @Entity({ name: 'pets' })
 @Index('UNIQUE_PET_ID', ['petId'], { unique: true })
@@ -88,6 +89,6 @@ export class PetEntity {
   })
   adoption?: AdoptionEntity;
 
-  // @OneToMany(() => PetImageEntity, (image) => image.petId)
-  // photos?: PetImageEntity[];
+  @OneToOne(() => PetImageEntity, (image) => image.petId)
+  photos: PetImageEntity['files'] | null;
 }

@@ -6,9 +6,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PetImageItem } from './pet_image.dto';
 
 @Entity({ name: 'pet_images' })
-@Index('UNIQUE_PET_ID_FILE_NAME', ['petId', 'fileName'], { unique: true })
+@Index('UNIQUE_PET_ID_FILE_NAME', ['petId'], { unique: true })
 export class PetImageEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -16,17 +17,8 @@ export class PetImageEntity {
   @Column()
   petId: string;
 
-  @Column()
-  fileName: string;
-
-  @Column()
-  url: string;
-
-  @Column()
-  mimeType: string;
-
-  @Column()
-  size: number;
+  @Column({ type: 'json', nullable: true })
+  files: PetImageItem[] | null;
 
   @CreateDateColumn()
   createdAt: Date;

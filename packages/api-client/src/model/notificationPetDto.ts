@@ -5,7 +5,7 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { PetImageDto } from "./petImageDto";
+import type { PetImageItem } from "./petImageItem";
 
 export interface NotificationPetDto {
   /** 개체 아이디 */
@@ -13,5 +13,5 @@ export interface NotificationPetDto {
   /** 개체 이름 */
   name?: string;
   /** 개체 이미지 */
-  photos?: PetImageDto[];
+  photos?: PetImageItem[];
 }

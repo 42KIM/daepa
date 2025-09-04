@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PetImageEntity } from './pet_image.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { UpsertPetImageDto } from './pet_image.dto';
+import { PetImageItem, UpsertPetImageDto } from './pet_image.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { R2Service } from 'src/common/cloudflare/r2.service';
 
@@ -13,27 +13,29 @@ export class PetImageService {
     private readonly r2Service: R2Service,
   ) {}
 
-  async save(dto: UpsertPetImageDto) {
-    return this.petImageRepository.save(dto);
-  }
-
-  async saveList(dtoList: UpsertPetImageDto[]) {
-    return this.petImageRepository.save(dtoList);
-  }
-
   async saveAndUploadConfirmedImages(
     entityManager: EntityManager,
     petId: string,
     imageList: UpsertPetImageDto[],
   ) {
-    const needUploadImageList: UpsertPetImageDto[] = [];
-    const savedImageList: UpsertPetImageDto[] = [];
+    const needUploadImageList: PetImageItem[] = [];
+    const savedImageList: PetImageItem[] = [];
 
     for (const image of imageList) {
-      if (!image.petId && image.fileName.startsWith('PENDING/')) {
-        needUploadImageList.push(image);
+      if (image.fileName.startsWith('PENDING/')) {
+        needUploadImageList.push({
+          fileName: image.fileName,
+          url: image.url,
+          mimeType: image.mimeType,
+          size: image.size,
+        });
       } else {
-        savedImageList.push(image);
+        savedImageList.push({
+          fileName: image.fileName,
+          url: image.url,
+          mimeType: image.mimeType,
+          size: image.size,
+        });
       }
     }
 
@@ -43,13 +45,23 @@ export class PetImageService {
         image.fileName.replace('PENDING/', `${petId}/`),
       );
       savedImageList.push({
-        ...image,
-        fileName,
-        url,
-        petId,
+        fileName: fileName,
+        url: url,
+        mimeType: image.mimeType,
+        size: image.size,
       });
     }
 
-    return entityManager.save(PetImageEntity, savedImageList);
+    return entityManager.upsert(
+      PetImageEntity,
+      {
+        petId,
+        files: savedImageList,
+      },
+      {
+        conflictPaths: ['petId'],
+        skipUpdateIfNoValuesChanged: true,
+      },
+    );
   }
 }

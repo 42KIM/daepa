@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface UpsertPetImageDto {
+export interface PetImageItem {
   /** 펫 이미지 파일 */
   fileName: string;
   /** 펫 이미지 원본 url */

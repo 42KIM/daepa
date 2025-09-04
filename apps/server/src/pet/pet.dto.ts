@@ -34,7 +34,7 @@ import { UserProfilePublicDto } from 'src/user/user.dto';
 import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { PageOptionsDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
-import { UpsertPetImageDto, PetImageDto } from 'src/pet_image/pet_image.dto';
+import { PetImageItem, UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
 
 export class PetBaseDto {
   @ApiProperty({
@@ -190,11 +190,11 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
     description: '펫 이미지 목록',
     required: false,
     type: 'array',
-    items: { $ref: getSchemaPath(PetImageDto) },
+    items: { $ref: getSchemaPath(PetImageItem) },
   })
   @IsOptional()
   @IsArray()
-  photos?: PetImageDto[];
+  photos?: PetImageItem[];
 
   @Exclude()
   declare growth?: PET_GROWTH;
@@ -317,11 +317,11 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
     description: '펫 이미지 목록',
     required: false,
     type: 'array',
-    items: { $ref: getSchemaPath(PetImageDto) },
+    items: { $ref: getSchemaPath(PetImageItem) },
   })
   @IsOptional()
   @IsArray()
-  photos?: PetImageDto[];
+  photos?: PetImageItem[];
 }
 
 export class PetAdoptionDto {
@@ -436,11 +436,11 @@ export class PetDto extends PetBaseDto {
     description: '펫 이미지 목록',
     required: false,
     type: 'array',
-    items: { $ref: getSchemaPath(PetImageDto) },
+    items: { $ref: getSchemaPath(PetImageItem) },
   })
   @IsOptional()
   @IsArray()
-  photos?: PetImageDto[];
+  photos?: PetImageItem[];
 
   @Exclude()
   declare createdAt?: Date;

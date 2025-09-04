@@ -161,9 +161,10 @@ export class PetService {
         throw new NotFoundException('펫의 소유자를 찾을 수 없습니다.');
       }
 
-      const photos = await entityManager.find(PetImageEntity, {
-        where: { petId },
-      });
+      const { files } =
+        (await entityManager.findOne(PetImageEntity, {
+          where: { petId },
+        })) ?? {};
 
       // 소유자 정보 조회
       const owner = await this.userService.findOneProfile(pet.ownerId);
@@ -177,7 +178,7 @@ export class PetService {
         father,
         mother,
         adoption,
-        photos,
+        photos: files,
       });
     });
   }
@@ -337,7 +338,7 @@ export class PetService {
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
       )
-      .leftJoinAndMapMany(
+      .leftJoinAndMapOne(
         'pets.photos',
         'pet_images',
         'pet_images',
@@ -476,23 +477,25 @@ export class PetService {
 
     // PetDto로 변환하면서 parent_request 상태 정보 포함
     const petDtos = await Promise.all(
-      petEntities.map(async (pet) => {
-        if (!pet.ownerId) {
+      petEntities.map(async (petRaw) => {
+        const { ownerId, petId, photos, ...pet } = petRaw;
+
+        if (!ownerId) {
           throw new NotFoundException('펫의 소유자를 찾을 수 없습니다.');
         }
 
-        const owner = await this.userService.findOneProfile(pet.ownerId);
+        const owner = await this.userService.findOneProfile(ownerId);
 
         const { father, mother } =
-          await this.parentRequestService.getParentsWithRequestStatus(
-            pet.petId,
-          );
+          await this.parentRequestService.getParentsWithRequestStatus(petId);
 
         return plainToInstance(PetDto, {
           ...pet,
+          petId,
           owner,
           father,
           mother,
+          photos,
         });
       }),
     );

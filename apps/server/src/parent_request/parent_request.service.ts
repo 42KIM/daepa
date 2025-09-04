@@ -58,12 +58,12 @@ export class ParentRequestService {
             childPet: {
               id: childPet?.petId ?? '',
               name: childPet.name,
-              photos: childPet?.photos,
+              photos: childPet?.photos?.files ?? undefined,
             },
             parentPet: {
               id: parentPet?.petId ?? '',
               name: parentPet.name,
-              photos: parentPet?.photos,
+              photos: parentPet?.photos?.files ?? undefined,
             },
             role: createParentRequestDto.role,
             message: createParentRequestDto.message,
@@ -149,12 +149,12 @@ export class ParentRequestService {
               childPet: {
                 id: parentRequest.childPetId,
                 name: childPet?.name,
-                photos: childPet?.photos,
+                photos: childPet?.photos?.files ?? undefined,
               },
               parentPet: {
                 id: parentRequest.parentPetId,
                 name: parentPet?.name,
-                photos: parentPet?.photos,
+                photos: parentPet?.photos?.files ?? undefined,
               },
               role: parentRequest.role,
               message: parentRequest.message,
@@ -302,13 +302,13 @@ export class ParentRequestService {
           where: { petId: parentPetId },
           select: ['name', 'petId', 'ownerId'],
         }),
-        entityManager.find(PetImageEntity, {
+        entityManager.findOne(PetImageEntity, {
           where: { petId: childPetId },
-          select: ['url'],
+          select: ['files'],
         }),
-        entityManager.find(PetImageEntity, {
+        entityManager.findOne(PetImageEntity, {
           where: { petId: parentPetId },
-          select: ['url'],
+          select: ['files'],
         }),
       ]);
 
@@ -326,10 +326,16 @@ export class ParentRequestService {
 
   async getParentsWithRequestStatus(petId: string): Promise<{
     father:
-      | (PetEntity & { status: PARENT_STATUS; photos?: PetImageEntity[] })
+      | (Omit<PetEntity, 'photos'> & {
+          status: PARENT_STATUS;
+          photos?: PetImageEntity['files'];
+        })
       | null;
     mother:
-      | (PetEntity & { status: PARENT_STATUS; photos?: PetImageEntity[] })
+      | (Omit<PetEntity, 'photos'> & {
+          status: PARENT_STATUS;
+          photos?: PetImageEntity['files'];
+        })
       | null;
   }> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
@@ -362,15 +368,15 @@ export class ParentRequestService {
 
       const [fatherPetPhotos, motherPetPhotos] = await Promise.all([
         fatherPet
-          ? entityManager.find(PetImageEntity, {
+          ? entityManager.findOne(PetImageEntity, {
               where: { petId: fatherPet.petId },
-              select: ['url'],
+              select: ['files'],
             })
           : undefined,
         motherPet
-          ? entityManager.find(PetImageEntity, {
+          ? entityManager.findOne(PetImageEntity, {
               where: { petId: motherPet.petId },
-              select: ['url'],
+              select: ['files'],
             })
           : undefined,
       ]);
@@ -379,7 +385,7 @@ export class ParentRequestService {
         ? {
             ...fatherPet,
             status: requestMap.get(fatherPet.petId) || PARENT_STATUS.PENDING,
-            photos: fatherPetPhotos,
+            photos: fatherPetPhotos?.files ?? undefined,
           }
         : null;
 
@@ -387,7 +393,7 @@ export class ParentRequestService {
         ? {
             ...motherPet,
             status: requestMap.get(motherPet.petId) || PARENT_STATUS.PENDING,
-            photos: motherPetPhotos,
+            photos: motherPetPhotos?.files ?? undefined,
           }
         : null;
 
