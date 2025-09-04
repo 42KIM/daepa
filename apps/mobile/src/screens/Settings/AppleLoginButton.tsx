@@ -14,8 +14,8 @@ import Loading from '@/components/common/Loading';
 import Toast from '@/components/common/Toast';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/navigation';
 import { isAxiosError } from 'axios';
+import { RootStackParamList } from '@/types/navigation';
 
 const AppleLoginButton = () => {
   const { navigateByStatus } = useLogin();
