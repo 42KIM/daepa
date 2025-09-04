@@ -8,6 +8,7 @@ import {
   IsBoolean,
   IsDate,
   IsNotEmpty,
+  ValidateNested,
 } from 'class-validator';
 import {
   PET_ADOPTION_LOCATION,
@@ -191,6 +192,8 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   })
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PetImageItem)
   photos?: PetImageItem[];
 
   @Exclude()
@@ -318,6 +321,8 @@ export class PetParentDto extends PartialType(PetSummaryDto) {
   })
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PetImageItem)
   photos?: PetImageItem[];
 }
 
@@ -437,6 +442,8 @@ export class PetDto extends PetBaseDto {
   })
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PetImageItem)
   photos?: PetImageItem[];
 
   @Exclude()
