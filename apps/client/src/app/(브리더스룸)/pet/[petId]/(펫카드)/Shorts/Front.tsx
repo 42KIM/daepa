@@ -5,7 +5,6 @@ import Image from "next/image";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { buildR2TransformedUrl } from "@/lib/utils";
 
 const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string }) => {
   const [dragStart, setDragStart] = useState(0);
