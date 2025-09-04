@@ -32,12 +32,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "파일이 너무 큽니다." }, { status: 413 });
     }
     // read into a Node Buffer for downstream processing
-    const ab = await file.arrayBuffer();
-    const buffer = Buffer.from(ab);
+    const buffer = Buffer.from(await file.arrayBuffer());
 
     const uploadedFile = await r2Service.upload({
       petId,
-      buffer: Buffer.from(buffer),
+      buffer,
       mimeType,
       size,
     });
