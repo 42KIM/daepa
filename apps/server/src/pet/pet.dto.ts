@@ -155,10 +155,7 @@ export class PetBaseDto {
 
   @ApiProperty({
     description: '펫 이미지 목록',
-    example: [
-      'https://example.com/image1.jpg',
-      'https://example.com/image2.jpg',
-    ],
+    example: ['fileName1', 'fileName2'],
     required: false,
   })
   @IsOptional()
