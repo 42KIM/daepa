@@ -515,7 +515,7 @@ export class PetService {
           owner,
           father,
           mother,
-          photos,
+          photos: photos?.files,
         });
       }),
     );
