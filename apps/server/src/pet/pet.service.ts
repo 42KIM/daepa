@@ -8,7 +8,13 @@ import {
 } from '@nestjs/common';
 import { PetEntity } from './pet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, EntityManager, DataSource } from 'typeorm';
+import {
+  Repository,
+  In,
+  EntityManager,
+  DataSource,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { nanoid } from 'nanoid';
 import { plainToInstance } from 'class-transformer';
 import { CompleteHatchingDto, CreatePetDto, PetDto } from './pet.dto';
@@ -470,105 +476,14 @@ export class PetService {
       );
 
     if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.ALL) {
-      // 기본적으로 모든 공개된 펫을 조회
+      // 기본적으로 공개된 펫만 조회 가능
       queryBuilder.andWhere('(pets.isPublic = :isPublic', { isPublic: true });
     } else if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
-      // 자신의 펫만 조회
+      // 자신의 모든 펫 조회 가능
       queryBuilder.andWhere('pets.ownerId = :userId', { userId });
     }
 
-    // 키워드 검색
-    if (pageOptionsDto.keyword) {
-      queryBuilder.andWhere(
-        '(pets.name LIKE :keyword OR pets.desc LIKE :keyword)',
-        { keyword: `%${pageOptionsDto.keyword}%` },
-      );
-    }
-
-    // 종 필터링
-    if (pageOptionsDto.species) {
-      queryBuilder.andWhere('pets.species = :species', {
-        species: pageOptionsDto.species,
-      });
-    }
-
-    // 성별 필터링
-    if (pageOptionsDto.sex) {
-      queryBuilder.andWhere('petDetail.sex = :sex', {
-        sex: pageOptionsDto.sex,
-      });
-    }
-
-    // 소유자 필터링
-    if (pageOptionsDto.ownerId) {
-      queryBuilder.andWhere('pets.ownerId = :ownerId', {
-        ownerId: pageOptionsDto.ownerId,
-      });
-    }
-
-    // 몸무게 범위 필터링
-    if (pageOptionsDto.minWeight !== undefined) {
-      queryBuilder.andWhere('petDetail.weight >= :minWeight', {
-        minWeight: pageOptionsDto.minWeight,
-      });
-    }
-
-    if (pageOptionsDto.maxWeight !== undefined) {
-      queryBuilder.andWhere('petDetail.weight <= :maxWeight', {
-        maxWeight: pageOptionsDto.maxWeight,
-      });
-    }
-
-    // 생년월일 범위 필터링
-    if (pageOptionsDto.startYmd !== undefined) {
-      queryBuilder.andWhere('pets.hatchingDate >= :startYmd', {
-        startYmd: pageOptionsDto.startYmd,
-      });
-    }
-
-    if (pageOptionsDto.endYmd !== undefined) {
-      queryBuilder.andWhere('pets.hatchingDate <= :endYmd', {
-        endYmd: pageOptionsDto.endYmd,
-      });
-    }
-
-    // 모프 필터링
-    if (pageOptionsDto.morphs && pageOptionsDto.morphs.length > 0) {
-      const morphsJson = JSON.stringify(pageOptionsDto.morphs);
-      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.morphs, :morphs)`, {
-        morphs: morphsJson,
-      });
-    }
-
-    // 형질 필터링
-    if (pageOptionsDto.traits && pageOptionsDto.traits.length > 0) {
-      // 모든 trait를 하나의 JSON 배열로 만들어서 한 번에 검색
-      const traitsJson = JSON.stringify(pageOptionsDto.traits);
-      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.traits, :traits)`, {
-        traits: traitsJson,
-      });
-    }
-
-    // 먹이 필터링
-    if (pageOptionsDto.foods) {
-      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.foods, :food)`, {
-        food: JSON.stringify(pageOptionsDto.foods),
-      });
-    }
-
-    // 판매 상태 필터링
-    if (pageOptionsDto.status) {
-      queryBuilder.andWhere('adoptions.status = :status', {
-        status: pageOptionsDto.status,
-      });
-    }
-
-    // 성장단계 필터링
-    if (pageOptionsDto.growth) {
-      queryBuilder.andWhere('pets.growth = :growth', {
-        growth: pageOptionsDto.growth,
-      });
-    }
+    this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto, false);
 
     // 정렬 및 페이지네이션
     queryBuilder
@@ -660,98 +575,7 @@ export class PetService {
         'pet_images.petId = pets.petId',
       );
 
-    // 키워드 검색
-    if (pageOptionsDto.keyword) {
-      queryBuilder.andWhere(
-        'pets.name LIKE :keyword OR pets.desc LIKE :keyword)',
-        { keyword: `%${pageOptionsDto.keyword}%` },
-      );
-    }
-
-    // 종 필터링
-    if (pageOptionsDto.species) {
-      queryBuilder.andWhere('pets.species = :species', {
-        species: pageOptionsDto.species,
-      });
-    }
-
-    // 성별 필터링
-    if (pageOptionsDto.sex) {
-      queryBuilder.andWhere('petDetail.sex = :sex', {
-        sex: pageOptionsDto.sex,
-      });
-    }
-
-    // 공개 여부 필터링
-    if (pageOptionsDto.isPublic !== undefined) {
-      queryBuilder.andWhere('pets.isPublic = :isPublic', {
-        isPublic: pageOptionsDto.isPublic,
-      });
-    }
-
-    // 몸무게 범위 필터링
-    if (pageOptionsDto.minWeight !== undefined) {
-      queryBuilder.andWhere('petDetail.weight >= :minWeight', {
-        minWeight: pageOptionsDto.minWeight,
-      });
-    }
-
-    if (pageOptionsDto.maxWeight !== undefined) {
-      queryBuilder.andWhere('petDetail.weight <= :maxWeight', {
-        maxWeight: pageOptionsDto.maxWeight,
-      });
-    }
-
-    // 생년월일 범위 필터링
-    if (pageOptionsDto.startYmd !== undefined) {
-      queryBuilder.andWhere('pets.hatchingDate >= :startYmd', {
-        startYmd: pageOptionsDto.startYmd,
-      });
-    }
-
-    if (pageOptionsDto.endYmd !== undefined) {
-      queryBuilder.andWhere('pets.hatchingDate <= :endYmd', {
-        endYmd: pageOptionsDto.endYmd,
-      });
-    }
-
-    // 모프 필터링
-    if (pageOptionsDto.morphs && pageOptionsDto.morphs.length > 0) {
-      const morphsJson = JSON.stringify(pageOptionsDto.morphs);
-      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.morphs, :morphs)`, {
-        morphs: morphsJson,
-      });
-    }
-
-    // 형질 필터링
-    if (pageOptionsDto.traits && pageOptionsDto.traits.length > 0) {
-      // 모든 trait를 하나의 JSON 배열로 만들어서 한 번에 검색
-      const traitsJson = JSON.stringify(pageOptionsDto.traits);
-      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.traits, :traits)`, {
-        traits: traitsJson,
-      });
-    }
-
-    // 먹이 필터링
-    if (pageOptionsDto.foods) {
-      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.foods, :food)`, {
-        food: JSON.stringify(pageOptionsDto.foods),
-      });
-    }
-
-    // 판매 상태 필터링
-    if (pageOptionsDto.status) {
-      queryBuilder.andWhere('adoptions.status = :status', {
-        status: pageOptionsDto.status,
-      });
-    }
-
-    // 성장단계 필터링
-    if (pageOptionsDto.growth) {
-      queryBuilder.andWhere('pets.growth = :growth', {
-        growth: pageOptionsDto.growth,
-      });
-    }
+    this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto, true);
 
     // 정렬 및 페이지네이션
     queryBuilder
@@ -1309,5 +1133,104 @@ export class PetService {
       },
     });
     return !!isExist;
+  }
+
+  private buildPetListSearchFilterQuery(
+    queryBuilder: SelectQueryBuilder<PetEntity>,
+    pageOptionsDto: PetFilterDto,
+    allowSearchPrivatePet: boolean, // 자신의 숨김 펫 조회 가능 여부
+  ) {
+    // 키워드 검색
+    if (pageOptionsDto.keyword) {
+      queryBuilder.andWhere(
+        'pets.name LIKE :keyword OR pets.desc LIKE :keyword)',
+        { keyword: `%${pageOptionsDto.keyword}%` },
+      );
+    }
+
+    // 종 필터링
+    if (pageOptionsDto.species) {
+      queryBuilder.andWhere('pets.species = :species', {
+        species: pageOptionsDto.species,
+      });
+    }
+
+    // 성별 필터링
+    if (pageOptionsDto.sex) {
+      queryBuilder.andWhere('petDetail.sex = :sex', {
+        sex: pageOptionsDto.sex,
+      });
+    }
+
+    // 공개 여부 필터링
+    if (allowSearchPrivatePet && pageOptionsDto.isPublic !== undefined) {
+      queryBuilder.andWhere('pets.isPublic = :isPublic', {
+        isPublic: pageOptionsDto.isPublic,
+      });
+    }
+
+    // 몸무게 범위 필터링
+    if (pageOptionsDto.minWeight !== undefined) {
+      queryBuilder.andWhere('petDetail.weight >= :minWeight', {
+        minWeight: pageOptionsDto.minWeight,
+      });
+    }
+
+    if (pageOptionsDto.maxWeight !== undefined) {
+      queryBuilder.andWhere('petDetail.weight <= :maxWeight', {
+        maxWeight: pageOptionsDto.maxWeight,
+      });
+    }
+
+    // 생년월일 범위 필터링
+    if (pageOptionsDto.startYmd !== undefined) {
+      queryBuilder.andWhere('pets.hatchingDate >= :startYmd', {
+        startYmd: pageOptionsDto.startYmd,
+      });
+    }
+
+    if (pageOptionsDto.endYmd !== undefined) {
+      queryBuilder.andWhere('pets.hatchingDate <= :endYmd', {
+        endYmd: pageOptionsDto.endYmd,
+      });
+    }
+
+    // 모프 필터링
+    if (pageOptionsDto.morphs && pageOptionsDto.morphs.length > 0) {
+      const morphsJson = JSON.stringify(pageOptionsDto.morphs);
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.morphs, :morphs)`, {
+        morphs: morphsJson,
+      });
+    }
+
+    // 형질 필터링
+    if (pageOptionsDto.traits && pageOptionsDto.traits.length > 0) {
+      // 모든 trait를 하나의 JSON 배열로 만들어서 한 번에 검색
+      const traitsJson = JSON.stringify(pageOptionsDto.traits);
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.traits, :traits)`, {
+        traits: traitsJson,
+      });
+    }
+
+    // 먹이 필터링
+    if (pageOptionsDto.foods) {
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.foods, :food)`, {
+        food: JSON.stringify(pageOptionsDto.foods),
+      });
+    }
+
+    // 판매 상태 필터링
+    if (pageOptionsDto.status) {
+      queryBuilder.andWhere('adoptions.status = :status', {
+        status: pageOptionsDto.status,
+      });
+    }
+
+    // 성장단계 필터링
+    if (pageOptionsDto.growth) {
+      queryBuilder.andWhere('pets.growth = :growth', {
+        growth: pageOptionsDto.growth,
+      });
+    }
   }
 }
