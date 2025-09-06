@@ -439,6 +439,10 @@ export class PetService {
   ): Promise<PageDto<PetDto>> {
     const queryBuilder = this.petRepository
       .createQueryBuilder('pets')
+      .where('pets.isDeleted = :isDeleted AND pets.growth != :eggGrowth', {
+        isDeleted: false,
+        eggGrowth: PET_GROWTH.EGG,
+      })
       .leftJoinAndMapOne(
         'pets.owner',
         'users',
@@ -448,39 +452,26 @@ export class PetService {
       .leftJoinAndMapOne(
         'pets.petDetail',
         'pet_details',
-        'petDetail',
-        'petDetail.petId = pets.petId',
+        'pet_details',
+        'pet_details.petId = pets.petId',
       )
       .leftJoinAndMapOne(
         'pets.adoption',
         'adoptions',
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
+        { soldStatus: ADOPTION_SALE_STATUS.SOLD },
       )
       .leftJoinAndMapOne(
         'pets.photos',
         'pet_images',
         'pet_images',
         'pet_images.petId = pets.petId',
-      )
-      .where(' pets.isDeleted = :isDeleted AND pets.growth != :eggGrowth', {
-        isDeleted: false,
-        eggGrowth: PET_GROWTH.EGG,
-      })
-      .setParameter('soldStatus', ADOPTION_SALE_STATUS.SOLD)
-      .leftJoin(
-        'adoptions',
-        'soldAd',
-        'soldAd.petId = pets.petId AND soldAd.isDeleted = false AND soldAd.status = :soldStatus',
-      )
-      .andWhere('soldAd.id IS NULL');
+      );
 
     if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.ALL) {
-      // 기본적으로 모든 공개된 펫과 자신의 펫을 조회
-      queryBuilder.andWhere(
-        '(pets.isPublic = :isPublic OR pets.ownerId = :userId)',
-        { isPublic: true, userId },
-      );
+      // 기본적으로 모든 공개된 펫을 조회
+      queryBuilder.andWhere('(pets.isPublic = :isPublic', { isPublic: true });
     } else if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
       // 자신의 펫만 조회
       queryBuilder.andWhere('pets.ownerId = :userId', { userId });
@@ -512,6 +503,182 @@ export class PetService {
     if (pageOptionsDto.ownerId) {
       queryBuilder.andWhere('pets.ownerId = :ownerId', {
         ownerId: pageOptionsDto.ownerId,
+      });
+    }
+
+    // 몸무게 범위 필터링
+    if (pageOptionsDto.minWeight !== undefined) {
+      queryBuilder.andWhere('petDetail.weight >= :minWeight', {
+        minWeight: pageOptionsDto.minWeight,
+      });
+    }
+
+    if (pageOptionsDto.maxWeight !== undefined) {
+      queryBuilder.andWhere('petDetail.weight <= :maxWeight', {
+        maxWeight: pageOptionsDto.maxWeight,
+      });
+    }
+
+    // 생년월일 범위 필터링
+    if (pageOptionsDto.startYmd !== undefined) {
+      queryBuilder.andWhere('pets.hatchingDate >= :startYmd', {
+        startYmd: pageOptionsDto.startYmd,
+      });
+    }
+
+    if (pageOptionsDto.endYmd !== undefined) {
+      queryBuilder.andWhere('pets.hatchingDate <= :endYmd', {
+        endYmd: pageOptionsDto.endYmd,
+      });
+    }
+
+    // 모프 필터링
+    if (pageOptionsDto.morphs && pageOptionsDto.morphs.length > 0) {
+      const morphsJson = JSON.stringify(pageOptionsDto.morphs);
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.morphs, :morphs)`, {
+        morphs: morphsJson,
+      });
+    }
+
+    // 형질 필터링
+    if (pageOptionsDto.traits && pageOptionsDto.traits.length > 0) {
+      // 모든 trait를 하나의 JSON 배열로 만들어서 한 번에 검색
+      const traitsJson = JSON.stringify(pageOptionsDto.traits);
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.traits, :traits)`, {
+        traits: traitsJson,
+      });
+    }
+
+    // 먹이 필터링
+    if (pageOptionsDto.foods) {
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.foods, :food)`, {
+        food: JSON.stringify(pageOptionsDto.foods),
+      });
+    }
+
+    // 판매 상태 필터링
+    if (pageOptionsDto.status) {
+      queryBuilder.andWhere('adoptions.status = :status', {
+        status: pageOptionsDto.status,
+      });
+    }
+
+    // 성장단계 필터링
+    if (pageOptionsDto.growth) {
+      queryBuilder.andWhere('pets.growth = :growth', {
+        growth: pageOptionsDto.growth,
+      });
+    }
+
+    // 정렬 및 페이지네이션
+    queryBuilder
+      .orderBy('pets.createdAt', pageOptionsDto.order)
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.itemPerPage);
+
+    const totalCount = await queryBuilder.getCount();
+    const petEntities = await queryBuilder.getMany();
+
+    // PetDto로 변환하면서 parent_request 상태 정보 포함
+    const petDtos = await Promise.all(
+      petEntities.map(async (petRaw) => {
+        const { ownerId, petId, photos, ...pet } = petRaw;
+
+        if (!ownerId) {
+          throw new NotFoundException('펫의 소유자를 찾을 수 없습니다.');
+        }
+
+        const owner = await this.userService.findOneProfile(ownerId);
+
+        const { father, mother } =
+          await this.parentRequestService.getParentsWithRequestStatus(petId);
+
+        const petDto = plainToInstance(PetDto, {
+          ...pet,
+          petId,
+          owner,
+          father,
+          mother,
+          photos: photos?.files,
+        });
+
+        if (pet.petDetail) {
+          Object.assign(petDto, {
+            sex: pet.petDetail.sex,
+            morphs: pet.petDetail.morphs,
+            traits: pet.petDetail.traits,
+            foods: pet.petDetail.foods,
+            weight: pet.petDetail.weight,
+          });
+        }
+
+        return petDto;
+      }),
+    );
+
+    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+    return new PageDto(petDtos, pageMetaDto);
+  }
+
+  async getBrPetListFull(
+    pageOptionsDto: PetFilterDto,
+    userId: string,
+  ): Promise<PageDto<PetDto>> {
+    const queryBuilder = this.petRepository
+      .createQueryBuilder('pets')
+      .where(
+        'pets.ownerId = :userId AND pets.isDeleted = :isDeleted AND pets.growth != :eggGrowth',
+        {
+          userId,
+          isDeleted: false,
+          eggGrowth: PET_GROWTH.EGG,
+        },
+      )
+      .leftJoinAndMapOne(
+        'pets.owner',
+        'users',
+        'users',
+        'users.userId = pets.ownerId',
+      )
+      .leftJoinAndMapOne(
+        'pets.petDetail',
+        'pet_details',
+        'pet_details',
+        'pet_details.petId = pets.petId',
+      )
+      .leftJoinAndMapOne(
+        'pets.adoption',
+        'adoptions',
+        'adoptions',
+        'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
+        { soldStatus: ADOPTION_SALE_STATUS.SOLD },
+      )
+      .leftJoinAndMapOne(
+        'pets.photos',
+        'pet_images',
+        'pet_images',
+        'pet_images.petId = pets.petId',
+      );
+
+    // 키워드 검색
+    if (pageOptionsDto.keyword) {
+      queryBuilder.andWhere(
+        'pets.name LIKE :keyword OR pets.desc LIKE :keyword)',
+        { keyword: `%${pageOptionsDto.keyword}%` },
+      );
+    }
+
+    // 종 필터링
+    if (pageOptionsDto.species) {
+      queryBuilder.andWhere('pets.species = :species', {
+        species: pageOptionsDto.species,
+      });
+    }
+
+    // 성별 필터링
+    if (pageOptionsDto.sex) {
+      queryBuilder.andWhere('petDetail.sex = :sex', {
+        sex: pageOptionsDto.sex,
       });
     }
 
@@ -550,25 +717,18 @@ export class PetService {
 
     // 모프 필터링
     if (pageOptionsDto.morphs && pageOptionsDto.morphs.length > 0) {
-      pageOptionsDto.morphs.forEach((morph, index) => {
-        queryBuilder.andWhere(
-          `JSON_CONTAINS(petDetail.morphs, :morph${index})`,
-          {
-            [`morph${index}`]: JSON.stringify(morph),
-          },
-        );
+      const morphsJson = JSON.stringify(pageOptionsDto.morphs);
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.morphs, :morphs)`, {
+        morphs: morphsJson,
       });
     }
 
     // 형질 필터링
     if (pageOptionsDto.traits && pageOptionsDto.traits.length > 0) {
-      pageOptionsDto.traits.forEach((trait, index) => {
-        queryBuilder.andWhere(
-          `JSON_CONTAINS(petDetail.traits, :trait${index})`,
-          {
-            [`trait${index}`]: JSON.stringify(trait),
-          },
-        );
+      // 모든 trait를 하나의 JSON 배열로 만들어서 한 번에 검색
+      const traitsJson = JSON.stringify(pageOptionsDto.traits);
+      queryBuilder.andWhere(`JSON_CONTAINS(petDetail.traits, :traits)`, {
+        traits: traitsJson,
       });
     }
 
