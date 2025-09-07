@@ -22,7 +22,7 @@ const Header = ({ step, setStep, selectedPet, setSearchQuery, className }: Heade
           onClick={() => step === 2 && setStep(1)}
           className={`text-lg font-bold ${step === 2 ? "text-gray-400 hover:text-gray-700" : ""}`}
         >
-          부모 개체 검색
+          개체 검색
         </button>
         {step === 2 && (
           <>
