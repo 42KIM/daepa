@@ -52,15 +52,20 @@ export class PetImageService {
       });
     }
 
-    return entityManager
-      .createQueryBuilder()
-      .insert()
-      .into(PetImageEntity)
-      .values({
+    if (savedImageList.length === 0) {
+      return entityManager.delete(PetImageEntity, { petId });
+    }
+
+    return entityManager.upsert(
+      PetImageEntity,
+      {
         petId,
         files: savedImageList,
-      })
-      .orUpdate(['files'], ['petId'])
-      .execute();
+      },
+      {
+        conflictPaths: ['id'],
+        skipUpdateIfNoValuesChanged: true,
+      },
+    );
   }
 }

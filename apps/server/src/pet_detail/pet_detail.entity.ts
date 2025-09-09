@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PET_SEX } from './pet_detail.constants';
+import { PET_SEX } from 'src/pet/pet.constants';
 
 @Entity({ name: 'pet_details' })
 @Index('UNIQUE_PET_DETAIL_PET_ID', ['petId'], { unique: true })

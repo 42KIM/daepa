@@ -28,9 +28,6 @@ export class PetEntity {
   @Column({ nullable: true })
   ownerId?: string;
 
-  @Column({ nullable: true })
-  pairId?: number;
-
   @Column({ type: 'int', nullable: true })
   layingId?: number;
 
