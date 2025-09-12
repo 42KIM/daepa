@@ -447,7 +447,7 @@ export class PetService {
   ): Promise<PageDto<PetDto>> {
     const queryBuilder = this.petRepository
       .createQueryBuilder('pets')
-      .where('pets.isDeleted = :isDeleted AND pets.type = :eggGrowth', {
+      .where('pets.isDeleted = :isDeleted AND pets.type = :type', {
         isDeleted: false,
         type: PET_TYPE.PET,
       })
