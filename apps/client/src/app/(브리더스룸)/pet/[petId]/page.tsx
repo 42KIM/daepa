@@ -21,7 +21,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
     queryFn: () => petControllerFindPetByPetId(petId),
     select: (response) => response.data.data,
   });
-
+  console.log(123, data);
   useEffect(() => {
     const fetchQrCode = async () => {
       const qrCode = await generateQRCode(`${"http://192.168.45.46:3000"}/pet/${petId}`);

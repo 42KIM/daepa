@@ -140,7 +140,7 @@ export const columns: ColumnDef<PetDto>[] = [
     accessorKey: "morphs",
     header: TABLE_HEADER.morphs,
     cell: ({ row }) => {
-      const morphs = row.original.morphs;
+      const morphs = row.original.petDetail.morphs;
 
       return (
         <div className="flex flex-wrap gap-1">
@@ -153,7 +153,7 @@ export const columns: ColumnDef<PetDto>[] = [
     accessorKey: "traits",
     header: TABLE_HEADER.traits,
     cell: ({ row }) => {
-      const traits = row.original.traits;
+      const traits = row.original.petDetail.traits;
 
       return (
         <div className="flex flex-wrap gap-1">
@@ -212,7 +212,9 @@ export const columns: ColumnDef<PetDto>[] = [
     accessorKey: "weight",
     header: TABLE_HEADER.weight,
     cell: ({ row }) => (
-      <div className="capitalize">{row.original.weight ? row.getValue("weight") + "g" : "-"}</div>
+      <div className="capitalize">
+        {row.original.petDetail.weight ? row.getValue("weight") + "g" : "-"}
+      </div>
     ),
   },
   {

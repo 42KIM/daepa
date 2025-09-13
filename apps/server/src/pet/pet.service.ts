@@ -224,18 +224,8 @@ export class PetService {
 
       return plainToInstance(PetDto, {
         ...pet,
-        ...(petDetail && {
-          sex: petDetail.sex,
-          morphs: petDetail.morphs,
-          traits: petDetail.traits,
-          foods: petDetail.foods,
-          weight: petDetail.weight,
-          growth: petDetail.growth,
-        }),
-        ...(eggDetail && {
-          temperature: eggDetail.temperature,
-          eggStatus: eggDetail.status,
-        }),
+        petDetail,
+        eggDetail,
         owner,
         father,
         mother,
@@ -518,17 +508,6 @@ export class PetService {
           photos: photos?.files,
         });
 
-        if (pet.petDetail) {
-          Object.assign(petDto, {
-            sex: pet.petDetail.sex,
-            morphs: pet.petDetail.morphs,
-            traits: pet.petDetail.traits,
-            foods: pet.petDetail.foods,
-            weight: pet.petDetail.weight,
-            growth: pet.petDetail.growth,
-          });
-        }
-
         return petDto;
       }),
     );
@@ -606,17 +585,6 @@ export class PetService {
           mother,
           photos: photos?.files,
         });
-
-        if (pet.petDetail) {
-          Object.assign(petDto, {
-            sex: pet.petDetail.sex,
-            morphs: pet.petDetail.morphs,
-            traits: pet.petDetail.traits,
-            foods: pet.petDetail.foods,
-            weight: pet.petDetail.weight,
-            growth: pet.petDetail.growth,
-          });
-        }
 
         return petDto;
       }),

@@ -37,13 +37,13 @@ const PetItem = ({
             </span>
           </div>
           <div className="flex flex-wrap justify-center gap-1">
-            {item.morphs?.map((morph) => (
+            {item.petDetail.morphs?.map((morph) => (
               <Badge key={morph} className="bg-blue-800 text-white">
                 {morph}
               </Badge>
             ))}
 
-            {item.traits?.map((trait) => (
+            {item.petDetail.traits?.map((trait) => (
               <Badge variant="outline" key={trait} className="bg-white text-black dark:bg-blue-100">
                 {trait}
               </Badge>
