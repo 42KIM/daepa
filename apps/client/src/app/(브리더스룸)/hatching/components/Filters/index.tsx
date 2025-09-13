@@ -1,7 +1,7 @@
 import { useSelect } from "../../../register/hooks/useSelect";
 import { useMatingFilterStore } from "../../../store/matingFilter";
 import { SPECIES_KOREAN_INFO } from "../../../constants";
-import { PetDtoSex, PetDtoSpecies, PetParentDto } from "@repo/api-client";
+import { PetDtoSex, PetDtoSpecies } from "@repo/api-client";
 import CalendarInput from "../CalendarInput";
 import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../../components/selector/parentSearch";
@@ -33,9 +33,9 @@ const Filters = () => {
         onSelect={(item) => {
           close();
           if (sex === PetDtoSex.MALE) {
-            setFather(item as PetParentDto);
+            setFather(item);
           } else {
-            setMother(item as PetParentDto);
+            setMother(item);
           }
         }}
         sex={sex}

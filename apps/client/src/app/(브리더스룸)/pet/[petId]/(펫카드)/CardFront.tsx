@@ -25,7 +25,7 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const swiperRef = useRef<SwiperType>(null);
-  console.log(pet.petDetail);
+
   const imagesInOrder = orderBy(
     pet.photos ?? [],
     [

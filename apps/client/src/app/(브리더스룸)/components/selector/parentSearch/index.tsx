@@ -8,6 +8,7 @@ import {
   PetControllerFindAllFilterType as PetListType,
   PetDtoSex,
   PetDtoSpecies,
+  PetDto,
 } from "@repo/api-client";
 import SelectStep from "./SelectStep";
 import LinkStep from "./LinkStep";
@@ -22,7 +23,7 @@ interface ParentSearchProps {
   onlySelect?: boolean;
   showTab: boolean;
   onClose: () => void;
-  onSelect: (item: PetParentDtoWithMessage) => void;
+  onSelect: (item: PetDto) => void;
   onExit: () => void;
 }
 

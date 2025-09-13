@@ -13,7 +13,7 @@ interface HeaderProps {
 
 const Header = ({ step, setStep, selectedPetName, setSearchQuery, className }: HeaderProps) => {
   const [keyword, setKeyword] = useState("");
-  console.log(selectedPetName);
+
   return (
     <div className={cn("sticky -top-[12px] z-20 mt-3 bg-white py-4 dark:bg-[#18181B]", className)}>
       <div className="flex items-center gap-2 pb-2">

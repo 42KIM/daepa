@@ -93,8 +93,8 @@ export class MatingService {
         .leftJoinAndMapOne(
           'parents.petDetail',
           PetDetailEntity,
-          'ppd',
-          'ppd.petId = parents.petId',
+          'parentDetail',
+          'parentDetail.petId = parents.petId',
         )
         .leftJoinAndMapMany(
           'matings.children',
@@ -105,14 +105,14 @@ export class MatingService {
         .leftJoinAndMapOne(
           'children.petDetail',
           PetDetailEntity,
-          'cpd',
-          'cpd.petId = children.petId',
+          'childrenDetail',
+          'childrenDetail.petId = children.petId',
         )
         .leftJoinAndMapOne(
           'children.eggDetail',
           EggDetailEntity,
-          'ced',
-          'ced.petId = children.petId',
+          'childrenEggDetail',
+          'childrenEggDetail.petId = children.petId',
         )
         .select([
           'matings.id',
@@ -131,22 +131,22 @@ export class MatingService {
           'parents.name',
           'parents.species',
           'parents.hatchingDate',
-          'parents.growth',
-          'ppd.morphs',
-          'ppd.sex',
-          'ppd.weight',
+          'parentDetail.morphs',
+          'parentDetail.sex',
+          'parentDetail.weight',
+          'parentDetail.growth',
           'children.petId',
           'children.name',
           'children.species',
           'children.hatchingDate',
-          'children.growth',
           'children.clutchOrder',
           'children.layingId',
-          'cpd.sex',
-          'cpd.morphs',
-          'cpd.traits',
-          'ced.temperature',
-          'ced.status',
+          'childrenDetail.sex',
+          'childrenDetail.morphs',
+          'childrenDetail.traits',
+          'childrenDetail.growth',
+          'childrenEggDetail.temperature',
+          'childrenEggDetail.status',
         ])
         .where('pairs.ownerId = :userId', { userId })
         .orderBy('matings.id', pageOptionsDto.order);
@@ -182,7 +182,7 @@ export class MatingService {
       }
 
       if (pageOptionsDto.eggStatus) {
-        allQueryBuilder.andWhere('ced.status = :eggStatus', {
+        allQueryBuilder.andWhere('childrenEggDetail.status = :eggStatus', {
           eggStatus: pageOptionsDto.eggStatus,
         });
       }
