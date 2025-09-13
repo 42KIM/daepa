@@ -76,9 +76,9 @@ const AdoptionDetailModal = ({
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm text-gray-600">
-                  {pet.morphs && pet.morphs.length > 0 && (
+                  {pet.petDetailSummary.morphs && pet.petDetailSummary.morphs.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {pet.morphs.map((morph: string) => `#${morph}`).join(" ")}
+                      {pet.petDetailSummary.morphs.map((morph: string) => `#${morph}`).join(" ")}
                     </div>
                   )}
                   {pet.hatchingDate && <p className="text-blue-600">{pet.hatchingDate}</p>}
