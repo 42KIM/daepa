@@ -44,9 +44,11 @@ const AdoptionDetailModal = ({
     setIsEditing(false);
   };
 
-  const pet = adoptionData?.pet;
+  const petSummary = adoptionData?.pet;
 
-  if (!pet) return null;
+  if (!petSummary) return null;
+
+  const { petId, name, species, petDetailSummary, hatchingDate } = petSummary;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -66,22 +68,22 @@ const AdoptionDetailModal = ({
         <div className="space-y-4">
           {/* 펫 정보 */}
           {adoptionData?.status !== PetAdoptionDtoStatus.SOLD && (
-            <Link href={`/pet/${pet.petId}`} onClick={() => onClose()}>
+            <Link href={`/pet/${petId}`} onClick={() => onClose()}>
               <Card className="bg-muted mb-4 flex gap-0 border-2 p-4 hover:shadow-md">
                 <div className="mb-2 flex items-center gap-2 font-semibold">
-                  {pet.name}
+                  {name}
 
                   <div className="text-muted-foreground text-sm font-normal">
-                    | {SPECIES_KOREAN_INFO[pet.species] || "미분류"}
+                    | {SPECIES_KOREAN_INFO[species] || "미분류"}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm text-gray-600">
-                  {pet.petDetailSummary.morphs && pet.petDetailSummary.morphs.length > 0 && (
+                  {petDetailSummary.morphs && petDetailSummary.morphs.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {pet.petDetailSummary.morphs.map((morph: string) => `#${morph}`).join(" ")}
+                      {petDetailSummary.morphs.map((morph: string) => `#${morph}`).join(" ")}
                     </div>
                   )}
-                  {pet.hatchingDate && <p className="text-blue-600">{pet.hatchingDate}</p>}
+                  {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
                 </div>
               </Card>
             </Link>

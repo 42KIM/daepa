@@ -1,20 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { PetSummaryDto } from "@repo/api-client";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 interface HeaderProps {
   step: number;
   setStep: (step: number) => void;
-  selectedPet?: PetSummaryDto;
+  selectedPetName?: string;
   className?: string;
   setSearchQuery: (searchQuery: string) => void;
 }
 
-const Header = ({ step, setStep, selectedPet, setSearchQuery, className }: HeaderProps) => {
+const Header = ({ step, setStep, selectedPetName, setSearchQuery, className }: HeaderProps) => {
   const [keyword, setKeyword] = useState("");
-
+  console.log(selectedPetName);
   return (
     <div className={cn("sticky -top-[12px] z-20 mt-3 bg-white py-4 dark:bg-[#18181B]", className)}>
       <div className="flex items-center gap-2 pb-2">
@@ -27,7 +26,7 @@ const Header = ({ step, setStep, selectedPet, setSearchQuery, className }: Heade
         {step === 2 && (
           <>
             <ChevronRight className="h-5 w-5 text-gray-500" />
-            <span className="text-lg font-bold">{selectedPet?.name}</span>
+            <span className="text-lg font-bold">{selectedPetName}</span>
           </>
         )}
       </div>

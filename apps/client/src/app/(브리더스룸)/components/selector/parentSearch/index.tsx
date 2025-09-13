@@ -64,7 +64,9 @@ const ParentSearchSelector = ({
     // TODO!: 이러면 새로 등록한 개체가 바로 조회되지 않음
     staleTime: 5 * 60 * 1000, // 5분 동안 데이터를 'fresh'하게 유지
     select: (data) =>
-      data.pages.flatMap((page) => page.data.data).filter((pet) => pet.sex?.toString() === sex),
+      data.pages
+        .flatMap((page) => page.data.data)
+        .filter((pet) => pet.petDetail.sex?.toString() === sex),
   });
 
   useEffect(() => {
@@ -99,7 +101,7 @@ const ParentSearchSelector = ({
         <Header
           step={step}
           setStep={setStep}
-          selectedPet={selectedPet ?? ({} as PetParentDtoWithMessage)}
+          selectedPetName={selectedPet?.name ?? ""}
           setSearchQuery={setSearchQuery}
         />
         <div ref={contentRef} className="relative flex-1">
