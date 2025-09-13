@@ -113,12 +113,12 @@ export class PetService {
         // 펫 생성
         await entityManager.insert(PetEntity, petEntityData);
 
-        // growth에 따라 적절한 details 테이블에 데이터 저장
+        // type에 따라 적절한 details 테이블에 데이터 저장
         if (petData.type === PET_TYPE.EGG) {
           await entityManager.insert(EggDetailEntity, {
             petId,
             temperature,
-            status: eggStatus || EGG_STATUS.FERTILIZED,
+            status: eggStatus,
           });
         } else {
           await entityManager.insert(PetDetailEntity, {
@@ -140,7 +140,7 @@ export class PetService {
           await this.handleParentRequest(entityManager, petId, ownerId, mother);
         }
 
-        // 부모 모두 있고, 둘 다 내 펫인 경우 pair 정보 확인 후 없을 시 생성
+        // 부모 모두 있고, 둘 다 내 펫인 경우, pair 정보 없을 시 생성
         if (
           father &&
           mother &&
@@ -971,7 +971,9 @@ export class PetService {
           where: { petId: parentPet.petId },
           select: ['sex'],
         });
-        parentSex = parentDetails?.sex;
+        if (parentDetails?.sex) {
+          parentSex = parentDetails.sex;
+        }
       } else {
         throw new BadRequestException('알은 부모로 지정할 수 없습니다.');
       }
@@ -1100,11 +1102,11 @@ export class PetService {
               detailJson: {
                 childPet: {
                   id: parentRequest.childPetId,
-                  name: childPet?.name,
+                  name: childPet?.name ?? undefined,
                 },
                 parentPet: {
                   id: parentRequest.parentPetId,
-                  name: parentPet?.name,
+                  name: parentPet?.name ?? undefined,
                 },
                 role: parentRequest.role,
                 message: NOTIFICATION_MESSAGES.PARENT_REQUEST_CANCEL,

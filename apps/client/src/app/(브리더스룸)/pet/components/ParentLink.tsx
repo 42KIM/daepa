@@ -41,6 +41,7 @@ const ParentLink = ({
 }: ParentLinkProps) => {
   const { user } = useUserStore();
   const pathname = usePathname();
+  // TODO!: 실제로 parent에 owner 정보가 없다.
   const isMyPet = data?.owner?.userId === user?.userId;
   const isClickDisabled = pathname.includes("register") || pathname.includes("hatching");
   const deleteParent = () => {

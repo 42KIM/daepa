@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDate,
   IsEnum,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
@@ -202,7 +203,10 @@ export class AdoptionDto extends PickType(AdoptionBaseDto, [
 
   @ApiProperty({
     description: '펫 정보',
+    type: PetSummaryWithoutOwnerDto,
   })
+  @ValidateNested()
+  @Type(() => PetSummaryWithoutOwnerDto)
   pet: PetSummaryWithoutOwnerDto;
 }
 

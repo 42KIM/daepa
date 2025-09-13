@@ -30,8 +30,8 @@ import { Not } from 'typeorm';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 
 interface PetWithRelations extends PetEntity {
-  eggDetail?: EggDetailEntity;
-  petDetail?: PetDetailEntity;
+  eggDetail: EggDetailEntity | null;
+  petDetail: PetDetailEntity | null;
 }
 
 interface MatingWithRelations extends Omit<MatingEntity, 'pair'> {
@@ -384,8 +384,12 @@ export class MatingService {
 
     return Object.values(groupedByParents).map((matingByParents) => {
       const { parents } = matingByParents[0];
-      const father = parents?.find((parent) => parent.sex === PET_SEX.MALE);
-      const mother = parents?.find((parent) => parent.sex === PET_SEX.FEMALE);
+      const father = parents?.find(
+        (parent) => parent.petDetailSummary?.sex === PET_SEX.MALE,
+      );
+      const mother = parents?.find(
+        (parent) => parent.petDetailSummary?.sex === PET_SEX.FEMALE,
+      );
 
       const matingsByDate = matingByParents
         .map((mating) => {
@@ -458,8 +462,8 @@ export class MatingService {
     const merged: MergedPet = { ...(rest as Partial<PetEntity>) };
     if (pet.type === PET_TYPE.EGG) {
       if (eggDetail) {
-        merged.temperature = eggDetail.temperature;
-        merged.eggStatus = eggDetail.status;
+        if (eggDetail.temperature) merged.temperature = eggDetail.temperature;
+        if (eggDetail.status) merged.eggStatus = eggDetail.status;
       }
     } else {
       if (petDetail) {

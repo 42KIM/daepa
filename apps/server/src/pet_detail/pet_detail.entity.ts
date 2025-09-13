@@ -20,22 +20,22 @@ export class PetDetailEntity {
   petId: string;
 
   @Column({ type: 'enum', enum: PET_GROWTH, nullable: true })
-  growth?: PET_GROWTH; // 성장단계
+  growth: PET_GROWTH | null; // 성장단계
 
   @Column({ type: 'enum', enum: PET_SEX, nullable: true })
-  sex?: PET_SEX;
+  sex: PET_SEX | null;
 
   @Column('json', { nullable: true })
-  morphs?: string[]; // 모프
+  morphs: string[] | null; // 모프
 
   @Column('json', { nullable: true })
-  traits?: string[]; // 형질
+  traits: string[] | null; // 형질
 
   @Column('json', { nullable: true })
-  foods?: string[]; // 먹이
+  foods: string[] | null; // 먹이
 
   @Column({ type: 'decimal', precision: 10, scale: 1, nullable: true })
-  weight?: number; // 몸무게(g)
+  weight: number | null; // 몸무게(g)
 
   @Column({ default: false })
   isDeleted: boolean;

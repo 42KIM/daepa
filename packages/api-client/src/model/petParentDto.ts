@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0
  */
 import type { PetParentDtoSpecies } from "./petParentDtoSpecies";
-import type { PetParentDtoSex } from "./petParentDtoSex";
 import type { PetParentDtoStatus } from "./petParentDtoStatus";
+import type { PetDetailSummaryDto } from "./petDetailSummaryDto";
 import type { PetImageItem } from "./petImageItem";
 
 export interface PetParentDto {
@@ -17,16 +17,12 @@ export interface PetParentDto {
   name?: string;
   /** 펫 종 */
   species: PetParentDtoSpecies;
-  /** 펫 모프 */
-  morphs?: string[];
-  /** 펫 형질 */
-  traits?: string[];
   /** 펫 출생일 */
   hatchingDate?: string;
-  /** 펫 성별(수컷, 암컷, 미구분) */
-  sex?: PetParentDtoSex;
   /** 부모 관계 상태 */
   status: PetParentDtoStatus;
+  /** 펫 상세 정보 */
+  petDetailSummary: PetDetailSummaryDto;
   /** 펫 이미지 목록 */
   photos?: PetImageItem[];
 }

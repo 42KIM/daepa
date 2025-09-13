@@ -32,29 +32,29 @@ export class PetEntity {
   })
   type: PET_TYPE;
 
-  @Column({ nullable: true })
-  ownerId?: string;
+  @Column({ type: 'varchar', nullable: true })
+  ownerId: string | null;
 
   @Column({ type: 'int', nullable: true })
-  layingId?: number;
+  layingId: number | null;
 
   @Column({ type: 'date', nullable: true })
-  hatchingDate?: Date;
+  hatchingDate: Date | null;
 
-  @Column({ nullable: true })
-  name?: string; // 이름
+  @Column({ type: 'varchar', nullable: true })
+  name: string | null; // 이름
 
   @Column({ type: 'enum', enum: PET_SPECIES })
   species: PET_SPECIES; // 종
 
   @Column({ type: 'tinyint', nullable: true })
-  clutchOrder?: number; // 동배 번호(같은 차수 내 구분)
+  clutchOrder: number | null; // 동배 번호(같은 차수 내 구분)
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  desc?: string; // 소개말
+  desc: string | null; // 소개말
 
   @Column({ default: true })
-  isPublic?: boolean;
+  isPublic: boolean;
 
   @Column({ default: false })
   isDeleted: boolean;
@@ -72,7 +72,7 @@ export class PetEntity {
   @OneToOne(() => AdoptionEntity, (adoption) => adoption.pet, {
     nullable: true,
   })
-  adoption?: AdoptionEntity;
+  adoption: AdoptionEntity | null;
 
   @OneToOne(() => PetImageEntity, (image) => image.petId)
   photos: PetImageEntity | null;
@@ -80,10 +80,10 @@ export class PetEntity {
   @OneToOne(() => PetDetailEntity, (petDetail) => petDetail.petId, {
     nullable: true,
   })
-  petDetail?: PetDetailEntity;
+  petDetail: PetDetailEntity | null;
 
   @OneToOne(() => EggDetailEntity, (eggDetail) => eggDetail.petId, {
     nullable: true,
   })
-  eggDetail?: EggDetailEntity;
+  eggDetail: EggDetailEntity | null;
 }

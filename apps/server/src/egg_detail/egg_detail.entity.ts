@@ -20,10 +20,10 @@ export class EggDetailEntity {
   petId: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 1, nullable: true })
-  temperature?: number;
+  temperature: number | null;
 
   @Column({ type: 'enum', enum: EGG_STATUS, nullable: true })
-  status?: EGG_STATUS;
+  status: EGG_STATUS | null;
 
   @Column({ default: false })
   isDeleted: boolean;

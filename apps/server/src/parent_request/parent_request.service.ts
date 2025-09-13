@@ -59,12 +59,12 @@ export class ParentRequestService {
           detailJson: {
             childPet: {
               id: childPet?.petId ?? '',
-              name: childPet.name,
+              name: childPet.name ?? undefined,
               photos: childPet?.photos?.files ?? undefined,
             },
             parentPet: {
               id: parentPet?.petId ?? '',
-              name: parentPet.name,
+              name: parentPet.name ?? undefined,
               photos: parentPet?.photos?.files ?? undefined,
             },
             role: createParentRequestDto.role,
@@ -150,12 +150,12 @@ export class ParentRequestService {
             detailJson: {
               childPet: {
                 id: parentRequest.childPetId,
-                name: childPet?.name,
+                name: childPet?.name ?? undefined,
                 photos: childPet?.photos?.files ?? undefined,
               },
               parentPet: {
                 id: parentRequest.parentPetId,
-                name: parentPet?.name,
+                name: parentPet?.name ?? undefined,
                 photos: parentPet?.photos?.files ?? undefined,
               },
               role: parentRequest.role,

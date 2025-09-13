@@ -8,7 +8,7 @@
 import type { PetSummaryWithLayingDtoType } from "./petSummaryWithLayingDtoType";
 import type { UserProfilePublicDto } from "./userProfilePublicDto";
 import type { PetSummaryWithLayingDtoSpecies } from "./petSummaryWithLayingDtoSpecies";
-import type { PetSummaryWithLayingDtoSex } from "./petSummaryWithLayingDtoSex";
+import type { PetDetailSummaryDto } from "./petDetailSummaryDto";
 import type { PetImageItem } from "./petImageItem";
 import type { PetSummaryWithLayingDtoEggStatus } from "./petSummaryWithLayingDtoEggStatus";
 
@@ -23,16 +23,12 @@ export interface PetSummaryWithLayingDto {
   name?: string;
   /** 펫 종 */
   species: PetSummaryWithLayingDtoSpecies;
-  /** 펫 모프 */
-  morphs?: string[];
-  /** 펫 형질 */
-  traits?: string[];
   /** 펫 출생일 */
   hatchingDate?: string;
-  /** 펫 성별(수컷, 암컷, 미구분) */
-  sex?: PetSummaryWithLayingDtoSex;
   /** 펫 이미지 목록 */
   photoOrder?: string[];
+  /** 펫 상세 정보 */
+  petDetailSummary: PetDetailSummaryDto;
   /** 펫 이미지 목록 */
   photos?: PetImageItem[];
   /** 산란 아이디 */

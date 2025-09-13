@@ -21,6 +21,7 @@ import {
   ADOPTION_SALE_STATUS,
   PET_ADOPTION_LOCATION,
 } from 'src/pet/pet.constants';
+import { isNil, omitBy } from 'es-toolkit';
 
 @Injectable()
 export class AdoptionService {
@@ -39,18 +40,23 @@ export class AdoptionService {
       throw new Error('Pet information is required for adoption');
     }
 
-    const { pet, petDetail, ...adoptionData } = entity;
+    const { pet, ...adoptionData } = entity;
 
     return {
       ...adoptionData,
       pet: {
         petId: pet.petId,
-        name: pet.name,
+        name: pet.name ?? undefined,
         species: pet.species,
-        morphs: petDetail?.morphs,
-        traits: petDetail?.traits,
-        hatchingDate: pet.hatchingDate,
-        sex: petDetail?.sex,
+        hatchingDate: pet.hatchingDate ?? undefined,
+        petDetailSummary: omitBy(
+          {
+            morphs: pet.petDetail?.morphs ?? undefined,
+            traits: pet.petDetail?.traits ?? undefined,
+            sex: pet.petDetail?.sex ?? undefined,
+          },
+          isNil,
+        ),
       },
     };
   }
@@ -158,8 +164,8 @@ export class AdoptionService {
           .leftJoinAndMapOne(
             'adoptions.petDetail',
             'pet_details',
-            'petDetails',
-            'petDetails.petId = pets.petId',
+            'pet_details',
+            'pet_details.petId = pets.petId',
           )
           .leftJoinAndMapOne(
             'adoptions.seller',

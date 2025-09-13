@@ -4,7 +4,6 @@ import {
   PET_ADOPTION_LOCATION,
 } from 'src/pet/pet.constants';
 import { PetEntity } from 'src/pet/pet.entity';
-import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -65,12 +64,6 @@ export class AdoptionEntity {
   @OneToOne(() => PetEntity, (pet) => pet.adoption)
   @JoinColumn({ name: 'petId', referencedColumnName: 'petId' })
   pet: PetEntity;
-
-  @OneToOne(() => PetDetailEntity, {
-    createForeignKeyConstraints: false,
-  })
-  @JoinColumn({ name: 'petId', referencedColumnName: 'petId' })
-  petDetail: PetDetailEntity;
 
   // 판매자와의 관계
   @ManyToOne(() => UserEntity, { nullable: true })
