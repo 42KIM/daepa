@@ -9,6 +9,7 @@ import type { PetParentDtoSpecies } from "./petParentDtoSpecies";
 import type { PetParentDtoStatus } from "./petParentDtoStatus";
 import type { PetDetailSummaryDto } from "./petDetailSummaryDto";
 import type { PetImageItem } from "./petImageItem";
+import type { UserProfilePublicDto } from "./userProfilePublicDto";
 
 export interface PetParentDto {
   /** 펫 아이디 */
@@ -25,4 +26,6 @@ export interface PetParentDto {
   petDetailSummary: PetDetailSummaryDto;
   /** 펫 이미지 목록 */
   photos?: PetImageItem[];
+  /** 펫 주인 정보 */
+  owner: UserProfilePublicDto;
 }

@@ -14,7 +14,6 @@ import {
 } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import ParentStatusBadge from "../../components/ParentStatusBadge";
-import { Badge } from "@/components/ui/badge";
 import { usePathname } from "next/navigation";
 import { PetParentDtoWithMessage } from "../store/parentLink";
 import { useUserStore } from "../../store/user";
@@ -41,7 +40,6 @@ const ParentLink = ({
 }: ParentLinkProps) => {
   const { user } = useUserStore();
   const pathname = usePathname();
-  // TODO!: 실제로 parent에 owner 정보가 없다.
   const isMyPet = data?.owner?.userId === user?.userId;
   const isClickDisabled = pathname.includes("register") || pathname.includes("hatching");
   const deleteParent = () => {
@@ -103,21 +101,12 @@ const ParentLink = ({
     <div className="flex-1">
       <dt className="mb-2 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
         {label}
-
+        {/* TODO!: isMyPet이 아닌 경우 해당 주인의 정보를 노출 */}
         {data?.status && <ParentStatusBadge status={data.status} isMyPet={isMyPet} />}
       </dt>
 
       {data?.petId ? (
         <div className="group relative block h-full w-full transition-opacity hover:opacity-95">
-          {!data?.status && isMyPet && (
-            <Badge
-              variant="outline"
-              className="absolute left-1 top-1 z-10 bg-blue-50 text-xs font-bold"
-            >
-              My
-            </Badge>
-          )}
-
           {editable && (
             <Button
               variant="ghost"

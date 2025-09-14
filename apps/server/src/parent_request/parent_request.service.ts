@@ -13,12 +13,31 @@ import {
 } from './parent_request.dto';
 import { PARENT_STATUS } from './parent_request.constants';
 import { PetEntity } from '../pet/pet.entity';
-import { PET_SEX } from '../pet/pet.constants';
+import { PET_SEX, PET_SPECIES } from '../pet/pet.constants';
 import { UserNotificationService } from '../user_notification/user_notification.service';
 import { USER_NOTIFICATION_TYPE } from '../user_notification/user_notification.constant';
 import { PetImageEntity } from 'src/pet_image/pet_image.entity';
 import { PetParentDto } from 'src/pet/pet.dto';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
+import { UserEntity } from 'src/user/user.entity';
+import { USER_ROLE, USER_STATUS } from 'src/user/user.constant';
+
+interface ParentRawData {
+  pr_status: PARENT_STATUS;
+  p_pet_id: string;
+  p_name: string | null;
+  p_species: string;
+  p_hatching_date: Date | null;
+  pd_sex: PET_SEX | null;
+  pd_morphs: string[] | null;
+  pd_traits: string[] | null;
+  img_files: PetImageEntity['files'] | null;
+  user_user_id: string;
+  user_name: string;
+  user_role: USER_ROLE;
+  user_is_biz: boolean;
+  user_status: USER_STATUS;
+}
 
 @Injectable()
 export class ParentRequestService {
@@ -342,36 +361,16 @@ export class ParentRequestService {
   }
 
   async getParentsWithRequestStatus(petId: string): Promise<{
-    father:
-      | (Omit<PetParentDto, 'photos'> & {
-          photos?: PetImageEntity['files'];
-        })
-      | null;
-    mother:
-      | (Omit<PetParentDto, 'photos'> & {
-          status: PARENT_STATUS;
-          photos?: PetImageEntity['files'];
-        })
-      | null;
+    father: PetParentDto | null;
+    mother: PetParentDto | null;
   }> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      interface ParentRawData {
-        pr_status: PARENT_STATUS;
-        p_pet_id: string;
-        p_name: string | null;
-        p_species: string;
-        p_hatching_date: Date | null;
-        pd_sex: PET_SEX | null;
-        pd_morphs: string[] | null;
-        pd_traits: string[] | null;
-        img_files: PetImageEntity['files'] | null;
-      }
-
       const parentData = await entityManager
         .createQueryBuilder(ParentRequestEntity, 'pr')
         .leftJoin(PetEntity, 'p', 'p.petId = pr.parentPetId')
         .leftJoin(PetDetailEntity, 'pd', 'pd.petId = pr.parentPetId')
         .leftJoin(PetImageEntity, 'img', 'img.petId = pr.parentPetId')
+        .leftJoin(UserEntity, 'user', 'user.userId = p.ownerId')
         .select([
           'pr.status',
           'p.petId',
@@ -382,6 +381,11 @@ export class ParentRequestService {
           'pd.morphs',
           'pd.traits',
           'img.files',
+          'user.userId',
+          'user.name',
+          'user.role',
+          'user.isBiz',
+          'user.status',
         ])
         .where('pr.childPetId = :petId', { petId })
         .andWhere('pr.status IN (:...statuses)', {
@@ -392,25 +396,31 @@ export class ParentRequestService {
       if (parentData.length === 0) {
         return { father: null, mother: null };
       }
-
-      let father:
-        | (Omit<PetParentDto, 'photos'> & { photos?: PetImageEntity['files'] })
-        | null = null;
-      let mother:
-        | (Omit<PetParentDto, 'photos'> & { photos?: PetImageEntity['files'] })
-        | null = null;
+      console.log(parentData);
+      let father: PetParentDto | null = null;
+      let mother: PetParentDto | null = null;
 
       for (const row of parentData) {
-        const base: Omit<PetParentDto, 'photos'> = {
+        const base: PetParentDto = {
           petId: row.p_pet_id,
           name: row.p_name ?? '',
-          species: row.p_species,
-          morphs: row.pd_morphs,
-          traits: row.pd_traits,
-          hatchingDate: row.p_hatching_date,
-          sex: row.pd_sex,
+          species: row.p_species as PET_SPECIES,
+          petDetailSummary: {
+            morphs: row.pd_morphs ?? undefined,
+            traits: row.pd_traits ?? undefined,
+            sex: row.pd_sex ?? undefined,
+          },
+          hatchingDate: row.p_hatching_date ?? undefined,
+          photos: row.img_files ?? undefined,
           status: row.pr_status,
-        } as Omit<PetParentDto, 'photos'>;
+          owner: {
+            userId: row.user_user_id,
+            name: row.user_name,
+            role: row.user_role,
+            isBiz: row.user_is_biz,
+            status: row.user_status,
+          },
+        };
 
         const info = { ...base, photos: row.img_files ?? undefined };
 

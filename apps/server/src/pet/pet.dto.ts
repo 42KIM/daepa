@@ -321,6 +321,16 @@ export class PetParentDto extends PickType(PetSummaryDto, [
   @ValidateNested({ each: true })
   @Type(() => PetImageItem)
   photos?: PetImageItem[];
+
+  @ApiProperty({
+    description: '펫 주인 정보',
+    type: UserProfilePublicDto,
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested({ each: true })
+  @Type(() => UserProfilePublicDto)
+  owner?: UserProfilePublicDto;
 }
 
 export class PetAdoptionDto {
