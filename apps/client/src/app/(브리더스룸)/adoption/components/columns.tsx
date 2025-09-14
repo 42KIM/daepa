@@ -65,7 +65,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     accessorKey: "pet.morphs",
     header: "모프",
     cell: ({ row }) => {
-      const morphs = row.original.pet.petDetailSummary.morphs;
+      const morphs = row.original.pet.petDetailSummary?.morphs;
       return (
         <div className="flex flex-wrap gap-1">
           {morphs?.map((morph) => <Badge key={morph}>{morph}</Badge>)}

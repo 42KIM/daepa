@@ -40,20 +40,23 @@ export class AdoptionService {
       throw new Error('Pet information is required for adoption');
     }
 
-    const { pet, ...adoptionData } = entity;
-
+    const { pet, petDetail, ...adoptionData } = entity;
     return {
       ...adoptionData,
       pet: {
         petId: pet.petId,
-        name: pet.name ?? undefined,
+        type: pet.type,
         species: pet.species,
-        hatchingDate: pet.hatchingDate ?? undefined,
-        petDetailSummary: omitBy(
+        ...omitBy(
           {
-            morphs: pet.petDetail?.morphs ?? undefined,
-            traits: pet.petDetail?.traits ?? undefined,
-            sex: pet.petDetail?.sex ?? undefined,
+            name: pet.name ?? undefined,
+            photoOrder: pet.photoOrder ?? undefined,
+            hatchingDate: pet.hatchingDate ?? undefined,
+            petDetailSummary: {
+              morphs: petDetail?.morphs ?? undefined,
+              traits: petDetail?.traits ?? undefined,
+              sex: petDetail?.sex ?? undefined,
+            },
           },
           isNil,
         ),
@@ -162,7 +165,7 @@ export class AdoptionService {
             'pets.petId = adoptions.petId',
           )
           .leftJoinAndMapOne(
-            'adoptions.petDetail',
+            'adoptions.petDetail', // 중첩 객체로 매핑
             'pet_details',
             'pet_details',
             'pet_details.petId = pets.petId',
@@ -207,9 +210,25 @@ export class AdoptionService {
       },
     );
 
-    const adoptionDtos = adoptionEntities.map((adoption) =>
-      this.toAdoptionDtoOptimized(adoption),
-    );
+    const adoptionDtos = adoptionEntities.map((adoption) => {
+      const { pet, petDetail, ...adoptionData } = adoption;
+      return {
+        ...adoptionData,
+        pet: {
+          petId: pet.petId,
+          type: pet.type,
+          name: pet.name ?? undefined,
+          species: pet.species,
+          photoOrder: pet.photoOrder ?? undefined,
+          hatchingDate: pet.hatchingDate ?? undefined,
+          petDetailSummary: {
+            morphs: petDetail?.morphs ?? undefined,
+            traits: petDetail?.traits ?? undefined,
+            sex: petDetail?.sex ?? undefined,
+          },
+        },
+      };
+    });
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
 
