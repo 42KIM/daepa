@@ -250,8 +250,8 @@ export class AdoptionService {
         .leftJoinAndMapOne(
           'adoptions.petDetail',
           'pet_details',
-          'petDetail',
-          'petDetail.petId = pets.petId',
+          'pet_details',
+          'pet_details.petId = pets.petId',
         )
         .leftJoinAndMapOne(
           'adoptions.seller',
@@ -280,9 +280,9 @@ export class AdoptionService {
           'pets.name',
           'pets.species',
           'pets.hatchingDate',
-          'petDetail.morphs',
-          'petDetail.traits',
-          'petDetail.sex',
+          'pet_details.morphs',
+          'pet_details.traits',
+          'pet_details.sex',
           'pets.ownerId',
           'seller.userId',
           'seller.name',
