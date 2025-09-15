@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 import { useQuery } from "@tanstack/react-query";
 import { adoptionControllerGetAdoptionByAdoptionId, PetAdoptionDtoStatus } from "@repo/api-client";
-import { SPECIES_KOREAN_INFO } from "../../constants";
+import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
 import { getStatusBadge } from "@/lib/utils";
 import Loading from "@/components/common/Loading";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { useState } from "react";
 import EditAdoptionForm from "./EditAdoptionForm";
 import AdoptionReceipt from "../../pet/[petId]/(펫카드)/components/AdoptionReceipt";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 interface AdoptionDetailModalProps {
   isOpen: boolean;
@@ -45,10 +46,9 @@ const AdoptionDetailModal = ({
   };
 
   const petSummary = adoptionData?.pet;
-
   if (!petSummary) return null;
 
-  const { petId, name, species, petDetailSummary, hatchingDate } = petSummary;
+  const { petId, name, species, hatchingDate, sex, morphs, traits } = petSummary;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -74,13 +74,23 @@ const AdoptionDetailModal = ({
                   {name}
 
                   <div className="text-muted-foreground text-sm font-normal">
-                    | {SPECIES_KOREAN_INFO[species] || "미분류"}
+                    / {SPECIES_KOREAN_INFO[species] || "미분류"}
                   </div>
+                  {sex && (
+                    <p className="text-sm font-normal text-blue-500">/ {GENDER_KOREAN_INFO[sex]}</p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2 text-sm text-gray-600">
-                  {petDetailSummary.morphs && petDetailSummary.morphs.length > 0 && (
+                  {morphs && morphs.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {petDetailSummary.morphs.map((morph: string) => `#${morph}`).join(" ")}
+                      {morphs.map((morph) => (
+                        <Badge key={morph}>{morph}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  {traits && traits.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {traits.map((trait: string) => `#${trait}`).join(" ")}
                     </div>
                   )}
                   {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
