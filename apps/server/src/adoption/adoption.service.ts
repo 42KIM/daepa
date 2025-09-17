@@ -63,21 +63,16 @@ export class AdoptionService {
     };
   }
 
-  private async updatePetStatus(
+  private async updatePetOwner(
     entityManager: EntityManager,
     petId: string,
-    newAdoptionDto: UpdateAdoptionDto,
+    newOwnerId?: string,
   ) {
-    const status =
-      newAdoptionDto.status ||
-      (newAdoptionDto.buyerId
-        ? ADOPTION_SALE_STATUS.ON_RESERVATION
-        : ADOPTION_SALE_STATUS.ON_SALE);
-
-    if (status === ADOPTION_SALE_STATUS.SOLD) {
-      const newOwnerId = newAdoptionDto.buyerId || null;
-      await entityManager.update('pets', { petId }, { ownerId: newOwnerId });
-    }
+    await entityManager.update(
+      'pets',
+      { petId },
+      { ownerId: newOwnerId ?? null },
+    );
   }
 
   private updateEntityFields<T extends object, U extends object>(
@@ -139,11 +134,13 @@ export class AdoptionService {
 
       await entityManager.save(AdoptionEntity, adoptionEntity);
 
-      await this.updatePetStatus(
-        entityManager,
-        createAdoptionDto.petId,
-        createAdoptionDto,
-      );
+      if (createAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD) {
+        await this.updatePetOwner(
+          entityManager,
+          createAdoptionDto.petId,
+          createAdoptionDto.buyerId,
+        );
+      }
 
       return { adoptionId };
     });
@@ -343,11 +340,13 @@ export class AdoptionService {
 
       await entityManager.save(AdoptionEntity, adoptionEntity);
 
-      await this.updatePetStatus(
-        entityManager,
-        adoptionEntity.petId,
-        updateAdoptionDto,
-      );
+      if (updateAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD) {
+        await this.updatePetOwner(
+          entityManager,
+          adoptionEntity.petId,
+          updateAdoptionDto.buyerId,
+        );
+      }
 
       return { adoptionId };
     });
