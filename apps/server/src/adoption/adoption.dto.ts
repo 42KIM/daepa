@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { UserProfilePublicDto } from '../user/user.dto';
 
 import { PetSummaryAdoptionDto } from '../pet/pet.dto';
@@ -41,11 +41,6 @@ export class AdoptionBaseDto {
   })
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) => {
-    if (value === null || value === undefined) return undefined;
-    const num = Number(value);
-    return isNaN(num) ? undefined : Math.floor(num);
-  })
   price?: number;
 
   @ApiProperty({
@@ -111,11 +106,6 @@ export class CreateAdoptionDto {
   })
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) => {
-    if (value === null || value === undefined) return undefined;
-    const num = Number(value);
-    return isNaN(num) ? undefined : Math.floor(num);
-  })
   price?: number;
 
   @ApiProperty({
