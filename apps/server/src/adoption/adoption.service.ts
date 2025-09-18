@@ -97,13 +97,13 @@ export class AdoptionService {
   private createAdoptionQueryBuilder() {
     return this.adoptionRepository
       .createQueryBuilder('adoptions')
-      .leftJoinAndMapOne(
+      .innerJoinAndMapOne(
         'adoptions.pet',
         'pets',
         'pets',
         'pets.petId = adoptions.petId',
       )
-      .leftJoinAndMapOne(
+      .innerJoinAndMapOne(
         'adoptions.petDetail',
         'pet_details',
         'pet_details',
