@@ -364,14 +364,14 @@ export const SELECTOR_CONFIGS: Record<
 
 export const SIDEBAR_ITEMS = [
   {
-    title: "마이펫",
-    url: "/pet",
-    icon: Home,
-  },
-  {
     title: "개체 등록",
     url: "/register/1",
     icon: Inbox,
+  },
+  {
+    title: "마이펫",
+    url: "/pet",
+    icon: Home,
   },
   {
     title: "분양룸",
@@ -379,14 +379,14 @@ export const SIDEBAR_ITEMS = [
     icon: DollarSign,
   },
   {
-    title: "알림",
-    url: "/noti",
-    icon: Bell,
-  },
-  {
     title: "해칭룸",
     url: "/hatching",
     icon: Bubbles,
+  },
+  {
+    title: "알림",
+    url: "/noti",
+    icon: Bell,
   },
   {
     title: "쇼츠",
