@@ -66,17 +66,17 @@ export class MatingService {
       // 모든 메이팅 데이터를 가져와서 가공
       const allQueryBuilder = entityManager
         .createQueryBuilder(MatingEntity, 'matings')
+        .innerJoinAndMapOne(
+          'matings.pair',
+          PairEntity,
+          'pairs',
+          'pairs.id = matings.pairId',
+        )
         .leftJoinAndMapMany(
           'matings.layings',
           LayingEntity,
           'layings',
           'layings.matingId = matings.id',
-        )
-        .leftJoinAndMapOne(
-          'matings.pair',
-          PairEntity,
-          'pairs',
-          'pairs.id = matings.pairId',
         )
         .leftJoinAndMapMany(
           'matings.parents',
@@ -84,7 +84,7 @@ export class MatingService {
           'parents',
           'parents.petId IN (pairs.fatherId, pairs.motherId)',
         )
-        .leftJoinAndMapOne(
+        .innerJoinAndMapOne(
           'parents.petDetail',
           PetDetailEntity,
           'parentDetail',
@@ -112,7 +112,6 @@ export class MatingService {
           'matings.id',
           'matings.matingDate',
           'matings.pairId',
-          'matings.createdAt',
           'layings.id',
           'layings.layingDate',
           'layings.clutch',
