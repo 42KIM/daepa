@@ -55,12 +55,6 @@ export class MatingService {
   constructor(
     @InjectRepository(MatingEntity)
     private readonly matingRepository: Repository<MatingEntity>,
-    @InjectRepository(LayingEntity)
-    private readonly layingRepository: Repository<LayingEntity>,
-    @InjectRepository(PairEntity)
-    private readonly pairRepository: Repository<PairEntity>,
-    @InjectRepository(PetEntity)
-    private readonly petRepository: Repository<PetEntity>,
     private readonly dataSource: DataSource,
   ) {}
 
