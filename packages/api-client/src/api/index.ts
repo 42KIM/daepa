@@ -3222,38 +3222,10 @@ export const getBrMatingControllerFindAllResponseMock = (
       {
         ...{
           petId: faker.string.alpha(20),
-          type: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["EGG", "PET"] as const),
-            undefined,
-          ]),
-          owner: {
-            ...{
-              status: faker.helpers.arrayElement([
-                "pending",
-                "active",
-                "inactive",
-                "suspended",
-                "deleted",
-              ] as const),
-              userId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-              name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-              role: faker.helpers.arrayElement([
-                faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-                undefined,
-              ]),
-              isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-            },
-          },
           name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
           species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
           hatchingDate: faker.helpers.arrayElement([
             faker.date.past().toISOString().split("T")[0],
-            undefined,
-          ]),
-          photoOrder: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-              faker.string.alpha(20),
-            ),
             undefined,
           ]),
           sex: faker.helpers.arrayElement([
@@ -3276,17 +3248,28 @@ export const getBrMatingControllerFindAllResponseMock = (
             faker.number.int({ min: undefined, max: undefined }),
             undefined,
           ]),
-          photos: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-              () => ({
-                fileName: faker.string.alpha(20),
-                url: faker.string.alpha(20),
-                mimeType: faker.string.alpha(20),
-                size: faker.number.int({ min: undefined, max: undefined }),
-              }),
-            ),
+          layingId: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
             undefined,
           ]),
+          clutch: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          clutchOrder: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          temperature: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          eggStatus: faker.helpers.arrayElement([
+            "UNFERTILIZED",
+            "FERTILIZED",
+            "HATCHED",
+            "DEAD",
+          ] as const),
         },
       },
       undefined,
@@ -3295,38 +3278,10 @@ export const getBrMatingControllerFindAllResponseMock = (
       {
         ...{
           petId: faker.string.alpha(20),
-          type: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["EGG", "PET"] as const),
-            undefined,
-          ]),
-          owner: {
-            ...{
-              status: faker.helpers.arrayElement([
-                "pending",
-                "active",
-                "inactive",
-                "suspended",
-                "deleted",
-              ] as const),
-              userId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-              name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-              role: faker.helpers.arrayElement([
-                faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-                undefined,
-              ]),
-              isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-            },
-          },
           name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
           species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
           hatchingDate: faker.helpers.arrayElement([
             faker.date.past().toISOString().split("T")[0],
-            undefined,
-          ]),
-          photoOrder: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-              faker.string.alpha(20),
-            ),
             undefined,
           ]),
           sex: faker.helpers.arrayElement([
@@ -3349,17 +3304,28 @@ export const getBrMatingControllerFindAllResponseMock = (
             faker.number.int({ min: undefined, max: undefined }),
             undefined,
           ]),
-          photos: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-              () => ({
-                fileName: faker.string.alpha(20),
-                url: faker.string.alpha(20),
-                mimeType: faker.string.alpha(20),
-                size: faker.number.int({ min: undefined, max: undefined }),
-              }),
-            ),
+          layingId: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
             undefined,
           ]),
+          clutch: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          clutchOrder: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          temperature: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          eggStatus: faker.helpers.arrayElement([
+            "UNFERTILIZED",
+            "FERTILIZED",
+            "HATCHED",
+            "DEAD",
+          ] as const),
         },
       },
       undefined,
@@ -3369,7 +3335,10 @@ export const getBrMatingControllerFindAllResponseMock = (
       (_, i) => i + 1,
     ).map(() => ({
       id: faker.number.int({ min: undefined, max: undefined }),
-      matingDate: faker.string.alpha(20),
+      matingDate: faker.helpers.arrayElement([
+        `${faker.date.past().toISOString().split(".")[0]}Z`,
+        undefined,
+      ]),
       layingsByDate: faker.helpers.arrayElement([
         Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
           layingId: faker.number.int({ min: undefined, max: undefined }),
