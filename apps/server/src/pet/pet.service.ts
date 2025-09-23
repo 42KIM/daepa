@@ -735,30 +735,39 @@ export class PetService {
 
       const { hatchingDate, name, desc } = hatchingData;
 
-      await entityManager.update(
-        PetEntity,
-        { petId },
-        {
-          type: PET_TYPE.PET,
-          hatchingDate,
-          name,
-          desc,
-        },
-      );
+      try {
+        await entityManager.update(
+          PetEntity,
+          { petId },
+          {
+            type: PET_TYPE.PET,
+            hatchingDate,
+            name,
+            desc,
+          },
+        );
 
-      await entityManager.update(
-        EggDetailEntity,
-        { petId },
-        { status: EGG_STATUS.HATCHED },
-      );
+        await entityManager.update(
+          EggDetailEntity,
+          { petId },
+          { status: EGG_STATUS.HATCHED },
+        );
 
-      await entityManager.insert(PetDetailEntity, {
-        petId,
-        growth: PET_GROWTH.BABY,
-        sex: PET_SEX.NON,
-      });
+        await entityManager.insert(PetDetailEntity, {
+          petId,
+          growth: PET_GROWTH.BABY,
+          sex: PET_SEX.NON,
+        });
 
-      return { petId };
+        return { petId };
+      } catch (error: unknown) {
+        if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
+          throw new ConflictException('이미 존재하는 펫 이름입니다.');
+        }
+        throw new InternalServerErrorException(
+          '펫 부화 중 오류가 발생했습니다.',
+        );
+      }
     });
   }
 
