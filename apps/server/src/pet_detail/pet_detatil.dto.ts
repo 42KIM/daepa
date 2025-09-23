@@ -1,6 +1,12 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Exclude, Transform } from 'class-transformer';
-import { IsArray, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { PET_GROWTH, PET_SEX } from 'src/pet/pet.constants';
 
 export class PetDetailDto {
@@ -33,6 +39,7 @@ export class PetDetailDto {
   })
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   morphs?: string[];
 
   @ApiProperty({
@@ -42,6 +49,7 @@ export class PetDetailDto {
   })
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   traits?: string[];
 
   @ApiProperty({
@@ -51,6 +59,7 @@ export class PetDetailDto {
   })
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   foods?: string[];
 
   @ApiProperty({
