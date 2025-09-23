@@ -10,7 +10,7 @@ import {
 import { PageOptionsDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { LayingByDateDto } from 'src/laying/laying.dto';
-import { PetSummaryDto } from 'src/pet/pet.dto';
+import { PetSummaryLayingDto } from 'src/pet/pet.dto';
 import { PET_SPECIES } from 'src/pet/pet.constants';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 
@@ -103,9 +103,11 @@ class MatingByDateDto {
   @ApiProperty({
     description: '메이팅 날짜',
     example: '2025-01-01',
+    required: false,
   })
-  @IsDateString()
-  matingDate: string;
+  @IsDate()
+  @IsOptional()
+  matingDate?: Date;
 
   @ApiProperty({
     description: '산란 정보',
@@ -119,17 +121,17 @@ class MatingByDateDto {
 export class MatingByParentsDto {
   @ApiProperty({
     description: '아빠 펫 정보',
-    type: PetSummaryDto,
+    type: PetSummaryLayingDto,
     required: false,
   })
-  father?: PetSummaryDto;
+  father?: PetSummaryLayingDto;
 
   @ApiProperty({
     description: '엄마 펫 정보',
-    type: PetSummaryDto,
+    type: PetSummaryLayingDto,
     required: false,
   })
-  mother?: PetSummaryDto;
+  mother?: PetSummaryLayingDto;
 
   @ApiProperty({
     description: '메이팅 정보',

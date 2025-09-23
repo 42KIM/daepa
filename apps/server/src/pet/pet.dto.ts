@@ -263,9 +263,9 @@ export class PetSummaryLayingDto extends PickType(PetSummaryDto, [
   'species',
   'hatchingDate',
   'sex',
-  'weight',
   'morphs',
   'traits',
+  'weight',
 ]) {
   @ApiProperty({
     description: '산란 아이디',
@@ -320,9 +320,6 @@ export class PetSummaryLayingDto extends PickType(PetSummaryDto, [
   @IsOptional()
   @IsEnum(EGG_STATUS)
   eggStatus?: EGG_STATUS;
-
-  @Exclude()
-  declare owner: UserProfilePublicDto;
 }
 
 export class PetParentDto extends PickType(PetSummaryDto, [
