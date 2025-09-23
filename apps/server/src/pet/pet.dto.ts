@@ -39,7 +39,7 @@ import { PageOptionsDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { PetImageItem, UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
-import { PetDetailDto } from 'src/pet_detail/pet_detatil.dto';
+import { PetDetailDto } from 'src/pet_detail/pet_detail.dto';
 import { EggDetailDto } from 'src/egg_detail/egg_detail.dto';
 
 export class PetBaseDto {
@@ -754,7 +754,10 @@ export class CreatePetDto extends OmitType(PetBaseDto, [
 
   @ApiProperty({
     description: '알 상태',
+    example: EGG_STATUS.UNFERTILIZED,
+    enum: EGG_STATUS,
     required: false,
+    'x-enumNames': Object.keys(EGG_STATUS),
   })
   @IsOptional()
   @IsEnum(EGG_STATUS)

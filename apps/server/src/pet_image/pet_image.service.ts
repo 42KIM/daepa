@@ -63,7 +63,7 @@ export class PetImageService {
         files: savedImageList,
       },
       {
-        conflictPaths: ['id'],
+        conflictPaths: ['petId'],
         skipUpdateIfNoValuesChanged: true,
       },
     );

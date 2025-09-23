@@ -11,6 +11,7 @@ import type { CreatePetDtoGrowth } from "./createPetDtoGrowth";
 import type { CreatePetDtoSex } from "./createPetDtoSex";
 import type { CreateParentDto } from "./createParentDto";
 import type { UpsertPetImageDto } from "./upsertPetImageDto";
+import type { CreatePetDtoEggStatus } from "./createPetDtoEggStatus";
 
 export interface CreatePetDto {
   /** 펫 타입 */
@@ -58,5 +59,5 @@ export interface CreatePetDto {
   /** 펫 이미지 목록 */
   photos?: UpsertPetImageDto[];
   /** 알 상태 */
-  eggStatus?: string;
+  eggStatus?: CreatePetDtoEggStatus;
 }

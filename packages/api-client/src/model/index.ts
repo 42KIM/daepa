@@ -164,3 +164,5 @@ export * from "./userProfileResponseDto";
 export * from "./verifyEmailDto";
 export * from "./verifyNameDto";
 export * from "./verifyPetNameDto";
+export * from "./createPetDtoEggStatus";
+export * from "./updatePetDtoEggStatus";
