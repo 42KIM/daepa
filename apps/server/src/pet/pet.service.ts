@@ -141,11 +141,33 @@ export class PetService {
         }
 
         // 부모 모두 있고, 둘 다 내 펫인 경우, pair 정보 없을 시 생성
+        let fatherOwnerId: string | null = null;
+        let motherOwnerId: string | null = null;
+
+        if (father?.parentId) {
+          const fatherPet = await entityManager.findOne(PetEntity, {
+            where: { petId: father.parentId },
+            select: ['ownerId'],
+          });
+          if (fatherPet?.ownerId) {
+            fatherOwnerId = fatherPet.ownerId;
+          }
+        }
+        if (mother?.parentId) {
+          const motherPet = await entityManager.findOne(PetEntity, {
+            where: { petId: mother.parentId },
+            select: ['ownerId'],
+          });
+          if (motherPet?.ownerId) {
+            motherOwnerId = motherPet.ownerId;
+          }
+        }
+
         if (
           father &&
           mother &&
-          father.parentId === ownerId &&
-          mother.parentId === ownerId
+          fatherOwnerId === ownerId &&
+          motherOwnerId === ownerId
         ) {
           await this.pairService.createPair(
             {
