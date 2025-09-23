@@ -20,7 +20,6 @@ import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { groupBy, isNil, omitBy } from 'es-toolkit';
 import { PET_SEX } from 'src/pet/pet.constants';
 import { LayingEntity } from 'src/laying/laying.entity';
-import { LayingDto } from 'src/laying/laying.dto';
 import { UpdateMatingDto } from './mating.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { PairEntity } from 'src/pair/pair.entity';
@@ -511,7 +510,7 @@ export class MatingService {
   }
 
   private groupLayingsByDate(
-    layings: LayingDto[] | undefined,
+    layings: LayingLite[] | undefined,
     children: PetSummaryLayingDto[] | undefined,
   ) {
     if (!layings?.length) return;
