@@ -79,17 +79,11 @@ export class LayingService {
   }
 
   async updateLaying(id: number, updateLayingDto: UpdateLayingDto) {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      // 존재 여부와 업데이트를 한 번에 처리
-      const result = await entityManager.update(
-        LayingEntity,
-        { id },
-        updateLayingDto,
-      );
+    // 존재 여부와 업데이트를 한 번에 처리
+    const result = await this.layingRepository.update({ id }, updateLayingDto);
 
-      if (result.affected === 0) {
-        throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
-      }
-    });
+    if (result.affected === 0) {
+      throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
+    }
   }
 }
