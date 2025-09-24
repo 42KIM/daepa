@@ -44,9 +44,8 @@ export class LayingService {
       const savedLaying = await entityManager.save(LayingEntity, layingEntity);
 
       // clutchCount만큼 펫을 배치로 생성
-      if (createLayingDto.clutchCount && createLayingDto.clutchCount > 0) {
-        const { clutchCount, temperature, species } = createLayingDto;
-
+      const { clutchCount, temperature, species } = createLayingDto;
+      if (clutchCount && clutchCount > 0) {
         // 펫 생성 DTO들을 미리 준비
         const petDtos: CreatePetDto[] = range(1, clutchCount + 1).map((i) => ({
           species,
@@ -69,7 +68,9 @@ export class LayingService {
         }));
 
         await Promise.all(
-          petDtos.map((petDto) => this.petService.createPet(petDto, ownerId)),
+          petDtos.map((petDto) =>
+            this.petService.createPet(petDto, ownerId, entityManager),
+          ),
         );
       }
 

@@ -70,9 +70,13 @@ export class PetService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async createPet(createPetDto: CreatePetDto, ownerId: string) {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      const petId = await this.generateUniquePetId(entityManager);
+  async createPet(
+    createPetDto: CreatePetDto,
+    ownerId: string,
+    manager?: EntityManager,
+  ) {
+    const run = async (em: EntityManager) => {
+      const petId = await this.generateUniquePetId(em);
       const {
         father,
         mother,
@@ -90,7 +94,7 @@ export class PetService {
 
       if (photos) {
         await this.petImageService.saveAndUploadConfirmedImages(
-          entityManager,
+          em,
           petId,
           photos,
         );
@@ -109,17 +113,17 @@ export class PetService {
           ownerId,
         });
         // 펫 생성
-        await entityManager.insert(PetEntity, petEntityData);
+        await em.insert(PetEntity, petEntityData);
 
         // type에 따라 적절한 details 테이블에 데이터 저장
         if (petData.type === PET_TYPE.EGG) {
-          await entityManager.insert(EggDetailEntity, {
+          await em.insert(EggDetailEntity, {
             petId,
             temperature,
             status: eggStatus,
           });
         } else {
-          await entityManager.insert(PetDetailEntity, {
+          await em.insert(PetDetailEntity, {
             petId,
             sex,
             morphs,
@@ -132,10 +136,10 @@ export class PetService {
 
         // 부모 연동 요청 처리
         if (father) {
-          await this.handleParentRequest(entityManager, petId, ownerId, father);
+          await this.handleParentRequest(em, petId, ownerId, father);
         }
         if (mother) {
-          await this.handleParentRequest(entityManager, petId, ownerId, mother);
+          await this.handleParentRequest(em, petId, ownerId, mother);
         }
       } catch (error: unknown) {
         if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
@@ -148,6 +152,15 @@ export class PetService {
           '펫 생성 중 오류가 발생했습니다.',
         );
       }
+    };
+
+    if (manager) {
+      await run(manager);
+      return;
+    }
+
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      await run(entityManager);
     });
   }
 
@@ -326,7 +339,7 @@ export class PetService {
     parentInfo: CreateParentDto,
   ): Promise<void> {
     // 부모 펫 정보 조회
-    const parentPet = await this.petRepository.findOne({
+    const parentPet = await entityManager.findOne(PetEntity, {
       where: { petId: parentInfo.parentId },
       select: ['petId', 'ownerId', 'name', 'type'],
     });
