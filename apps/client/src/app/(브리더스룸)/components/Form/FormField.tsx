@@ -238,7 +238,7 @@ export const FormField = ({
             </PopoverContent>
           </Popover>
         );
-      case "nickname":
+      case "name":
         return (
           <NameInput
             errorMessage={error || ""}
