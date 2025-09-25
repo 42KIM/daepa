@@ -339,7 +339,7 @@ export const EGG_STATUS_KOREAN_INFO: Record<EggDetailDtoStatus, string> = {
   UNFERTILIZED: "무정란",
   FERTILIZED: "유정란",
   HATCHED: "해칭완료",
-  DEAD: "사망",
+  DEAD: "중지",
 };
 
 export const FOOD_LIST = ["판게아 인섹트", "귀뚜라미", "냉동귀뚜라미", "누에", "지렙 인섹트"];
