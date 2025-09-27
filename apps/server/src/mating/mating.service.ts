@@ -17,7 +17,7 @@ import { PetSummaryLayingDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
-import { groupBy, isNil, omitBy } from 'es-toolkit';
+import { groupBy, isNil, omitBy, uniq } from 'es-toolkit';
 import { PET_SEX } from 'src/pet/pet.constants';
 import { LayingEntity } from 'src/laying/laying.entity';
 import { UpdateMatingDto } from './mating.dto';
@@ -117,16 +117,22 @@ export class MatingService {
     const order = (pageOptionsDto.order ?? 'DESC') as 'ASC' | 'DESC';
     baseQb.orderBy('matings.id', order);
 
-    const totalCount = await baseQb.getCount();
     const matingsEntities = await baseQb
       .skip(pageOptionsDto.skip)
       .take(pageOptionsDto.itemPerPage)
       .getMany();
 
     if (!matingsEntities.length) {
-      const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+      const pageMetaDto = new PageMetaDto({
+        totalCount: 0,
+        pageOptionsDto,
+      });
       return new PageDto([], pageMetaDto);
     }
+
+    const totalPairCount = uniq(
+      matingsEntities.map((mating) => mating.pair.id),
+    ).length;
 
     const matingsWithPair: MatingsWithPair[] = matingsEntities.map(
       (mating) => ({
@@ -318,7 +324,10 @@ export class MatingService {
     );
 
     const result = this.formatResponseByDate(combinedFromMaps);
-    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+    const pageMetaDto = new PageMetaDto({
+      totalCount: totalPairCount,
+      pageOptionsDto,
+    });
     return new PageDto(result, pageMetaDto);
   }
 
