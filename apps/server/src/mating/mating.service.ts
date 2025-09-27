@@ -17,7 +17,7 @@ import { PetSummaryLayingDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
-import { groupBy, isNil, omitBy } from 'es-toolkit';
+import { groupBy, isNil, omitBy, uniq } from 'es-toolkit';
 import { PET_SEX } from 'src/pet/pet.constants';
 import { LayingEntity } from 'src/laying/laying.entity';
 import { UpdateMatingDto } from './mating.dto';
@@ -129,6 +129,10 @@ export class MatingService {
       });
       return new PageDto([], pageMetaDto);
     }
+
+    const totalPairCount = uniq(
+      matingsEntities.map((mating) => mating.pair.id),
+    ).length;
 
     const matingsWithPair: MatingsWithPair[] = matingsEntities.map(
       (mating) => ({
@@ -321,7 +325,7 @@ export class MatingService {
 
     const result = this.formatResponseByDate(combinedFromMaps);
     const pageMetaDto = new PageMetaDto({
-      totalCount: result.length,
+      totalCount: totalPairCount,
       pageOptionsDto,
     });
     return new PageDto(result, pageMetaDto);
