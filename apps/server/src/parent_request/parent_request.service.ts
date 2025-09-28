@@ -4,16 +4,18 @@ import {
   ConflictException,
   BadRequestException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { EntityManager, DataSource, In } from 'typeorm';
 import { ParentRequestEntity } from './parent_request.entity';
 import {
+  CreateParentDto,
   CreateParentRequestDto,
   UpdateParentRequestDto,
 } from './parent_request.dto';
-import { PARENT_STATUS } from './parent_request.constants';
+import { PARENT_ROLE, PARENT_STATUS } from './parent_request.constants';
 import { PetEntity } from '../pet/pet.entity';
-import { PET_SEX, PET_SPECIES } from '../pet/pet.constants';
+import { PET_SEX, PET_SPECIES, PET_TYPE } from '../pet/pet.constants';
 import { UserNotificationService } from '../user_notification/user_notification.service';
 import { USER_NOTIFICATION_TYPE } from '../user_notification/user_notification.constant';
 import { PetImageEntity } from 'src/pet_image/pet_image.entity';
@@ -47,6 +49,111 @@ export class ParentRequestService {
     private readonly userNotificationService: UserNotificationService,
     private readonly dataSource: DataSource,
   ) {}
+
+  async linkParent(
+    childPetId: string,
+    userId: string,
+    createParentDto: CreateParentDto,
+  ) {
+    const { parentId, role, message } = createParentDto;
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 펫 존재 여부 및 소유권 확인
+      const { childPet, parentPet } = await this.getPetInfo(
+        entityManager,
+        childPetId,
+        parentId,
+      );
+      if (!childPet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
+      if (!parentPet) {
+        throw new NotFoundException('부모로 지정된 펫을 찾을 수 없습니다.');
+      }
+      if (!parentPet.ownerId || !childPet.ownerId) {
+        throw new NotFoundException('주인 정보를 찾을 수 없습니다.');
+      }
+      if (childPet.ownerId !== userId) {
+        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      }
+      if (parentPet.type === PET_TYPE.EGG) {
+        throw new BadRequestException('알은 부모로 지정할 수 없습니다.');
+      }
+      if (
+        role === PARENT_ROLE.FATHER &&
+        parentPet.petDetail?.sex !== PET_SEX.MALE
+      ) {
+        throw new BadRequestException(
+          '아버지로 지정된 펫은 수컷이어야 합니다.',
+        );
+      }
+      if (
+        role === PARENT_ROLE.MOTHER &&
+        parentPet.petDetail?.sex !== PET_SEX.FEMALE
+      ) {
+        throw new BadRequestException(
+          '어머니로 지정된 펫은 암컷이어야 합니다.',
+        );
+      }
+      // 기존 부모 요청 확인
+      const existingRequest = await entityManager.findOne(ParentRequestEntity, {
+        where: {
+          childPetId,
+          role,
+          status: In([PARENT_STATUS.PENDING, PARENT_STATUS.APPROVED]),
+        },
+      });
+      if (existingRequest) {
+        throw new ConflictException('이미 존재하는 부모 연동 요청입니다.');
+      }
+
+      const isParentMyPet = userId === parentPet.ownerId;
+      // 부모 관계 생성
+      const parentRequest = await entityManager.save(ParentRequestEntity, {
+        childPetId,
+        parentPetId: parentId,
+        role,
+        message,
+        status: isParentMyPet ? PARENT_STATUS.APPROVED : PARENT_STATUS.PENDING,
+      });
+
+      // 내 펫이 아닌 경우 요청 알림 전송
+      if (!isParentMyPet) {
+        try {
+          await this.userNotificationService.createUserNotification(
+            entityManager,
+            childPet.ownerId,
+            {
+              receiverId: parentPet.ownerId,
+              type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
+              targetId: parentRequest.id,
+              detailJson: {
+                status: PARENT_STATUS.PENDING,
+                childPet: {
+                  id: childPet?.petId ?? '',
+                  name: childPet.name ?? undefined,
+                  photos: childPet?.photos?.files ?? undefined,
+                },
+                parentPet: {
+                  id: parentPet?.petId ?? '',
+                  name: parentPet.name ?? undefined,
+                  photos: parentPet?.photos?.files ?? undefined,
+                },
+                role,
+                message,
+              },
+            },
+          );
+        } catch (error: unknown) {
+          const err = error as Partial<{ code: string }>;
+
+          if (err && err.code === 'ER_DUP_ENTRY') {
+            throw new ConflictException('동일한 알림이 이미 존재합니다.');
+          }
+          throw new InternalServerErrorException('알림 생성에 실패했습니다.');
+        }
+      }
+    });
+  }
 
   async createParentRequestWithNotification(
     entityManager: EntityManager,
@@ -352,13 +459,27 @@ export class ParentRequestService {
     const [childPetInfo, parentPetInfo, childPetPhotos, parentPetPhotos] =
       await Promise.all([
         entityManager.findOne(PetEntity, {
-          where: { petId: childPetId },
+          where: { petId: childPetId, isDeleted: false },
           select: ['name', 'petId', 'ownerId'],
         }),
-        entityManager.findOne(PetEntity, {
-          where: { petId: parentPetId },
-          select: ['name', 'petId', 'ownerId'],
-        }),
+        entityManager
+          .createQueryBuilder(PetEntity, 'pet')
+          .innerJoinAndMapOne(
+            'pet.petDetail',
+            PetDetailEntity,
+            'petDetail',
+            'petDetail.petId = pet.petId',
+          )
+          .select([
+            'pet.type',
+            'pet.name',
+            'pet.petId',
+            'pet.ownerId',
+            'petDetail.sex',
+          ])
+          .where('pet.petId = :parentPetId', { parentPetId })
+          .andWhere('pet.isDeleted = :isDeleted', { isDeleted: false })
+          .getOne(),
         entityManager.findOne(PetImageEntity, {
           where: { petId: childPetId },
           select: ['files'],
@@ -369,14 +490,18 @@ export class ParentRequestService {
         }),
       ]);
 
-    const childPet = {
-      ...childPetInfo,
-      photos: childPetPhotos,
-    };
-    const parentPet = {
-      ...parentPetInfo,
-      photos: parentPetPhotos,
-    };
+    const childPet = childPetInfo
+      ? {
+          ...childPetInfo,
+          photos: childPetPhotos,
+        }
+      : null;
+    const parentPet = parentPetInfo
+      ? {
+          ...parentPetInfo,
+          photos: parentPetPhotos,
+        }
+      : null;
 
     return { childPet, parentPet };
   }

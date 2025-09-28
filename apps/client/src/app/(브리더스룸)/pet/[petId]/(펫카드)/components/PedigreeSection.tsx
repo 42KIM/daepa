@@ -3,7 +3,7 @@ import ParentLink from "../../../components/ParentLink";
 import { PetParentDtoWithMessage } from "../../../store/parentLink";
 import {
   petControllerFindPetByPetId,
-  petControllerLinkParent,
+  parentRequestControllerLinkParent,
   petControllerUnlinkParent,
   UnlinkParentDtoRole,
   UpdateParentRequestDtoStatus,
@@ -37,7 +37,7 @@ const PedigreeSection = memo(({ petId, isMyPet }: PedigreeSectionProps) => {
       role: UnlinkParentDtoRole;
       message: string;
     }) =>
-      petControllerLinkParent(petId, {
+      parentRequestControllerLinkParent(petId, {
         parentId,
         role,
         message,

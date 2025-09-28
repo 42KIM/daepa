@@ -99,15 +99,6 @@ export const petControllerDeletePet = (petId: string) => {
   });
 };
 
-export const petControllerLinkParent = (petId: string, createParentDto: CreateParentDto) => {
-  return useCustomInstance<CommonResponseDto>({
-    url: `http://localhost:4000/api/v1/pet/${petId}/parent`,
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    data: createParentDto,
-  });
-};
-
 export const petControllerUnlinkParent = (petId: string, unlinkParentDto: UnlinkParentDto) => {
   return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/v1/pet/${petId}/parent`,
@@ -375,6 +366,18 @@ export const brMatingControllerFindAll = (params?: BrMatingControllerFindAllPara
   });
 };
 
+export const parentRequestControllerLinkParent = (
+  petId: string,
+  createParentDto: CreateParentDto,
+) => {
+  return useCustomInstance<CommonResponseDto>({
+    url: `http://localhost:4000/api/v1/parent-requests/${petId}`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: createParentDto,
+  });
+};
+
 export const parentRequestControllerUpdateStatus = (
   id: number,
   updateParentRequestDto: UpdateParentRequestDto,
@@ -427,9 +430,6 @@ export type PetControllerUpdateResult = NonNullable<
 >;
 export type PetControllerDeletePetResult = NonNullable<
   Awaited<ReturnType<typeof petControllerDeletePet>>
->;
-export type PetControllerLinkParentResult = NonNullable<
-  Awaited<ReturnType<typeof petControllerLinkParent>>
 >;
 export type PetControllerUnlinkParentResult = NonNullable<
   Awaited<ReturnType<typeof petControllerUnlinkParent>>
@@ -520,6 +520,9 @@ export type MatingControllerDeleteMatingResult = NonNullable<
 >;
 export type BrMatingControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof brMatingControllerFindAll>>
+>;
+export type ParentRequestControllerLinkParentResult = NonNullable<
+  Awaited<ReturnType<typeof parentRequestControllerLinkParent>>
 >;
 export type ParentRequestControllerUpdateStatusResult = NonNullable<
   Awaited<ReturnType<typeof parentRequestControllerUpdateStatus>>
@@ -1221,14 +1224,6 @@ export const getPetControllerUpdateResponseMock = (
 });
 
 export const getPetControllerDeletePetResponseMock = (
-  overrideResponse: Partial<CommonResponseDto> = {},
-): CommonResponseDto => ({
-  success: faker.datatype.boolean(),
-  message: faker.string.alpha(20),
-  ...overrideResponse,
-});
-
-export const getPetControllerLinkParentResponseMock = (
   overrideResponse: Partial<CommonResponseDto> = {},
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
@@ -3384,6 +3379,14 @@ export const getBrMatingControllerFindAllResponseMock = (
   ...overrideResponse,
 });
 
+export const getParentRequestControllerLinkParentResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getParentRequestControllerUpdateStatusResponseMock = (
   overrideResponse: Partial<CommonResponseDto> = {},
 ): CommonResponseDto => ({
@@ -3537,29 +3540,6 @@ export const getPetControllerDeletePetMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getPetControllerDeletePetResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  });
-};
-
-export const getPetControllerLinkParentMockHandler = (
-  overrideResponse?:
-    | CommonResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.post>[1]>[0],
-      ) => Promise<CommonResponseDto> | CommonResponseDto),
-) => {
-  return http.post("*/api/v1/pet/:petId/parent", async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPetControllerLinkParentResponseMock(),
       ),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
@@ -4234,6 +4214,29 @@ export const getBrMatingControllerFindAllMockHandler = (
   });
 };
 
+export const getParentRequestControllerLinkParentMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.post("*/api/v1/parent-requests/:petId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getParentRequestControllerLinkParentResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getParentRequestControllerUpdateStatusMockHandler = (
   overrideResponse?:
     | CommonResponseDto
@@ -4331,7 +4334,6 @@ export const getProjectDaepaAPIMock = () => [
   getPetControllerFindPetByPetIdMockHandler(),
   getPetControllerUpdateMockHandler(),
   getPetControllerDeletePetMockHandler(),
-  getPetControllerLinkParentMockHandler(),
   getPetControllerUnlinkParentMockHandler(),
   getPetControllerCompleteHatchingMockHandler(),
   getPetControllerVerifyNameMockHandler(),
@@ -4362,6 +4364,7 @@ export const getProjectDaepaAPIMock = () => [
   getMatingControllerUpdateMatingMockHandler(),
   getMatingControllerDeleteMatingMockHandler(),
   getBrMatingControllerFindAllMockHandler(),
+  getParentRequestControllerLinkParentMockHandler(),
   getParentRequestControllerUpdateStatusMockHandler(),
   getLayingControllerCreateMockHandler(),
   getLayingControllerUpdateMockHandler(),
