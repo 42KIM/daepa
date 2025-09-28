@@ -8,12 +8,15 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ParentRequestService } from './parent_request.service';
-import { CreateParentDto, UpdateParentRequestDto } from './parent_request.dto';
+import {
+  CreateParentDto,
+  UnlinkParentDto,
+  UpdateParentRequestDto,
+} from './parent_request.dto';
 import { JwtAuthGuard, JwtUser } from '../auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
 import { ApiParam, ApiResponse } from '@nestjs/swagger';
 import { CommonResponseDto } from 'src/common/response.dto';
-import { UnlinkParentDto } from 'src/pet/pet.dto';
 
 @Controller('v1/parent-requests')
 @UseGuards(JwtAuthGuard)
