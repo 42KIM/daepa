@@ -2,14 +2,12 @@ import { UpdateParentRequestDtoStatus, UserNotificationDto } from "@repo/api-cli
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { UserNotificationDtoType } from "@repo/api-client";
 
 const StatusBadge = ({ item }: { item: UserNotificationDto }) => {
   const status = item.detailJson?.status;
 
   if (
     !(
-      item.type === UserNotificationDtoType.PARENT_REQUEST &&
       !!status &&
       (status === UpdateParentRequestDtoStatus.APPROVED ||
         status === UpdateParentRequestDtoStatus.REJECTED ||
