@@ -26,17 +26,13 @@ import {
   PET_TYPE,
 } from './pet.constants';
 import { ParentRequestService } from '../parent_request/parent_request.service';
-import {
-  PARENT_ROLE,
-  PARENT_STATUS,
-} from '../parent_request/parent_request.constants';
+import { PARENT_STATUS } from '../parent_request/parent_request.constants';
 import { UserService } from '../user/user.service';
 import { PetFilterDto } from './pet.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { UpdatePetDto } from './pet.dto';
 import { AdoptionEntity } from '../adoption/adoption.entity';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
-import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { LayingEntity } from 'src/laying/laying.entity';
 import { isMySQLError } from 'src/common/error';
 import { UserProfilePublicDto } from 'src/user/user.dto';
@@ -128,10 +124,20 @@ export class PetService {
 
         // 부모 연동 요청 처리
         if (father) {
-          await this.handleParentRequest(em, petId, ownerId, father);
+          await this.parentRequestService.linkParent(
+            petId,
+            ownerId,
+            father,
+            em,
+          );
         }
         if (mother) {
-          await this.handleParentRequest(em, petId, ownerId, mother);
+          await this.parentRequestService.linkParent(
+            petId,
+            ownerId,
+            mother,
+            em,
+          );
         }
       } catch (error: unknown) {
         if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
@@ -329,111 +335,6 @@ export class PetService {
         );
       }
     });
-  }
-
-  // 내 펫 -> 즉시 연동
-  // 타인 펫 -> parent_request 테이블에 요청 생성
-  private async handleParentRequest(
-    entityManager: EntityManager,
-    childPetId: string,
-    requesterId: string,
-    parentInfo: CreateParentDto,
-  ): Promise<void> {
-    // 부모 펫 정보 조회
-    const parentPet = await entityManager.findOne(PetEntity, {
-      where: { petId: parentInfo.parentId },
-      select: ['petId', 'ownerId', 'name', 'type'],
-    });
-
-    if (!parentPet?.petId) {
-      throw new NotFoundException('부모로 지정된 펫을 찾을 수 없습니다.');
-    }
-
-    if (parentPet.type === PET_TYPE.EGG) {
-      throw new BadRequestException('알은 부모로 지정할 수 없습니다.');
-    }
-
-    const parentDetails = await entityManager.findOne(PetDetailEntity, {
-      where: { petId: parentPet.petId },
-      select: ['sex'],
-    });
-    if (!parentDetails) {
-      throw new BadRequestException(
-        '부모 펫의 detail 정보를 찾을 수 없습니다.',
-      );
-    }
-
-    const parentSex = parentDetails.sex;
-    if (!parentSex) {
-      throw new BadRequestException('부모 펫의 성별 정보를 찾을 수 없습니다.');
-    }
-
-    if (parentInfo.role === PARENT_ROLE.FATHER) {
-      if (parentSex !== PET_SEX.MALE) {
-        throw new BadRequestException(
-          '아버지로 지정된 펫은 수컷이어야 합니다.',
-        );
-      }
-    }
-
-    if (
-      parentInfo.role === PARENT_ROLE.MOTHER &&
-      parentSex !== PET_SEX.FEMALE
-    ) {
-      throw new BadRequestException('어머니로 지정된 펫은 암컷이어야 합니다.');
-    }
-
-    await this.createParentRequest(
-      entityManager,
-      childPetId,
-      requesterId,
-      { ...parentPet, sex: parentSex },
-      parentInfo,
-    );
-  }
-
-  private async createParentRequest(
-    entityManager: EntityManager,
-    childPetId: string,
-    requesterId: string,
-    parentPet: PetEntity & { sex: PET_SEX },
-    parentInfo: CreateParentDto,
-  ): Promise<void> {
-    // 부모가 자기 자신의 펫인 경우
-    if (requesterId === parentPet.ownerId) {
-      await entityManager.insert(ParentRequestEntity, {
-        childPetId,
-        parentPetId: parentPet.petId,
-        role: parentInfo.role,
-        message: parentInfo.message,
-        status: PARENT_STATUS.APPROVED,
-      });
-    } else {
-      // 기존 대기 중인 요청이 있는지 확인
-      const existingRequest =
-        await this.parentRequestService.findActiveRequestByChildAndParent(
-          entityManager,
-          childPetId,
-          parentPet.petId,
-        );
-
-      if (existingRequest) {
-        throw new ConflictException(
-          '이미 대기 중인 부모 연동 요청이 있습니다.',
-        );
-      }
-
-      await this.parentRequestService.createParentRequestWithNotification(
-        entityManager,
-        {
-          childPetId,
-          parentPetId: parentPet.petId,
-          role: parentInfo.role,
-          message: parentInfo.message,
-          status: PARENT_STATUS.PENDING,
-        },
-      );
-    }
   }
 
   async getPetListFull(

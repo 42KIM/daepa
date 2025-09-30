@@ -55,9 +55,10 @@ export class ParentRequestService {
     childPetId: string,
     userId: string,
     createParentDto: CreateParentDto,
+    manager?: EntityManager,
   ) {
-    const { parentId, role, message } = createParentDto;
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+    const run = async (entityManager: EntityManager) => {
+      const { parentId, role, message } = createParentDto;
       // 펫 존재 여부 및 소유권 확인
       const { childPet, parentPet } = await this.getPetInfo(
         entityManager,
@@ -153,6 +154,15 @@ export class ParentRequestService {
           throw new InternalServerErrorException('알림 생성에 실패했습니다.');
         }
       }
+    };
+
+    if (manager) {
+      await run(manager);
+      return;
+    }
+
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      await run(entityManager);
     });
   }
 
@@ -255,64 +265,6 @@ export class ParentRequestService {
         },
       );
     });
-  }
-
-  async createParentRequestWithNotification(
-    entityManager: EntityManager,
-    createParentRequestDto: CreateParentRequestDto,
-  ): Promise<ParentRequestEntity> {
-    // 자식 펫과 부모 펫 정보를 병렬로 조회 (성능 향상)
-    const { childPet, parentPet } = await this.getPetInfo(
-      entityManager,
-      createParentRequestDto.childPetId,
-      createParentRequestDto.parentPetId,
-    );
-
-    if (!parentPet?.ownerId || !childPet?.ownerId) {
-      throw new NotFoundException('주인 정보를 찾을 수 없습니다.');
-    }
-
-    // parent_request 테이블에 요청 생성
-    const parentRequest = await this.createParentRequest(
-      entityManager,
-      createParentRequestDto,
-    );
-
-    try {
-      await this.userNotificationService.createUserNotification(
-        entityManager,
-        childPet.ownerId,
-        {
-          receiverId: parentPet.ownerId,
-          type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
-          targetId: parentRequest.id,
-          detailJson: {
-            status: createParentRequestDto.status,
-            childPet: {
-              id: childPet?.petId ?? '',
-              name: childPet.name ?? undefined,
-              photos: childPet?.photos?.files ?? undefined,
-            },
-            parentPet: {
-              id: parentPet?.petId ?? '',
-              name: parentPet.name ?? undefined,
-              photos: parentPet?.photos?.files ?? undefined,
-            },
-            role: createParentRequestDto.role,
-            message: createParentRequestDto.message,
-          },
-        },
-      );
-    } catch (error: unknown) {
-      const err = error as Partial<{ code: string }>;
-
-      if (err && err.code === 'ER_DUP_ENTRY') {
-        throw new ConflictException('동일한 알림이 이미 존재합니다.');
-      }
-      throw new InternalServerErrorException('알림 생성에 실패했습니다.');
-    }
-
-    return parentRequest;
   }
 
   async updateParentRequestByNotificationId(
