@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -140,6 +141,10 @@ export class PetService {
           );
         }
       } catch (error: unknown) {
+        if (error instanceof HttpException) {
+          throw error; // 도메인/권한/검증 에러는 원본 유지
+        }
+
         if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
           if (error.message.includes('UNIQUE_OWNER_PET_NAME')) {
             throw new ConflictException('이미 존재하는 펫 이름입니다.');

@@ -71,6 +71,9 @@ export class ParentRequestService {
       if (!parentPet) {
         throw new NotFoundException('부모로 지정된 펫을 찾을 수 없습니다.');
       }
+      if (childPet.petId === parentPet.petId) {
+        throw new BadRequestException('자기 자신을 부모로 지정할 수 없습니다.');
+      }
       if (!parentPet.ownerId || !childPet.ownerId) {
         throw new NotFoundException('주인 정보를 찾을 수 없습니다.');
       }
@@ -279,6 +282,7 @@ export class ParentRequestService {
           id: notificationId,
           receiverId: userId,
           isDeleted: false,
+          type: USER_NOTIFICATION_TYPE.PARENT_REQUEST,
         },
       );
 
