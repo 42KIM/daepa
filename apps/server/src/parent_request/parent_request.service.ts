@@ -100,13 +100,15 @@ export class ParentRequestService {
         );
       }
       // 기존 부모 요청 확인
-      const existingRequest = await entityManager.findOne(ParentRequestEntity, {
-        where: {
+      const existingRequest = await entityManager
+        .createQueryBuilder(ParentRequestEntity, 'parentRequest')
+        .setLock('pessimistic_write')
+        .where({
           childPetId,
           role,
           status: In([PARENT_STATUS.PENDING, PARENT_STATUS.APPROVED]),
-        },
-      });
+        })
+        .getOne();
       if (existingRequest) {
         throw new ConflictException('이미 존재하는 부모 연동 요청입니다.');
       }
