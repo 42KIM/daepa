@@ -10,6 +10,8 @@ import type { NotificationPetDto } from "./notificationPetDto";
 import type { ParentRequestDetailJsonRole } from "./parentRequestDetailJsonRole";
 
 export interface ParentRequestDetailJson {
+  /** 메시지 */
+  message?: string;
   /** 부모 연동 상태 */
   status?: ParentRequestDetailJsonStatus;
   /** 자식 개체 정보 */
@@ -18,8 +20,6 @@ export interface ParentRequestDetailJson {
   parentPet?: NotificationPetDto;
   /** 부모 역할 */
   role?: ParentRequestDetailJsonRole;
-  /** 메시지 */
-  message?: string;
   /** 거절 이유 */
   rejectReason?: string;
 }

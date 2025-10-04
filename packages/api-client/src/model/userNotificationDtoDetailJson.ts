@@ -5,8 +5,10 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { DetailJson } from "./detailJson";
+import type { ParentRequestDetailJson } from "./parentRequestDetailJson";
 
 /**
  * 알림 상세 정보 JSON
  */
-export type UserNotificationDtoDetailJson = { [key: string]: unknown };
+export type UserNotificationDtoDetailJson = DetailJson | ParentRequestDetailJson;

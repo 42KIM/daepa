@@ -53,7 +53,20 @@ export class NotificationPetDto {
   photos?: PetImageItem[];
 }
 
-export class ParentRequestDetailJson {
+export class DetailJson {
+  @ApiProperty({
+    description: '메시지',
+    example: '뽀삐 부모 연동 요청',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  [key: string]: unknown;
+}
+
+export class ParentRequestDetailJson extends DetailJson {
   @ApiProperty({
     description: '부모 연동 상태',
     example: PARENT_STATUS.PENDING,
@@ -92,15 +105,6 @@ export class ParentRequestDetailJson {
   role?: PARENT_ROLE;
 
   @ApiProperty({
-    description: '메시지',
-    example: '뽀삐 부모 연동 요청',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  message?: string;
-
-  @ApiProperty({
     description: '거절 이유',
     example: '뽀삐 부모 연동 거절',
     required: false,
@@ -110,9 +114,7 @@ export class ParentRequestDetailJson {
   rejectReason?: string;
 }
 
-export type DetailJson = ParentRequestDetailJson;
-
-@ApiExtraModels(ParentRequestDetailJson)
+@ApiExtraModels(DetailJson)
 export class UserNotificationDto {
   @ApiProperty({
     description: '알림 아이디',
@@ -167,11 +169,15 @@ export class UserNotificationDto {
   @ApiProperty({
     required: false,
     description: '알림 상세 정보 JSON',
+    oneOf: [
+      { $ref: getSchemaPath(DetailJson) },
+      { $ref: getSchemaPath(ParentRequestDetailJson) },
+    ],
     example: {},
   })
   @IsOptional()
   @IsJSON()
-  detailJson?: DetailJson;
+  detailJson?: DetailJson | ParentRequestDetailJson;
 
   @ApiProperty({
     description: '알림 생성 시간',

@@ -23,9 +23,9 @@ import { toast } from "sonner";
 import { NOTIFICATION_TYPE } from "../../constants";
 import { Badge } from "@/components/ui/badge";
 import NotiTitle from "./NotiTitle";
-import { buildR2TransformedUrl, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
+import { buildR2TransformedUrl, castDetailJson, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
-import { isPlainObject, isString } from "es-toolkit";
+import { isString } from "es-toolkit";
 import { isNumber } from "@/lib/typeGuards";
 import { memo } from "react";
 import { overlay } from "overlay-kit";
@@ -34,15 +34,6 @@ import { AxiosError } from "axios";
 import StatusBadge from "./StatusBadge";
 import Dialog from "../../components/Form/Dialog";
 import PetThumbnail from "../../components/PetThumbnail";
-
-const getSafeDetailData = (
-  detailData: ParentRequestDetailJson | null,
-): ParentRequestDetailJson | null => {
-  if (!detailData || !isPlainObject(detailData)) {
-    return null;
-  }
-  return detailData;
-};
 
 const NotiDisplay = memo(() => {
   const router = useRouter();
@@ -58,11 +49,11 @@ const NotiDisplay = memo(() => {
     select: (res) => res?.data?.data,
   });
 
-  const detailData = data?.detailJson as ParentRequestDetailJson;
+  const detailData = castDetailJson<ParentRequestDetailJson>(data?.type, data?.detailJson);
   const alreadyProcessed =
     data?.type === UserNotificationDtoType.PARENT_REQUEST &&
-    !!data?.detailJson?.status &&
-    data?.detailJson?.status !== UpdateParentRequestDtoStatus.PENDING;
+    !!detailData?.status &&
+    detailData?.status !== UpdateParentRequestDtoStatus.PENDING;
 
   const { mutateAsync: updateParentStatus } = useMutation({
     mutationFn: ({ id, status, rejectReason }: UpdateParentRequestDto & { id: number }) =>
@@ -111,18 +102,16 @@ const NotiDisplay = memo(() => {
     }
   };
 
-  const safeData = getSafeDetailData(detailData);
-
   const renderMorphs = () => {
     if (
-      !safeData ||
-      !("morphs" in safeData) ||
-      !safeData.morphs ||
-      !Array.isArray(safeData.morphs)
+      !detailData ||
+      !("morphs" in detailData) ||
+      !detailData.morphs ||
+      !Array.isArray(detailData.morphs)
     ) {
       return null;
     }
-    return safeData.morphs.map((morph: string) => (
+    return detailData.morphs.map((morph: string) => (
       <Badge
         key={morph}
         className="whitespace-nowrap bg-yellow-500/80 font-bold text-black backdrop-blur-sm"
@@ -134,14 +123,14 @@ const NotiDisplay = memo(() => {
 
   const renderTraits = () => {
     if (
-      !safeData ||
-      !("traits" in safeData) ||
-      !safeData.traits ||
-      !Array.isArray(safeData.traits)
+      !detailData ||
+      !("traits" in detailData) ||
+      !detailData.traits ||
+      !Array.isArray(detailData.traits)
     ) {
       return null;
     }
-    return safeData.traits.map((trait: string) => (
+    return detailData.traits.map((trait: string) => (
       <Badge
         variant="outline"
         key={trait}
@@ -153,17 +142,17 @@ const NotiDisplay = memo(() => {
   };
 
   const renderLayingInfo = () => {
-    if (!safeData) return null;
+    if (!detailData) return null;
 
     const parts = [];
-    if ("layingDate" in safeData && safeData.layingDate && isNumber(safeData.layingDate)) {
-      parts.push(formatDateToYYYYMMDDString(safeData.layingDate));
+    if ("layingDate" in detailData && detailData.layingDate && isNumber(detailData.layingDate)) {
+      parts.push(formatDateToYYYYMMDDString(detailData.layingDate));
     }
-    if ("clutch" in safeData && safeData.clutch && isNumber(safeData.clutch)) {
-      parts.push(`◦ ${safeData.clutch}개`);
+    if ("clutch" in detailData && detailData.clutch && isNumber(detailData.clutch)) {
+      parts.push(`◦ ${detailData.clutch}개`);
     }
-    if ("clutchOrder" in safeData && safeData.clutchOrder && isNumber(safeData.clutchOrder)) {
-      parts.push(`◦ ${safeData.clutchOrder}번째`);
+    if ("clutchOrder" in detailData && detailData.clutchOrder && isNumber(detailData.clutchOrder)) {
+      parts.push(`◦ ${detailData.clutchOrder}번째`);
     }
 
     return parts.length > 0 ? parts.join(" ") : null;
@@ -311,19 +300,19 @@ const NotiDisplay = memo(() => {
                   data?.type === UserNotificationDtoType.PARENT_REQUEST) &&
                   "요청 메시지"}
               </span>
-              <div>{String(safeData?.message ?? "")}</div>
+              <div>{String(detailData?.message ?? "")}</div>
             </div>
 
             {data?.type === UserNotificationDtoType.PARENT_REJECT && (
               <div className="mt-4 flex flex-col">
                 <span className="font-bold">거절 사유</span>
-                <span>{safeData?.rejectReason ?? "거절 사유가 없습니다."}</span>
+                <span>{detailData?.rejectReason ?? "거절 사유가 없습니다."}</span>
               </div>
             )}
           </div>
 
           <Link
-            href={`/pet/${safeData?.childPet?.id && isString(safeData.childPet.id) ? safeData.childPet.id : ""}`}
+            href={`/pet/${detailData?.childPet?.id && isString(detailData.childPet.id) ? detailData.childPet.id : ""}`}
             className="group mx-4 mt-4 flex flex-col rounded-lg border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
           >
             <div className="flex flex-col gap-3">
@@ -343,8 +332,8 @@ const NotiDisplay = memo(() => {
                 <div className="flex items-center justify-between">
                   <span className="text-base">
                     <span className="font-bold">
-                      {safeData?.childPet?.name && isString(safeData.childPet.name)
-                        ? safeData.childPet.name
+                      {detailData?.childPet?.name && isString(detailData.childPet.name)
+                        ? detailData.childPet.name
                         : ""}
                     </span>
                     프로필로 이동
@@ -356,8 +345,11 @@ const NotiDisplay = memo(() => {
                   {renderTraits()}
                   <span className="text-muted-foreground text-xs">{renderLayingInfo()}</span>
                 </div>
-                {safeData && "desc" in safeData && safeData.desc && isString(safeData.desc) ? (
-                  <div className="mt-2 text-sm">{safeData.desc}</div>
+                {detailData &&
+                "desc" in detailData &&
+                detailData.desc &&
+                isString(detailData.desc) ? (
+                  <div className="mt-2 text-sm">{detailData.desc}</div>
                 ) : null}
               </div>
             </div>

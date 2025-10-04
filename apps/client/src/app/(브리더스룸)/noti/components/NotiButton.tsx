@@ -15,6 +15,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NOTIFICATION_TYPE } from "@/app/(브리더스룸)/constants";
+import { castDetailJson } from "@/lib/utils";
 
 const ringBell = keyframes`
   0% { transform: rotate(0); }
@@ -54,7 +55,8 @@ const NotiButton = () => {
     .slice(0, 4)
     .map((n) => {
       const info = NOTIFICATION_TYPE[n.type as keyof typeof NOTIFICATION_TYPE];
-      const rawMessage = (n?.detailJson as ParentRequestDetailJson)?.message ?? "";
+      const rawMessage =
+        castDetailJson<ParentRequestDetailJson>(n.type, n?.detailJson)?.message ?? "";
       const message = rawMessage.length > 50 ? `${rawMessage.slice(0, 50)}...` : rawMessage;
 
       return {
