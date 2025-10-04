@@ -1,5 +1,5 @@
 import {
-  ParentRequestDetailJson,
+  ParentLinkDetailJson,
   UpdateUserNotificationDto,
   userNotificationControllerFindAll,
   userNotificationControllerUpdate,
@@ -64,7 +64,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
     }
   }, [selectedId]);
 
-  const detailJson = castDetailJson<ParentRequestDetailJson>(item.type, item?.detailJson);
+  const detailJson = castDetailJson<ParentLinkDetailJson>(item.type, item?.detailJson);
 
   return (
     <button

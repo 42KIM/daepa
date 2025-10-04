@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 import type { DetailJson } from "./detailJson";
-import type { ParentRequestDetailJson } from "./parentRequestDetailJson";
+import type { ParentLinkDetailJson } from "./parentLinkDetailJson";
 
 /**
  * 알림 상세 정보 JSON
  */
-export type UserNotificationDtoDetailJson = DetailJson | ParentRequestDetailJson;
+export type UserNotificationDtoDetailJson = DetailJson | ParentLinkDetailJson;

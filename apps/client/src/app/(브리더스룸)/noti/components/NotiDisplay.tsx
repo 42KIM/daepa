@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   parentRequestControllerUpdateStatus,
-  ParentRequestDetailJson,
+  ParentLinkDetailJson,
   UpdateParentRequestDto,
   UpdateParentRequestDtoStatus,
   userNotificationControllerDelete,
@@ -49,7 +49,7 @@ const NotiDisplay = memo(() => {
     select: (res) => res?.data?.data,
   });
 
-  const detailData = castDetailJson<ParentRequestDetailJson>(data?.type, data?.detailJson);
+  const detailData = castDetailJson<ParentLinkDetailJson>(data?.type, data?.detailJson);
   const alreadyProcessed =
     data?.type === UserNotificationDtoType.PARENT_REQUEST &&
     !!detailData?.status &&

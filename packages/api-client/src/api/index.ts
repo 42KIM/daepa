@@ -50,7 +50,7 @@ import type {
   DetailJson,
   FilterPetListResponseDto,
   FindPetByPetIdResponseDto,
-  ParentRequestDetailJson,
+  ParentLinkDetailJson,
   PetControllerFindAll200,
   TokenResponseDto,
   UserControllerGetUserListSimple200,
@@ -1259,9 +1259,9 @@ export const getUserNotificationControllerFindAllResponseDetailJsonMock = (
   ...overrideResponse,
 });
 
-export const getUserNotificationControllerFindAllResponseParentRequestDetailJsonMock = (
-  overrideResponse: Partial<ParentRequestDetailJson> = {},
-): ParentRequestDetailJson => ({
+export const getUserNotificationControllerFindAllResponseParentLinkDetailJsonMock = (
+  overrideResponse: Partial<ParentLinkDetailJson> = {},
+): ParentLinkDetailJson => ({
   ...{
     message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
     status: faker.helpers.arrayElement([
@@ -1344,7 +1344,7 @@ export const getUserNotificationControllerFindAllResponseMock = (
     detailJson: faker.helpers.arrayElement([
       faker.helpers.arrayElement([
         { ...getUserNotificationControllerFindAllResponseDetailJsonMock() },
-        { ...getUserNotificationControllerFindAllResponseParentRequestDetailJsonMock() },
+        { ...getUserNotificationControllerFindAllResponseParentLinkDetailJsonMock() },
       ]),
       undefined,
     ]),
@@ -1385,9 +1385,9 @@ export const getUserNotificationControllerFindOneResponseDetailJsonMock = (
   ...overrideResponse,
 });
 
-export const getUserNotificationControllerFindOneResponseParentRequestDetailJsonMock = (
-  overrideResponse: Partial<ParentRequestDetailJson> = {},
-): ParentRequestDetailJson => ({
+export const getUserNotificationControllerFindOneResponseParentLinkDetailJsonMock = (
+  overrideResponse: Partial<ParentLinkDetailJson> = {},
+): ParentLinkDetailJson => ({
   ...{
     message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
     status: faker.helpers.arrayElement([
@@ -1473,7 +1473,7 @@ export const getUserNotificationControllerFindOneResponseMock = (
       detailJson: faker.helpers.arrayElement([
         faker.helpers.arrayElement([
           { ...getUserNotificationControllerFindOneResponseDetailJsonMock() },
-          { ...getUserNotificationControllerFindOneResponseParentRequestDetailJsonMock() },
+          { ...getUserNotificationControllerFindOneResponseParentLinkDetailJsonMock() },
         ]),
         undefined,
       ]),

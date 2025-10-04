@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ParentRequestDetailJson,
+  ParentLinkDetailJson,
   userNotificationControllerFindAll,
   UserNotificationDtoStatus,
 } from "@repo/api-client";
@@ -55,8 +55,7 @@ const NotiButton = () => {
     .slice(0, 4)
     .map((n) => {
       const info = NOTIFICATION_TYPE[n.type as keyof typeof NOTIFICATION_TYPE];
-      const rawMessage =
-        castDetailJson<ParentRequestDetailJson>(n.type, n?.detailJson)?.message ?? "";
+      const rawMessage = castDetailJson<ParentLinkDetailJson>(n.type, n?.detailJson)?.message ?? "";
       const message = rawMessage.length > 50 ? `${rawMessage.slice(0, 50)}...` : rawMessage;
 
       return {

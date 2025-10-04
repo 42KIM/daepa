@@ -66,7 +66,7 @@ export class DetailJson {
   [key: string]: unknown;
 }
 
-export class ParentRequestDetailJson extends DetailJson {
+export class ParentLinkDetailJson extends DetailJson {
   @ApiProperty({
     description: '부모 연동 상태',
     example: PARENT_STATUS.PENDING,
@@ -114,7 +114,7 @@ export class ParentRequestDetailJson extends DetailJson {
   rejectReason?: string;
 }
 
-@ApiExtraModels(DetailJson, ParentRequestDetailJson)
+@ApiExtraModels(DetailJson, ParentLinkDetailJson)
 export class UserNotificationDto {
   @ApiProperty({
     description: '알림 아이디',
@@ -171,13 +171,13 @@ export class UserNotificationDto {
     description: '알림 상세 정보 JSON',
     oneOf: [
       { $ref: getSchemaPath(DetailJson) },
-      { $ref: getSchemaPath(ParentRequestDetailJson) },
+      { $ref: getSchemaPath(ParentLinkDetailJson) },
     ],
     example: {},
   })
   @IsOptional()
   @IsJSON()
-  detailJson?: DetailJson | ParentRequestDetailJson;
+  detailJson?: DetailJson | ParentLinkDetailJson;
 
   @ApiProperty({
     description: '알림 생성 시간',

@@ -9,11 +9,11 @@
 /**
  * 부모 연동 상태
  */
-export type ParentRequestDetailJsonStatus =
-  (typeof ParentRequestDetailJsonStatus)[keyof typeof ParentRequestDetailJsonStatus];
+export type ParentLinkDetailJsonStatus =
+  (typeof ParentLinkDetailJsonStatus)[keyof typeof ParentLinkDetailJsonStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ParentRequestDetailJsonStatus = {
+export const ParentLinkDetailJsonStatus = {
   PENDING: "pending",
   APPROVED: "approved",
   REJECTED: "rejected",

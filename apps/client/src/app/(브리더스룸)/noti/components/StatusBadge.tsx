@@ -1,5 +1,5 @@
 import {
-  ParentRequestDetailJson,
+  ParentLinkDetailJson,
   UpdateParentRequestDtoStatus,
   UserNotificationDto,
   UserNotificationDtoType,
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { castDetailJson, cn } from "@/lib/utils";
 
 const StatusBadge = ({ item }: { item: UserNotificationDto }) => {
-  const detailJson = castDetailJson<ParentRequestDetailJson>(item.type, item?.detailJson);
+  const detailJson = castDetailJson<ParentLinkDetailJson>(item.type, item?.detailJson);
   const status = detailJson?.status;
 
   if (
