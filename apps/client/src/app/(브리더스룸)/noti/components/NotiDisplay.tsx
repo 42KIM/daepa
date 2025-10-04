@@ -267,7 +267,11 @@ const NotiDisplay = memo(() => {
                   </Badge>
                   <StatusBadge item={data} />
                 </div>
-                <NotiTitle hasLink detailData={detailData} />
+                <NotiTitle
+                  href={detailData?.parentPet?.id ? `/pet/${detailData.parentPet.id}` : undefined}
+                  displayText={detailData?.childPet?.name ?? ""}
+                  label={detailData?.parentPet?.name}
+                />
               </div>
             </div>
             {data.createdAt && (

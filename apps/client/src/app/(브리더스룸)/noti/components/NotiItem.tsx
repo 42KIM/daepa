@@ -1,4 +1,5 @@
 import {
+  ParentRequestDetailJson,
   UpdateUserNotificationDto,
   userNotificationControllerFindAll,
   userNotificationControllerUpdate,
@@ -7,7 +8,7 @@ import {
 } from "@repo/api-client";
 import { Badge } from "@/components/ui/badge";
 import NotiTitle from "./NotiTitle";
-import { cn } from "@/lib/utils";
+import { castDetailJson, cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useCallback, useEffect } from "react";
@@ -63,6 +64,8 @@ const NotiItem = ({ item }: NotiItemProps) => {
     }
   }, [selectedId]);
 
+  const detailJson = castDetailJson<ParentRequestDetailJson>(item.type, item?.detailJson);
+
   return (
     <button
       key={item.id}
@@ -99,7 +102,11 @@ const NotiItem = ({ item }: NotiItemProps) => {
             })}
           </div>
         </div>
-        <NotiTitle detailData={item?.detailJson} />
+        <NotiTitle
+          href={detailJson?.parentPet?.id ? `/pet/${detailJson.parentPet.id}` : undefined}
+          displayText={detailJson?.childPet?.name ?? ""}
+          label={detailJson?.parentPet?.name}
+        />
       </div>
       <div className="text-muted-foreground line-clamp-2 text-xs">
         {item.detailJson?.message?.substring(0, 300)}
