@@ -10,10 +10,7 @@ import {
   USER_NOTIFICATION_STATUS,
   USER_NOTIFICATION_TYPE,
 } from './user_notification.constant';
-
-export interface DetailJson {
-  [key: string]: any;
-}
+import { DetailJson } from './user_notification.dto';
 
 @Entity({ name: 'user_notifications' })
 @Index(['senderId', 'receiverId', 'type', 'targetId'], { unique: true })

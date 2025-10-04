@@ -5,19 +5,19 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { UserNotificationDetailJsonStatus } from "./userNotificationDetailJsonStatus";
+import type { ParentRequestDetailJsonStatus } from "./parentRequestDetailJsonStatus";
 import type { NotificationPetDto } from "./notificationPetDto";
-import type { UserNotificationDetailJsonRole } from "./userNotificationDetailJsonRole";
+import type { ParentRequestDetailJsonRole } from "./parentRequestDetailJsonRole";
 
-export interface UserNotificationDetailJson {
+export interface ParentRequestDetailJson {
   /** 부모 연동 상태 */
-  status?: UserNotificationDetailJsonStatus;
+  status?: ParentRequestDetailJsonStatus;
   /** 자식 개체 정보 */
   childPet?: NotificationPetDto;
   /** 부모 개체 정보 */
   parentPet?: NotificationPetDto;
   /** 부모 역할 */
-  role?: UserNotificationDetailJsonRole;
+  role?: ParentRequestDetailJsonRole;
   /** 메시지 */
   message?: string;
   /** 거절 이유 */

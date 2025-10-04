@@ -1268,71 +1268,7 @@ export const getUserNotificationControllerFindAllResponseMock = (
       undefined,
     ]),
     status: faker.helpers.arrayElement(["read", "unread", "deleted"] as const),
-    detailJson: faker.helpers.arrayElement([
-      {
-        ...{
-          status: faker.helpers.arrayElement([
-            faker.helpers.arrayElement([
-              "pending",
-              "approved",
-              "rejected",
-              "deleted",
-              "cancelled",
-            ] as const),
-            undefined,
-          ]),
-          childPet: faker.helpers.arrayElement([
-            {
-              ...{
-                id: faker.string.alpha(20),
-                name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                photos: faker.helpers.arrayElement([
-                  Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                  ).map(() => ({
-                    fileName: faker.string.alpha(20),
-                    url: faker.string.alpha(20),
-                    mimeType: faker.string.alpha(20),
-                    size: faker.number.int({ min: undefined, max: undefined }),
-                  })),
-                  undefined,
-                ]),
-              },
-            },
-            undefined,
-          ]),
-          parentPet: faker.helpers.arrayElement([
-            {
-              ...{
-                id: faker.string.alpha(20),
-                name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                photos: faker.helpers.arrayElement([
-                  Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                  ).map(() => ({
-                    fileName: faker.string.alpha(20),
-                    url: faker.string.alpha(20),
-                    mimeType: faker.string.alpha(20),
-                    size: faker.number.int({ min: undefined, max: undefined }),
-                  })),
-                  undefined,
-                ]),
-              },
-            },
-            undefined,
-          ]),
-          role: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["father", "mother"] as const),
-            undefined,
-          ]),
-          message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-          rejectReason: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-        },
-      },
-      undefined,
-    ]),
+    detailJson: faker.helpers.arrayElement([{}, undefined]),
     createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
   })),
@@ -1384,71 +1320,7 @@ export const getUserNotificationControllerFindOneResponseMock = (
         undefined,
       ]),
       status: faker.helpers.arrayElement(["read", "unread", "deleted"] as const),
-      detailJson: faker.helpers.arrayElement([
-        {
-          ...{
-            status: faker.helpers.arrayElement([
-              faker.helpers.arrayElement([
-                "pending",
-                "approved",
-                "rejected",
-                "deleted",
-                "cancelled",
-              ] as const),
-              undefined,
-            ]),
-            childPet: faker.helpers.arrayElement([
-              {
-                ...{
-                  id: faker.string.alpha(20),
-                  name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                  photos: faker.helpers.arrayElement([
-                    Array.from(
-                      { length: faker.number.int({ min: 1, max: 10 }) },
-                      (_, i) => i + 1,
-                    ).map(() => ({
-                      fileName: faker.string.alpha(20),
-                      url: faker.string.alpha(20),
-                      mimeType: faker.string.alpha(20),
-                      size: faker.number.int({ min: undefined, max: undefined }),
-                    })),
-                    undefined,
-                  ]),
-                },
-              },
-              undefined,
-            ]),
-            parentPet: faker.helpers.arrayElement([
-              {
-                ...{
-                  id: faker.string.alpha(20),
-                  name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                  photos: faker.helpers.arrayElement([
-                    Array.from(
-                      { length: faker.number.int({ min: 1, max: 10 }) },
-                      (_, i) => i + 1,
-                    ).map(() => ({
-                      fileName: faker.string.alpha(20),
-                      url: faker.string.alpha(20),
-                      mimeType: faker.string.alpha(20),
-                      size: faker.number.int({ min: undefined, max: undefined }),
-                    })),
-                    undefined,
-                  ]),
-                },
-              },
-              undefined,
-            ]),
-            role: faker.helpers.arrayElement([
-              faker.helpers.arrayElement(["father", "mother"] as const),
-              undefined,
-            ]),
-            message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-            rejectReason: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-          },
-        },
-        undefined,
-      ]),
+      detailJson: faker.helpers.arrayElement([{}, undefined]),
       createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
       updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
     },
@@ -4212,7 +4084,7 @@ export const getParentRequestControllerLinkParentMockHandler = (
             : overrideResponse
           : getParentRequestControllerLinkParentResponseMock(),
       ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
+      { status: 201, headers: { "Content-Type": "application/json" } },
     );
   });
 };

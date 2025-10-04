@@ -9,11 +9,11 @@
 /**
  * 부모 역할
  */
-export type UserNotificationDetailJsonRole =
-  (typeof UserNotificationDetailJsonRole)[keyof typeof UserNotificationDetailJsonRole];
+export type ParentRequestDetailJsonRole =
+  (typeof ParentRequestDetailJsonRole)[keyof typeof ParentRequestDetailJsonRole];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UserNotificationDetailJsonRole = {
+export const ParentRequestDetailJsonRole = {
   FATHER: "father",
   MOTHER: "mother",
 } as const;
