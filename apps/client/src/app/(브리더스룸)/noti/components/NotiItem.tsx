@@ -14,10 +14,11 @@ import { ko } from "date-fns/locale";
 import { useCallback, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { NOTIFICATION_TYPE } from "../../constants";
 import StatusBadge from "./StatusBadge";
 import { AxiosError } from "axios";
+import useUserNotificationStore from "../../store/userNotification";
 
 interface NotiItemProps {
   item: UserNotificationDto;
@@ -25,9 +26,10 @@ interface NotiItemProps {
 
 const NotiItem = ({ item }: NotiItemProps) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const selectedId = Number(searchParams.get("id"));
+
+  const { setNotification } = useUserNotificationStore();
 
   const { mutateAsync: updateNotification } = useMutation({
     mutationFn: (data: UpdateUserNotificationDto) => userNotificationControllerUpdate(data),
@@ -35,9 +37,8 @@ const NotiItem = ({ item }: NotiItemProps) => {
 
   const handleItemClick = useCallback(
     async (item: UserNotificationDto) => {
-      if (item.id) {
-        router.push(`/noti?id=${item.id}`);
-        // 여기를 router.push 대신 item을 넘겨주는것으로.
+      if (item) {
+        setNotification(item);
       }
 
       if (item.status === UserNotificationDtoStatus.UNREAD) {
@@ -53,7 +54,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
         }
       }
     },
-    [router, updateNotification, queryClient],
+    [setNotification, updateNotification, queryClient],
   );
 
   useEffect(() => {
@@ -77,7 +78,6 @@ const NotiItem = ({ item }: NotiItemProps) => {
       )}
       onClick={() => {
         handleItemClick(item);
-        console.log("clicked", item);
       }}
     >
       <div className="flex w-full flex-col gap-1">

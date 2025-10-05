@@ -1,24 +1,52 @@
-import { UserNotificationDto } from "@repo/api-client";
+import {
+  userNotificationControllerFindAll,
+  UserNotificationDto,
+  UserNotificationDtoStatus,
+} from "@repo/api-client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import Loading from "@/components/common/Loading";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
 import NotiItem from "./NotiItem";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
-const NotiList = ({
-  items,
-  hasNextPage,
-  isFetchingNextPage,
-  fetchNextPage,
-}: {
-  items: UserNotificationDto[];
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  fetchNextPage: () => void;
-}) => {
+const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
+  const [items, setItems] = useState<UserNotificationDto[]>([]);
+
   const { ref, inView } = useInView();
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: [userNotificationControllerFindAll.name],
+    queryFn: ({ pageParam = 1 }) =>
+      userNotificationControllerFindAll({
+        page: pageParam,
+        itemPerPage: 10,
+        order: "DESC",
+      }),
+    enabled: true,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.data.meta.hasNextPage) {
+        return lastPage.data.meta.page + 1;
+      }
+      return undefined;
+    },
+  });
+
+  useEffect(() => {
+    if (!data?.pages) return;
+    if (tab === "all") {
+      setItems(data?.pages.flatMap((page) => page.data.data) ?? []);
+    } else {
+      setItems(
+        data?.pages
+          .flatMap((page) => page.data.data)
+          ?.filter((item) => item.status === UserNotificationDtoStatus.UNREAD) ?? [],
+      );
+    }
+  }, [data?.pages, tab]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {

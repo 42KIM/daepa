@@ -8,50 +8,12 @@ import { ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
 import { ResizablePanelGroup } from "@/components/ui/resizable";
 import NotiList from "./components/NotiList";
 import NotiDisplay from "./components/NotiDisplay";
-import { useEffect, useState } from "react";
-import {
-  userNotificationControllerFindAll,
-  UserNotificationDto,
-  UserNotificationDtoStatus,
-} from "@repo/api-client";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 const defaultLayout = [32, 48];
 
 export default function NotificationsPage() {
   const [tab, setTab] = useState<"all" | "unread">("all");
-  const [items, setItems] = useState<UserNotificationDto[]>([]);
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: [userNotificationControllerFindAll.name],
-    queryFn: ({ pageParam = 1 }) =>
-      userNotificationControllerFindAll({
-        page: pageParam,
-        itemPerPage: 10,
-        order: "DESC",
-      }),
-    enabled: true,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.data.meta.hasNextPage) {
-        return lastPage.data.meta.page + 1;
-      }
-      return undefined;
-    },
-  });
-
-  useEffect(() => {
-    if (!data?.pages) return;
-    if (tab === "all") {
-      setItems(data?.pages.flatMap((page) => page.data.data) ?? []);
-    } else {
-      setItems(
-        data?.pages
-          .flatMap((page) => page.data.data)
-          ?.filter((item) => item.status === UserNotificationDtoStatus.UNREAD) ?? [],
-      );
-    }
-  }, [data?.pages, tab]);
 
   return (
     <ResizablePanelGroup
@@ -89,12 +51,7 @@ export default function NotificationsPage() {
             </form>
           </div>
 
-          <NotiList
-            items={items}
-            hasNextPage={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-            fetchNextPage={fetchNextPage}
-          />
+          <NotiList tab={tab} />
         </Tabs>
       </ResizablePanel>
       <ResizableHandle withHandle />

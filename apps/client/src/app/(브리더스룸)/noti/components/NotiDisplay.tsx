@@ -7,7 +7,7 @@ import { ko } from "date-fns/locale";
 import { ArrowUpRight } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   parentRequestControllerUpdateStatus,
   ParentLinkDetailJson,
@@ -15,7 +15,6 @@ import {
   UpdateParentRequestDtoStatus,
   userNotificationControllerDelete,
   userNotificationControllerFindAll,
-  userNotificationControllerFindOne,
   UserNotificationDtoType,
 } from "@repo/api-client";
 import Link from "next/link";
@@ -24,7 +23,6 @@ import { NOTIFICATION_TYPE } from "../../constants";
 import { Badge } from "@/components/ui/badge";
 import NotiTitle from "./NotiTitle";
 import { castDetailJson, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
-import { useRouter, useSearchParams } from "next/navigation";
 import { isString } from "es-toolkit";
 import { isNumber } from "@/lib/typeGuards";
 import { memo } from "react";
@@ -34,20 +32,12 @@ import { AxiosError } from "axios";
 import StatusBadge from "./StatusBadge";
 import Dialog from "../../components/Form/Dialog";
 import PetThumbnail from "../../components/PetThumbnail";
+import useUserNotificationStore from "../../store/userNotification";
 
 const NotiDisplay = memo(() => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { notification: data, setNotification } = useUserNotificationStore();
+
   const queryClient = useQueryClient();
-
-  const id = searchParams.get("id");
-
-  const { data } = useQuery({
-    queryKey: [userNotificationControllerFindOne.name, id],
-    queryFn: () => userNotificationControllerFindOne(Number(id)),
-    enabled: !!id,
-    select: (res) => res?.data?.data,
-  });
 
   const detailData = castDetailJson<ParentLinkDetailJson>(data?.type, data?.detailJson);
   const alreadyProcessed =
@@ -94,10 +84,7 @@ const NotiDisplay = memo(() => {
         toast.error(error?.response?.data?.message ?? "부모 연동 상태 변경에 실패했습니다.");
       }
     } finally {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindOne.name, id] }),
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
       close?.();
     }
   };
@@ -164,9 +151,9 @@ const NotiDisplay = memo(() => {
       const res = await deleteNotification({ id: data.id, receiverId: data.receiverId });
       if (res?.data?.success) {
         toast.success("알림이 삭제되었습니다.");
+        setNotification(null);
 
         queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
-        router.push("/noti");
       }
     } catch {
       toast.error("알림 삭제에 실패했습니다.");
@@ -174,6 +161,7 @@ const NotiDisplay = memo(() => {
       close?.();
     }
   };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between p-2">
