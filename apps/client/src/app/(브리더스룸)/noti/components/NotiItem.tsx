@@ -14,7 +14,6 @@ import { ko } from "date-fns/locale";
 import { useCallback, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
 import { NOTIFICATION_TYPE } from "../../constants";
 import StatusBadge from "./StatusBadge";
 import { AxiosError } from "axios";
@@ -25,9 +24,10 @@ interface NotiItemProps {
 }
 
 const NotiItem = ({ item }: NotiItemProps) => {
+  const { notification } = useUserNotificationStore();
+  const selectedNotificationId = notification?.id;
+
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
-  const selectedId = Number(searchParams.get("id"));
 
   const { setNotification } = useUserNotificationStore();
 
@@ -58,13 +58,13 @@ const NotiItem = ({ item }: NotiItemProps) => {
   );
 
   useEffect(() => {
-    if (selectedId) {
-      const itemElement = document.getElementById(`noti-item-${selectedId}`);
+    if (selectedNotificationId) {
+      const itemElement = document.getElementById(`noti-item-${selectedNotificationId}`);
       if (itemElement) {
         itemElement.scrollIntoView({ behavior: "smooth" });
       }
     }
-  }, [selectedId]);
+  }, [selectedNotificationId]);
 
   const detailJson = castDetailJson<ParentLinkDetailJson>(item.type, item?.detailJson);
 
@@ -74,7 +74,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
       id={`noti-item-${item.id}`}
       className={cn(
         "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md",
-        item.id === selectedId && "bg-blue-200 dark:bg-gray-800",
+        item.id === selectedNotificationId && "bg-blue-200 dark:bg-gray-800",
       )}
       onClick={() => {
         handleItemClick(item);
@@ -97,7 +97,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
           <div
             className={cn(
               "ml-auto text-xs",
-              item.id === selectedId ? "text-foreground" : "text-muted-foreground",
+              item.id === notification?.id ? "text-foreground" : "text-muted-foreground",
             )}
           >
             {formatDistanceToNow(new Date(item.createdAt), {
