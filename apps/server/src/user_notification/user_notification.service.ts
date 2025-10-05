@@ -38,7 +38,7 @@ export class UserNotificationService {
     );
   }
 
-  async getUserNotifications(
+  async getNotificationList(
     dto: PageOptionsDto,
     userId: string,
   ): Promise<PageDto<UserNotificationEntity>> {
@@ -46,10 +46,13 @@ export class UserNotificationService {
       this.userNotificationRepository.createQueryBuilder('userNotification');
 
     queryBuilder
-      .where('userNotification.receiverId = :userId', { userId })
-      .andWhere('userNotification.isDeleted = :isDeleted', {
-        isDeleted: false,
-      })
+      .where(
+        'userNotification.receiverId = :userId AND userNotification.isDeleted = :isDeleted',
+        {
+          userId,
+          isDeleted: false,
+        },
+      )
       .orderBy('userNotification.createdAt', dto.order)
       .skip(dto.skip)
       .take(dto.itemPerPage);
