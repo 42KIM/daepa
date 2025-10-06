@@ -3,7 +3,12 @@ import { twMerge } from "tailwind-merge";
 import QRCode from "qrcode";
 import { format, parse } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { AdoptionDtoStatus } from "@repo/api-client";
+import {
+  AdoptionDtoStatus,
+  UserNotificationDtoDetailJson,
+  UserNotificationDtoType,
+} from "@repo/api-client";
+import { isPlainObject } from "es-toolkit";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -113,4 +118,15 @@ export const resizeImageFile = (file: File, maxWidth = 1280, quality = 0.82): Pr
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+};
+
+export const castDetailJson = <T extends UserNotificationDtoDetailJson>(
+  type: UserNotificationDtoType | undefined,
+  detailJson: UserNotificationDtoDetailJson | undefined | null,
+): T | undefined | null => {
+  if (!type || !detailJson || !isPlainObject(detailJson)) {
+    return null;
+  }
+
+  return detailJson as T;
 };

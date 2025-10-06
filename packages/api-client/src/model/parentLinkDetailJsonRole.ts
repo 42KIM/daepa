@@ -6,11 +6,14 @@
  * OpenAPI spec version: 1.0
  */
 
-export type BrUserControllerGetUsersOrder =
-  (typeof BrUserControllerGetUsersOrder)[keyof typeof BrUserControllerGetUsersOrder];
+/**
+ * 부모 역할
+ */
+export type ParentLinkDetailJsonRole =
+  (typeof ParentLinkDetailJsonRole)[keyof typeof ParentLinkDetailJsonRole];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const BrUserControllerGetUsersOrder = {
-  ASC: "ASC",
-  DESC: "DESC",
+export const ParentLinkDetailJsonRole = {
+  FATHER: "father",
+  MOTHER: "mother",
 } as const;

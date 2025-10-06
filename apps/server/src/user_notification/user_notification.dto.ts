@@ -17,7 +17,6 @@ import {
   getSchemaPath,
   PickType,
 } from '@nestjs/swagger';
-import { CommonResponseDto } from 'src/common/response.dto';
 import {
   PARENT_ROLE,
   PARENT_STATUS,
@@ -53,7 +52,20 @@ export class NotificationPetDto {
   photos?: PetImageItem[];
 }
 
-export class UserNotificationDetailJson {
+export class DetailJson {
+  @ApiProperty({
+    description: '메시지',
+    example: '뽀삐 부모 연동 요청',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  [key: string]: unknown;
+}
+
+export class ParentLinkDetailJson extends DetailJson {
   @ApiProperty({
     description: '부모 연동 상태',
     example: PARENT_STATUS.PENDING,
@@ -92,15 +104,6 @@ export class UserNotificationDetailJson {
   role?: PARENT_ROLE;
 
   @ApiProperty({
-    description: '메시지',
-    example: '뽀삐 부모 연동 요청',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  message?: string;
-
-  @ApiProperty({
     description: '거절 이유',
     example: '뽀삐 부모 연동 거절',
     required: false,
@@ -110,6 +113,7 @@ export class UserNotificationDetailJson {
   rejectReason?: string;
 }
 
+@ApiExtraModels(DetailJson, ParentLinkDetailJson)
 export class UserNotificationDto {
   @ApiProperty({
     description: '알림 아이디',
@@ -164,11 +168,15 @@ export class UserNotificationDto {
   @ApiProperty({
     required: false,
     description: '알림 상세 정보 JSON',
+    oneOf: [
+      { $ref: getSchemaPath(DetailJson) },
+      { $ref: getSchemaPath(ParentLinkDetailJson) },
+    ],
     example: {},
   })
   @IsOptional()
   @IsJSON()
-  detailJson?: UserNotificationDetailJson;
+  detailJson?: DetailJson | ParentLinkDetailJson;
 
   @ApiProperty({
     description: '알림 생성 시간',
@@ -201,12 +209,3 @@ export class DeleteUserNotificationDto extends PickType(UserNotificationDto, [
   'id',
   'receiverId',
 ]) {}
-
-export class UserNotificationResponseDto extends CommonResponseDto {
-  @ApiProperty({
-    description: '알림 정보',
-    type: UserNotificationDto,
-    nullable: true,
-  })
-  data: UserNotificationDto | null;
-}

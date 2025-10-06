@@ -11,7 +11,7 @@ import {
   CreateInitUserInfoDto,
   UserDto,
   UserFilterDto,
-  SafeUserDto,
+  UserSimpleDto,
 } from './user.dto';
 import { ProviderInfo } from 'src/auth/auth.types';
 import { USER_ROLE, USER_STATUS } from './user.constant';
@@ -83,7 +83,7 @@ export class UserService {
     };
   }
 
-  private toSafeUserDto(entity: UserEntity): SafeUserDto {
+  private toUserSimpleDto(entity: UserEntity): UserSimpleDto {
     return {
       userId: entity.userId,
       name: entity.name,
@@ -178,7 +178,7 @@ export class UserService {
         status: Not(USER_STATUS.DELETED),
       },
     });
-    return !!isExist;
+    return isExist;
   }
 
   async isEmailExist(email: string) {
@@ -188,38 +188,46 @@ export class UserService {
         status: Not(USER_STATUS.DELETED),
       },
     });
-    return !!isExist;
+    return isExist;
   }
 
-  // Transaction 처리를 위해 EntityManager를 받는 메서드 추가
-  async createUserWithEntityManager(
-    entityManager: EntityManager,
+  async createUser(
     providerInfo: ProviderInfo,
     status: USER_STATUS,
+    manager?: EntityManager,
   ) {
-    const userId = await this.generateUserId();
-    const pendingName = `USER_${userId}`;
-    const createUserEntity = plainToInstance(UserEntity, {
-      userId,
-      name: pendingName,
-      email: providerInfo.email,
-      role: USER_ROLE.USER,
-      provider: providerInfo.provider,
-      providerId: providerInfo.providerId,
-      status,
-    });
+    const run = async (em: EntityManager) => {
+      const userId = await this.generateUserId();
+      const pendingName = `USER_${userId}`;
+      const createUserEntity = plainToInstance(UserEntity, {
+        userId,
+        name: pendingName,
+        email: providerInfo.email,
+        role: USER_ROLE.USER,
+        provider: providerInfo.provider,
+        providerId: providerInfo.providerId,
+        status,
+      });
 
-    const savedUserEntity = await entityManager.save(
-      UserEntity,
-      createUserEntity,
+      const savedUserEntity = await em.save(UserEntity, createUserEntity);
+      return this.toUserDto(savedUserEntity);
+    };
+
+    if (manager) {
+      return await run(manager);
+    }
+
+    return await this.dataSource.transaction(
+      async (entityManager: EntityManager) => {
+        return await run(entityManager);
+      },
     );
-    return this.toUserDto(savedUserEntity);
   }
 
-  async getUsers(
+  async getUserListSimple(
     query: UserFilterDto,
     userId: string,
-  ): Promise<PageDto<SafeUserDto>> {
+  ): Promise<PageDto<UserSimpleDto>> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('users')
       .where('users.status = :status', {
@@ -234,12 +242,12 @@ export class UserService {
     }
 
     queryBuilder
-      .orderBy('users.createdAt', query.order)
+      .orderBy('users.name', query.order)
       .skip(query.skip)
       .take(query.itemPerPage);
 
     const [entities, total] = await queryBuilder.getManyAndCount();
-    const users = entities.map((e) => this.toSafeUserDto(e));
+    const users = entities.map((e) => this.toUserSimpleDto(e));
 
     const pageMetaDto = new PageMetaDto({
       totalCount: total,

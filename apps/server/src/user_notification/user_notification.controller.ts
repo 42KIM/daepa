@@ -1,20 +1,10 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  ForbiddenException,
-  Get,
-  Param,
-  Patch,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Query } from '@nestjs/common';
 import { UserNotificationService } from './user_notification.service';
 import { PageMetaDto, PageOptionsDto } from 'src/common/page.dto';
 import {
   DeleteUserNotificationDto,
   UpdateUserNotificationDto,
   UserNotificationDto,
-  UserNotificationResponseDto,
 } from './user_notification.dto';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { CommonResponseDto } from 'src/common/response.dto';
@@ -48,7 +38,7 @@ export class UserNotificationController {
     @Query() pageOptionsDto: PageOptionsDto,
     @JwtUser() token: JwtUserPayload,
   ) {
-    return this.userNotificationService.getAllReceiverNotifications(
+    return this.userNotificationService.getNotificationList(
       pageOptionsDto,
       token.userId,
     );
@@ -79,43 +69,16 @@ export class UserNotificationController {
     type: CommonResponseDto,
   })
   async delete(
+    @JwtUser() token: JwtUserPayload,
     @Body() deleteUserNotificationDto: DeleteUserNotificationDto,
   ): Promise<CommonResponseDto> {
-    // TODO: 권한 체크
-    // const isMyNotification =
-    //   deleteUserNotificationDto.receiverId === 'JWT token id';
-    const isMyNotification = true;
-    if (!isMyNotification) {
-      throw new ForbiddenException('권한이 없습니다.');
-    }
-
     await this.userNotificationService.deleteUserNotification(
       deleteUserNotificationDto,
-    );
-    return {
-      success: true,
-      message: '알림이 삭제되었습니다.',
-    };
-  }
-
-  @Get(':id')
-  @ApiResponse({
-    status: 200,
-    description: '알림 상세 조회',
-    type: UserNotificationResponseDto,
-  })
-  async findOne(
-    @Param('id') id: number,
-    @JwtUser() token: JwtUserPayload,
-  ): Promise<UserNotificationResponseDto> {
-    const userNotification = await this.userNotificationService.findOne(
-      id,
       token.userId,
     );
     return {
       success: true,
-      message: '알림 상세 조회',
-      data: userNotification,
+      message: '알림이 삭제되었습니다.',
     };
   }
 }

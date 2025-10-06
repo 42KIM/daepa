@@ -5,10 +5,10 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { SafeUserDto } from "./safeUserDto";
+import type { UserSimpleDto } from "./userSimpleDto";
 import type { PageMetaDto } from "./pageMetaDto";
 
-export type BrUserControllerGetUsers200 = {
-  data: SafeUserDto[];
+export type UserControllerGetUserListSimple200 = {
+  data: UserSimpleDto[];
   meta: PageMetaDto;
 };

@@ -12,7 +12,6 @@ import type {
   BrPetControllerFindAllParams,
   BrPetControllerGetPetsByDateRangeParams,
   BrPetControllerGetPetsByMonthParams,
-  BrUserControllerGetUsersParams,
   CompleteHatchingDto,
   CreateAdoptionDto,
   CreateInitUserInfoDto,
@@ -30,6 +29,7 @@ import type {
   UpdateParentRequestDto,
   UpdatePetDto,
   UpdateUserNotificationDto,
+  UserControllerGetUserListSimpleParams,
   UserNotificationControllerFindAllParams,
   VerifyEmailDto,
   VerifyNameDto,
@@ -46,15 +46,16 @@ import type {
   BrMatingControllerFindAll200,
   BrPetControllerFindAll200,
   BrPetControllerGetPetsByYear200,
-  BrUserControllerGetUsers200,
   CommonResponseDto,
+  DetailJson,
   FilterPetListResponseDto,
   FindPetByPetIdResponseDto,
+  ParentLinkDetailJson,
   PetControllerFindAll200,
   TokenResponseDto,
+  UserControllerGetUserListSimple200,
   UserDto,
   UserNotificationControllerFindAll200,
-  UserNotificationResponseDto,
   UserProfileResponseDto,
 } from "../model";
 
@@ -152,13 +153,6 @@ export const userNotificationControllerDelete = (
   });
 };
 
-export const userNotificationControllerFindOne = (id: number) => {
-  return useCustomInstance<UserNotificationResponseDto>({
-    url: `http://localhost:4000/api/v1/user-notification/${id}`,
-    method: "GET",
-  });
-};
-
 export const brPetControllerFindAll = (params?: BrPetControllerFindAllParams) => {
   return useCustomInstance<BrPetControllerFindAll200>({
     url: `http://localhost:4000/api/v1/br/pet`,
@@ -246,6 +240,14 @@ export const authControllerDeleteAccount = () => {
   return useCustomInstance<CommonResponseDto>({
     url: `http://localhost:4000/api/auth/delete-account`,
     method: "POST",
+  });
+};
+
+export const userControllerGetUserListSimple = (params?: UserControllerGetUserListSimpleParams) => {
+  return useCustomInstance<UserControllerGetUserListSimple200>({
+    url: `http://localhost:4000/api/v1/user/simple`,
+    method: "GET",
+    params,
   });
 };
 
@@ -411,14 +413,6 @@ export const layingControllerUpdate = (id: number, updateLayingDto: UpdateLaying
   });
 };
 
-export const brUserControllerGetUsers = (params?: BrUserControllerGetUsersParams) => {
-  return useCustomInstance<BrUserControllerGetUsers200>({
-    url: `http://localhost:4000/api/v1/br/user`,
-    method: "GET",
-    params,
-  });
-};
-
 export type PetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindAll>>
 >;
@@ -448,9 +442,6 @@ export type UserNotificationControllerUpdateResult = NonNullable<
 >;
 export type UserNotificationControllerDeleteResult = NonNullable<
   Awaited<ReturnType<typeof userNotificationControllerDelete>>
->;
-export type UserNotificationControllerFindOneResult = NonNullable<
-  Awaited<ReturnType<typeof userNotificationControllerFindOne>>
 >;
 export type BrPetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof brPetControllerFindAll>>
@@ -484,6 +475,9 @@ export type AuthControllerSignOutResult = NonNullable<
 >;
 export type AuthControllerDeleteAccountResult = NonNullable<
   Awaited<ReturnType<typeof authControllerDeleteAccount>>
+>;
+export type UserControllerGetUserListSimpleResult = NonNullable<
+  Awaited<ReturnType<typeof userControllerGetUserListSimple>>
 >;
 export type UserControllerGetUserProfileResult = NonNullable<
   Awaited<ReturnType<typeof userControllerGetUserProfile>>
@@ -535,9 +529,6 @@ export type LayingControllerCreateResult = NonNullable<
 >;
 export type LayingControllerUpdateResult = NonNullable<
   Awaited<ReturnType<typeof layingControllerUpdate>>
->;
-export type BrUserControllerGetUsersResult = NonNullable<
-  Awaited<ReturnType<typeof brUserControllerGetUsers>>
 >;
 
 export const getPetControllerFindAllResponseMock = (
@@ -1250,6 +1241,77 @@ export const getPetControllerVerifyNameResponseMock = (
   ...overrideResponse,
 });
 
+export const getUserNotificationControllerFindAllResponseDetailJsonMock = (
+  overrideResponse: Partial<DetailJson> = {},
+): DetailJson => ({
+  ...{ message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]) },
+  ...overrideResponse,
+});
+
+export const getUserNotificationControllerFindAllResponseParentLinkDetailJsonMock = (
+  overrideResponse: Partial<ParentLinkDetailJson> = {},
+): ParentLinkDetailJson => ({
+  ...{
+    message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+    status: faker.helpers.arrayElement([
+      faker.helpers.arrayElement([
+        "pending",
+        "approved",
+        "rejected",
+        "deleted",
+        "cancelled",
+      ] as const),
+      undefined,
+    ]),
+    childPet: faker.helpers.arrayElement([
+      {
+        ...{
+          id: faker.string.alpha(20),
+          name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+          photos: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+              () => ({
+                fileName: faker.string.alpha(20),
+                url: faker.string.alpha(20),
+                mimeType: faker.string.alpha(20),
+                size: faker.number.int({ min: undefined, max: undefined }),
+              }),
+            ),
+            undefined,
+          ]),
+        },
+      },
+      undefined,
+    ]),
+    parentPet: faker.helpers.arrayElement([
+      {
+        ...{
+          id: faker.string.alpha(20),
+          name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+          photos: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+              () => ({
+                fileName: faker.string.alpha(20),
+                url: faker.string.alpha(20),
+                mimeType: faker.string.alpha(20),
+                size: faker.number.int({ min: undefined, max: undefined }),
+              }),
+            ),
+            undefined,
+          ]),
+        },
+      },
+      undefined,
+    ]),
+    role: faker.helpers.arrayElement([
+      faker.helpers.arrayElement(["father", "mother"] as const),
+      undefined,
+    ]),
+    rejectReason: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  },
+  ...overrideResponse,
+});
+
 export const getUserNotificationControllerFindAllResponseMock = (
   overrideResponse: Partial<UserNotificationControllerFindAll200> = {},
 ): UserNotificationControllerFindAll200 => ({
@@ -1269,68 +1331,10 @@ export const getUserNotificationControllerFindAllResponseMock = (
     ]),
     status: faker.helpers.arrayElement(["read", "unread", "deleted"] as const),
     detailJson: faker.helpers.arrayElement([
-      {
-        ...{
-          status: faker.helpers.arrayElement([
-            faker.helpers.arrayElement([
-              "pending",
-              "approved",
-              "rejected",
-              "deleted",
-              "cancelled",
-            ] as const),
-            undefined,
-          ]),
-          childPet: faker.helpers.arrayElement([
-            {
-              ...{
-                id: faker.string.alpha(20),
-                name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                photos: faker.helpers.arrayElement([
-                  Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                  ).map(() => ({
-                    fileName: faker.string.alpha(20),
-                    url: faker.string.alpha(20),
-                    mimeType: faker.string.alpha(20),
-                    size: faker.number.int({ min: undefined, max: undefined }),
-                  })),
-                  undefined,
-                ]),
-              },
-            },
-            undefined,
-          ]),
-          parentPet: faker.helpers.arrayElement([
-            {
-              ...{
-                id: faker.string.alpha(20),
-                name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                photos: faker.helpers.arrayElement([
-                  Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                  ).map(() => ({
-                    fileName: faker.string.alpha(20),
-                    url: faker.string.alpha(20),
-                    mimeType: faker.string.alpha(20),
-                    size: faker.number.int({ min: undefined, max: undefined }),
-                  })),
-                  undefined,
-                ]),
-              },
-            },
-            undefined,
-          ]),
-          role: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["father", "mother"] as const),
-            undefined,
-          ]),
-          message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-          rejectReason: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-        },
-      },
+      faker.helpers.arrayElement([
+        { ...getUserNotificationControllerFindAllResponseDetailJsonMock() },
+        { ...getUserNotificationControllerFindAllResponseParentLinkDetailJsonMock() },
+      ]),
       undefined,
     ]),
     createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
@@ -1360,99 +1364,6 @@ export const getUserNotificationControllerDeleteResponseMock = (
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
   message: faker.string.alpha(20),
-  ...overrideResponse,
-});
-
-export const getUserNotificationControllerFindOneResponseMock = (
-  overrideResponse: Partial<UserNotificationResponseDto> = {},
-): UserNotificationResponseDto => ({
-  success: faker.datatype.boolean(),
-  message: faker.string.alpha(20),
-  data: {
-    ...{
-      id: faker.number.int({ min: undefined, max: undefined }),
-      senderId: faker.string.alpha(20),
-      receiverId: faker.string.alpha(20),
-      type: faker.helpers.arrayElement([
-        "parent_request",
-        "parent_accept",
-        "parent_reject",
-        "parent_cancel",
-      ] as const),
-      targetId: faker.helpers.arrayElement([
-        faker.number.int({ min: undefined, max: undefined }),
-        undefined,
-      ]),
-      status: faker.helpers.arrayElement(["read", "unread", "deleted"] as const),
-      detailJson: faker.helpers.arrayElement([
-        {
-          ...{
-            status: faker.helpers.arrayElement([
-              faker.helpers.arrayElement([
-                "pending",
-                "approved",
-                "rejected",
-                "deleted",
-                "cancelled",
-              ] as const),
-              undefined,
-            ]),
-            childPet: faker.helpers.arrayElement([
-              {
-                ...{
-                  id: faker.string.alpha(20),
-                  name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                  photos: faker.helpers.arrayElement([
-                    Array.from(
-                      { length: faker.number.int({ min: 1, max: 10 }) },
-                      (_, i) => i + 1,
-                    ).map(() => ({
-                      fileName: faker.string.alpha(20),
-                      url: faker.string.alpha(20),
-                      mimeType: faker.string.alpha(20),
-                      size: faker.number.int({ min: undefined, max: undefined }),
-                    })),
-                    undefined,
-                  ]),
-                },
-              },
-              undefined,
-            ]),
-            parentPet: faker.helpers.arrayElement([
-              {
-                ...{
-                  id: faker.string.alpha(20),
-                  name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                  photos: faker.helpers.arrayElement([
-                    Array.from(
-                      { length: faker.number.int({ min: 1, max: 10 }) },
-                      (_, i) => i + 1,
-                    ).map(() => ({
-                      fileName: faker.string.alpha(20),
-                      url: faker.string.alpha(20),
-                      mimeType: faker.string.alpha(20),
-                      size: faker.number.int({ min: undefined, max: undefined }),
-                    })),
-                    undefined,
-                  ]),
-                },
-              },
-              undefined,
-            ]),
-            role: faker.helpers.arrayElement([
-              faker.helpers.arrayElement(["father", "mother"] as const),
-              undefined,
-            ]),
-            message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-            rejectReason: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-          },
-        },
-        undefined,
-      ]),
-      createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-      updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
-    },
-  },
   ...overrideResponse,
 });
 
@@ -2863,6 +2774,26 @@ export const getAuthControllerDeleteAccountResponseMock = (
   ...overrideResponse,
 });
 
+export const getUserControllerGetUserListSimpleResponseMock = (
+  overrideResponse: Partial<UserControllerGetUserListSimple200> = {},
+): UserControllerGetUserListSimple200 => ({
+  data: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    userId: faker.string.alpha(20),
+    name: faker.string.alpha(20),
+    email: faker.string.alpha(20),
+    isBiz: faker.datatype.boolean(),
+  })),
+  meta: {
+    page: faker.number.int({ min: undefined, max: undefined }),
+    itemPerPage: faker.number.int({ min: undefined, max: undefined }),
+    totalCount: faker.number.int({ min: undefined, max: undefined }),
+    totalPage: faker.number.int({ min: undefined, max: undefined }),
+    hasPreviousPage: faker.datatype.boolean(),
+    hasNextPage: faker.datatype.boolean(),
+  },
+  ...overrideResponse,
+});
+
 export const getUserControllerGetUserProfileResponseMock = (
   overrideResponse: Partial<UserProfileResponseDto> = {},
 ): UserProfileResponseDto => ({
@@ -3414,26 +3345,6 @@ export const getLayingControllerUpdateResponseMock = (
   ...overrideResponse,
 });
 
-export const getBrUserControllerGetUsersResponseMock = (
-  overrideResponse: Partial<BrUserControllerGetUsers200> = {},
-): BrUserControllerGetUsers200 => ({
-  data: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    userId: faker.string.alpha(20),
-    name: faker.string.alpha(20),
-    email: faker.string.alpha(20),
-    isBiz: faker.datatype.boolean(),
-  })),
-  meta: {
-    page: faker.number.int({ min: undefined, max: undefined }),
-    itemPerPage: faker.number.int({ min: undefined, max: undefined }),
-    totalCount: faker.number.int({ min: undefined, max: undefined }),
-    totalPage: faker.number.int({ min: undefined, max: undefined }),
-    hasPreviousPage: faker.datatype.boolean(),
-    hasNextPage: faker.datatype.boolean(),
-  },
-  ...overrideResponse,
-});
-
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -3658,29 +3569,6 @@ export const getUserNotificationControllerDeleteMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getUserNotificationControllerDeleteResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  });
-};
-
-export const getUserNotificationControllerFindOneMockHandler = (
-  overrideResponse?:
-    | UserNotificationResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<UserNotificationResponseDto> | UserNotificationResponseDto),
-) => {
-  return http.get("*/api/v1/user-notification/:id", async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getUserNotificationControllerFindOneResponseMock(),
       ),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
@@ -3912,6 +3800,29 @@ export const getAuthControllerDeleteAccountMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getAuthControllerDeleteAccountResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
+export const getUserControllerGetUserListSimpleMockHandler = (
+  overrideResponse?:
+    | UserControllerGetUserListSimple200
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<UserControllerGetUserListSimple200> | UserControllerGetUserListSimple200),
+) => {
+  return http.get("*/api/v1/user/simple", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUserControllerGetUserListSimpleResponseMock(),
       ),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
@@ -4212,7 +4123,7 @@ export const getParentRequestControllerLinkParentMockHandler = (
             : overrideResponse
           : getParentRequestControllerLinkParentResponseMock(),
       ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
+      { status: 201, headers: { "Content-Type": "application/json" } },
     );
   });
 };
@@ -4308,29 +4219,6 @@ export const getLayingControllerUpdateMockHandler = (
     );
   });
 };
-
-export const getBrUserControllerGetUsersMockHandler = (
-  overrideResponse?:
-    | BrUserControllerGetUsers200
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<BrUserControllerGetUsers200> | BrUserControllerGetUsers200),
-) => {
-  return http.get("*/api/v1/br/user", async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getBrUserControllerGetUsersResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  });
-};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -4342,7 +4230,6 @@ export const getProjectDaepaAPIMock = () => [
   getUserNotificationControllerFindAllMockHandler(),
   getUserNotificationControllerUpdateMockHandler(),
   getUserNotificationControllerDeleteMockHandler(),
-  getUserNotificationControllerFindOneMockHandler(),
   getBrPetControllerFindAllMockHandler(),
   getBrPetControllerGetPetsByYearMockHandler(),
   getBrPetControllerGetPetsByMonthMockHandler(),
@@ -4354,6 +4241,7 @@ export const getProjectDaepaAPIMock = () => [
   getAuthControllerGetTokenMockHandler(),
   getAuthControllerSignOutMockHandler(),
   getAuthControllerDeleteAccountMockHandler(),
+  getUserControllerGetUserListSimpleMockHandler(),
   getUserControllerGetUserProfileMockHandler(),
   getUserControllerCreateInitUserInfoMockHandler(),
   getUserControllerVerifyNameMockHandler(),
@@ -4371,5 +4259,4 @@ export const getProjectDaepaAPIMock = () => [
   getParentRequestControllerUpdateStatusMockHandler(),
   getLayingControllerCreateMockHandler(),
   getLayingControllerUpdateMockHandler(),
-  getBrUserControllerGetUsersMockHandler(),
 ];

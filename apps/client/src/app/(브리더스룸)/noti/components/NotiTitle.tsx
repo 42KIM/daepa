@@ -1,30 +1,27 @@
 import { ArrowLeftRight } from "lucide-react";
 import LinkButton from "../../components/LinkButton";
-import { UserNotificationDetailJson } from "@repo/api-client";
 
 const NotiTitle = ({
-  detailData,
-  hasLink = false,
+  displayText,
+  label,
+  href,
 }: {
-  detailData?: UserNotificationDetailJson;
-  hasLink?: boolean;
+  displayText: string;
+  label?: string;
+  href?: string;
 }) => {
-  if (!detailData) return null;
+  if (!displayText) return null;
 
   return (
     <div className="flex items-center gap-2">
-      {hasLink && detailData?.parentPet?.id ? (
-        <LinkButton
-          href={`/pet/${detailData?.parentPet?.id}`}
-          label={detailData?.parentPet?.name ?? ""}
-          tooltip="프로필로 이동"
-        />
+      {href ? (
+        <LinkButton href={href} label={label ?? ""} tooltip="프로필로 이동" />
       ) : (
-        <div>{detailData?.parentPet?.name ?? ""}</div>
+        <div>{displayText}</div>
       )}
       <ArrowLeftRight className="h-4 w-4" />
       <div className="flex items-center">
-        <div>{detailData?.childPet?.name ?? ""}</div>
+        <div>{displayText}</div>
       </div>
     </div>
   );

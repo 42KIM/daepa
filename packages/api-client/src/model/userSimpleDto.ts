@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface SafeUserDto {
+export interface UserSimpleDto {
   /** 회원 고유 ID */
   userId: string;
   /** 회원 이름 */

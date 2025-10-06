@@ -1,14 +1,16 @@
 import {
+  ParentLinkDetailJson,
   UpdateParentRequestDtoStatus,
   UserNotificationDto,
   UserNotificationDtoType,
 } from "@repo/api-client";
 
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { castDetailJson, cn } from "@/lib/utils";
 
 const StatusBadge = ({ item }: { item: UserNotificationDto }) => {
-  const status = item.detailJson?.status;
+  const detailJson = castDetailJson<ParentLinkDetailJson>(item.type, item?.detailJson);
+  const status = detailJson?.status;
 
   if (
     !(

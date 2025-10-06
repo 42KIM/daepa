@@ -1,6 +1,10 @@
 "use client";
 
-import { userNotificationControllerFindAll, UserNotificationDtoStatus } from "@repo/api-client";
+import {
+  ParentLinkDetailJson,
+  userNotificationControllerFindAll,
+  UserNotificationDtoStatus,
+} from "@repo/api-client";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +15,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NOTIFICATION_TYPE } from "@/app/(브리더스룸)/constants";
+import { castDetailJson } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import useUserNotificationStore from "../../store/userNotification";
+import { useNotificationRead } from "@/hooks/useNotificationRead";
+
+const NOTI_BUTTON_QUERY_KEY = "layout-noti-button";
 
 const ringBell = keyframes`
   0% { transform: rotate(0); }
@@ -29,13 +39,19 @@ const AnimatedBell = styled(Bell)`
 `;
 
 const NotiButton = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const isNotiPage = pathname.includes("noti");
 
+  const { setNotification } = useUserNotificationStore();
+  const { setNotificationRead } = useNotificationRead();
+
   const { data: notifications } = useQuery({
-    queryKey: [userNotificationControllerFindAll.name],
+    enabled: !isNotiPage,
+    queryKey: [userNotificationControllerFindAll.name, NOTI_BUTTON_QUERY_KEY],
     queryFn: () =>
       userNotificationControllerFindAll({
+        itemPerPage: 5,
         order: "DESC",
       }),
     select: (response) => response.data.data,
@@ -46,21 +62,21 @@ const NotiButton = () => {
   const hasNotification = unreadCount > 0;
 
   const recentNotifications = notifications
-    ?.filter((n) => n.status === UserNotificationDtoStatus.UNREAD)
-    .slice(0, 4)
-    .map((n) => {
-      const info = NOTIFICATION_TYPE[n.type as keyof typeof NOTIFICATION_TYPE];
-      const rawMessage = n?.detailJson?.message ?? "";
+    ?.filter((noti) => noti.status === UserNotificationDtoStatus.UNREAD)
+    .map((noti) => {
+      const info = NOTIFICATION_TYPE[noti.type as keyof typeof NOTIFICATION_TYPE];
+      const rawMessage =
+        castDetailJson<ParentLinkDetailJson>(noti.type, noti?.detailJson)?.message ?? "";
       const message = rawMessage.length > 50 ? `${rawMessage.slice(0, 50)}...` : rawMessage;
 
       return {
+        ...noti,
         title: info?.label ?? "알림",
         message,
-        id: n.id,
       };
     });
 
-  if (isNotiPage) return;
+  if (isNotiPage) return null;
 
   return (
     <TooltipProvider>
@@ -88,14 +104,18 @@ const NotiButton = () => {
             <div className="flex flex-col gap-2 p-1 pb-4 pt-2">
               <p className="font-medium">최근 알림</p>
               {recentNotifications.map((noti, index) => (
-                <Link
-                  href={`/noti?id=${noti.id}`}
+                <button
+                  onClick={() => {
+                    router.push("/noti");
+                    setNotification(noti);
+                    setNotificationRead(noti);
+                  }}
                   key={index}
                   className="cursor-pointer rounded-md border border-gray-500 p-2 text-sm"
                 >
                   <p className="font-medium text-gray-200 dark:text-gray-800">{noti.title}</p>
                   <p className="text-xs text-gray-400 dark:text-gray-600">{noti.message}</p>
-                </Link>
+                </button>
               ))}
               {unreadCount > 4 && (
                 <p className="text-muted-foreground text-right text-xs dark:text-gray-800">

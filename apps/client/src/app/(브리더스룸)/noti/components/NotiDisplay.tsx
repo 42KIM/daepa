@@ -7,14 +7,14 @@ import { ko } from "date-fns/locale";
 import { ArrowUpRight } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   parentRequestControllerUpdateStatus,
+  ParentLinkDetailJson,
   UpdateParentRequestDto,
   UpdateParentRequestDtoStatus,
   userNotificationControllerDelete,
   userNotificationControllerFindAll,
-  userNotificationControllerFindOne,
   UserNotificationDtoType,
 } from "@repo/api-client";
 import Link from "next/link";
@@ -22,9 +22,8 @@ import { toast } from "sonner";
 import { NOTIFICATION_TYPE } from "../../constants";
 import { Badge } from "@/components/ui/badge";
 import NotiTitle from "./NotiTitle";
-import { buildR2TransformedUrl, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
-import { useRouter, useSearchParams } from "next/navigation";
-import { isPlainObject, isString } from "es-toolkit";
+import { castDetailJson, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
+import { isString } from "es-toolkit";
 import { isNumber } from "@/lib/typeGuards";
 import { memo } from "react";
 import { overlay } from "overlay-kit";
@@ -33,26 +32,18 @@ import { AxiosError } from "axios";
 import StatusBadge from "./StatusBadge";
 import Dialog from "../../components/Form/Dialog";
 import PetThumbnail from "../../components/PetThumbnail";
+import useUserNotificationStore from "../../store/userNotification";
 
 const NotiDisplay = memo(() => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { notification: data, setNotification } = useUserNotificationStore();
+
   const queryClient = useQueryClient();
 
-  const id = searchParams.get("id");
-
-  const { data } = useQuery({
-    queryKey: [userNotificationControllerFindOne.name, id],
-    queryFn: () => userNotificationControllerFindOne(Number(id)),
-    enabled: !!id,
-    select: (res) => res?.data?.data,
-  });
-
-  const detailData = data?.detailJson;
+  const detailData = castDetailJson<ParentLinkDetailJson>(data?.type, data?.detailJson);
   const alreadyProcessed =
     data?.type === UserNotificationDtoType.PARENT_REQUEST &&
-    !!data?.detailJson?.status &&
-    data?.detailJson?.status !== UpdateParentRequestDtoStatus.PENDING;
+    !!detailData?.status &&
+    detailData?.status !== UpdateParentRequestDtoStatus.PENDING;
 
   const { mutateAsync: updateParentStatus } = useMutation({
     mutationFn: ({ id, status, rejectReason }: UpdateParentRequestDto & { id: number }) =>
@@ -93,33 +84,21 @@ const NotiDisplay = memo(() => {
         toast.error(error?.response?.data?.message ?? "부모 연동 상태 변경에 실패했습니다.");
       }
     } finally {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindOne.name, id] }),
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
       close?.();
     }
   };
 
-  const getDetailData = () => {
-    if (!detailData || !isPlainObject(detailData)) {
-      return null;
-    }
-    return detailData;
-  };
-
-  const safeData = getDetailData();
-
   const renderMorphs = () => {
     if (
-      !safeData ||
-      !("morphs" in safeData) ||
-      !safeData.morphs ||
-      !Array.isArray(safeData.morphs)
+      !detailData ||
+      !("morphs" in detailData) ||
+      !detailData.morphs ||
+      !Array.isArray(detailData.morphs)
     ) {
       return null;
     }
-    return safeData.morphs.map((morph: string) => (
+    return detailData.morphs.map((morph: string) => (
       <Badge
         key={morph}
         className="whitespace-nowrap bg-yellow-500/80 font-bold text-black backdrop-blur-sm"
@@ -131,14 +110,14 @@ const NotiDisplay = memo(() => {
 
   const renderTraits = () => {
     if (
-      !safeData ||
-      !("traits" in safeData) ||
-      !safeData.traits ||
-      !Array.isArray(safeData.traits)
+      !detailData ||
+      !("traits" in detailData) ||
+      !detailData.traits ||
+      !Array.isArray(detailData.traits)
     ) {
       return null;
     }
-    return safeData.traits.map((trait: string) => (
+    return detailData.traits.map((trait: string) => (
       <Badge
         variant="outline"
         key={trait}
@@ -150,17 +129,17 @@ const NotiDisplay = memo(() => {
   };
 
   const renderLayingInfo = () => {
-    if (!safeData) return null;
+    if (!detailData) return null;
 
     const parts = [];
-    if ("layingDate" in safeData && safeData.layingDate && isNumber(safeData.layingDate)) {
-      parts.push(formatDateToYYYYMMDDString(safeData.layingDate));
+    if ("layingDate" in detailData && detailData.layingDate && isNumber(detailData.layingDate)) {
+      parts.push(formatDateToYYYYMMDDString(detailData.layingDate));
     }
-    if ("clutch" in safeData && safeData.clutch && isNumber(safeData.clutch)) {
-      parts.push(`◦ ${safeData.clutch}개`);
+    if ("clutch" in detailData && detailData.clutch && isNumber(detailData.clutch)) {
+      parts.push(`◦ ${detailData.clutch}개`);
     }
-    if ("clutchOrder" in safeData && safeData.clutchOrder && isNumber(safeData.clutchOrder)) {
-      parts.push(`◦ ${safeData.clutchOrder}번째`);
+    if ("clutchOrder" in detailData && detailData.clutchOrder && isNumber(detailData.clutchOrder)) {
+      parts.push(`◦ ${detailData.clutchOrder}번째`);
     }
 
     return parts.length > 0 ? parts.join(" ") : null;
@@ -172,9 +151,9 @@ const NotiDisplay = memo(() => {
       const res = await deleteNotification({ id: data.id, receiverId: data.receiverId });
       if (res?.data?.success) {
         toast.success("알림이 삭제되었습니다.");
+        setNotification(null);
 
         queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
-        router.push("/noti");
       }
     } catch {
       toast.error("알림 삭제에 실패했습니다.");
@@ -182,6 +161,7 @@ const NotiDisplay = memo(() => {
       close?.();
     }
   };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between p-2">
@@ -275,7 +255,11 @@ const NotiDisplay = memo(() => {
                   </Badge>
                   <StatusBadge item={data} />
                 </div>
-                <NotiTitle hasLink detailData={detailData} />
+                <NotiTitle
+                  href={detailData?.parentPet?.id ? `/pet/${detailData.parentPet.id}` : undefined}
+                  displayText={detailData?.childPet?.name ?? ""}
+                  label={detailData?.parentPet?.name}
+                />
               </div>
             </div>
             {data.createdAt && (
@@ -308,26 +292,26 @@ const NotiDisplay = memo(() => {
                   data?.type === UserNotificationDtoType.PARENT_REQUEST) &&
                   "요청 메시지"}
               </span>
-              <div>{String(safeData?.message ?? "")}</div>
+              <div>{String(detailData?.message ?? "")}</div>
             </div>
 
             {data?.type === UserNotificationDtoType.PARENT_REJECT && (
               <div className="mt-4 flex flex-col">
                 <span className="font-bold">거절 사유</span>
-                <span>{safeData?.rejectReason ?? "거절 사유가 없습니다."}</span>
+                <span>{detailData?.rejectReason ?? "거절 사유가 없습니다."}</span>
               </div>
             )}
           </div>
 
           <Link
-            href={`/pet/${safeData?.childPet?.id && isString(safeData.childPet.id) ? safeData.childPet.id : ""}`}
+            href={`/pet/${detailData?.childPet?.id && isString(detailData.childPet.id) ? detailData.childPet.id : ""}`}
             className="group mx-4 mt-4 flex flex-col rounded-lg border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
           >
             <div className="flex flex-col gap-3">
               {detailData?.childPet?.photos ? (
                 <div className="relative w-full overflow-hidden rounded-lg">
                   <PetThumbnail
-                    imageUrl={buildR2TransformedUrl(detailData?.childPet?.photos[0]?.url)}
+                    imageUrl={detailData?.childPet?.photos[0]?.url}
                     alt={detailData?.childPet?.name}
                   />
                 </div>
@@ -340,8 +324,8 @@ const NotiDisplay = memo(() => {
                 <div className="flex items-center justify-between">
                   <span className="text-base">
                     <span className="font-bold">
-                      {safeData?.childPet?.name && isString(safeData.childPet.name)
-                        ? safeData.childPet.name
+                      {detailData?.childPet?.name && isString(detailData.childPet.name)
+                        ? detailData.childPet.name
                         : ""}
                     </span>
                     프로필로 이동
@@ -353,8 +337,11 @@ const NotiDisplay = memo(() => {
                   {renderTraits()}
                   <span className="text-muted-foreground text-xs">{renderLayingInfo()}</span>
                 </div>
-                {safeData && "desc" in safeData && safeData.desc && isString(safeData.desc) ? (
-                  <div className="mt-2 text-sm">{safeData.desc}</div>
+                {detailData &&
+                "desc" in detailData &&
+                detailData.desc &&
+                isString(detailData.desc) ? (
+                  <div className="mt-2 text-sm">{detailData.desc}</div>
                 ) : null}
               </div>
             </div>

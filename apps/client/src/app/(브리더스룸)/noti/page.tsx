@@ -10,10 +10,10 @@ import NotiList from "./components/NotiList";
 import NotiDisplay from "./components/NotiDisplay";
 import { useState } from "react";
 
+const defaultLayout = [32, 48];
+
 export default function NotificationsPage() {
   const [tab, setTab] = useState<"all" | "unread">("all");
-
-  const defaultLayout = [32, 48];
 
   return (
     <ResizablePanelGroup

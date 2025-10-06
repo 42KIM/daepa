@@ -6,26 +6,26 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import Loading from "@/components/common/Loading";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
 import NotiItem from "./NotiItem";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
   const [items, setItems] = useState<UserNotificationDto[]>([]);
+
   const { ref, inView } = useInView();
 
-  const itemPerPage = 10;
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: [userNotificationControllerFindAll.name, itemPerPage],
+    queryKey: [userNotificationControllerFindAll.name],
     queryFn: ({ pageParam = 1 }) =>
       userNotificationControllerFindAll({
         page: pageParam,
-        itemPerPage,
+        itemPerPage: 10,
         order: "DESC",
       }),
+    enabled: true,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       if (lastPage.data.meta.hasNextPage) {
@@ -34,12 +34,6 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
       return undefined;
     },
   });
-
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   useEffect(() => {
     if (!data?.pages) return;
@@ -53,6 +47,12 @@ const NotiList = ({ tab }: { tab: "all" | "unread" }) => {
       );
     }
   }, [data?.pages, tab]);
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
     <ScrollArea className="h-[calc(100vh-200px)]">

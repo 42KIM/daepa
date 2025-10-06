@@ -5,13 +5,13 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { BrUserControllerGetUsersOrder } from "./brUserControllerGetUsersOrder";
+import type { UserControllerGetUserListSimpleOrder } from "./userControllerGetUserListSimpleOrder";
 
-export type BrUserControllerGetUsersParams = {
+export type UserControllerGetUserListSimpleParams = {
   /**
    * 정렬 순서
    */
-  order?: BrUserControllerGetUsersOrder;
+  order?: UserControllerGetUserListSimpleOrder;
   /**
    * 페이지 번호
    */

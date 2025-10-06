@@ -92,7 +92,7 @@ class UserBaseDto {
   updatedAt: Date;
 }
 
-export class SafeUserDto extends PickType(UserBaseDto, [
+export class UserSimpleDto extends PickType(UserBaseDto, [
   'userId',
   'name',
   'email',
@@ -179,6 +179,9 @@ export class UserProfilePublicDto extends PickType(UserBaseDto, ['status']) {
   @IsBoolean()
   @IsOptional()
   isBiz?: boolean;
+
+  @Exclude()
+  declare email?: string;
 
   @Exclude()
   declare provider?: OAUTH_PROVIDER[];

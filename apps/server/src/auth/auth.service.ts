@@ -159,12 +159,11 @@ export class AuthService {
         };
       } else {
         // 해당 이메일 최초 가입
-        const newUserCreated =
-          await this.userService.createUserWithEntityManager(
-            entityManager,
-            providerInfo,
-            USER_STATUS.PENDING,
-          );
+        const newUserCreated = await this.userService.createUser(
+          providerInfo,
+          USER_STATUS.PENDING,
+          entityManager,
+        );
         newOAuthUser = {
           userId: newUserCreated.userId,
           status: newUserCreated.status,
@@ -172,10 +171,13 @@ export class AuthService {
       }
 
       // OAuth 정보 생성
-      await this.oauthService.createOauthInfoWithEntityManager(entityManager, {
-        ...providerInfo,
-        userId: newOAuthUser.userId,
-      });
+      await this.oauthService.createOauthInfo(
+        {
+          ...providerInfo,
+          userId: newOAuthUser.userId,
+        },
+        entityManager,
+      );
 
       return {
         userId: newOAuthUser.userId,
