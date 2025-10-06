@@ -985,7 +985,7 @@ export class PetService {
 
     // 성장단계 필터링
     if (pageOptionsDto.growth) {
-      queryBuilder.andWhere('pets.growth = :growth', {
+      queryBuilder.andWhere('petDetail.growth = :growth', {
         growth: pageOptionsDto.growth,
       });
     }
