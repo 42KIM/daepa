@@ -44,7 +44,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 10
+          fetch-depth: 2
 
       - uses: pnpm/action-setup@v4
 
