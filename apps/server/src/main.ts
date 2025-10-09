@@ -6,6 +6,10 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  if (!process.env.CLIENT_BASE_URL || !process.env.SERVER_BASE_URL) {
+    throw new Error('CLIENT_BASE_URL and SERVER_BASE_URL must be defined');
+  }
   app.enableCors({
     origin: [process.env.CLIENT_BASE_URL, process.env.SERVER_BASE_URL],
     credentials: true,
