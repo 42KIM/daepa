@@ -8,7 +8,7 @@ const AppleLoginButton = () => {
 
     setIsLoading(true);
 
-    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_CLIENT_BASE_URL ?? ""}/sign-in/auth`;
+    const REDIRECT_URI = `${window.location.origin ?? ""}/sign-in/auth`;
 
     try {
       const AppleID = (window as any).AppleID;
