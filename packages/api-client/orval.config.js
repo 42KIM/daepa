@@ -1,9 +1,8 @@
 module.exports = {
   backendApi: {
-    input: "http://localhost:4000/api-docs/json",
+    input: `${process.env.NODE_ENV === "production" ? "https://server-production-6859b.up.railway.app" : "http://localhost:4000"}/api-docs/json`,
     output: {
-      workspace: "packages/api-client",
-      baseUrl: "http://localhost:4000",
+      workspace: ".",
       target: "src/api/index.ts",
       schemas: "src/model",
       mock: true,
