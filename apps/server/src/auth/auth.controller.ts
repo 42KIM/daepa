@@ -169,7 +169,7 @@ export class AuthController {
     });
 
     return res.redirect(
-      `http://localhost:3000/sign-in/auth?status=${validatedUser.userStatus}`,
+      `${process.env.CLIENT_BASE_URL}/sign-in/auth?status=${validatedUser.userStatus}`,
     );
   }
 
@@ -201,7 +201,7 @@ export class AuthController {
     });
 
     return res.redirect(
-      `http://localhost:3000/sign-in/auth?status=${validatedUser.userStatus}`,
+      `${process.env.CLIENT_BASE_URL}/sign-in/auth?status=${validatedUser.userStatus}`,
     );
   }
 

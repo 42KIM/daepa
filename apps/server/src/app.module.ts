@@ -67,7 +67,10 @@ const ENTITIES = [
     HttpModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env'],
+      envFilePath:
+        process.env.NODE_ENV === 'production'
+          ? '.env.production'
+          : '.env.local',
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
