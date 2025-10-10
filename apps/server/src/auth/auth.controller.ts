@@ -166,7 +166,8 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
+      domain: new URL(process.env.CLIENT_BASE_URL ?? '').hostname,
       maxAge: 180 * 24 * 60 * 60 * 1000, // 180일
     });
 
@@ -200,7 +201,8 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
+      domain: new URL(process.env.CLIENT_BASE_URL ?? '').hostname,
       maxAge: 180 * 24 * 60 * 60 * 1000, // 180일
     });
 
