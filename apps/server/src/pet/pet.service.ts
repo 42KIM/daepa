@@ -384,10 +384,7 @@ export class PetService {
         'pet_images.petId = pets.petId',
       );
 
-    if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.ALL) {
-      // 기본적으로 공개된 펫만 조회 가능
-      queryBuilder.andWhere('pets.isPublic = :isPublic', { isPublic: true });
-    } else if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
+    if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
       // 자신의 모든 펫 조회 가능
       queryBuilder.andWhere('pets.ownerId = :userId', { userId });
     } else if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.NOT_MY) {
@@ -396,6 +393,9 @@ export class PetService {
         'pets.isPublic = :isPublic AND pets.ownerId != :userId',
         { isPublic: true, userId },
       );
+    } else {
+      // 기본적으로 공개된 펫만 조회 가능
+      queryBuilder.andWhere('pets.isPublic = :isPublic', { isPublic: true });
     }
 
     this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto);
