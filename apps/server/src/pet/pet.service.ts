@@ -235,8 +235,8 @@ export class PetService {
         );
 
       // father, mother pet이 isPublic이 아닌 경우, ownerId가 자신인 경우에만 펫 정보 반환
-      const fatherDisplayable = this.getParentPublicSafe(father, userId);
-      const motherDisplayable = this.getParentPublicSafe(mother, userId);
+      const fatherDisplayable = this.getParentPublicSafe(father, pet, userId);
+      const motherDisplayable = this.getParentPublicSafe(mother, pet, userId);
 
       const { growth, sex, morphs, traits, foods, weight } = petDetail ?? {};
       const { temperature, status: eggStatus } = eggDetail ?? {};
@@ -426,8 +426,16 @@ export class PetService {
 
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(petId);
-        const fatherDisplayable = this.getParentPublicSafe(father, userId);
-        const motherDisplayable = this.getParentPublicSafe(mother, userId);
+        const fatherDisplayable = this.getParentPublicSafe(
+          father,
+          petRaw,
+          userId,
+        );
+        const motherDisplayable = this.getParentPublicSafe(
+          mother,
+          petRaw,
+          userId,
+        );
 
         const petDto = plainToInstance(PetDto, {
           ...pet,
@@ -524,8 +532,16 @@ export class PetService {
 
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(petId);
-        const fatherDisplayable = this.getParentPublicSafe(father, userId);
-        const motherDisplayable = this.getParentPublicSafe(mother, userId);
+        const fatherDisplayable = this.getParentPublicSafe(
+          father,
+          petRaw,
+          userId,
+        );
+        const motherDisplayable = this.getParentPublicSafe(
+          mother,
+          petRaw,
+          userId,
+        );
 
         const petDto = plainToInstance(PetDto, {
           ...pet,
@@ -780,8 +796,8 @@ export class PetService {
           await this.parentRequestService.getParentsWithRequestStatus(
             pet.petId,
           );
-        const fatherDisplayable = this.getParentPublicSafe(father, userId);
-        const motherDisplayable = this.getParentPublicSafe(mother, userId);
+        const fatherDisplayable = this.getParentPublicSafe(father, pet, userId);
+        const motherDisplayable = this.getParentPublicSafe(mother, pet, userId);
 
         return plainToInstance(PetDto, {
           ...pet,
@@ -1007,16 +1023,26 @@ export class PetService {
     }
   }
 
-  private getParentPublicSafe(parent: PetParentDto | null, userId: string) {
+  private getParentPublicSafe(
+    parent: PetParentDto | null,
+    child: PetEntity,
+    userId: string,
+  ) {
     if (!parent) return null;
 
     if (parent.isDeleted) {
       return { hiddenStatus: PET_HIDDEN_STATUS.DELETED };
     }
+    // 타인 소유 부모개체 & 비공개
     if (!parent.isPublic && parent.owner?.userId !== userId) {
       return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
     }
-    if (parent.status === PARENT_STATUS.PENDING) {
+    // 타인 소유 부모개체 & 본인 소유 펫 & 부모 요청중 (요청 중인 정보는 타인에게 미노출)
+    if (
+      parent.status === PARENT_STATUS.PENDING &&
+      parent.owner?.userId !== userId &&
+      child.ownerId !== userId
+    ) {
       return { hiddenStatus: PET_HIDDEN_STATUS.PENDING };
     }
 
