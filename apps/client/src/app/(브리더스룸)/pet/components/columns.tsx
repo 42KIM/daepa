@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import {
   PetDto,
   PetDtoGrowth,
   PetDtoSpecies,
+  PetParentDto,
 } from "@repo/api-client";
 import LinkButton from "../../components/LinkButton";
 import { format } from "date-fns";
@@ -229,10 +231,16 @@ export const columns: ColumnDef<PetDto>[] = [
     accessorKey: "father",
     header: TABLE_HEADER.father,
     cell: ({ row }) => {
-      const father = row.original.father;
-      const status = father?.status ?? "approved";
+      if (row.original.father?.isHidden) {
+        return <Lock className="w- h-5 text-gray-400 dark:text-gray-500" />;
+      }
+      if (!row.original.father) {
+        return <span>-</span>;
+      }
 
-      return father?.petId ? (
+      const father = row.original.father as PetParentDto;
+      const status = father?.status ?? "approved";
+      return (
         <LinkButton
           href={`/pet/${father.petId}`}
           label={father.name ?? ""}
@@ -244,8 +252,6 @@ export const columns: ColumnDef<PetDto>[] = [
             ) : null
           }
         />
-      ) : (
-        <span>-</span>
       );
     },
   },
@@ -253,9 +259,16 @@ export const columns: ColumnDef<PetDto>[] = [
     accessorKey: "mother",
     header: TABLE_HEADER.mother,
     cell: ({ row }) => {
-      const mother = row.original.mother;
+      if (row.original.mother?.isHidden) {
+        return <Lock className="w- h-5 text-gray-400 dark:text-gray-500" />;
+      }
+      if (!row.original.mother) {
+        return <span>-</span>;
+      }
+
+      const mother = row.original.mother as PetParentDto;
       const status = mother?.status ?? "approved";
-      return mother?.petId ? (
+      return (
         <LinkButton
           href={`/pet/${mother.petId}`}
           label={mother.name ?? ""}
@@ -268,8 +281,6 @@ export const columns: ColumnDef<PetDto>[] = [
             ) : null
           }
         />
-      ) : (
-        <span>-</span>
       );
     },
   },
