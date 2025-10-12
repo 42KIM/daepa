@@ -165,7 +165,7 @@ export class AuthController {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true, // sameSite: 'none' 을 사용하기 위해서는 secure 옵션을 true 로 설정해야함
       sameSite: 'none',
       maxAge: 180 * 24 * 60 * 60 * 1000, // 180일
     });
@@ -199,7 +199,7 @@ export class AuthController {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'none',
       maxAge: 180 * 24 * 60 * 60 * 1000, // 180일
     });
@@ -234,7 +234,7 @@ export class AuthController {
     if (newRefreshToken) {
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'lax',
         maxAge: 180 * 24 * 60 * 60 * 1000, // 180일
       });
@@ -263,8 +263,8 @@ export class AuthController {
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
     });
 
     return {
@@ -287,8 +287,8 @@ export class AuthController {
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
     });
 
     return {
