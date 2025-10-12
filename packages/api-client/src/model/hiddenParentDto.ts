@@ -5,8 +5,9 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { HiddenParentDtoIsHidden } from "./hiddenParentDtoIsHidden";
 
 export interface HiddenParentDto {
   /** 숨김 여부 */
-  isHidden: boolean;
+  isHidden: HiddenParentDtoIsHidden;
 }

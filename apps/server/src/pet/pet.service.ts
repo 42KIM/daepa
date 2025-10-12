@@ -30,6 +30,7 @@ import {
   ADOPTION_SALE_STATUS,
   PET_LIST_FILTER_TYPE,
   PET_TYPE,
+  PET_HIDDEN_STATUS,
 } from './pet.constants';
 import { ParentRequestService } from '../parent_request/parent_request.service';
 import { PARENT_STATUS } from '../parent_request/parent_request.constants';
@@ -1009,11 +1010,14 @@ export class PetService {
   private getParentPublicSafe(parent: PetParentDto | null, userId: string) {
     if (!parent) return null;
 
-    if (
-      parent.isDeleted ||
-      (!parent.isPublic && parent.owner?.userId !== userId)
-    ) {
-      return { isHidden: true };
+    if (parent.isDeleted) {
+      return { hiddenStatus: PET_HIDDEN_STATUS.DELETED };
+    }
+    if (!parent.isPublic && parent.owner?.userId !== userId) {
+      return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
+    }
+    if (parent.status === PARENT_STATUS.PENDING) {
+      return { hiddenStatus: PET_HIDDEN_STATUS.PENDING };
     }
 
     return parent;
