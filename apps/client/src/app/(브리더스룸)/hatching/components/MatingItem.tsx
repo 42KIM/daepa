@@ -28,7 +28,6 @@ interface MatingItemProps {
 }
 
 const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) => {
-  console.log(mating);
   const queryClient = useQueryClient();
   const [isExpanded, setIsExpanded] = useState(false);
 
