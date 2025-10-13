@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 interface PetCardProps {
   date: string;
   pets: PetDto[];
-  tab: "all" | "hatched" | "notHatched";
+  tab: "all" | "hatched" | "egg";
 }
 
 const getParentInfo = (parent: PetDtoFather | PetDtoMother | undefined) => {
@@ -40,7 +40,7 @@ const HatchingPetCard = ({ date, pets, tab }: PetCardProps) => {
           .filter((pet) => {
             if (tab === "all") return true;
             if (tab === "hatched") return pet.type === PetDtoType.PET;
-            if (tab === "notHatched") return pet.type === PetDtoType.EGG;
+            if (tab === "egg") return pet.type === PetDtoType.EGG;
           })
           .map((pet) => {
             const isEgg = pet.type === PetDtoType.EGG;
