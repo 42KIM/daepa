@@ -50,7 +50,7 @@ export class PetHiddenStatusDto {
     enum: PET_HIDDEN_STATUS,
     'x-enumNames': Object.keys(PET_HIDDEN_STATUS),
   })
-  @IsBoolean()
+  @IsEnum(PET_HIDDEN_STATUS)
   hiddenStatus: PET_HIDDEN_STATUS;
 }
 
