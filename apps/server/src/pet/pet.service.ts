@@ -725,15 +725,16 @@ export class PetService {
     dateRange: { startDate?: Date; endDate?: Date },
     userId: string,
   ): Promise<Record<string, PetDto[]>> {
-    const queryBuilder = this.petRepository
-      .createQueryBuilder('pets')
-      .leftJoinAndMapOne(
+    const queryBuilder = this.dataSource
+      .createQueryBuilder(PetEntity, 'pets')
+      .innerJoinAndMapOne(
         'pets.owner',
         'users',
         'users',
-        'users.userId = pets.ownerId',
+        'users.userId = pets.ownerId AND users.userId = :userId',
+        { userId },
       )
-      .leftJoinAndMapOne(
+      .innerJoinAndMapOne(
         'pets.laying',
         'layings',
         'layings',
@@ -787,11 +788,6 @@ export class PetService {
     const petEntities = await queryBuilder.getMany();
     const petDtos = await Promise.all(
       petEntities.map(async (pet) => {
-        let owner: UserProfilePublicDto | null = null;
-        if (pet.ownerId) {
-          owner = await this.userService.findOneProfile(pet.ownerId);
-        }
-
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(
             pet.petId,
@@ -801,7 +797,7 @@ export class PetService {
 
         return plainToInstance(PetDto, {
           ...pet,
-          owner,
+          owner: pet.owner,
           father: fatherDisplayable,
           mother: motherDisplayable,
           ...(pet.petDetail && {
