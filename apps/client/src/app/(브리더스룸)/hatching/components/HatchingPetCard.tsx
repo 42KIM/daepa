@@ -1,6 +1,12 @@
 import { format } from "date-fns";
-import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
-import { PetDto, PetDtoType, PetParentDto } from "@repo/api-client";
+import { SPECIES_KOREAN_INFO } from "../../constants";
+import {
+  PetDto,
+  PetDtoFather,
+  PetDtoMother,
+  PetDtoType,
+  PetHiddenStatusDtoHiddenStatus,
+} from "@repo/api-client";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -10,6 +16,20 @@ interface PetCardProps {
   pets: PetDto[];
   tab: "all" | "hatched" | "notHatched";
 }
+
+const getParentInfo = (parent: PetDtoFather | PetDtoMother | undefined) => {
+  if (!parent) return "-";
+
+  if ("hiddenStatus" in parent) {
+    return (
+      (parent.hiddenStatus === PetHiddenStatusDtoHiddenStatus.SECRET &&
+        "(비공개 처리된 펫입니다.)") ||
+      (parent.hiddenStatus === PetHiddenStatusDtoHiddenStatus.DELETED && "(삭제된 펫입니다.)")
+    );
+  }
+
+  return parent.name;
+};
 
 const HatchingPetCard = ({ date, pets, tab }: PetCardProps) => {
   return (
@@ -36,10 +56,19 @@ const HatchingPetCard = ({ date, pets, tab }: PetCardProps) => {
                   )}
                 >
                   <CardContent>
-                    <div className="font-medium">{pet.name}</div>
+                    <span className="text-sm text-gray-400">
+                      {SPECIES_KOREAN_INFO[pet.species]}
+                    </span>
+                    {pet.name && (
+                      <div className="flex items-center gap-1 font-medium">{pet.name}</div>
+                    )}
+                    {pet.hatchingDate && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        해칭일: {format(new Date(pet.hatchingDate), "yyyy/MM/dd")}
+                      </div>
+                    )}
 
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      <span>{SPECIES_KOREAN_INFO[pet.species]}</span>
                       <div className="flex flex-col">
                         {isEgg ? <span>알</span> : null}
                         {isEgg && pet.temperature ? <span>온도: {pet.temperature}℃</span> : null}
@@ -47,24 +76,15 @@ const HatchingPetCard = ({ date, pets, tab }: PetCardProps) => {
                         {traits ? <span>형질: {traits}</span> : null}
                       </div>
                     </div>
-                    {pet.hatchingDate && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        해칭일: {format(new Date(pet.hatchingDate), "yyyy-MM-dd")}
-                      </div>
-                    )}
+
                     {pet.father && (
                       <div className="text-xs text-gray-400">
-                        {pet.father.isHidden
-                          ? "비공개 처리됨"
-                          : "부: " + (pet.father as PetParentDto).name}
+                        부:
+                        {getParentInfo(pet.father)}
                       </div>
                     )}
                     {pet.mother && (
-                      <div className="text-xs text-gray-400">
-                        {pet.mother.isHidden
-                          ? "비공개 처리됨"
-                          : "모: " + (pet.mother as PetParentDto).name}
-                      </div>
+                      <div className="text-xs text-gray-400">모: {getParentInfo(pet.mother)}</div>
                     )}
                   </CardContent>
                 </Card>
