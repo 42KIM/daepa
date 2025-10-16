@@ -38,7 +38,7 @@ const ParentSearchSelector = ({
   onSelect,
   onExit,
 }: ParentSearchProps) => {
-  const { petId } = useParams();
+  const { petId } = useParams<{ petId: string }>();
   const [searchQuery, setSearchQuery] = useState("");
   const [step, setStep] = useState(1);
   const [selectedPet, setSelectedPet] = useState<PetParentDtoWithMessage | null>(null);
