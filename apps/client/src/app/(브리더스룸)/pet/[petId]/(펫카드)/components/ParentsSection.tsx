@@ -92,6 +92,7 @@ const ParentsSection = memo(({ petId, isMyPet }: ParentsSectionProps) => {
           species={formData.species}
           label="부"
           data={
+            // 내 펫인 경우는 모든 정보를, 내 펫이 아닌 경우는 부모요청이 승인된 경우에만 정보를 노출
             isMyPet ||
             (!isMyPet && formData.father?.status === UpdateParentRequestDtoStatus.APPROVED)
               ? formData.father
