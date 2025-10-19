@@ -6,11 +6,15 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface LayingByDateDto {
+export interface LayingDto {
   /** 산란 ID */
-  layingId: number;
+  id: number;
+  /** 메이팅 ID */
+  matingId?: number;
   /** 산란 날짜 */
   layingDate: string;
-  /** 산란 정보 */
-  layings: string[];
+  /** 차수(클러치) */
+  clutch?: number;
+  /** 차수(클러치) 순서 */
+  clutchOrder?: number;
 }

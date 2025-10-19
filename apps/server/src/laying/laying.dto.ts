@@ -151,7 +151,6 @@ export class LayingByDateDto {
 
   @ApiProperty({
     description: '산란 정보',
-    isArray: true,
     type: PetSummaryLayingDto,
   })
   layings: PetSummaryLayingDto[];

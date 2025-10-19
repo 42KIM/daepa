@@ -150,3 +150,7 @@ export * from "./userSimpleDto";
 export * from "./verifyEmailDto";
 export * from "./verifyNameDto";
 export * from "./verifyPetNameDto";
+export * from "./layingDto";
+export * from "./pairControllerGetPairListParams";
+export * from "./pairControllerGetPairListSpecies";
+export * from "./petSummaryLayingDtoType";
