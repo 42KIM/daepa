@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { BrAccessOnly } from 'src/common/decorators/roles.decorator';
-import { PairDto, PairFilterDto } from './pair.dto';
+import { PairDetailDto, PairDto, PairFilterDto } from './pair.dto';
 import { ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { JwtUser } from 'src/auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
@@ -31,11 +31,12 @@ export class PairController {
   @ApiResponse({
     status: 200,
     description: '페어 상세 정보 조회 성공',
+    type: PairDetailDto,
   })
-  async getPairById(
+  async getPairDetail(
     @Param('pairId') pairId: string,
     @JwtUser() token: JwtUserPayload,
   ) {
-    return this.pairService.getPairById(pairId, token.userId);
+    return this.pairService.getPairDetailById(Number(pairId), token.userId);
   }
 }

@@ -291,6 +291,54 @@ export class PetSummaryAdoptionDto extends PickType(PetSummaryDto, [
   declare isDeleted?: boolean;
 }
 
+export class PetLayingDto extends PickType(PetSummaryDto, [
+  'type',
+  'petId',
+  'name',
+  'species',
+  'hatchingDate',
+  'sex',
+  'morphs',
+  'traits',
+  'weight',
+]) {
+  @ApiProperty({
+    description: '산란 클러치 순서',
+    example: 1,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  clutchOrder?: number;
+
+  @ApiProperty({
+    description: '펫 온도',
+    example: 37.5,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const num = Number(value);
+    if (isNaN(num)) return undefined;
+    // 소수점이 있으면 그대로, 없으면 .0 제거
+    return num % 1 === 0 ? Math.floor(num) : num;
+  })
+  temperature?: number;
+
+  @ApiProperty({
+    description: '알 상태',
+    example: 'HATCHED',
+    enum: EGG_STATUS,
+    'x-enumNames': Object.keys(EGG_STATUS),
+  })
+  @ValidateIf((o: Pick<PetBaseDto, 'type'>) => o.type === PET_TYPE.EGG)
+  @IsOptional()
+  @IsEnum(EGG_STATUS)
+  eggStatus?: EGG_STATUS;
+}
+
 export class PetSummaryLayingDto extends PickType(PetSummaryDto, [
   'type',
   'petId',

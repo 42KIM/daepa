@@ -4,13 +4,14 @@ import { DataSource, Repository } from 'typeorm';
 import { PairEntity } from './pair.entity';
 import { PetEntity } from 'src/pet/pet.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
-import { isNil, omitBy, uniq } from 'es-toolkit';
+import { compact, isNil, omitBy, uniq } from 'es-toolkit';
 import { plainToInstance } from 'class-transformer';
-import { PairDto } from './pair.dto';
+import { PairDetailDto, PairDto } from './pair.dto';
 import { MatingEntity } from 'src/mating/mating.entity';
 import { LayingEntity } from 'src/laying/laying.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PetSummaryLayingDto } from 'src/pet/pet.dto';
+import { PetLayingDto } from 'src/pet/pet.dto';
+import { format } from 'date-fns';
 
 @Injectable()
 export class PairService {
@@ -21,7 +22,6 @@ export class PairService {
   ) {}
 
   async getPairList(userId: string, species: PET_SPECIES) {
-    // 1. 페어 기본 정보 조회
     const pairs = await this.dataSource
       .createQueryBuilder(PairEntity, 'pairs')
       .where('pairs.ownerId = :userId AND pairs.species = :species', {
@@ -32,10 +32,8 @@ export class PairService {
 
     if (pairs.length === 0) return [];
 
-    // 2. 펫 ID 수집 (중복 제거)
     const parentsPetIds = uniq(pairs.flatMap((p) => [p.fatherId, p.motherId]));
 
-    // 3. 펫 정보 일괄 조회
     const pets = await this.dataSource
       .createQueryBuilder(PetEntity, 'p')
       .leftJoinAndMapOne(
@@ -58,7 +56,6 @@ export class PairService {
       ])
       .getMany();
 
-    // 4. 메모리에서 조립
     const petMap = new Map(pets.map((pet) => [pet.petId, pet]));
 
     return pairs.map((pair) => {
@@ -70,7 +67,10 @@ export class PairService {
     });
   }
 
-  async getPairById(pairId: string, userId: string) {
+  async getPairDetailById(
+    pairId: number,
+    userId: string,
+  ): Promise<PairDetailDto | null> {
     const queryBuilder = this.pairRepository
       .createQueryBuilder('pairs')
       .where('pairs.id = :pairId AND pairs.ownerId = :userId', {
@@ -116,12 +116,11 @@ export class PairService {
     }
 
     const nestedByPairMatingLaying = this.transformRawDataToNested(raw);
-    const layingIds = nestedByPairMatingLaying.flatMap((pair) =>
-      pair.matings?.flatMap((mating) =>
-        mating.layings?.map((laying) => laying.layingId),
-      ),
-    );
-    if (!layingIds.length) {
+    const layingIds = Object.values(
+      nestedByPairMatingLaying?.matings ?? {},
+    ).flatMap((mating) => mating.layings?.map((laying) => laying.layingId));
+
+    if (!compact(layingIds).length) {
       return nestedByPairMatingLaying;
     }
 
@@ -192,8 +191,7 @@ export class PairService {
       eggQueryBuilder.getMany(),
     ]);
 
-    // pet들을 layingId별로 그룹화
-    const petsByLayingId = new Map<number, PetSummaryLayingDto[]>();
+    const petsByLayingId = new Map<number, PetLayingDto[]>();
     [...petEntities, ...eggEntities].forEach((pet) => {
       if (pet.layingId) {
         const existing = petsByLayingId.get(pet.layingId) || [];
@@ -220,16 +218,23 @@ export class PairService {
       }
     });
 
-    // nestedByPairMatingLaying에 pet 정보 추가
-    nestedByPairMatingLaying.forEach((pair) => {
-      pair.matings?.forEach((mating) => {
-        mating.layings?.forEach((laying) => {
-          laying.pets = petsByLayingId.get(laying.layingId) ?? [];
-        });
-      });
+    const { matings, ...pairInfos } = nestedByPairMatingLaying;
+    const matingsWithPets = matings?.map((mating) => {
+      return {
+        ...mating,
+        layings: mating.layings?.map((laying) => {
+          return {
+            ...laying,
+            pets: petsByLayingId.get(laying.layingId) ?? [],
+          };
+        }),
+      };
     });
 
-    return nestedByPairMatingLaying;
+    return {
+      ...pairInfos,
+      matings: matingsWithPets,
+    };
   }
 
   private transformRawDataToNested(
@@ -244,81 +249,58 @@ export class PairService {
       clutch: number;
     }[],
   ) {
-    const pairMap = new Map<
+    const pairId = raw[0].pairId;
+    const fatherId = raw[0].fatherId;
+    const motherId = raw[0].motherId;
+
+    const matingsMap = new Map<
       number,
       {
-        pairId: number;
-        fatherId: string;
-        motherId: string;
-        matings?: Map<
-          number,
-          {
-            matingId: number;
-            matingDate: Date;
-            layings?: {
-              layingId: number;
-              layingDate: Date;
-              clutch: number;
-              pets?: PetSummaryLayingDto[];
-            }[];
-          }
-        >;
+        matingId: number;
+        matingDate: string;
+        layings?: {
+          layingId: number;
+          layingDate: string;
+          clutch: number;
+        }[];
       }
     >();
 
     for (const row of raw) {
-      const {
-        pairId,
-        fatherId,
-        motherId,
-        matingId,
-        matingDate,
-        layingId,
-        layingDate,
-        clutch,
-      } = row;
+      const { matingId, matingDate, layingId, layingDate, clutch } = row;
 
-      // Pair 레벨 처리
-      if (!pairMap.has(pairId)) {
-        pairMap.set(pairId, {
-          pairId,
-          fatherId,
-          motherId,
-          matings: new Map(),
-        });
-      }
+      if (!matingId) continue;
 
-      const pair = pairMap.get(pairId);
-      if (!pair) continue;
-
-      // Mating 레벨 처리
-      if (matingId && !pair.matings?.has(matingId)) {
-        pair.matings?.set(matingId, {
+      if (!matingsMap.has(matingId)) {
+        matingsMap.set(matingId, {
           matingId,
-          matingDate,
-          layings: [],
+          matingDate: format(matingDate, 'yyyy-MM-dd'),
         });
       }
 
-      // Laying 레벨 처리
-      if (layingId && matingId) {
-        const mating = pair.matings?.get(matingId);
-        if (mating && !mating.layings?.some((l) => l.layingId === layingId)) {
-          mating.layings?.push({
-            layingId,
-            layingDate,
-            clutch,
-          });
-        }
+      if (layingId) {
+        const layings = matingsMap.get(matingId)?.layings ?? [];
+
+        layings.push({
+          layingId,
+          layingDate: format(layingDate, 'yyyy-MM-dd'),
+          clutch,
+        });
+
+        matingsMap.set(matingId, {
+          matingId,
+          matingDate: format(matingDate, 'yyyy-MM-dd'),
+          layings,
+        });
       }
     }
 
-    // Map을 배열로 변환
-    return Array.from(pairMap.values()).map((pair) => ({
-      pairId: pair.pairId,
-      fatherId: pair.fatherId,
-      motherId: pair.motherId,
-      matings: Array.from(pair.matings?.values() ?? []),
-    }));
+    return {
+      pairId,
+      fatherId,
+      motherId,
+      matings:
+        matingsMap.size > 0 ? Array.from(matingsMap.values()) : undefined,
+    };
   }
 }

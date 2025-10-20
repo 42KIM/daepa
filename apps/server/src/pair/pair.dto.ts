@@ -1,6 +1,7 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, PickType } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
+  IsArray,
   IsDate,
   IsEnum,
   IsNumber,
@@ -8,8 +9,9 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { LayingBaseDto } from 'src/laying/laying.dto';
 import { PET_SPECIES } from 'src/pet/pet.constants';
-import { PetDto } from 'src/pet/pet.dto';
+import { PetDto, PetLayingDto } from 'src/pet/pet.dto';
 
 export class PairBaseDto {
   @ApiProperty({
@@ -103,6 +105,92 @@ export class PairDto extends PickType(PairBaseDto, ['id', 'species']) {
 
   @Exclude()
   declare motherId: string;
+}
+
+class LayingWithPetsDto extends PickType(LayingBaseDto, ['clutch']) {
+  @ApiProperty({
+    description: '산란 ID',
+    example: 1,
+  })
+  @IsNumber()
+  layingId: number;
+
+  @ApiProperty({
+    description: '산란 날짜',
+    example: '2025-01-01',
+  })
+  @IsString()
+  layingDate: string;
+
+  @ApiProperty({
+    description: '펫 정보',
+    required: false,
+    type: [PetLayingDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  pets?: PetLayingDto[];
+}
+
+class MatingWithLayingsDto {
+  @ApiProperty({
+    description: '메이팅 ID',
+    example: 1,
+  })
+  @IsNumber()
+  matingId: number;
+
+  @ApiProperty({
+    description: '메이팅 날짜',
+    example: '2025-01-01',
+  })
+  @IsString()
+  matingDate: string;
+
+  @ApiProperty({
+    description: '산란 정보',
+    required: false,
+    type: [LayingWithPetsDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  layings?: LayingWithPetsDto[];
+}
+
+@ApiExtraModels(MatingWithLayingsDto)
+export class PairDetailDto {
+  @ApiProperty({
+    description: '페어 ID',
+    example: 1,
+  })
+  @IsNumber()
+  pairId: number;
+
+  @ApiProperty({
+    description: '아빠 펫 ID',
+    example: 'XXXXXX',
+  })
+  @IsString()
+  fatherId: string;
+
+  @ApiProperty({
+    description: '엄마 펫 ID',
+    example: 'YYYYYYY',
+  })
+  @IsString()
+  motherId: string;
+
+  @ApiProperty({
+    description: '메이팅 정보',
+    required: false,
+    type: [MatingWithLayingsDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  matings?: MatingWithLayingsDto[];
 }
 
 export class PairFilterDto extends PickType(PairBaseDto, ['species']) {}
