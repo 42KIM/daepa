@@ -3252,15 +3252,15 @@ export const getPairControllerGetPairListResponseMock = (): PairDto[] =>
             faker.number.int({ min: undefined, max: undefined }),
             undefined,
           ]),
-          photos: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-              () => ({
+          thumbnail: faker.helpers.arrayElement([
+            {
+              ...{
                 fileName: faker.string.alpha(20),
                 url: faker.string.alpha(20),
                 mimeType: faker.string.alpha(20),
                 size: faker.number.int({ min: undefined, max: undefined }),
-              }),
-            ),
+              },
+            },
             undefined,
           ]),
         },
@@ -3296,15 +3296,15 @@ export const getPairControllerGetPairListResponseMock = (): PairDto[] =>
             faker.number.int({ min: undefined, max: undefined }),
             undefined,
           ]),
-          photos: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-              () => ({
+          thumbnail: faker.helpers.arrayElement([
+            {
+              ...{
                 fileName: faker.string.alpha(20),
                 url: faker.string.alpha(20),
                 mimeType: faker.string.alpha(20),
                 size: faker.number.int({ min: undefined, max: undefined }),
-              }),
-            ),
+              },
+            },
             undefined,
           ]),
         },

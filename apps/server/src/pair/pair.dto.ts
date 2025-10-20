@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty, PickType } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -12,6 +12,7 @@ import {
 import { LayingBaseDto } from 'src/laying/laying.dto';
 import { PET_SPECIES } from 'src/pet/pet.constants';
 import { PetDto, PetLayingDto } from 'src/pet/pet.dto';
+import { PetImageItem } from 'src/pet_image/pet_image.dto';
 
 export class PairBaseDto {
   @ApiProperty({
@@ -73,8 +74,17 @@ class PairParentDto extends PickType(PetDto, [
   'traits',
   'weight',
   'growth',
-  'photos',
-]) {}
+]) {
+  @ApiProperty({
+    description: '펫 대표 이미지',
+    required: false,
+    type: PetImageItem,
+  })
+  @IsOptional()
+  @IsObject()
+  @Type(() => PetImageItem)
+  thumbnail?: PetImageItem;
+}
 
 export class PairDto extends PickType(PairBaseDto, ['id', 'species']) {
   @ApiProperty({

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PET_SPECIES, PET_TYPE } from 'src/pet/pet.constants';
+import { PET_SEX, PET_SPECIES, PET_TYPE } from 'src/pet/pet.constants';
 import { DataSource, Repository } from 'typeorm';
 import { PairEntity } from './pair.entity';
 import { PetEntity } from 'src/pet/pet.entity';
@@ -12,6 +12,8 @@ import { LayingEntity } from 'src/laying/laying.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PetLayingDto } from 'src/pet/pet.dto';
 import { format } from 'date-fns';
+import { PetImageEntity } from 'src/pet_image/pet_image.entity';
+import { PetImageItem } from 'src/pet_image/pet_image.dto';
 
 @Injectable()
 export class PairService {
@@ -42,21 +44,47 @@ export class PairService {
         'pd',
         'pd.petId = p.petId',
       )
+      .leftJoinAndMapOne(
+        'p.petImages',
+        PetImageEntity,
+        'pi',
+        'pi.petId = p.petId',
+      )
       .where('p.petId IN (:...parentsPetIds)', { parentsPetIds })
       .select([
-        'p.petId',
-        'p.name',
-        'p.species',
-        'p.hatchingDate',
-        'pd.sex',
-        'pd.morphs',
-        'pd.traits',
-        'pd.weight',
-        'pd.growth',
+        'p.petId as petId',
+        'p.name as name',
+        'p.species as species',
+        'p.hatchingDate as hatchingDate',
+        'pd.sex as sex',
+        'pd.morphs as morphs',
+        'pd.traits as traits',
+        'pd.weight as weight',
+        'pd.growth as growth',
+        'pi.files as files',
       ])
-      .getMany();
+      .getRawAndEntities<{
+        petId: string;
+        name: string;
+        species: PET_SPECIES;
+        hatchingDate: Date;
+        sex: PET_SEX;
+        morphs: string;
+        traits: string;
+        weight: number;
+        growth: number;
+        files: PetImageItem[];
+      }>();
 
-    const petMap = new Map(pets.map((pet) => [pet.petId, pet]));
+    const petMap = new Map(
+      pets.raw.map((pet) => [
+        pet.petId,
+        {
+          ...pet,
+          thumbnail: pet.files?.[0],
+        },
+      ]),
+    );
 
     return pairs.map((pair) => {
       return plainToInstance(PairDto, {

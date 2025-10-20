@@ -24,6 +24,6 @@ export interface PairParentDto {
   traits?: string[];
   /** 펫 몸무게(g) */
   weight?: number;
-  /** 펫 이미지 목록 */
-  photos?: PetImageItem[];
+  /** 펫 대표 이미지 */
+  thumbnail?: PetImageItem;
 }
