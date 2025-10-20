@@ -3166,7 +3166,98 @@ export const getLayingControllerUpdateResponseMock = (
 });
 
 export const getPairControllerGetPairListResponseMock = (): PairDto[] =>
-  Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({}));
+  Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    id: faker.number.int({ min: undefined, max: undefined }),
+    species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
+    father: faker.helpers.arrayElement([
+      {
+        ...{
+          petId: faker.string.alpha(20),
+          name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+          growth: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["BABY", "JUVENILE", "PRE_ADULT", "ADULT", "DEAD"] as const),
+            undefined,
+          ]),
+          sex: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["M", "F", "N"] as const),
+            undefined,
+          ]),
+          morphs: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          traits: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          weight: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          photos: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+              () => ({
+                fileName: faker.string.alpha(20),
+                url: faker.string.alpha(20),
+                mimeType: faker.string.alpha(20),
+                size: faker.number.int({ min: undefined, max: undefined }),
+              }),
+            ),
+            undefined,
+          ]),
+        },
+      },
+      undefined,
+    ]),
+    mother: faker.helpers.arrayElement([
+      {
+        ...{
+          petId: faker.string.alpha(20),
+          name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+          growth: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["BABY", "JUVENILE", "PRE_ADULT", "ADULT", "DEAD"] as const),
+            undefined,
+          ]),
+          sex: faker.helpers.arrayElement([
+            faker.helpers.arrayElement(["M", "F", "N"] as const),
+            undefined,
+          ]),
+          morphs: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          traits: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.string.alpha(20),
+            ),
+            undefined,
+          ]),
+          weight: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          photos: faker.helpers.arrayElement([
+            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+              () => ({
+                fileName: faker.string.alpha(20),
+                url: faker.string.alpha(20),
+                mimeType: faker.string.alpha(20),
+                size: faker.number.int({ min: undefined, max: undefined }),
+              }),
+            ),
+            undefined,
+          ]),
+        },
+      },
+      undefined,
+    ]),
+  }));
 
 export const getPairControllerGetPairDetailResponseMock = (
   overrideResponse: Partial<PairDetailDto> = {},

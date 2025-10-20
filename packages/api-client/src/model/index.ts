@@ -162,3 +162,8 @@ export * from "./userSimpleDto";
 export * from "./verifyEmailDto";
 export * from "./verifyNameDto";
 export * from "./verifyPetNameDto";
+export * from "./pairDto";
+export * from "./pairDtoSpecies";
+export * from "./pairParentDto";
+export * from "./pairParentDtoGrowth";
+export * from "./pairParentDtoSex";
