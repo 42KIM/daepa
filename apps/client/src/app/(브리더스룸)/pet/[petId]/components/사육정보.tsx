@@ -92,7 +92,7 @@ const BreedingInfo = ({ pet }: { pet: PetDto }) => {
   if (!pet) return null;
 
   return (
-    <div className="shadow-xs flex h-fit w-[300px] flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex h-fit w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">사육정보</div>
 
       <FormItem

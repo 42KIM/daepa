@@ -21,7 +21,6 @@ import { isNil, range, remove } from "es-toolkit";
 import { ACCEPT_IMAGE_FORMATS } from "../../constants";
 import { tokenStorage } from "@/lib/tokenStorage";
 import { PhotoItem } from "../../register/types";
-import { Chip } from "@mui/material";
 
 interface DndImagePickerProps {
   max?: number;
@@ -183,12 +182,12 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
     <div>
       {!disabled && (
         <>
-          <p className="text-sm text-blue-500">
+          <p className="text-[14px] font-[500] text-blue-500">
             최대 {max}장까지 업로드 가능합니다. (jpg, jpeg, png, gif, webp, avif)
           </p>
           <div className="mb-2 flex items-center gap-1 text-gray-600">
             <Info className="h-3 w-3" />
-            <p className="text-xs">사진을 길게 눌러 순서를 변경할 수 있습니다.</p>
+            <p className="text-[12px]">사진을 길게 눌러 순서를 변경할 수 있습니다.</p>
           </div>
         </>
       )}
@@ -200,8 +199,6 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
           // 모바일에서 스크롤과 드래그가 충돌하지 않도록 설정
           autoScroll={false}
         >
-          {disabled && photos.length === 0 && <Chip color="info" label="등록된 사진이 없습니다." />}
-
           <SortableContext items={imageNamesInOrder} strategy={rectSortingStrategy}>
             <div className={cn("grid grid-cols-3 gap-2", isDragActive && "ring-2 ring-blue-400")}>
               {photos.map((photo, index) => (
@@ -220,7 +217,7 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
                   <button
                     type="button"
                     onClick={open}
-                    className="flex h-24 w-full items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100"
+                    className="flex h-24 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100"
                   >
                     <Plus className="h-5 w-5" />
                   </button>
@@ -293,7 +290,7 @@ function SortableThumb({
             src={buildR2TransformedUrl(src)}
             alt={`image_${id}`}
             fill
-            className="object-cover"
+            className="cursor-pointer object-cover"
             // 이미지 드래그 방지
             draggable={false}
           />
@@ -305,7 +302,7 @@ function SortableThumb({
           type="button"
           onClick={onDelete}
           className={cn(
-            "absolute right-1 top-1 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-sm transition-all duration-200",
+            "absolute right-1 top-1 z-10 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white shadow-sm transition-all duration-200",
             "hover:bg-red-600 active:scale-95",
             isDragging && "opacity-0", // 드래그 중에는 삭제 버튼 숨김
           )}
