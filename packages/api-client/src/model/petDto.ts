@@ -8,7 +8,7 @@
 import type { PetDtoType } from "./petDtoType";
 import type { UserProfilePublicDto } from "./userProfilePublicDto";
 import type { PetDtoSpecies } from "./petDtoSpecies";
-import type { PetDetailDto } from "./petDetailDto";
+import type { PetDetailBaseDto } from "./petDetailBaseDto";
 import type { EggDetailDto } from "./eggDetailDto";
 import type { LayingDto } from "./layingDto";
 import type { PetDtoGrowth } from "./petDtoGrowth";
@@ -42,7 +42,7 @@ export interface PetDto {
   /** 펫 삭제 여부 */
   isDeleted?: boolean;
   /** 펫 상세 정보 */
-  petDetail?: PetDetailDto;
+  petDetail?: PetDetailBaseDto;
   /** 알 상세 정보 */
   eggDetail?: EggDetailDto;
   /** 산란 정보 */

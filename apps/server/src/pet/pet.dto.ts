@@ -40,7 +40,7 @@ import { PageOptionsDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { PetImageItem, UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
-import { PetDetailDto } from 'src/pet_detail/pet_detail.dto';
+import { PetDetailBaseDto } from 'src/pet_detail/pet_detail.dto';
 import { EggDetailDto } from 'src/egg_detail/egg_detail.dto';
 import { LayingDto } from 'src/laying/laying.dto';
 
@@ -148,13 +148,13 @@ export class PetBaseDto {
 
   @ApiProperty({
     description: '펫 상세 정보',
-    type: PetDetailDto,
+    type: PetDetailBaseDto,
     required: false,
   })
   @ValidateNested()
-  @Type(() => PetDetailDto)
+  @Type(() => PetDetailBaseDto)
   @IsOptional()
-  petDetail?: PetDetailDto;
+  petDetail?: PetDetailBaseDto;
 
   @ApiProperty({
     description: '알 상세 정보',
@@ -680,7 +680,7 @@ export class PetDto extends PetBaseDto {
   photos?: PetImageItem[];
 
   @Exclude()
-  declare petDetail?: PetDetailDto | undefined;
+  declare petDetail?: PetDetailBaseDto | undefined;
 
   @Exclude()
   declare createdAt?: Date;

@@ -167,3 +167,6 @@ export * from "./userSimpleDto";
 export * from "./verifyEmailDto";
 export * from "./verifyNameDto";
 export * from "./verifyPetNameDto";
+export * from "./petDetailBaseDto";
+export * from "./petDetailBaseDtoGrowth";
+export * from "./petDetailBaseDtoSex";
