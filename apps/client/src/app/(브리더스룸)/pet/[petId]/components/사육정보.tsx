@@ -8,8 +8,9 @@ import {
   petControllerUpdate,
   UpdatePetDto,
   PetDtoType,
+  PetDto,
 } from "@repo/api-client";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MORPH_LIST_BY_SPECIES } from "@/app/(브리더스룸)/constants";
 import { SELECTOR_CONFIGS } from "@/app/(브리더스룸)/constants";
 import { FOOD_LIST } from "@/app/(브리더스룸)/constants";
@@ -25,19 +26,14 @@ import MultiSelect from "@/app/(브리더스룸)/components/MultiSelect";
 import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarInput";
 import { format } from "date-fns";
 import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
+import { FormItem } from "../page";
 
-const BreedingInfo = ({ petId }: { petId: string }) => {
+const BreedingInfo = ({ pet }: { pet: PetDto }) => {
   const queryClient = useQueryClient();
   const [disabled, setDisabled] = useState(true);
   const { formData, errors, setFormData } = usePetStore();
   const { duplicateCheckStatus } = useNameStore();
   const [isEditing, setIsEditing] = useState(false);
-
-  const { data: pet } = useQuery({
-    queryKey: [petControllerFindPetByPetId.name, petId],
-    queryFn: () => petControllerFindPetByPetId(petId),
-    select: (response) => response.data.data,
-  });
 
   const isEgg = pet?.type === PetDtoType.EGG;
 
@@ -308,12 +304,3 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
 };
 
 export default BreedingInfo;
-
-const FormItem = ({ label, content }: { label: string; content: React.ReactNode }) => {
-  return (
-    <div className="flex gap-3 text-[14px]">
-      <div className="flex min-w-[60px] pt-[6px]">{label}</div>
-      <div className="flex flex-1">{content}</div>
-    </div>
-  );
-};
