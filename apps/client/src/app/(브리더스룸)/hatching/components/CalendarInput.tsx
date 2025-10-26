@@ -38,13 +38,17 @@ const CalendarInput = ({
           value ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-800",
         )}
       >
-        <div>
+        <button type="button">
           {placeholder}
           {value && isValid(new Date(value)) && `・${format(new Date(value), formatString)}`}
           <ChevronDown
-            className={cn("h-4 w-4 text-gray-600", value ? "text-blue-600" : "text-gray-600")}
+            className={cn(
+              "h-4 w-4 transition-transform",
+              value ? "text-blue-600" : "text-gray-600",
+              isOpen && "rotate-180",
+            )}
           />
-        </div>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar

@@ -1,3 +1,4 @@
+"use client";
 import { SIDEBAR_ITEMS } from "../constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";

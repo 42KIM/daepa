@@ -190,7 +190,7 @@ const CreateLayingModal = ({
                   if (!date) return;
                   setFormData((prev) => ({
                     ...prev,
-                    layingDate: format(date, "yyyy-MM-dd"),
+                    layingDate: date,
                   }));
                 }}
                 disabled={isDateDisabled}

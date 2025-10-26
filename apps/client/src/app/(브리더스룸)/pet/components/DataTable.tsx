@@ -97,7 +97,6 @@ export const DataTable = ({
       <div className="w-full">
         {hasFilter && (
           <Filters
-            table={table}
             columnFilters={columnFilters}
             setColumnFilters={setColumnFilters}
             searchFilters={searchFilters}
@@ -105,24 +104,25 @@ export const DataTable = ({
           />
         )}
 
-        <div
+        <button
+          type="button"
+          aria-label="검색 결과 새로고침"
+          aria-busy={isRefreshing}
+          disabled={isRefreshing}
           onClick={async () => {
             if (isRefreshing) return;
             setIsRefreshing(true);
             try {
-              const maybe = refetch();
-              if (maybe && typeof maybe.then === "function") {
-                await maybe;
-              }
+              await Promise.resolve(refetch());
             } finally {
               timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
             }
           }}
-          className="flex w-fit cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+          className="flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
         >
           검색된 펫・{totalCount}마리
           <RefreshCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
-        </div>
+        </button>
 
         <div className="rounded-md">
           <Table>
