@@ -43,7 +43,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
   }, [mutateUpdatePet, formData, queryClient, pet.petId]);
 
   return (
-    <div className="shadow-xs flex h-full min-w-[340px] flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex min-h-[480px] min-w-[340px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">이미지</div>
 
       {disabled && isNil(formData.photos) && (

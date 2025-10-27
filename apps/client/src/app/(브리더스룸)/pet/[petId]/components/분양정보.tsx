@@ -144,7 +144,7 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
   }, [adoption, disabled]);
 
   return (
-    <div className="shadow-xs flex h-full min-w-[300px] flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex min-h-[480px] min-w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">분양정보</div>
 
       {/* 분양 상태, 가격, 날짜, 입양자, 거래 방식, 메모 */}
@@ -288,7 +288,7 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
           <FormItem
             label="메모"
             content={
-              <div className="relative pt-2">
+              <div className="relative w-full pt-2">
                 <textarea
                   className={`min-h-[100px] w-full rounded-xl bg-gray-100 p-3 text-left text-[14px] focus:outline-none focus:ring-0 dark:bg-gray-600/50 dark:text-white`}
                   value={String(adoptionData.memo || "")}

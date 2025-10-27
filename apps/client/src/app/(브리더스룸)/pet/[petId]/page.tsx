@@ -8,6 +8,7 @@ import BreedingInfo from "./components/사육정보";
 import Header from "./components/Header";
 import AdoptionInfo from "./components/분양정보";
 import Images from "./components/이미지";
+import PedigreeInfo from "./components/혈통정보";
 
 interface PetDetailPageProps {
   params: Promise<{
@@ -27,10 +28,10 @@ function PetDetailPage({ params }: PetDetailPageProps) {
   if (!pet) return null;
 
   return (
-    <div className="flex h-full flex-1 flex-col">
+    <div className="flex h-full flex-1 flex-col gap-3">
       <Header pet={pet} />
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3 max-[960px]:flex-wrap">
         {/* 사육정보 (개체 이름, 종, 성별, 크기, 모프, 형질, 먹이) */}
         <BreedingInfo pet={pet} />
         {/* 분양 정보 */}
@@ -39,7 +40,13 @@ function PetDetailPage({ params }: PetDetailPageProps) {
         {/* 사진 */}
         <Images pet={pet} />
 
-        {/* 혈통 정보 */}
+        <PedigreeInfo
+          father={pet.father}
+          mother={pet.mother}
+          species={pet.species}
+          petId={petId}
+          userId={pet.owner.userId}
+        />
       </div>
     </div>
   );
