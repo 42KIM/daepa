@@ -7,13 +7,15 @@ import { Check, ChevronDown } from "lucide-react";
 
 interface SelectFilterProps {
   type: "species" | "growth" | "sex" | "foods" | "eggStatus";
-  initialItem?: any;
-  onSelect: (item: any) => void;
+  initialItem?: string | number | string[] | number[] | undefined;
+  onSelect: (item: string | number | string[] | number[] | undefined) => void;
 }
 
 const SelectFilter = ({ type, initialItem, onSelect }: SelectFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(initialItem);
+  const [selectedItem, setSelectedItem] = useState<
+    string | number | string[] | number[] | undefined
+  >(initialItem);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isEntering, setIsEntering] = useState(false);
 

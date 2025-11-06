@@ -113,7 +113,7 @@ export const DataTable = ({
             if (isRefreshing) return;
             setIsRefreshing(true);
             try {
-              await Promise.resolve(refetch());
+              await refetch();
             } finally {
               timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
             }
