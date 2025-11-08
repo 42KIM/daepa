@@ -24,11 +24,13 @@ import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarI
 import { format } from "date-fns";
 import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
 import FormItem from "./FormItem";
+import Loading from "@/components/common/Loading";
 
 const BreedingInfo = ({ petId }: { petId: string }) => {
-  const [isEditMode, setIsEditMode] = useState(false);
   const { formData, errors, setFormData } = usePetStore();
   const { duplicateCheckStatus } = useNameStore();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { data: pet, refetch } = useQuery({
     queryKey: [petControllerFindPetByPetId.name, petId],
@@ -52,6 +54,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
     if (!pet) return;
 
     try {
+      setIsProcessing(true);
       if (!pet.petId) return;
 
       if (pet.name !== formData.name && duplicateCheckStatus !== DUPLICATE_CHECK_STATUS.AVAILABLE) {
@@ -81,13 +84,15 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
     } catch (error) {
       console.error("Failed to update pet:", error);
       toast.error("펫 정보 수정에 실패했습니다.");
+    } finally {
+      setIsProcessing(false);
     }
-  }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch]);
+  }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch, setIsProcessing]);
 
   if (!pet) return null;
 
   return (
-    <div className="shadow-xs flex h-fit w-[300px] flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex h-fit w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">사육정보</div>
 
       <FormItem
@@ -274,6 +279,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
       <div className="mt-2 flex w-full flex-1 gap-2">
         {isEditMode && (
           <Button
+            disabled={isProcessing}
             className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
             onClick={() => {
               setFormData(pet);
@@ -287,6 +293,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
           className={cn(
             "flex-2 h-10 cursor-pointer rounded-lg font-bold",
             isEditMode && "bg-red-600 hover:bg-red-600/90",
+            isProcessing && "bg-gray-300",
           )}
           onClick={() => {
             if (!isEditMode) {
@@ -296,7 +303,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
             }
           }}
         >
-          {!isEditMode ? "수정하기" : "수정된 사항 저장하기"}
+          {isProcessing ? <Loading /> : !isEditMode ? "수정하기" : "수정된 사항 저장하기"}
         </Button>
       </div>
     </div>

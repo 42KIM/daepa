@@ -16,12 +16,11 @@ import { buildR2TransformedUrl, cn } from "@/lib/utils";
 import { X, Plus, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { usePetStore } from "../../register/store/pet";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { isNil, range, remove } from "es-toolkit";
 import { ACCEPT_IMAGE_FORMATS } from "../../constants";
 import { tokenStorage } from "@/lib/tokenStorage";
 import { PhotoItem } from "../../register/types";
-import { Chip } from "@mui/material";
 
 interface DndImagePickerProps {
   max?: number;
@@ -33,6 +32,20 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
   const [isLoading, setIsLoading] = useState(false);
   const photos: PhotoItem[] = formData.photos ?? [];
   const imageNamesInOrder = photos.map(({ fileName }) => fileName) ?? [];
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(photos.length > 0 ? 0 : null);
+
+  useEffect(() => {
+    if (photos.length === 0) {
+      setSelectedIndex(null);
+      return;
+    }
+    // 선택된 인덱스가 범위를 벗어나면 마지막 항목으로 보정
+    setSelectedIndex((prev) => {
+      if (prev === null) return 0;
+      if (prev >= photos.length) return photos.length - 1;
+      return prev;
+    });
+  }, [photos.length]);
 
   // 터치와 마우스 센서 설정
   const mouseSensor = useSensor(MouseSensor, {
@@ -183,12 +196,12 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
     <div>
       {!disabled && (
         <>
-          <p className="text-sm text-blue-500">
+          <p className="text-[14px] font-[500] text-blue-500">
             최대 {max}장까지 업로드 가능합니다. (jpg, jpeg, png, gif, webp, avif)
           </p>
           <div className="mb-2 flex items-center gap-1 text-gray-600">
             <Info className="h-3 w-3" />
-            <p className="text-xs">사진을 길게 눌러 순서를 변경할 수 있습니다.</p>
+            <p className="text-[12px]">사진을 길게 눌러 순서를 변경할 수 있습니다.</p>
           </div>
         </>
       )}
@@ -200,8 +213,6 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
           // 모바일에서 스크롤과 드래그가 충돌하지 않도록 설정
           autoScroll={false}
         >
-          {disabled && photos.length === 0 && <Chip color="info" label="등록된 사진이 없습니다." />}
-
           <SortableContext items={imageNamesInOrder} strategy={rectSortingStrategy}>
             <div className={cn("grid grid-cols-3 gap-2", isDragActive && "ring-2 ring-blue-400")}>
               {photos.map((photo, index) => (
@@ -212,6 +223,11 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
                   disabled={disabled}
                   isLoading={isLoading}
                   onDelete={() => handleDelete(index)}
+                  selected={selectedIndex === index}
+                  onSelect={() => {
+                    if (isLoading) return;
+                    setSelectedIndex(index);
+                  }}
                 />
               ))}
               {!disabled &&
@@ -220,7 +236,7 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
                   <button
                     type="button"
                     onClick={open}
-                    className="flex h-24 w-full items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100"
+                    className="flex h-24 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100"
                   >
                     <Plus className="h-5 w-5" />
                   </button>
@@ -233,6 +249,22 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
           </SortableContext>
         </DndContext>
       </div>
+
+      {/* 선택한 이미지 미리보기 */}
+      {selectedIndex !== null && photos[selectedIndex] && (
+        <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
+          <div className="relative aspect-[4/3] w-full">
+            <Image
+              src={buildR2TransformedUrl(photos[selectedIndex].url)}
+              alt={`preview_${photos[selectedIndex].fileName}`}
+              fill
+              className="object-cover"
+              draggable={false}
+              priority={false}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -243,12 +275,16 @@ function SortableThumb({
   disabled,
   isLoading,
   onDelete,
+  selected,
+  onSelect,
 }: {
   id: string;
   src: string;
   disabled?: boolean;
   isLoading?: boolean;
   onDelete: () => void;
+  selected?: boolean;
+  onSelect: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
@@ -277,11 +313,19 @@ function SortableThumb({
           "absolute inset-0 overflow-hidden rounded-xl border-2 transition-all duration-200",
           isDragging
             ? "cursor-grabbing border-blue-400"
-            : "cursor-grab border-gray-200 hover:border-gray-300",
+            : cn(
+                "cursor-grab border-gray-200 hover:border-gray-300",
+                selected && "border-blue-400 hover:border-blue-500",
+              ),
         )}
         // 터치 이벤트 최적화
         style={{
           touchAction: "none", // 브라우저의 기본 터치 동작 방지
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isLoading || isDragging) return;
+          onSelect();
         }}
       >
         {isLoading ? (
@@ -293,7 +337,7 @@ function SortableThumb({
             src={buildR2TransformedUrl(src)}
             alt={`image_${id}`}
             fill
-            className="object-cover"
+            className="cursor-pointer object-cover"
             // 이미지 드래그 방지
             draggable={false}
           />
@@ -305,7 +349,7 @@ function SortableThumb({
           type="button"
           onClick={onDelete}
           className={cn(
-            "absolute right-1 top-1 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-sm transition-all duration-200",
+            "absolute right-1 top-1 z-10 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white shadow-sm transition-all duration-200",
             "hover:bg-red-600 active:scale-95",
             isDragging && "opacity-0", // 드래그 중에는 삭제 버튼 숨김
           )}

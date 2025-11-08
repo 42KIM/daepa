@@ -22,6 +22,7 @@ import { overlay } from "overlay-kit";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import Loading from "@/components/common/Loading";
 
 interface AdoptionInfoProps {
   adoptionId?: string;
@@ -29,8 +30,9 @@ interface AdoptionInfoProps {
 }
 
 const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
-  const [isEditMode, setIsEditMode] = useState(false);
   const { formData, setFormData } = usePetStore();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { data: adoption, refetch } = useQuery({
     queryKey: [adoptionControllerGetAdoption.name, adoptionId],
@@ -96,6 +98,7 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
     );
 
     try {
+      setIsProcessing(true);
       if (adoptionId) {
         await updateAdoption({ adoptionId, data: newAdoptionDto });
       } else {
@@ -108,8 +111,10 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
     } catch (error) {
       console.error("분양 생성 실패:", error);
       toast.error("분양 생성에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsProcessing(false);
     }
-  }, [updateAdoption, createAdoption, adoptionData, petId, refetch]);
+  }, [updateAdoption, createAdoption, adoptionData, petId, refetch, setIsProcessing]);
 
   const handleSelectBuyer = useCallback(() => {
     if (!isEditMode) return;
@@ -316,6 +321,7 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
       <div className="mt-2 flex w-full flex-1 items-end gap-2">
         {isEditMode && (
           <Button
+            disabled={isProcessing}
             className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
             onClick={() => {
               resetAdoption();
@@ -326,9 +332,11 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
           </Button>
         )}
         <Button
+          disabled={isProcessing}
           className={cn(
             "flex-2 h-10 cursor-pointer rounded-lg font-bold",
             isEditMode && "bg-red-600 hover:bg-red-600/90",
+            isProcessing && "bg-gray-300",
           )}
           onClick={() => {
             if (isEditMode) {
@@ -338,11 +346,17 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
             }
           }}
         >
-          {!isEditMode
-            ? !showAdoptionInfo
-              ? "분양 정보 등록"
-              : "수정하기"
-            : "수정된 사항 저장하기"}
+          {isProcessing ? (
+            <Loading />
+          ) : !isEditMode ? (
+            !showAdoptionInfo ? (
+              "분양 정보 등록"
+            ) : (
+              "수정하기"
+            )
+          ) : (
+            "수정된 사항 저장하기"
+          )}
         </Button>
       </div>
     </div>
