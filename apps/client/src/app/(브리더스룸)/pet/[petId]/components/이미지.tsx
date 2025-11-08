@@ -31,6 +31,9 @@ const Images = ({ pet }: { pet: PetDto }) => {
       const pickedData = pick(formData, ["photos"]);
       const updateData = pickBy(pickedData, (value) => !isNil(value));
       await mutateUpdatePet(updateData);
+      await queryClient.invalidateQueries({
+        queryKey: [petControllerFindPetByPetId.name, pet.petId],
+      });
       toast.success("이미지 수정이 완료되었습니다.");
       setIsEditMode(false);
     } catch (error) {
@@ -38,7 +41,6 @@ const Images = ({ pet }: { pet: PetDto }) => {
       toast.error("이미지 수정에 실패했습니다.");
     } finally {
       setIsProcessing(false);
-      queryClient.invalidateQueries({ queryKey: [petControllerFindPetByPetId.name, pet.petId] });
     }
   }, [mutateUpdatePet, formData, queryClient, pet.petId]);
 
