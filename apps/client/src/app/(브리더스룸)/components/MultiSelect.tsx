@@ -1,39 +1,48 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useFilterStore } from "../store/filter";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, X } from "lucide-react";
-import { PetControllerFindAllParams } from "@repo/api-client";
 
-interface MultiSelectFilterProps {
-  type: "morphs" | "traits" | "foods";
+interface MultiSelectProps {
   title: string;
-  selectList:
-    | PetControllerFindAllParams["morphs"]
-    | PetControllerFindAllParams["traits"]
-    | PetControllerFindAllParams["foods"];
+  selectList: string[];
   disabled?: boolean;
+  initialItems: string[];
+  onSelect: (items?: string[]) => void;
 }
 
-const MultiSelectFilter = ({
-  type,
+const MultiSelect = ({
   title,
   selectList,
   disabled = false,
-}: MultiSelectFilterProps) => {
+  initialItems,
+  onSelect,
+}: MultiSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { searchFilters, setSearchFilters } = useFilterStore();
-  const [selectedItem, setSelectedItem] = useState<string[] | undefined>(searchFilters[type]);
+  const [selectedItems, setSelectedItems] = useState<string[] | undefined>([]);
+  const [tempSelectedItems, setTempSelectedItems] = useState<string[] | undefined>(initialItems);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isEntering, setIsEntering] = useState(false);
 
   useEffect(() => {
+    setSelectedItems(initialItems);
+    setTempSelectedItems(initialItems);
+  }, [initialItems]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // 드롭다운이 열릴 때 현재 저장된 상태로 초기화
+      setSelectedItems(tempSelectedItems);
+    }
+
     if (!isOpen) return;
 
     const handlePointerDown = (event: MouseEvent | TouchEvent) => {
       const root = containerRef.current;
       if (root && !root.contains(event.target as Node)) {
+        // 외부 클릭 시 저장하지 않고 닫히면 원래 상태로 복원
+        setSelectedItems(tempSelectedItems);
         setIsOpen(false);
       }
     };
@@ -44,7 +53,7 @@ const MultiSelectFilter = ({
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("touchstart", handlePointerDown);
     };
-  }, [isOpen]);
+  }, [isOpen, tempSelectedItems]);
 
   useEffect(() => {
     if (isOpen) {
@@ -56,30 +65,28 @@ const MultiSelectFilter = ({
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    setSelectedItem(searchFilters[type]);
-  }, [searchFilters, type]);
-
   return (
     <div ref={containerRef} className="relative">
-      <button
-        type="button"
+      <div
         className={cn(
-          "flex h-[32px] cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
-          searchFilters[type] && searchFilters[type].length > 0
+          "flex min-h-[32px] cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
+          selectedItems && selectedItems.length > 0
             ? "bg-blue-100 text-blue-600"
             : "bg-gray-100 text-gray-800",
+          disabled && "cursor-not-allowed",
         )}
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
         onClick={() => {
           if (disabled) return;
+          if (isOpen) {
+            // 드롭다운을 닫을 때 저장하지 않았다면 원래 상태로 복원
+            setSelectedItems(tempSelectedItems);
+          }
           setIsOpen(!isOpen);
         }}
       >
         {disabled ? (
-          selectedItem && selectedItem.length > 0 ? (
-            <div>{selectedItem?.join(" | ")}</div>
+          selectedItems && selectedItems.length > 0 ? (
+            <div>{selectedItems?.join(" | ")}</div>
           ) : (
             <div>-</div>
           )
@@ -87,19 +94,19 @@ const MultiSelectFilter = ({
           <>
             <div>
               {title}
-              {searchFilters[type] &&
-                searchFilters[type].length > 0 &&
-                `・${searchFilters[type][0]} ${searchFilters[type].length > 1 ? `외 ${searchFilters[type].length - 1}개` : ""}`}
+              {selectedItems &&
+                selectedItems.length > 0 &&
+                `・${selectedItems[0]} ${selectedItems.length > 1 ? `외 ${selectedItems.length - 1}개` : ""}`}
             </div>
             <ChevronDown
               className={cn(
                 "h-4 w-4 text-gray-600",
-                searchFilters[type] ? "text-blue-600" : "text-gray-600",
+                selectedItems ? "text-blue-600" : "text-gray-600",
               )}
             />
           </>
         )}
-      </button>
+      </div>
 
       {isOpen && (
         <div
@@ -113,7 +120,7 @@ const MultiSelectFilter = ({
         >
           <div className="mb-2 font-[500]">{title}</div>
           <div className="mb-2 flex flex-nowrap gap-1 overflow-x-auto overflow-y-hidden pb-1">
-            {selectedItem?.map((item) => {
+            {selectedItems?.map((item) => {
               return (
                 <div
                   className="flex shrink-0 items-center whitespace-nowrap rounded-full bg-blue-100 px-2 py-0.5 text-[12px] text-blue-600"
@@ -121,10 +128,9 @@ const MultiSelectFilter = ({
                 >
                   {item}
                   <button
-                    type="button"
                     className="cursor-pointer"
                     onClick={() => {
-                      setSelectedItem((prev) => {
+                      setSelectedItems((prev) => {
                         return prev?.filter((m) => m !== item);
                       });
                     }}
@@ -136,16 +142,16 @@ const MultiSelectFilter = ({
             })}
           </div>
           <div className="mb-4 max-h-[240px] overflow-y-auto">
-            {selectList?.map((item) => {
+            {selectList.map((item) => {
               return (
                 <div
                   key={item}
                   className={cn(
                     "flex cursor-pointer items-center justify-between rounded-xl px-2 py-2 text-gray-600 hover:bg-gray-100",
-                    selectedItem?.includes(item) && "text-blue-700",
+                    selectedItems?.includes(item) && "text-blue-700",
                   )}
                   onClick={() => {
-                    setSelectedItem((prev) => {
+                    setSelectedItems((prev) => {
                       if (prev?.includes(item)) {
                         return prev?.filter((m) => m !== item);
                       }
@@ -155,7 +161,7 @@ const MultiSelectFilter = ({
                 >
                   {item}
 
-                  {selectedItem?.includes(item) && <Check className="h-4 w-4 text-blue-600" />}
+                  {selectedItems?.includes(item) && <Check className="h-4 w-4 text-blue-600" />}
                 </div>
               );
             })}
@@ -163,21 +169,17 @@ const MultiSelectFilter = ({
 
           <div className="flex justify-end gap-2">
             <button
-              type="button"
               onClick={() => {
-                setSelectedItem(undefined);
+                setSelectedItems(undefined);
               }}
               className="h-[32px] cursor-pointer rounded-lg bg-gray-100 px-3 text-sm font-semibold text-gray-600 hover:bg-gray-200"
             >
               초기화
             </button>
             <button
-              type="button"
               onClick={() => {
-                setSearchFilters({
-                  ...searchFilters,
-                  [type]: selectedItem,
-                });
+                setTempSelectedItems(selectedItems);
+                onSelect(selectedItems);
                 setIsOpen(false);
               }}
               className="h-[32px] cursor-pointer rounded-lg bg-blue-500 px-3 text-sm font-semibold text-white hover:bg-blue-600"
@@ -191,4 +193,4 @@ const MultiSelectFilter = ({
   );
 };
 
-export default MultiSelectFilter;
+export default MultiSelect;

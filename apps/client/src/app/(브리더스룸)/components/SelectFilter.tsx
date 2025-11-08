@@ -9,9 +9,10 @@ interface SelectFilterProps {
   type: "species" | "growth" | "sex" | "foods" | "eggStatus";
   initialItem?: any;
   onSelect: (item: any) => void;
+  disabled?: boolean;
 }
 
-const SelectFilter = ({ type, initialItem, onSelect }: SelectFilterProps) => {
+const SelectFilter = ({ type, initialItem, onSelect, disabled = false }: SelectFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(initialItem);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,21 +58,36 @@ const SelectFilter = ({ type, initialItem, onSelect }: SelectFilterProps) => {
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         className={cn(
-          "flex h-[32px] items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
+          "flex h-[32px] w-fit cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
           initialItem ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-800",
+          disabled && "cursor-not-allowed",
         )}
         onClick={() => {
+          if (disabled) return;
           setIsOpen((prev) => !prev);
         }}
       >
-        <div>
-          {SELECTOR_CONFIGS[type].title}
-          {initialItem &&
-            `・${SELECTOR_CONFIGS[type].selectList.find((item) => item.key === initialItem)?.value}`}
-        </div>
-        <ChevronDown
-          className={cn("h-4 w-4 text-gray-600", initialItem ? "text-blue-600" : "text-gray-600")}
-        />
+        {disabled ? (
+          <div>
+            {initialItem
+              ? SELECTOR_CONFIGS[type].selectList.find((item) => item.key === initialItem)?.value
+              : "미정"}
+          </div>
+        ) : (
+          <>
+            <div>
+              {SELECTOR_CONFIGS[type].title}
+              {initialItem &&
+                `・${SELECTOR_CONFIGS[type].selectList.find((item) => item.key === initialItem)?.value}`}
+            </div>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-gray-600",
+                initialItem ? "text-blue-600" : "text-gray-600",
+              )}
+            />
+          </>
+        )}
       </button>
 
       {isOpen && (
