@@ -12,7 +12,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MORPH_LIST_BY_SPECIES } from "@/app/(브리더스룸)/constants";
 import { SELECTOR_CONFIGS } from "@/app/(브리더스룸)/constants";
-import { FOOD_LIST } from "@/app/(브리더스룸)/constants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -226,7 +225,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
               <MultiSelect
                 disabled={disabled}
                 title="먹이"
-                selectList={FOOD_LIST}
+                selectList={SELECTOR_CONFIGS.foods.selectList.map((item) => item.value)}
                 initialItems={formData.foods}
                 onSelect={(items) => {
                   setFormData({ ...formData, foods: items });
