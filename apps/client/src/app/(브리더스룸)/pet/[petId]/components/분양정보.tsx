@@ -6,7 +6,6 @@ import {
   PetAdoptionDtoLocation,
   PetAdoptionDtoStatus,
   UpdateAdoptionDto,
-  petControllerFindPetByPetId,
   adoptionControllerGetAdoption,
 } from "@repo/api-client";
 import FormItem from "./FormItem";
@@ -23,7 +22,7 @@ import UserList from "@/app/(브리더스룸)/components/UserList";
 import { overlay } from "overlay-kit";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 interface AdoptionInfoProps {
   adoptionId?: string;
@@ -31,12 +30,11 @@ interface AdoptionInfoProps {
 }
 
 const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
-  const queryClient = useQueryClient();
   const [disabled, setDisabled] = useState(true);
   const { formData, setFormData } = usePetStore();
   const [isEditing, setIsEditing] = useState(false);
 
-  const { data: adoption } = useQuery({
+  const { data: adoption, refetch } = useQuery({
     queryKey: [adoptionControllerGetAdoption.name, adoptionId],
     queryFn: () => adoptionControllerGetAdoption(adoptionId ?? ""),
     enabled: !!adoptionId,
@@ -106,16 +104,15 @@ const AdoptionInfo = ({ petId, adoptionId }: AdoptionInfoProps) => {
         await createAdoption({ ...newAdoptionDto, petId });
       }
 
+      await refetch();
+      setIsEditing(false);
+      setDisabled(true);
       toast.success("분양 정보가 성공적으로 생성되었습니다.");
     } catch (error) {
       console.error("분양 생성 실패:", error);
       toast.error("분양 생성에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsEditing(false);
-      setDisabled(true);
-      queryClient.invalidateQueries({ queryKey: [petControllerFindPetByPetId.name, petId] });
     }
-  }, [updateAdoption, createAdoption, adoptionData, petId, queryClient]);
+  }, [updateAdoption, createAdoption, adoptionData, petId, refetch]);
 
   const handleSelectBuyer = useCallback(() => {
     if (disabled) return;
