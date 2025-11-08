@@ -19,7 +19,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
   const queryClient = useQueryClient();
   const { formData, setFormData } = usePetStore();
   const [disabled, setDisabled] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { mutateAsync: mutateUpdatePet } = useMutation({
     mutationFn: (updateData: UpdatePetDto) => petControllerUpdate(pet.petId, updateData),
@@ -27,7 +27,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
 
   const handleSave = useCallback(async () => {
     try {
-      setIsEditing(true);
+      setIsProcessing(true);
       const pickedData = pick(formData, ["photos"]);
       const updateData = pickBy(pickedData, (value) => !isNil(value));
       await mutateUpdatePet(updateData);
@@ -37,7 +37,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
       console.error("이미지 수정 실패:", error);
       toast.error("이미지 수정에 실패했습니다.");
     } finally {
-      setIsEditing(false);
+      setIsProcessing(false);
       queryClient.invalidateQueries({ queryKey: [petControllerFindPetByPetId.name, pet.petId] });
     }
   }, [mutateUpdatePet, formData, queryClient, pet.petId]);
@@ -69,11 +69,11 @@ const Images = ({ pet }: { pet: PetDto }) => {
           </Button>
         )}
         <Button
-          disabled={isEditing}
+          disabled={isProcessing}
           className={cn(
             "flex-2 h-10 cursor-pointer rounded-lg font-bold",
             !disabled && "bg-red-600 hover:bg-red-600/90",
-            isEditing && "bg-gray-300",
+            isProcessing && "bg-gray-300",
           )}
           onClick={() => {
             if (!disabled) {
@@ -83,7 +83,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
             }
           }}
         >
-          {isEditing ? (
+          {isProcessing ? (
             <Loading />
           ) : disabled ? (
             isNil(formData.photos) ? (
