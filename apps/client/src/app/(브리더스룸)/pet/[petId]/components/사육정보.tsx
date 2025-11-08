@@ -279,6 +279,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
       <div className="mt-2 flex w-full flex-1 gap-2">
         {isEditMode && (
           <Button
+            disabled={isProcessing}
             className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
             onClick={() => {
               setFormData(pet);

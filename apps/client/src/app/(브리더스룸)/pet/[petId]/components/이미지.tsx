@@ -59,6 +59,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
       <div className="mt-2 flex w-full flex-1 items-end gap-2">
         {isEditMode && (
           <Button
+            disabled={isProcessing}
             className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
             onClick={() => {
               setFormData((prev) => ({
