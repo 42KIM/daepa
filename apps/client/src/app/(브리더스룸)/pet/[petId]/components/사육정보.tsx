@@ -75,6 +75,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
         "weight",
         "temperature",
         "eggStatus",
+        "isPublic",
       ]);
       const updateData = pickBy(pickedData, (value) => !isNil(value));
       await mutateUpdatePet(updateData);
@@ -92,9 +93,48 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
   if (!pet) return null;
 
   return (
-    <div className="shadow-xs flex h-fit w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex h-fit flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">사육정보</div>
 
+      <FormItem
+        label="공개 여부"
+        content={
+          <div className="flex h-[32px] items-center gap-1 rounded-lg bg-gray-100 p-1">
+            <button
+              onClick={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isPublic: true,
+                }))
+              }
+              className={cn(
+                "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
+                formData.isPublic ? "bg-white shadow-sm" : "text-gray-600",
+                !isEditMode && "cursor-not-allowed",
+              )}
+              disabled={!isEditMode}
+            >
+              공개
+            </button>
+            <button
+              onClick={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isPublic: false,
+                }))
+              }
+              className={cn(
+                "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
+                !formData.isPublic ? "bg-white shadow-sm" : "text-gray-600",
+                !isEditMode && "cursor-not-allowed",
+              )}
+              disabled={!isEditMode}
+            >
+              비공개
+            </button>
+          </div>
+        }
+      />
       <FormItem
         label="개체 이름"
         content={
