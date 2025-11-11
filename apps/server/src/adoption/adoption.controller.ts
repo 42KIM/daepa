@@ -95,10 +95,9 @@ export class AdoptionController {
     @Param('petId') petId: string,
     @Query('includeInactive') includeInactive?: string,
   ): Promise<AdoptionDetailResponseDto> {
-    const data = await this.adoptionService.findOne({
-      petId,
-      isActive: includeInactive !== 'true',
-    });
+    const data = await this.adoptionService.findOne(
+      includeInactive === 'true' ? { petId } : { petId, isActive: true },
+    );
     return {
       success: true,
       message: '펫별 분양 정보 조회 성공',
