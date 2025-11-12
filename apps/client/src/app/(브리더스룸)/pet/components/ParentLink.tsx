@@ -7,7 +7,10 @@ import ParentSearchSelector from "../../components/selector/parentSearch";
 import { Button } from "@/components/ui/button";
 import Dialog from "../../components/Form/Dialog";
 import {
+  GetParentsByPetIdResponseDtoDataFather,
+  GetParentsByPetIdResponseDtoDataMother,
   PetControllerFindAllFilterType,
+  PetDtoSpecies,
   PetHiddenStatusDtoHiddenStatus,
   PetParentDto,
   PetParentDtoStatus,
@@ -21,8 +24,9 @@ import PetThumbnail from "../../components/PetThumbnail";
 import { useCallback } from "react";
 
 interface ParentLinkProps {
+  species: PetDtoSpecies;
   label: "부" | "모";
-  data?: PetParentDto;
+  data?: GetParentsByPetIdResponseDtoDataFather | GetParentsByPetIdResponseDtoDataMother;
   editable?: boolean;
   petListType?: PetControllerFindAllFilterType;
   onSelect?: (item: PetParentDtoWithMessage) => void;
@@ -30,6 +34,7 @@ interface ParentLinkProps {
 }
 
 const ParentLink = ({
+  species,
   label,
   data,
   editable = true,
@@ -90,7 +95,7 @@ const ParentLink = ({
       <ParentSearchSelector
         isOpen={isOpen}
         onClose={close}
-        species={data?.species}
+        species={species}
         onSelect={(item) => {
           close();
           onSelect?.(item);

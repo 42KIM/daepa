@@ -5,7 +5,6 @@ import {
   petControllerGetParentsByPetId,
   PetDtoSpecies,
   UnlinkParentDtoRole,
-  UpdateParentRequestDtoStatus,
 } from "@repo/api-client";
 import ParentLink from "../../components/ParentLink";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,13 +16,13 @@ import { useUserStore } from "@/app/(브리더스룸)/store/user";
 import { Info } from "lucide-react";
 
 const PedigreeInfo = ({
+  species,
   petId,
   userId,
-  species,
 }: {
+  species: PetDtoSpecies;
   petId: string;
   userId?: string;
-  species: PetDtoSpecies;
 }) => {
   const queryClient = useQueryClient();
   const { user } = useUserStore();
@@ -35,8 +34,6 @@ const PedigreeInfo = ({
     queryFn: () => petControllerGetParentsByPetId(petId),
     select: (response) => response.data.data,
   });
-
-  console.log(parents?.father);
 
   const { mutateAsync: mutateUnlinkParent } = useMutation({
     mutationFn: ({ role }: { role: UnlinkParentDtoRole }) =>
@@ -114,17 +111,9 @@ const PedigreeInfo = ({
 
       <div className="flex gap-3 max-[650px]:flex-col">
         <ParentLink
+          species={species}
           label="부"
-          data={
-            // 내 펫인 경우는 모든 상태를, 내 펫이 아닌 경우는 부모요청이 승인된 상태에만 정보를 노출
-            isMyPet ||
-            (!isMyPet &&
-              parents?.father &&
-              "status" in parents.father &&
-              parents.father?.status === UpdateParentRequestDtoStatus.APPROVED)
-              ? parents?.father
-              : undefined
-          }
+          data={parents?.father}
           onSelect={(selectedPet) =>
             handleParentSelect(UnlinkParentDtoRole.FATHER, {
               ...selectedPet,
@@ -137,15 +126,7 @@ const PedigreeInfo = ({
         <ParentLink
           species={species}
           label="모"
-          data={
-            isMyPet ||
-            (!isMyPet &&
-              parents?.mother &&
-              "status" in parents.mother &&
-              parents.mother?.status === UpdateParentRequestDtoStatus.APPROVED)
-              ? parents?.mother
-              : undefined
-          }
+          data={parents?.mother}
           onSelect={(selectedPet) =>
             handleParentSelect(UnlinkParentDtoRole.MOTHER, {
               ...selectedPet,
