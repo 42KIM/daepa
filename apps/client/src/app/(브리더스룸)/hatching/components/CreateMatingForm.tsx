@@ -147,7 +147,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
   const handleSpeciesSelect = () => {
     handleSelect({
       type: "species",
-      value: formData.species ?? "",
+      value: formData.species,
       handleNext,
     });
   };
