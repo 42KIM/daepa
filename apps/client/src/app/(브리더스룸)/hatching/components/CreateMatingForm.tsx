@@ -28,6 +28,7 @@ const getInitialFormData = () => ({
   father: undefined,
   mother: undefined,
   matingDate: format(new Date(), "yyyy-MM-dd"),
+  species: PetDtoSpecies.CRESTED,
 });
 
 interface CreateMatingFormProps {
@@ -38,7 +39,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
   const queryClient = useQueryClient();
   const { handleSelect } = useSelect();
   const [formData, setFormData] = useState<{
-    species?: PetDtoSpecies;
+    species: PetDtoSpecies;
     father?: PetParentDto;
     mother?: PetParentDto;
     matingDate: string;
