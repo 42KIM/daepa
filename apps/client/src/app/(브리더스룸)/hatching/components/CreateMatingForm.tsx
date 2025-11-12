@@ -50,11 +50,6 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
   });
 
   const validateForm = (): boolean => {
-    if (!formData.species) {
-      toast.error("종을 선택해주세요.");
-      return false;
-    }
-
     if (!formData.father?.petId) {
       toast.error("부 개체를 선택해주세요.");
       return false;
