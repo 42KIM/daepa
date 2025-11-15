@@ -22,7 +22,7 @@ import { pick, pickBy } from "es-toolkit";
 import { isNil } from "es-toolkit";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
 import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/register/types";
-import MultiSelectFormItem from "@/app/(브리더스룸)/components/MultiSelectFormItem";
+import FormMultiSelector from "@/app/(브리더스룸)/components/FormMultiSelector";
 import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarInput";
 import { format } from "date-fns";
 import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
@@ -239,7 +239,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
           <FormItem
             label="모프"
             content={
-              <MultiSelectFormItem
+              <FormMultiSelector
                 disabled={!isEditMode}
                 title="모프"
                 displayMap={MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies]}
@@ -254,7 +254,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
           <FormItem
             label="형질"
             content={
-              <MultiSelectFormItem
+              <FormMultiSelector
                 disabled={!isEditMode}
                 title="형질"
                 displayMap={TRAIT_LIST_BY_SPECIES[formData.species as PetDtoSpecies]}
@@ -269,7 +269,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
           <FormItem
             label="먹이"
             content={
-              <MultiSelectFormItem
+              <FormMultiSelector
                 disabled={!isEditMode}
                 title="먹이"
                 displayMap={FOOD_KOREAN_INFO}
