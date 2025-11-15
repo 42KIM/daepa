@@ -42,6 +42,7 @@ export function Filters() {
       </div>
 
       <SelectFilter
+        showTitle
         type="species"
         initialItem={searchFilters.species}
         onSelect={(item) => {

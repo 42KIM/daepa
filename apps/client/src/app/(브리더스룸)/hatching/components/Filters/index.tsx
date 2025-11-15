@@ -49,6 +49,7 @@ const Filters = () => {
   return (
     <div className="mb-4 mt-2 flex flex-wrap items-center gap-2">
       <SelectFilter
+        showTitle
         type="species"
         initialItem={species}
         onSelect={(item) => {
@@ -83,6 +84,7 @@ const Filters = () => {
             }}
           />
           <SelectFilter
+            showTitle
             type="eggStatus"
             initialItem={eggStatus}
             onSelect={(item) => setEggStatus(item)}

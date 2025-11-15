@@ -10,9 +10,16 @@ interface SelectFilterProps {
   initialItem?: any;
   onSelect: (item: any) => void;
   disabled?: boolean;
+  showTitle?: boolean;
 }
 
-const SelectFilter = ({ type, initialItem, onSelect, disabled = false }: SelectFilterProps) => {
+const SelectFilter = ({
+  type,
+  initialItem,
+  onSelect,
+  disabled = false,
+  showTitle = false,
+}: SelectFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(initialItem);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,9 +83,10 @@ const SelectFilter = ({ type, initialItem, onSelect, disabled = false }: SelectF
         ) : (
           <>
             <div>
-              {SELECTOR_CONFIGS[type].title}
+              {showTitle && SELECTOR_CONFIGS[type].title}
+              {showTitle && initialItem && "・"}
               {initialItem &&
-                `・${SELECTOR_CONFIGS[type].selectList.find((item) => item.key === initialItem)?.value}`}
+                `${SELECTOR_CONFIGS[type].selectList.find((item) => item.key === initialItem)?.value}`}
             </div>
             <ChevronDown
               className={cn(
