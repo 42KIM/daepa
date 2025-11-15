@@ -4,15 +4,11 @@ import { GENDER_KOREAN_INFO, GROWTH_KOREAN_INFO, MORPH_LIST_BY_SPECIES } from ".
 import SelectFilter from "../../components/SelectFilter";
 import { cn } from "@/lib/utils";
 import MultiSelectFilter from "../../components/MultiSelectFilter";
-import { PetControllerFindAllParams } from "@repo/api-client";
+import { useFilterStore } from "../../store/filter";
 
-export function Filters({
-  searchFilters,
-  setSearchFilters,
-}: {
-  searchFilters: Partial<PetControllerFindAllParams>;
-  setSearchFilters: (filters: Partial<PetControllerFindAllParams>) => void;
-}) {
+export function Filters() {
+  const { searchFilters, setSearchFilters } = useFilterStore();
+
   const handleResetFilters = () => {
     setSearchFilters({});
   };
