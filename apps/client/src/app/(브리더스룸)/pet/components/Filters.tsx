@@ -7,11 +7,7 @@ import MultiSelectFilter from "../../components/MultiSelectFilter";
 import { useFilterStore } from "../../store/filter";
 
 export function Filters() {
-  const { searchFilters, setSearchFilters } = useFilterStore();
-
-  const handleResetFilters = () => {
-    setSearchFilters({});
-  };
+  const { searchFilters, setSearchFilters, resetFilters } = useFilterStore();
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -71,7 +67,7 @@ export function Filters() {
       {/* TODO: 먹이 필터 추가 */}
 
       <button
-        onClick={handleResetFilters}
+        onClick={resetFilters}
         className="h-[32px] cursor-pointer rounded-lg px-3 text-sm text-blue-700 underline hover:bg-blue-100"
       >
         필터 리셋
