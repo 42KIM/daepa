@@ -1,6 +1,6 @@
 "use client";
 
-import { MORPH_LIST_BY_SPECIES } from "../../constants";
+import { GROWTH_KOREAN_INFO, MORPH_LIST_BY_SPECIES } from "../../constants";
 import SelectFilter from "../../components/SelectFilter";
 import { cn } from "@/lib/utils";
 import MultiSelectFilter from "../../components/MultiSelectFilter";
@@ -75,11 +75,7 @@ export function Filters({
           }
         />
       )}
-      <SelectFilter
-        type="growth"
-        initialItem={searchFilters.growth}
-        onSelect={(item) => setSearchFilters({ ...searchFilters, growth: item })}
-      />
+      <MultiSelectFilter type="growth" title="크기" displayMap={GROWTH_KOREAN_INFO} />
       <SelectFilter
         type="sex"
         initialItem={searchFilters.sex}

@@ -7,13 +7,15 @@ import { Check, ChevronDown, X } from "lucide-react";
 import { PetControllerFindAllParams } from "@repo/api-client";
 
 interface MultiSelectFilterProps {
-  type: "morphs" | "traits" | "foods";
+  type: "morphs" | "traits" | "foods" | "growth";
   title: string;
-  selectList:
+  selectList?:
     | PetControllerFindAllParams["morphs"]
     | PetControllerFindAllParams["traits"]
-    | PetControllerFindAllParams["foods"];
+    | PetControllerFindAllParams["foods"]
+    | PetControllerFindAllParams["growth"];
   disabled?: boolean;
+  displayMap?: Record<string, string>; // key -> display label 매핑 (UI 표시용, 있으면 내부적으로 Object.keys(displayMap)을 selectList로 사용)
 }
 
 const MultiSelectFilter = ({
@@ -21,7 +23,13 @@ const MultiSelectFilter = ({
   title,
   selectList,
   disabled = false,
+  displayMap,
 }: MultiSelectFilterProps) => {
+  // displayMap이 있으면 내부적으로 Object.keys(displayMap)을 selectList로 사용
+  const effectiveSelectList = displayMap ? Object.keys(displayMap) : selectList;
+
+  // displayMap이 있으면 key를 label로 변환하는 헬퍼 함수
+  const getDisplayLabel = (key: string) => displayMap?.[key] ?? key;
   const [isOpen, setIsOpen] = useState(false);
   const { searchFilters, setSearchFilters } = useFilterStore();
   const [selectedItem, setSelectedItem] = useState<string[] | undefined>(searchFilters[type]);
@@ -79,7 +87,7 @@ const MultiSelectFilter = ({
       >
         {disabled ? (
           selectedItem && selectedItem.length > 0 ? (
-            <div>{selectedItem?.join(" | ")}</div>
+            <div>{selectedItem?.map((item) => getDisplayLabel(item)).join(" | ")}</div>
           ) : (
             <div>-</div>
           )
@@ -89,7 +97,8 @@ const MultiSelectFilter = ({
               {title}
               {searchFilters[type] &&
                 searchFilters[type].length > 0 &&
-                `・${searchFilters[type][0]} ${searchFilters[type].length > 1 ? `외 ${searchFilters[type].length - 1}개` : ""}`}
+                searchFilters[type][0] &&
+                `・${getDisplayLabel(searchFilters[type][0])} ${searchFilters[type].length > 1 ? `외 ${searchFilters[type].length - 1}개` : ""}`}
             </div>
             <ChevronDown
               className={cn(
@@ -119,7 +128,7 @@ const MultiSelectFilter = ({
                   className="flex shrink-0 items-center whitespace-nowrap rounded-full bg-blue-100 px-2 py-0.5 text-[12px] text-blue-600"
                   key={item}
                 >
-                  {item}
+                  {getDisplayLabel(item)}
                   <button
                     type="button"
                     className="cursor-pointer"
@@ -136,7 +145,7 @@ const MultiSelectFilter = ({
             })}
           </div>
           <div className="mb-4 max-h-[240px] overflow-y-auto">
-            {selectList?.map((item) => {
+            {effectiveSelectList?.map((item) => {
               return (
                 <div
                   key={item}
@@ -153,7 +162,7 @@ const MultiSelectFilter = ({
                     });
                   }}
                 >
-                  {item}
+                  {getDisplayLabel(item)}
 
                   {selectedItem?.includes(item) && <Check className="h-4 w-4 text-blue-600" />}
                 </div>

@@ -9,7 +9,7 @@ import type { PetControllerFindAllOrder } from "./petControllerFindAllOrder";
 import type { PetControllerFindAllSpecies } from "./petControllerFindAllSpecies";
 import type { PetControllerFindAllSex } from "./petControllerFindAllSex";
 import type { PetControllerFindAllStatus } from "./petControllerFindAllStatus";
-import type { PetControllerFindAllGrowth } from "./petControllerFindAllGrowth";
+import type { PetControllerFindAllGrowthItem } from "./petControllerFindAllGrowthItem";
 import type { PetControllerFindAllFilterType } from "./petControllerFindAllFilterType";
 
 export type PetControllerFindAllParams = {
@@ -80,7 +80,7 @@ export type PetControllerFindAllParams = {
   /**
    * 펫 성장단계
    */
-  growth?: PetControllerFindAllGrowth;
+  growth?: PetControllerFindAllGrowthItem[];
   /**
    * 펫 목록 필터링 타입
    */

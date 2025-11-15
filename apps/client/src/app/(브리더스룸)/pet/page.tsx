@@ -21,7 +21,7 @@ export default function PetPage() {
   const { searchFilters } = useFilterStore();
   const { searchKeyword } = useSearchKeywordStore();
   const itemPerPage = 10;
-
+  console.log("searchFilters: ", searchFilters);
   // 일반 목록 조회
   const { data, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({

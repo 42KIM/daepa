@@ -1233,14 +1233,54 @@ export class PetFilterDto extends PageOptionsDto {
 
   @ApiProperty({
     description: '펫 성장단계',
-    example: 'BABY',
-    enum: PET_GROWTH,
-    'x-enumNames': Object.keys(PET_GROWTH),
+    example: ['BABY', 'JUVENILE'],
+    type: 'array',
+    items: {
+      enum: Object.values(PET_GROWTH),
+      type: 'string',
+      'x-enumNames': Object.keys(PET_GROWTH),
+    },
     required: false,
   })
   @IsOptional()
-  @IsEnum(PET_GROWTH)
-  growth?: PET_GROWTH; // 크기 검색
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.filter(
+        (v): v is PET_GROWTH =>
+          typeof v === 'string' &&
+          v.trim().length > 0 &&
+          Object.values(PET_GROWTH).includes(v as PET_GROWTH),
+      );
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length === 0) return undefined;
+      try {
+        const parsed: unknown = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (v): v is PET_GROWTH =>
+              typeof v === 'string' &&
+              v.trim().length > 0 &&
+              Object.values(PET_GROWTH).includes(v as PET_GROWTH),
+          );
+        }
+      } catch {
+        // ignore parse error and fallback to comma-split
+      }
+      return trimmed
+        .split(',')
+        .map((v) => v.trim())
+        .filter(
+          (v): v is PET_GROWTH =>
+            v.length > 0 && Object.values(PET_GROWTH).includes(v as PET_GROWTH),
+        );
+    }
+    return undefined;
+  })
+  @IsArray()
+  @IsEnum(PET_GROWTH, { each: true })
+  growth?: PET_GROWTH[]; // 크기 검색
 
   @ApiProperty({
     description: '펫 목록 필터링 타입',

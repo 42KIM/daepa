@@ -435,7 +435,7 @@ export class PetService {
   ): Promise<PageDto<PetDto>> {
     // BR api는 자신의 펫 조회
     pageOptionsDto.filterType = PET_LIST_FILTER_TYPE.MY;
-
+    console.log('uo: ', pageOptionsDto);
     const queryBuilder = this.petRepository
       .createQueryBuilder('pets')
       .where(
@@ -1005,8 +1005,8 @@ export class PetService {
     }
 
     // 성장단계 필터링
-    if (pageOptionsDto.growth) {
-      queryBuilder.andWhere('petDetail.growth = :growth', {
+    if (pageOptionsDto.growth && pageOptionsDto.growth.length > 0) {
+      queryBuilder.andWhere('petDetail.growth IN (:...growth)', {
         growth: pageOptionsDto.growth,
       });
     }
