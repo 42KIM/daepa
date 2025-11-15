@@ -1,6 +1,6 @@
 "use client";
 
-import { GROWTH_KOREAN_INFO, MORPH_LIST_BY_SPECIES } from "../../constants";
+import { GENDER_KOREAN_INFO, GROWTH_KOREAN_INFO, MORPH_LIST_BY_SPECIES } from "../../constants";
 import SelectFilter from "../../components/SelectFilter";
 import { cn } from "@/lib/utils";
 import MultiSelectFilter from "../../components/MultiSelectFilter";
@@ -71,16 +71,8 @@ export function Filters({
         />
       )}
       <MultiSelectFilter type="growth" title="크기" displayMap={GROWTH_KOREAN_INFO} />
-      <SelectFilter
-        type="sex"
-        initialItem={searchFilters.sex}
-        onSelect={(item) => setSearchFilters({ ...searchFilters, sex: item })}
-      />
-      {/* <SelectFilter
-        type="foods"
-        initialItem={searchFilters.foods}
-        onSelect={(item) => setSearchFilters({ ...searchFilters, foods: item })}
-      /> */}
+      <MultiSelectFilter type="sex" title="성별" displayMap={GENDER_KOREAN_INFO} />
+      {/* TODO: 먹이 필터 추가 */}
 
       <button
         onClick={handleResetFilters}

@@ -7,7 +7,7 @@
  */
 import type { PetControllerFindAllOrder } from "./petControllerFindAllOrder";
 import type { PetControllerFindAllSpecies } from "./petControllerFindAllSpecies";
-import type { PetControllerFindAllSex } from "./petControllerFindAllSex";
+import type { PetControllerFindAllSexItem } from "./petControllerFindAllSexItem";
 import type { PetControllerFindAllStatus } from "./petControllerFindAllStatus";
 import type { PetControllerFindAllGrowthItem } from "./petControllerFindAllGrowthItem";
 import type { PetControllerFindAllFilterType } from "./petControllerFindAllFilterType";
@@ -36,7 +36,7 @@ export type PetControllerFindAllParams = {
   /**
    * 펫 성별
    */
-  sex?: PetControllerFindAllSex;
+  sex?: PetControllerFindAllSexItem[];
   /**
    * 펫 소유자 아이디
    */

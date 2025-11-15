@@ -931,8 +931,8 @@ export class PetService {
     }
 
     // 성별 필터링
-    if (pageOptionsDto.sex) {
-      queryBuilder.andWhere('petDetail.sex = :sex', {
+    if (pageOptionsDto.sex && pageOptionsDto.sex.length > 0) {
+      queryBuilder.andWhere('petDetail.sex IN (:...sex)', {
         sex: pageOptionsDto.sex,
       });
     }

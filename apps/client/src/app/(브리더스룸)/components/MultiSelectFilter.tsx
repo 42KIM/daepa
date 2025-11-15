@@ -7,13 +7,14 @@ import { Check, ChevronDown, X } from "lucide-react";
 import { PetControllerFindAllParams } from "@repo/api-client";
 
 interface MultiSelectFilterProps {
-  type: "morphs" | "traits" | "foods" | "growth";
+  type: "morphs" | "traits" | "foods" | "growth" | "sex";
   title: string;
   selectList?:
     | PetControllerFindAllParams["morphs"]
     | PetControllerFindAllParams["traits"]
     | PetControllerFindAllParams["foods"]
-    | PetControllerFindAllParams["growth"];
+    | PetControllerFindAllParams["growth"]
+    | PetControllerFindAllParams["sex"];
   disabled?: boolean;
   displayMap?: Record<string, string>; // key -> display label 매핑 (UI 표시용, 있으면 내부적으로 Object.keys(displayMap)을 selectList로 사용)
 }

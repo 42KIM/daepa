@@ -1052,14 +1052,54 @@ export class PetFilterDto extends PageOptionsDto {
 
   @ApiProperty({
     description: '펫 성별',
-    example: 'M',
-    enum: PET_SEX,
-    'x-enumNames': Object.keys(PET_SEX),
+    example: ['M', 'F'],
+    type: 'array',
+    items: {
+      enum: Object.values(PET_SEX),
+      type: 'string',
+      'x-enumNames': Object.keys(PET_SEX),
+    },
     required: false,
   })
   @IsOptional()
-  @IsEnum(PET_SEX)
-  sex?: PET_SEX; // 성별 필터
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.filter(
+        (v): v is PET_SEX =>
+          typeof v === 'string' &&
+          v.trim().length > 0 &&
+          Object.values(PET_SEX).includes(v as PET_SEX),
+      );
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length === 0) return undefined;
+      try {
+        const parsed: unknown = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (v): v is PET_SEX =>
+              typeof v === 'string' &&
+              v.trim().length > 0 &&
+              Object.values(PET_SEX).includes(v as PET_SEX),
+          );
+        }
+      } catch {
+        // ignore parse error and fallback to comma-split
+      }
+      return trimmed
+        .split(',')
+        .map((v) => v.trim())
+        .filter(
+          (v): v is PET_SEX =>
+            v.length > 0 && Object.values(PET_SEX).includes(v as PET_SEX),
+        );
+    }
+    return undefined;
+  })
+  @IsArray()
+  @IsEnum(PET_SEX, { each: true })
+  sex?: PET_SEX[]; // 성별 필터
 
   @ApiProperty({
     description: '펫 소유자 아이디',

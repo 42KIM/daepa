@@ -183,3 +183,5 @@ export * from "./userSimpleDto";
 export * from "./verifyEmailDto";
 export * from "./verifyNameDto";
 export * from "./verifyPetNameDto";
+export * from "./brPetControllerFindAllSexItem";
+export * from "./petControllerFindAllSexItem";

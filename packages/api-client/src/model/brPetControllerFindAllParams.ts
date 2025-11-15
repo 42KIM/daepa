@@ -7,7 +7,7 @@
  */
 import type { BrPetControllerFindAllOrder } from "./brPetControllerFindAllOrder";
 import type { BrPetControllerFindAllSpecies } from "./brPetControllerFindAllSpecies";
-import type { BrPetControllerFindAllSex } from "./brPetControllerFindAllSex";
+import type { BrPetControllerFindAllSexItem } from "./brPetControllerFindAllSexItem";
 import type { BrPetControllerFindAllStatus } from "./brPetControllerFindAllStatus";
 import type { BrPetControllerFindAllGrowthItem } from "./brPetControllerFindAllGrowthItem";
 import type { BrPetControllerFindAllFilterType } from "./brPetControllerFindAllFilterType";
@@ -36,7 +36,7 @@ export type BrPetControllerFindAllParams = {
   /**
    * 펫 성별
    */
-  sex?: BrPetControllerFindAllSex;
+  sex?: BrPetControllerFindAllSexItem[];
   /**
    * 펫 소유자 아이디
    */
