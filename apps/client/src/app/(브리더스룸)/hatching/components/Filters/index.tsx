@@ -1,10 +1,10 @@
 import { useMatingFilterStore } from "../../../store/matingFilter";
 import { PetDtoSex } from "@repo/api-client";
-import CalendarInput from "../CalendarInput";
+// import CalendarInput from "../CalendarInput";
 import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../../components/selector/parentSearch";
 import FilterItem from "./FilterItem";
-import { format } from "date-fns";
+// import { format } from "date-fns";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 
 const Filters = () => {
@@ -18,9 +18,9 @@ const Filters = () => {
     setSpecies,
     setFather,
     setMother,
-    setEggStatus,
-    setStartDate,
-    setEndDate,
+    // setEggStatus,
+    // setStartDate,
+    // setEndDate,
     reset,
   } = useMatingFilterStore();
 
@@ -82,7 +82,7 @@ const Filters = () => {
         }}
       />
 
-      <SingleSelect
+      {/* <SingleSelect
         showTitle
         type="eggStatus"
         initialItem={eggStatus}
@@ -105,7 +105,7 @@ const Filters = () => {
           if (!date) return;
           setEndDate(format(date, "yyyy-MM-dd"));
         }}
-      />
+      /> */}
 
       {(eggStatus || species || father || mother || startDate || endDate) && (
         <button
