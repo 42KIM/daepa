@@ -13,7 +13,7 @@ import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import { FormField } from "@/app/(브리더스룸)/components/Form/FormField";
 import { memo, useCallback, useMemo } from "react";
 import { overlay } from "overlay-kit";
-import MultipleSelector from "@/app/(브리더스룸)/components/selector/multiple";
+import MultiSelectList from "@/app/(브리더스룸)/components/selector/MultiSelectList";
 import { PetDtoSpecies } from "@repo/api-client";
 
 const PET_REQUIRED_FIELDS = ["name", "sex", "growth", "morphs", "species"];
@@ -77,7 +77,7 @@ const BreedingInfoSection = memo(
         const title = SELECTOR_CONFIGS[type as keyof typeof SELECTOR_CONFIGS]?.title || "선택";
 
         overlay.open(({ isOpen, close, unmount }) => (
-          <MultipleSelector
+          <MultiSelectList
             isOpen={isOpen}
             onCloseAction={close}
             onSelectAction={(value) => {

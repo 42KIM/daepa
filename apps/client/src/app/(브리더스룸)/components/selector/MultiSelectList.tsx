@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import BottomSheet from "@/components/common/BottomSheet";
 import { toast } from "sonner";
 
-interface MultipleSelectorProps {
+interface MultiSelectListProps {
   isOpen: boolean;
   initialValue: string[];
   displayMap: Record<string, string>;
@@ -14,7 +14,7 @@ interface MultipleSelectorProps {
   onExit: () => void;
 }
 
-export default function MultipleSelector({
+export default function MultiSelectList({
   isOpen,
   initialValue,
   displayMap,
@@ -22,7 +22,7 @@ export default function MultipleSelector({
   onCloseAction,
   onSelectAction,
   onExit,
-}: MultipleSelectorProps) {
+}: MultiSelectListProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const selectList = useMemo(() => Object.keys(displayMap), [displayMap]);

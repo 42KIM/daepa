@@ -8,7 +8,7 @@ import {
   TABLE_HEADER,
 } from "../../constants";
 import { overlay } from "overlay-kit";
-import MultipleSelector from "../../components/selector/multiple";
+import MultiSelectList from "../../components/selector/MultiSelectList";
 import Dialog from "../../components/Form/Dialog";
 
 import { validateStep } from "@/lib/form";
@@ -159,7 +159,7 @@ export const useRegisterForm = ({
       const displayMap = getDisplayMap(type);
 
       overlay.open(({ isOpen, close, unmount }) => (
-        <MultipleSelector
+        <MultiSelectList
           isOpen={isOpen}
           onCloseAction={close}
           onSelectAction={(value) => {
