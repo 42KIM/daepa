@@ -113,7 +113,7 @@ const MatingList = memo(() => {
     },
     select: (resp) => ({
       items: resp.pages.flatMap((p) => p.data.data),
-      totalCount: resp.pages[0]?.data.meta.totalCount ?? 0,
+      totalCount: resp.pages[0]?.data.meta.totalCount,
     }),
   });
 
@@ -121,8 +121,6 @@ const MatingList = memo(() => {
   const { mutateAsync: createMating } = useMutation({
     mutationFn: matingControllerCreateMating,
   });
-
-  const { items, totalCount: totalPairsCount } = data ?? { items: [], totalCount: 0 };
 
   // 무한 스크롤 처리
   useEffect(() => {
@@ -133,7 +131,7 @@ const MatingList = memo(() => {
 
   if (isLoading) return <Loading />;
 
-  if (items && items.length === 0 && !hasFilter) {
+  if (data?.items && data.items.length === 0 && !hasFilter) {
     return (
       <div className="flex flex-col items-center space-y-4">
         <span className="inline-flex animate-bounce items-center gap-2 rounded-full bg-blue-900/90 px-4 py-2 text-sm text-white">
@@ -218,12 +216,12 @@ const MatingList = memo(() => {
       {/* 필터 */}
       <Filters />
       <div className="m-2 text-sm text-gray-600 dark:text-gray-400">
-        검색된 메이팅・ {totalPairsCount}쌍
+        검색된 메이팅・ {data?.totalCount ?? "?"}쌍
       </div>
 
       <ScrollArea>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-          {items.map((matingGroup, index) => (
+          {data?.items.map((matingGroup, index) => (
             <div
               key={index}
               onClick={() => {
