@@ -88,10 +88,10 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
   }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch, setIsProcessing]);
 
   useEffect(() => {
-    if (pet) {
+    if (pet && !isEditMode) {
       setFormData(pet);
     }
-  }, [pet, setFormData]);
+  }, [pet, setFormData, isEditMode]);
 
   if (!pet || Object.keys(formData).length === 0) return null;
 
