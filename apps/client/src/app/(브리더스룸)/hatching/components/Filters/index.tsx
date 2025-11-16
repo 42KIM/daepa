@@ -59,36 +59,35 @@ const Filters = () => {
           }
         }}
       />
-      {species && (
-        <>
-          <FilterItem
-            value={father?.name}
-            placeholder="부 선택"
-            onClose={() => {
-              setFather(null);
-            }}
-            onClick={() => {
-              openParentSearchSelector(PetDtoSex.MALE);
-            }}
-          />
-          <FilterItem
-            value={mother?.name}
-            placeholder="모 선택"
-            onClose={() => {
-              setMother(null);
-            }}
-            onClick={() => {
-              openParentSearchSelector(PetDtoSex.FEMALE);
-            }}
-          />
-          <SingleSelect
-            showTitle
-            type="eggStatus"
-            initialItem={eggStatus}
-            onSelect={(item) => setEggStatus(item)}
-          />
-        </>
-      )}
+
+      <FilterItem
+        value={father?.name}
+        placeholder="부 개체"
+        onClose={() => {
+          setFather(null);
+        }}
+        onClick={() => {
+          openParentSearchSelector(PetDtoSex.MALE);
+        }}
+      />
+
+      <FilterItem
+        value={mother?.name}
+        placeholder="모 개체"
+        onClose={() => {
+          setMother(null);
+        }}
+        onClick={() => {
+          openParentSearchSelector(PetDtoSex.FEMALE);
+        }}
+      />
+
+      <SingleSelect
+        showTitle
+        type="eggStatus"
+        initialItem={eggStatus}
+        onSelect={(item) => setEggStatus(item)}
+      />
 
       <CalendarInput
         placeholder="시작일"
