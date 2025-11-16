@@ -130,17 +130,24 @@ export const useRegisterForm = ({
     [formData, setFormData, goNext, formStep, funnel, step],
   );
 
-  // 선택 리스트 조회
-  const getSelectList = useCallback(
-    (type: FieldName) => {
+  // displayMap 조회
+  const getDisplayMap = useCallback(
+    (type: FieldName): Record<string, string> => {
       switch (type) {
         case "morphs": {
-          return Object.entries(MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies]).map(
-            ([key, value]) => ({ key, value }),
+          return MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies];
+        }
+        default: {
+          const config = SELECTOR_CONFIGS[type as SELECTOR_TYPE];
+          if (!config) return {};
+          return config.selectList.reduce(
+            (acc, { key, value }) => {
+              acc[key] = value;
+              return acc;
+            },
+            {} as Record<string, string>,
           );
         }
-        default:
-          return SELECTOR_CONFIGS[type as SELECTOR_TYPE].selectList;
       }
     },
     [formData.species],
@@ -149,6 +156,8 @@ export const useRegisterForm = ({
   // 다중 선택 리스트 오픈
   const handleMultipleSelect = useCallback(
     (type: FieldName) => {
+      const displayMap = getDisplayMap(type);
+
       overlay.open(({ isOpen, close, unmount }) => (
         <MultipleSelector
           isOpen={isOpen}
@@ -157,13 +166,13 @@ export const useRegisterForm = ({
             handleNext({ type, value });
             close();
           }}
-          selectList={getSelectList(type) || []}
+          displayMap={displayMap}
           initialValue={formData[type]}
           onExit={unmount}
         />
       ));
     },
-    [getSelectList, handleNext, formData],
+    [getDisplayMap, handleNext, formData],
   );
 
   return useMemo(

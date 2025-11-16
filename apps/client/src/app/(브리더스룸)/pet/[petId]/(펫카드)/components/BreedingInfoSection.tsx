@@ -48,17 +48,24 @@ const BreedingInfoSection = memo(
       [isEditing, setFormData],
     );
 
-    const getSelectList = useCallback(
-      (type: FieldName) => {
+    const getDisplayMap = useCallback(
+      (type: FieldName): Record<string, string> => {
         switch (type) {
           case "morphs": {
-            return Object.entries(MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies]).map(
-              ([key, value]) => ({ key, value }),
-            );
+            return MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies];
           }
 
-          default:
-            return SELECTOR_CONFIGS[type as keyof typeof SELECTOR_CONFIGS].selectList ?? [];
+          default: {
+            const config = SELECTOR_CONFIGS[type as keyof typeof SELECTOR_CONFIGS];
+            if (!config) return {};
+            return config.selectList.reduce(
+              (acc, { key, value }) => {
+                acc[key] = value;
+                return acc;
+              },
+              {} as Record<string, string>,
+            );
+          }
         }
       },
       [formData.species],
@@ -66,6 +73,9 @@ const BreedingInfoSection = memo(
 
     const handleMultipleSelect = useCallback(
       (type: FieldName) => {
+        const displayMap = getDisplayMap(type);
+        const title = SELECTOR_CONFIGS[type as keyof typeof SELECTOR_CONFIGS]?.title || "선택";
+
         overlay.open(({ isOpen, close, unmount }) => (
           <MultipleSelector
             isOpen={isOpen}
@@ -74,13 +84,14 @@ const BreedingInfoSection = memo(
               handleChange({ type, value });
               close();
             }}
-            selectList={getSelectList(type) || []}
+            displayMap={displayMap}
+            title={title}
             initialValue={formData[type]}
             onExit={unmount}
           />
         ));
       },
-      [getSelectList, formData, handleChange],
+      [getDisplayMap, formData, handleChange],
     );
 
     const renderFormField = useCallback(
