@@ -12,7 +12,7 @@ import {
   PetAdoptionDtoLocation,
   UpdateAdoptionDto,
 } from "@repo/api-client";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -56,11 +56,11 @@ type AdoptionFormData = z.infer<typeof adoptionSchema>;
 
 interface EditAdoptionFormProps {
   adoptionData?: AdoptionEditFormDto | null;
-  handleClose: () => void;
-  handleCancel: () => void;
+  onSubmit: () => void;
+  onCancel: () => void;
 }
 
-const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdoptionFormProps) => {
+const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionFormProps) => {
   const [showUserSelector, setShowUserSelector] = useState(false);
 
   const form = useForm({
@@ -75,6 +75,33 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
     },
   });
 
+  const currentStatus = useWatch({
+    control: form.control,
+    name: "status",
+  });
+
+  const isBuyerFieldEnabled =
+    currentStatus === AdoptionDtoStatus.ON_RESERVATION || currentStatus === AdoptionDtoStatus.SOLD;
+
+  // 상태가 변경될 때 buyer 필드 초기화
+  const handleStatusChange = (newStatus: AdoptionDtoStatus | "UNDEFINED") => {
+    const previousStatus = form.getValues("status");
+
+    // 이전 상태가 ON_RESERVATION 또는 SOLD였고, 새로운 상태가 그게 아닌 경우 buyer 초기화
+    if (
+      (previousStatus === AdoptionDtoStatus.ON_RESERVATION ||
+        previousStatus === AdoptionDtoStatus.SOLD) &&
+      newStatus !== AdoptionDtoStatus.ON_RESERVATION &&
+      newStatus !== AdoptionDtoStatus.SOLD &&
+      form.getValues("buyer")?.userId
+    ) {
+      form.setValue("buyer", {});
+      setShowUserSelector(false);
+    }
+
+    form.setValue("status", newStatus);
+  };
+
   const { mutateAsync: updateAdoption, isPending: isUpdatingAdoption } = useMutation({
     mutationFn: ({ adoptionId, data }: { adoptionId: string; data: UpdateAdoptionDto }) =>
       adoptionControllerUpdate(adoptionId, data),
@@ -84,7 +111,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
     mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
   });
 
-  const onSubmit = async (data: AdoptionFormData) => {
+  const handleFormSubmit = async (data: AdoptionFormData) => {
     if (!adoptionData?.petId) {
       toast.error("펫 정보를 찾을 수 없습니다. 다시 선택해주세요.");
       return;
@@ -114,7 +141,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
       }
 
       toast.success("분양 정보가 성공적으로 생성되었습니다.");
-      handleClose();
+      onSubmit();
     } catch (error) {
       console.error("분양 생성 실패:", error);
       toast.error("분양 생성에 실패했습니다. 다시 시도해주세요.");
@@ -124,7 +151,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
           {/* status */}
           <FormField
             control={form.control}
@@ -133,7 +160,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
               <FormItem>
                 <FormLabel>분양 상태 (필수)</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={handleStatusChange} value={field.value}>
                     <SelectTrigger>
                       <SelectValue placeholder="분양 상태를 선택하세요" />
                     </SelectTrigger>
@@ -222,8 +249,16 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setShowUserSelector(!showUserSelector)}
-                      className="flex h-10 w-full items-center justify-between bg-gray-800 text-white"
+                      onClick={() => {
+                        if (isBuyerFieldEnabled) {
+                          setShowUserSelector(!showUserSelector);
+                        }
+                      }}
+                      disabled={!isBuyerFieldEnabled}
+                      className={cn(
+                        "flex h-10 w-full items-center justify-between bg-gray-800 text-white",
+                        !isBuyerFieldEnabled && "cursor-not-allowed opacity-50",
+                      )}
                     >
                       <div className="flex items-center">
                         <UserCircle className="mr-1 h-4 w-4" />
@@ -236,9 +271,15 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
                       )}
                     </Button>
 
-                    {showUserSelector && (
+                    {showUserSelector && isBuyerFieldEnabled && (
                       <div className="rounded-lg border p-2">
-                        <UserList selectedUserId={field.value?.userId} onSelect={field.onChange} />
+                        <UserList
+                          selectedUserId={field.value?.userId}
+                          onSelect={(buyer) => {
+                            field.onChange(buyer);
+                            setShowUserSelector(false);
+                          }}
+                        />
                       </div>
                     )}
                   </div>
@@ -306,7 +347,7 @@ const EditAdoptionForm = ({ adoptionData, handleClose, handleCancel }: EditAdopt
             <Button type="submit" disabled={isUpdatingAdoption || isCreatingAdoption}>
               {isUpdatingAdoption || isCreatingAdoption ? "저장 중..." : "저장"}
             </Button>
-            <Button type="button" variant="outline" onClick={handleCancel}>
+            <Button type="button" variant="outline" onClick={onCancel}>
               취소
             </Button>
           </div>

@@ -24,6 +24,7 @@ const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetai
   const {
     data: adoptionData,
     isLoading,
+    refetch,
     error,
   } = useQuery({
     queryKey: [adoptionControllerGetAdoptionByPetId.name, petId],
@@ -99,11 +100,12 @@ const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetai
               // 분양 정보 수정폼
               <EditAdoptionForm
                 adoptionData={adoptionData}
-                handleClose={() => {
+                onSubmit={() => {
                   onUpdate();
                   onClose();
+                  refetch();
                 }}
-                handleCancel={onClose}
+                onCancel={onClose}
               />
             )}
           </div>
