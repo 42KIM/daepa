@@ -37,7 +37,7 @@ import UserList from "../../components/UserList";
 
 const adoptionSchema = z.object({
   price: z.string().optional(),
-  adoptionDate: z.date().optional(),
+  adoptionDate: z.date().optional().nullable(),
   memo: z.string().optional(),
   location: z.enum(["ONLINE", "OFFLINE"]).default("OFFLINE"),
   buyer: z.object({ userId: z.string().optional(), name: z.string().optional() }).optional(),
@@ -237,14 +237,8 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      defaultMonth={
-                        field.value ||
-                        (adoptionData?.adoptionDate
-                          ? new Date(adoptionData.adoptionDate)
-                          : undefined)
-                      }
+                      selected={field.value ?? undefined}
+                      onSelect={(date) => field.onChange(date ?? null)}
                       disabled={(date) => date < new Date("1900-01-01")}
                       initialFocus
                     />

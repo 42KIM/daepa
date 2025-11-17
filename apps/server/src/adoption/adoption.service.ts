@@ -323,6 +323,8 @@ export class AdoptionService {
       Object.assign(newAdoptionEntity, {
         ...adoptionEntity,
         ...updateAdoptionDto,
+        price: updateAdoptionDto.price ?? null,
+        adoptionDate: updateAdoptionDto.adoptionDate ?? null,
         buyerId: updateAdoptionDto.buyerId ?? null,
         isActive:
           updateAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD ? false : true,
