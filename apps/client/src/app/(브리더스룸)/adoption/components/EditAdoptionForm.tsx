@@ -158,7 +158,10 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>분양 상태 (필수)</FormLabel>
+                <FormLabel className="flex items-center gap-1">
+                  분양 상태
+                  <span className="text-xs text-red-500">(필수)</span>
+                </FormLabel>
                 <FormControl>
                   <Select onValueChange={handleStatusChange} value={field.value}>
                     <SelectTrigger>
@@ -243,7 +246,14 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
             name="buyer"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>입양자 선택</FormLabel>
+                <FormLabel>
+                  입양자 선택
+                  {!isBuyerFieldEnabled && (
+                    <span className="text-xs text-neutral-500">
+                      (예약 중 / 분양 완료 시 선택 가능)
+                    </span>
+                  )}
+                </FormLabel>
                 <FormControl>
                   <div className="space-y-2">
                     <Button
