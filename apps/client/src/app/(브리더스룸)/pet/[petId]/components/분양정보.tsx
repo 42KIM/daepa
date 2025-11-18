@@ -131,7 +131,9 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
     overlay.open(({ isOpen, close }) => (
       <Dialog open={isOpen} onOpenChange={close}>
         <DialogContent className="rounded-3xl p-4">
-          <DialogTitle className="h-4" />
+          <DialogTitle className="h-4 text-base font-semibold text-gray-800">
+            입양자를 선택해주세요.
+          </DialogTitle>
           <UserList
             selectedUserId={adoptionData.buyer?.userId}
             onSelect={(user) => {
@@ -151,6 +153,13 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
     return !(isNil(adoption) && !isEditMode);
   }, [adoption, isEditMode]);
 
+  const isAdoptionReservedOrSold = useMemo(() => {
+    return (
+      adoptionData.status === PetAdoptionDtoStatus.ON_RESERVATION ||
+      adoptionData.status === PetAdoptionDtoStatus.SOLD
+    );
+  }, [adoptionData.status]);
+
   return (
     <div className="shadow-xs flex min-h-[480px] min-w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">분양정보</div>
@@ -166,16 +175,18 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
             onSelect={(item) => {
               setFormData((prev) => {
                 const nextStatus = item as PetAdoptionDtoStatus;
-                const shouldClearBuyer = !(
+                const isNextStatusReservedOrSold =
                   nextStatus === PetAdoptionDtoStatus.ON_RESERVATION ||
-                  nextStatus === PetAdoptionDtoStatus.SOLD
-                );
+                  nextStatus === PetAdoptionDtoStatus.SOLD;
                 return {
                   ...prev,
                   adoption: {
                     ...prev.adoption,
                     status: nextStatus,
-                    buyer: shouldClearBuyer ? undefined : prev.adoption?.buyer,
+                    buyer: isNextStatusReservedOrSold ? prev.adoption?.buyer : undefined,
+                    adoptionDate: isNextStatusReservedOrSold
+                      ? prev.adoption?.adoptionDate
+                      : undefined,
                   },
                 };
               });
@@ -215,19 +226,27 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
           />
 
           <FormItem
-            label="날짜"
+            label="분양 날짜"
             content={
-              <CalendarInput
-                placeholder="-"
-                editable={isEditMode}
-                value={adoptionData.adoptionDate ?? ""}
-                onSelect={(date) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    adoption: { ...prev.adoption, adoptionDate: date?.toISOString() ?? "" },
-                  }));
-                }}
-              />
+              !isEditMode || isAdoptionReservedOrSold ? (
+                <CalendarInput
+                  placeholder="-"
+                  editable={isEditMode && isAdoptionReservedOrSold}
+                  value={adoptionData.adoptionDate}
+                  onSelect={(date) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      adoption: { ...prev.adoption, adoptionDate: date?.toISOString() },
+                    }));
+                  }}
+                />
+              ) : (
+                isEditMode && (
+                  <div className="flex h-[32px] w-fit items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-[12px] font-[500] text-gray-400">
+                    예약중・분양 완료 시 선택 가능
+                  </div>
+                )
+              )
             }
           />
 
@@ -254,14 +273,18 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
 
                 {isEditMode &&
                   (adoptionData.status === PetAdoptionDtoStatus.ON_RESERVATION ||
-                    adoptionData.status === PetAdoptionDtoStatus.SOLD) && (
+                  adoptionData.status === PetAdoptionDtoStatus.SOLD ? (
                     <Button
                       className="ml-1 h-8 cursor-pointer rounded-lg px-2 text-[12px] text-white"
                       onClick={handleSelectBuyer}
                     >
                       {isNil(adoptionData.buyer?.userId) ? "입양자 선택" : "변경"}
                     </Button>
-                  )}
+                  ) : (
+                    <div className="flex h-[32px] w-fit items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-[12px] font-[500] text-gray-400">
+                      예약중・분양 완료 시 선택 가능
+                    </div>
+                  ))}
               </>
             }
           />

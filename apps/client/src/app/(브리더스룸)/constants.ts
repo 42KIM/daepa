@@ -644,11 +644,11 @@ export const SELECTOR_CONFIGS: Record<
     selectList: [
       {
         key: "NFS",
-        value: "판매 안함",
+        value: "분양 안함(NFS)",
       },
       {
         key: "ON_SALE",
-        value: "판매 중",
+        value: "분양 중",
       },
       {
         key: "ON_RESERVATION",
@@ -656,7 +656,7 @@ export const SELECTOR_CONFIGS: Record<
       },
       {
         key: "SOLD",
-        value: "판매 완료",
+        value: "분양 완료",
       },
     ],
   },
