@@ -204,14 +204,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
             name="adoptionDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>
-                  분양 날짜
-                  {!isAdoptionReservedOrSold && (
-                    <span className="text-xs text-neutral-500">
-                      (예약 중・분양 완료 시 선택 가능)
-                    </span>
-                  )}
-                </FormLabel>
+                <FormLabel>분양 날짜</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -228,7 +221,11 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                         {field.value ? (
                           format(field.value, "PPP", { locale: ko })
                         ) : (
-                          <span>날짜를 선택하세요</span>
+                          <span>
+                            {isAdoptionReservedOrSold
+                              ? "날짜를 선택하세요"
+                              : "예약 중・분양 완료 시 선택 가능"}
+                          </span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
@@ -254,14 +251,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
             name="buyer"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  입양자 선택
-                  {!isAdoptionReservedOrSold && (
-                    <span className="text-xs text-neutral-500">
-                      (예약 중・분양 완료 시 선택 가능)
-                    </span>
-                  )}
-                </FormLabel>
+                <FormLabel>입양자 선택</FormLabel>
                 <FormControl>
                   <div className="space-y-2">
                     <Button
@@ -275,12 +265,14 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                       disabled={!isAdoptionReservedOrSold}
                       className={cn(
                         "flex h-10 w-full items-center justify-between bg-gray-800 text-white",
-                        !isAdoptionReservedOrSold && "cursor-not-allowed opacity-50",
+                        !isAdoptionReservedOrSold && "cursor-not-allowed text-gray-300 opacity-50",
                       )}
                     >
                       <div className="flex items-center">
                         <UserCircle className="mr-1 h-4 w-4" />
-                        {field.value?.name ?? "사용자 선택하기"}
+                        {isAdoptionReservedOrSold
+                          ? (field.value?.name ?? "사용자 선택하기")
+                          : "예약 중・분양 완료 시 선택 가능"}
                       </div>
                       {showUserSelector ? (
                         <ChevronUp className="ml-1 h-4 w-4" />

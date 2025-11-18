@@ -208,7 +208,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
             content={
               <NumberField
                 disabled={!isEditMode}
-                value={String(adoptionData.price ?? "")}
+                value={adoptionData.price ? String(adoptionData.price) : isEditMode ? "" : "-"}
                 setValue={(value) => {
                   setFormData((prev) => ({
                     ...prev,
