@@ -128,7 +128,7 @@ export class AdoptionService {
         'adoptions.price',
         'adoptions.adoptionDate',
         'adoptions.memo',
-        'adoptions.location',
+        'adoptions.method',
         'adoptions.status',
         'adoptions.createdAt',
         'pets.petId',

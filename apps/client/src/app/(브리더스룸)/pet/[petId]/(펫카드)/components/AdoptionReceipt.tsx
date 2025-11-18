@@ -2,7 +2,7 @@ import { SALE_STATUS_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import {
   AdoptionDto,
   PetAdoptionDto,
-  PetAdoptionDtoLocation,
+  PetAdoptionDtoMethod,
   PetAdoptionDtoStatus,
   petControllerFindPetByPetId,
 } from "@repo/api-client";
@@ -159,10 +159,10 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
           >
             <span className="text-sm text-gray-600 dark:text-gray-400">거래 방식</span>
             <span className="text-sm text-gray-800 dark:text-gray-200">
-              {adoption?.location
-                ? adoption.location === PetAdoptionDtoLocation.ONLINE
-                  ? "온라인"
-                  : "오프라인"
+              {adoption?.method
+                ? (adoption.method === PetAdoptionDtoMethod.PICKUP && "직접 거래") ||
+                  (adoption.method === PetAdoptionDtoMethod.DELIVERY && "배송") ||
+                  (adoption.method === PetAdoptionDtoMethod.WHOLESALE && "도매")
                 : "미정"}
             </span>
           </div>

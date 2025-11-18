@@ -9,7 +9,7 @@ import {
   adoptionControllerUpdate,
   AdoptionDtoStatus,
   CreateAdoptionDto,
-  PetAdoptionDtoLocation,
+  PetAdoptionDtoMethod,
   UpdateAdoptionDto,
 } from "@repo/api-client";
 import { useForm, useWatch } from "react-hook-form";
@@ -39,7 +39,7 @@ const adoptionSchema = z.object({
   price: z.string().optional(),
   adoptionDate: z.date().optional().nullable(),
   memo: z.string().optional(),
-  location: z.enum(["ONLINE", "OFFLINE"]).default("OFFLINE"),
+  method: z.enum(["PICKUP", "DELIVERY", "WHOLESALE"]).optional(),
   buyer: z.object({ userId: z.string().optional(), name: z.string().optional() }).optional(),
   status: z
     .enum([
@@ -68,7 +68,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
     defaultValues: {
       price: adoptionData?.price ? adoptionData.price.toString() : "",
       memo: adoptionData?.memo ?? "",
-      location: adoptionData?.location ?? PetAdoptionDtoLocation.OFFLINE,
+      method: adoptionData?.method,
       buyer: adoptionData?.buyer ?? {},
       adoptionDate: adoptionData?.adoptionDate ? new Date(adoptionData.adoptionDate) : undefined,
       status: adoptionData?.status ?? "UNDEFINED",
@@ -130,7 +130,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
         price: data.price ? Number(data.price) : undefined,
         adoptionDate: data.adoptionDate?.toISOString(),
         memo: data.memo,
-        location: data.location,
+        method: data.method,
         buyerId: data.buyer?.userId,
         status: data.status === "UNDEFINED" ? undefined : data.status,
       },
@@ -164,7 +164,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   분양 상태
-                  <span className="text-xs text-red-500">(필수)</span>
+                  <span className="text-xs text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <Select onValueChange={handleStatusChange} value={field.value}>
@@ -306,7 +306,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
 
           <FormField
             control={form.control}
-            name="location"
+            name="method"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>거래 방식</FormLabel>
@@ -314,23 +314,49 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant={
-                        field.value === PetAdoptionDtoLocation.OFFLINE ? "default" : "outline"
-                      }
-                      onClick={() => field.onChange(PetAdoptionDtoLocation.OFFLINE)}
+                      variant={field.value === PetAdoptionDtoMethod.PICKUP ? "default" : "outline"}
+                      onClick={() => {
+                        if (field.value === PetAdoptionDtoMethod.PICKUP) {
+                          field.onChange(undefined);
+                        } else {
+                          field.onChange(PetAdoptionDtoMethod.PICKUP);
+                        }
+                      }}
                       className="h-10 flex-1"
                     >
-                      오프라인
+                      직접 거래
                     </Button>
                     <Button
                       type="button"
                       variant={
-                        field.value === PetAdoptionDtoLocation.ONLINE ? "default" : "outline"
+                        field.value === PetAdoptionDtoMethod.DELIVERY ? "default" : "outline"
                       }
-                      onClick={() => field.onChange(PetAdoptionDtoLocation.ONLINE)}
+                      onClick={() => {
+                        if (field.value === PetAdoptionDtoMethod.DELIVERY) {
+                          field.onChange(undefined);
+                        } else {
+                          field.onChange(PetAdoptionDtoMethod.DELIVERY);
+                        }
+                      }}
                       className="h-10 flex-1"
                     >
-                      온라인
+                      배송
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={
+                        field.value === PetAdoptionDtoMethod.WHOLESALE ? "default" : "outline"
+                      }
+                      onClick={() => {
+                        if (field.value === PetAdoptionDtoMethod.WHOLESALE) {
+                          field.onChange(undefined);
+                        } else {
+                          field.onChange(PetAdoptionDtoMethod.WHOLESALE);
+                        }
+                      }}
+                      className="h-10 flex-1"
+                    >
+                      도매
                     </Button>
                   </div>
                 </FormControl>

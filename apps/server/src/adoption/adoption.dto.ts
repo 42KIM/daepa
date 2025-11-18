@@ -13,7 +13,7 @@ import { UserProfilePublicDto } from '../user/user.dto';
 import { PetSummaryAdoptionDto } from '../pet/pet.dto';
 import {
   ADOPTION_SALE_STATUS,
-  PET_ADOPTION_LOCATION,
+  PET_ADOPTION_METHOD,
   PET_SPECIES,
 } from 'src/pet/pet.constants';
 import { CommonResponseDto } from 'src/common/response.dto';
@@ -62,15 +62,15 @@ export class AdoptionBaseDto {
   memo?: string;
 
   @ApiProperty({
-    description: '분양 위치',
+    description: '분양 방식',
     example: 'ONLINE',
-    enum: PET_ADOPTION_LOCATION,
-    'x-enumNames': Object.keys(PET_ADOPTION_LOCATION),
+    enum: PET_ADOPTION_METHOD,
+    'x-enumNames': Object.keys(PET_ADOPTION_METHOD),
     required: false,
   })
   @IsOptional()
-  @IsEnum(PET_ADOPTION_LOCATION)
-  location?: PET_ADOPTION_LOCATION;
+  @IsEnum(PET_ADOPTION_METHOD)
+  method?: PET_ADOPTION_METHOD;
 
   @ApiProperty({
     description: '생성일',
@@ -137,15 +137,15 @@ export class CreateAdoptionDto {
   memo?: string;
 
   @ApiProperty({
-    description: '분양 위치',
-    example: 'ONLINE',
-    enum: PET_ADOPTION_LOCATION,
-    'x-enumNames': Object.keys(PET_ADOPTION_LOCATION),
+    description: '분양 방식',
+    example: 'DELIVERY',
+    enum: PET_ADOPTION_METHOD,
+    'x-enumNames': Object.keys(PET_ADOPTION_METHOD),
     required: false,
   })
   @IsOptional()
-  @IsEnum(PET_ADOPTION_LOCATION)
-  location?: PET_ADOPTION_LOCATION;
+  @IsEnum(PET_ADOPTION_METHOD)
+  method?: PET_ADOPTION_METHOD;
 
   @ApiProperty({
     description: '판매 상태',
@@ -176,7 +176,7 @@ export class AdoptionDto extends PickType(AdoptionBaseDto, [
   'price',
   'adoptionDate',
   'memo',
-  'location',
+  'method',
   'status',
 ] as const) {
   @ApiProperty({

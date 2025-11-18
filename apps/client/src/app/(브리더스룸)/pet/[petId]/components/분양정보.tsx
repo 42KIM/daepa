@@ -3,10 +3,10 @@ import {
   adoptionControllerCreateAdoption,
   CreateAdoptionDto,
   PetAdoptionDto,
-  PetAdoptionDtoLocation,
   PetAdoptionDtoStatus,
   UpdateAdoptionDto,
   adoptionControllerGetAdoptionByPetId,
+  PetAdoptionDtoMethod,
 } from "@repo/api-client";
 import FormItem from "./FormItem";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
@@ -63,7 +63,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
         ...prev,
         adoption: {
           status: PetAdoptionDtoStatus.ON_SALE,
-          location: PetAdoptionDtoLocation.OFFLINE,
+          method: PetAdoptionDtoMethod.PICKUP,
           price: 0,
           adoptionDate: new Date().toISOString(),
           memo: "",
@@ -92,7 +92,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
         price: adoptionData.price ? Number(adoptionData.price) : undefined,
         adoptionDate: adoptionData.adoptionDate,
         memo: adoptionData.memo,
-        location: adoptionData.location,
+        method: adoptionData.method,
         buyerId: adoptionData.buyer?.userId,
         status: adoptionData.status,
       },
@@ -299,37 +299,73 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                   onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      adoption: { ...prev.adoption, location: PetAdoptionDtoLocation.OFFLINE },
+                      adoption: {
+                        ...prev.adoption,
+                        method:
+                          prev.adoption?.method === PetAdoptionDtoMethod.PICKUP
+                            ? undefined
+                            : PetAdoptionDtoMethod.PICKUP,
+                      },
                     }))
                   }
                   className={cn(
                     "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                    adoptionData.location === PetAdoptionDtoLocation.OFFLINE
-                      ? "bg-white shadow-sm"
+                    adoptionData.method === PetAdoptionDtoMethod.PICKUP
+                      ? "bg-blue-100 text-blue-600 shadow-sm"
                       : "text-gray-600",
                     !isEditMode && "cursor-not-allowed",
                   )}
                   disabled={!isEditMode}
                 >
-                  오프라인
+                  직접 거래
                 </button>
                 <button
                   onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      adoption: { ...prev.adoption, location: PetAdoptionDtoLocation.ONLINE },
+                      adoption: {
+                        ...prev.adoption,
+                        method:
+                          prev.adoption?.method === PetAdoptionDtoMethod.DELIVERY
+                            ? undefined
+                            : PetAdoptionDtoMethod.DELIVERY,
+                      },
                     }))
                   }
                   className={cn(
                     "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                    adoptionData.location === PetAdoptionDtoLocation.ONLINE
-                      ? "bg-white shadow-sm"
+                    adoptionData.method === PetAdoptionDtoMethod.DELIVERY
+                      ? "bg-blue-100 text-blue-600 shadow-sm"
                       : "text-gray-600",
                     !isEditMode && "cursor-not-allowed",
                   )}
                   disabled={!isEditMode}
                 >
-                  온라인
+                  배송
+                </button>
+                <button
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      adoption: {
+                        ...prev.adoption,
+                        method:
+                          prev.adoption?.method === PetAdoptionDtoMethod.WHOLESALE
+                            ? undefined
+                            : PetAdoptionDtoMethod.WHOLESALE,
+                      },
+                    }))
+                  }
+                  className={cn(
+                    "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
+                    adoptionData.method === PetAdoptionDtoMethod.WHOLESALE
+                      ? "bg-blue-100 text-blue-600 shadow-sm"
+                      : "text-gray-600",
+                    !isEditMode && "cursor-not-allowed",
+                  )}
+                  disabled={!isEditMode}
+                >
+                  도매
                 </button>
               </div>
             }
