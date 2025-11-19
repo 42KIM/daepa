@@ -399,7 +399,7 @@ export const TRAIT_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>
 
 export const SALE_STATUS_KOREAN_INFO = {
   NFS: "분양 안함(NFS)",
-  ON_SALE: "분양 중",
+  ON_SALE: "분양 가능",
   ON_RESERVATION: "예약 중",
   SOLD: "분양 완료",
 };
@@ -648,7 +648,7 @@ export const SELECTOR_CONFIGS: Record<
       },
       {
         key: "ON_SALE",
-        value: "분양 중",
+        value: "분양 가능",
       },
       {
         key: "ON_RESERVATION",

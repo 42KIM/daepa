@@ -1,62 +1,24 @@
 "use client";
 
-import { Column, ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import { AdoptionDto, AdoptionDtoStatus, PetDtoSpecies } from "@repo/api-client";
+import { AdoptionDto } from "@repo/api-client";
 import { getStatusBadge } from "@/lib/utils";
 import {
   GENDER_KOREAN_INFO,
   GROWTH_KOREAN_INFO,
-  SALE_STATUS_KOREAN_INFO,
   SPECIES_KOREAN_INFO,
   TABLE_HEADER,
 } from "../../constants";
-import TableHeaderSelect from "../../components/TableHeaderSelect";
-import { useAdoptionFilterStore } from "../../store/adoptionFilter";
-
-const HeaderSelect = ({
-  column,
-  title,
-  items,
-  renderItem,
-}: {
-  column: Column<any, unknown>;
-  title: string;
-  items: string[] | number[];
-  renderItem: (item: string | number) => string;
-}) => {
-  const { searchFilters, setSearchFilters } = useAdoptionFilterStore();
-  return (
-    <TableHeaderSelect
-      column={column}
-      title={title}
-      items={items}
-      searchFilters={searchFilters}
-      setSearchFilters={setSearchFilters}
-      renderItem={renderItem}
-    />
-  );
-};
 
 export const columns: ColumnDef<AdoptionDto>[] = [
   {
     accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <HeaderSelect
-          column={column}
-          title={TABLE_HEADER.adoption_status}
-          items={Object.values(AdoptionDtoStatus)}
-          renderItem={(item) =>
-            SALE_STATUS_KOREAN_INFO[item as keyof typeof SALE_STATUS_KOREAN_INFO] || "미정"
-          }
-        />
-      );
-    },
+    header: TABLE_HEADER.adoption_status,
     cell: ({ row }) => {
       const status = row.original.status;
-      return <div className="flex justify-center">{getStatusBadge(status)}</div>;
+      return <div className="flex">{getStatusBadge(status)}</div>;
     },
   },
   {
@@ -69,18 +31,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
   },
   {
     accessorKey: "pet.species",
-    header: ({ column }) => {
-      const uniqueSpecies = Object.keys(SPECIES_KOREAN_INFO);
-
-      return (
-        <HeaderSelect
-          column={column}
-          title={TABLE_HEADER.species}
-          items={uniqueSpecies}
-          renderItem={(item) => SPECIES_KOREAN_INFO[item as PetDtoSpecies]}
-        />
-      );
-    },
+    header: TABLE_HEADER.species,
     cell: ({ row }) => {
       const species = row.original.pet.species;
       return <div className="capitalize">{SPECIES_KOREAN_INFO[species]}</div>;
@@ -155,6 +106,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     header: "입양자",
     cell: ({ row }) => {
       const buyer = row.original?.buyer;
+      // TODO!: 입양자 정보 보기 or 입양자 페이지로 이동
       return <div className="text-sm">{buyer ? buyer.name : "입양자 정보 없음"}</div>;
     },
   },
