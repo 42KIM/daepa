@@ -66,7 +66,7 @@ export class AdoptionBaseDto {
 
   @ApiProperty({
     description: '분양 방식',
-    example: 'ONLINE',
+    example: 'DELIVERY',
     enum: PET_ADOPTION_METHOD,
     'x-enumNames': Object.keys(PET_ADOPTION_METHOD),
     required: false,
