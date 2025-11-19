@@ -432,7 +432,7 @@ export const TABLE_HEADER = {
 
 export const SPECIES_KOREAN_ALIAS_INFO: Record<PetDtoSpecies, string> = {
   CR: "크레",
-  LE: "레오파드",
+  LE: "레게",
   FT: "펫테일",
   KN: "납테일",
   LC: "리키",

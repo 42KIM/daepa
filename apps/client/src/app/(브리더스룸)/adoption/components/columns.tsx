@@ -8,11 +8,19 @@ import { getStatusBadge } from "@/lib/utils";
 import {
   GENDER_KOREAN_INFO,
   GROWTH_KOREAN_INFO,
-  SPECIES_KOREAN_INFO,
+  SPECIES_KOREAN_ALIAS_INFO,
   TABLE_HEADER,
 } from "../../constants";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
+  {
+    accessorKey: "pet.species",
+    header: TABLE_HEADER.species,
+    cell: ({ row }) => {
+      const species = row.original.pet.species;
+      return <div className="capitalize">{SPECIES_KOREAN_ALIAS_INFO[species]}</div>;
+    },
+  },
   {
     accessorKey: "status",
     header: TABLE_HEADER.adoption_status,
@@ -27,14 +35,6 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     cell: ({ row }) => {
       const petName = row.original.pet.name;
       return <div className="font-semibold">{petName}</div>;
-    },
-  },
-  {
-    accessorKey: "pet.species",
-    header: TABLE_HEADER.species,
-    cell: ({ row }) => {
-      const species = row.original.pet.species;
-      return <div className="capitalize">{SPECIES_KOREAN_INFO[species]}</div>;
     },
   },
   {
@@ -107,7 +107,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     cell: ({ row }) => {
       const buyer = row.original?.buyer;
       // TODO!: 입양자 정보 보기 or 입양자 페이지로 이동
-      return <div className="text-sm">{buyer ? buyer.name : "입양자 정보 없음"}</div>;
+      return <div className="text-sm">{buyer ? buyer.name : "-"}</div>;
     },
   },
   {
