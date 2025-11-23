@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { pick, pickBy } from "es-toolkit";
+import { pickBy } from "es-toolkit";
 import { isNil } from "es-toolkit";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
 import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
@@ -28,6 +28,8 @@ import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
 import FormItem from "./FormItem";
 import Loading from "@/components/common/Loading";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
+import { PetDto } from "@repo/api-client";
+import { getChangedFields } from "@/lib/utils";
 
 const BreedingInfo = ({ petId }: { petId: string }) => {
   const { formData, errors, setFormData } = usePetStore();
@@ -47,6 +49,32 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
     mutationFn: (updateData: UpdatePetDto) => petControllerUpdate(pet?.petId ?? "", updateData),
   });
 
+  // 변경된 필드 추출을 위한 설정
+  const getChangedFieldsForPet = useCallback(
+    (original: PetDto, current: typeof formData): UpdatePetDto => {
+      return getChangedFields(
+        original as unknown as Record<string, unknown>,
+        current as unknown as Record<string, unknown>,
+        {
+          fields: [
+            "name",
+            "species",
+            "growth",
+            "sex",
+            "desc",
+            "hatchingDate",
+            "weight",
+            "temperature",
+            "isPublic",
+            "eggStatus",
+          ],
+          arrayFields: ["morphs", "traits", "foods"],
+        },
+      );
+    },
+    [],
+  );
+
   const handleSave = useCallback(async () => {
     if (!pet) return;
 
@@ -59,22 +87,19 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
         return;
       }
 
-      const pickedData = pick(formData, [
-        "name",
-        "species",
-        "morphs",
-        "traits",
-        "growth",
-        "sex",
-        "foods",
-        "desc",
-        "hatchingDate",
-        "weight",
-        "temperature",
-        "eggStatus",
-        "isPublic",
-      ]);
-      const updateData = pickBy(pickedData, (value) => !isNil(value));
+      // 변경된 필드만 추출
+      const changedFields = getChangedFieldsForPet(pet, formData);
+
+      // 변경사항이 없으면 API 호출하지 않음
+      if (Object.keys(changedFields).length === 0) {
+        toast.info("변경된 사항이 없습니다.");
+        setIsEditMode(false);
+        return;
+      }
+
+      // null/undefined 값 제거
+      const updateData = pickBy(changedFields, (value) => !isNil(value));
+
       await mutateUpdatePet(updateData);
       await refetch();
       toast.success("펫 정보 수정이 완료되었습니다.");
@@ -85,7 +110,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch, setIsProcessing]);
+  }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch, getChangedFieldsForPet]);
 
   useEffect(() => {
     if (pet && !isEditMode) {
