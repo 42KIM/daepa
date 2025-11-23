@@ -12,6 +12,7 @@ import { PencilIcon } from "lucide-react";
 import AdoptionDetailModal from "@/app/(브리더스룸)/adoption/components/AdoptionDetailModal";
 import { overlay } from "overlay-kit";
 import { useQueryClient } from "@tanstack/react-query";
+import { isNotNil } from "es-toolkit";
 
 interface AdoptionReceiptProps {
   adoption: AdoptionDto | PetAdoptionDto;
@@ -138,7 +139,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
           >
             <span className="text-sm text-gray-600 dark:text-gray-400">분양 가격</span>
             <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
-              {adoption?.price ? `${adoption.price.toLocaleString()}원` : "-"}
+              {isNotNil(adoption?.price) ? `${adoption.price.toLocaleString()}원` : "-"}
             </span>
           </div>
 
