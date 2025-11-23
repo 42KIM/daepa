@@ -10,16 +10,16 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { FormStep } from "../../types";
+import { FormStep } from "../../../types";
 import FloatingButton from "@/app/(브리더스룸)/components/FloatingButton";
-import { useEggStore } from "../../store/egg";
+import { useEggStore } from "../../../pet/store/egg";
 import { useRegisterForm } from "../../hooks/useRegisterForm";
 import { useCallback, useEffect } from "react";
 import { useSelect } from "../../hooks/useSelect";
 import Loading from "@/components/common/Loading";
 import { format } from "date-fns";
 import { useUserStore } from "../../../store/user";
-import { BaseFormData } from "../../store/base";
+import { BaseFormData } from "../../../pet/store/base";
 
 const EggRegisterPage = () => {
   const router = useRouter();

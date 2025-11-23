@@ -15,8 +15,8 @@ import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/common/Loading";
 import { isNil, pick, pickBy } from "es-toolkit";
-import { BaseFormData } from "../store/base";
-import { useRegisterPetStore } from "../store/register.pet";
+import { BaseFormData } from "../../pet/store/base";
+import { useRegisterPetStore } from "../../pet/store/register.pet";
 
 const formatFormData = (formData: BaseFormData): CreatePetDto | undefined => {
   const data = { ...formData };

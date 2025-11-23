@@ -11,7 +11,7 @@ import {
 import FormItem from "./FormItem";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
+import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";

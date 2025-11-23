@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FormFieldName, BaseFormErrors, FormStep } from "../../register/types";
+import { FormFieldName, BaseFormErrors, FormStep } from "../../types";
 import NumberField from "./NumberField";
 import Close from "@mui/icons-material/Close";
 import ParentLink from "../../pet/components/ParentLink";
@@ -26,7 +26,7 @@ import {
 } from "@repo/api-client";
 import DndImagePicker from "./DndImagePicker";
 import NameInput from "../NameInput";
-import { BaseFormData } from "../../register/store/base";
+import { BaseFormData } from "../../pet/store/base";
 
 interface FormFieldProps {
   label?: string;

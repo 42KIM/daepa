@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { AxiosError } from "axios";
 import { tokenStorage } from "@/lib/tokenStorage";
 import { providerIconMap } from "../../(user)/constants";
-import { DUPLICATE_CHECK_STATUS } from "../register/types";
+import { DUPLICATE_CHECK_STATUS } from "../types";
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;

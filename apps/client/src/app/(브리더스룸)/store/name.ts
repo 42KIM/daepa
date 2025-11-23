@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { DUPLICATE_CHECK_STATUS } from "../register/types";
+import { DUPLICATE_CHECK_STATUS } from "../types";
 
 interface nameStore {
   duplicateCheckStatus: DUPLICATE_CHECK_STATUS;

@@ -4,9 +4,9 @@ import {
   OPTION_STEPS,
   SELECTOR_CONFIGS,
 } from "@/app/(브리더스룸)/constants";
-import { FormFieldName, FormStep } from "@/app/(브리더스룸)/register/types";
+import { FormFieldName, FormStep } from "@/app/(브리더스룸)/types";
 
-import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
+import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { InfoIcon } from "lucide-react";
 import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";

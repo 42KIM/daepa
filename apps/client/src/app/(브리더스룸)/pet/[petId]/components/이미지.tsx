@@ -1,5 +1,5 @@
 import DndImagePicker from "@/app/(브리더스룸)/components/Form/DndImagePicker";
-import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
+import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import Loading from "@/components/common/Loading";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

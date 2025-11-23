@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { DUPLICATE_CHECK_STATUS, FormFieldName, FormStep } from "../types";
+import { DUPLICATE_CHECK_STATUS, FormFieldName, FormStep } from "../../types";
 import {
   MORPH_LIST_BY_SPECIES,
   REGISTER_PAGE,
@@ -15,7 +15,7 @@ import { validateStep } from "@/lib/form";
 import { toast } from "sonner";
 import { useNameStore } from "../../store/name";
 import { PetDtoSpecies } from "@repo/api-client";
-import { BaseFormData } from "../store/base";
+import { BaseFormData } from "../../pet/store/base";
 
 type SELECTOR_TYPE = "species" | "growth" | "sex";
 

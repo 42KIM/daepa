@@ -1,5 +1,5 @@
 import { StateCreator } from "zustand";
-import { FormFieldName, BaseFormErrors } from "../types";
+import { FormFieldName, BaseFormErrors } from "../../types";
 
 export type BaseFormData = Partial<Record<FormFieldName, any>>;
 
