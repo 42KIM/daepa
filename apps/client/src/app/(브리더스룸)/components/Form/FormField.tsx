@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FieldName, BaseFormErrors, FormStep } from "../../register/types";
+import { FormFieldName, BaseFormErrors, FormStep } from "../../register/types";
 import NumberField from "./NumberField";
 import Close from "@mui/icons-material/Close";
 import ParentLink from "../../pet/components/ParentLink";
@@ -34,8 +34,11 @@ interface FormFieldProps {
   formData: BaseFormData;
   errors?: BaseFormErrors;
   disabled?: boolean;
-  handleChange: <K extends FieldName>(value: { type: K; value: BaseFormData[K] | null }) => void;
-  handleMultipleSelect?: (type: FieldName) => void;
+  handleChange: <K extends FormFieldName>(value: {
+    type: K;
+    value: BaseFormData[K] | null;
+  }) => void;
+  handleMultipleSelect?: (type: FormFieldName) => void;
 }
 
 export const FormField = ({

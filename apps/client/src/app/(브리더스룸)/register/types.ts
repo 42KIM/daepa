@@ -1,4 +1,4 @@
-export type FieldName =
+export type FormFieldName =
   | "petId"
   | "species"
   | "morphs"
@@ -35,7 +35,7 @@ export type PhotoItem = {
 export type FormStep = {
   title: string;
   field: {
-    name: FieldName;
+    name: FormFieldName;
     type: string;
     required?: boolean;
     info?: string;

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { DUPLICATE_CHECK_STATUS, FieldName, FormStep } from "../types";
+import { DUPLICATE_CHECK_STATUS, FormFieldName, FormStep } from "../types";
 import {
   MORPH_LIST_BY_SPECIES,
   REGISTER_PAGE,
@@ -97,7 +97,7 @@ export const useRegisterForm = ({
 
   // 입력 필드 변경
   const handleNext = useCallback(
-    <K extends FieldName>({ type, value }: { type: K; value: BaseFormData[K] }) => {
+    <K extends FormFieldName>({ type, value }: { type: K; value: BaseFormData[K] }) => {
       if (
         type === "species" &&
         formData.species !== value &&
@@ -132,7 +132,7 @@ export const useRegisterForm = ({
 
   // displayMap 조회
   const getDisplayMap = useCallback(
-    (type: FieldName): Record<string, string> => {
+    (type: FormFieldName): Record<string, string> => {
       switch (type) {
         case "morphs": {
           return MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies];
@@ -155,7 +155,7 @@ export const useRegisterForm = ({
 
   // 다중 선택 리스트 오픈
   const handleMultipleSelect = useCallback(
-    (type: FieldName) => {
+    (type: FormFieldName) => {
       const displayMap = getDisplayMap(type);
 
       overlay.open(({ isOpen, close, unmount }) => (

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FieldName } from "../types";
+import { FormFieldName } from "../types";
 import { overlay } from "overlay-kit";
 import { SELECTOR_CONFIGS } from "../../constants";
 import Selector from "../../components/selector";
@@ -11,9 +11,9 @@ export const useSelect = () => {
       value,
       handleNext,
     }: {
-      type: FieldName;
+      type: FormFieldName;
       value: string;
-      handleNext: (value: { type: FieldName; value: string }) => void;
+      handleNext: (value: { type: FormFieldName; value: string }) => void;
     }) => {
       if (type === "species" || type === "growth" || type === "sex" || type === "eggStatus") {
         const config = SELECTOR_CONFIGS[type];
