@@ -8,7 +8,6 @@ import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
 
 import Link from "next/link";
-import Add from "@mui/icons-material/Add";
 import { useFilterStore } from "../store/filter";
 import { useSearchKeywordStore } from "../store/searchKeyword";
 
@@ -87,15 +86,6 @@ export default function PetPage() {
           loaderRefAction={ref}
           refetch={refetch}
         />
-      )}
-
-      {!isEmpty && (
-        <Link
-          href="/register/1"
-          className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 shadow-lg hover:bg-blue-600"
-        >
-          <Add fontSize="large" className="text-white" />
-        </Link>
       )}
     </div>
   );
