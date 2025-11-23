@@ -7,7 +7,7 @@ import { AxiosError } from "axios";
 import { CheckCircle2, CircleX, Info } from "lucide-react";
 import { useNameStore } from "../store/name";
 import { usePetStore } from "../pet/store/pet";
-import { DUPLICATE_CHECK_STATUS } from "../types";
+import { DUPLICATE_CHECK_STATUS } from "../constants";
 import { cn } from "@/lib/utils";
 
 const NAME_MAX_LENGTH = 15;

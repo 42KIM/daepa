@@ -20,7 +20,7 @@ import CardBackActions from "./components/CardBackActions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isNil, orderBy, pick, pickBy } from "es-toolkit";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
-import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/types";
+import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
 
 interface CardBackProps {
   pet: PetDto;

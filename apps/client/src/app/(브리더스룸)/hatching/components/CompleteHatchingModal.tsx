@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import NameInput from "../../components/NameInput";
 import { cn } from "@/lib/utils";
 import { useNameStore } from "../../store/name";
-import { DUPLICATE_CHECK_STATUS } from "../../types";
+import { DUPLICATE_CHECK_STATUS } from "../../constants";
 import CalendarSelect from "./CalendarSelect";
 
 interface CompleteHatchingModalProps {

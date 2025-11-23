@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { AxiosError } from "axios";
 import { tokenStorage } from "@/lib/tokenStorage";
 import { providerIconMap } from "../../(user)/constants";
-import { DUPLICATE_CHECK_STATUS } from "../types";
+import { DUPLICATE_CHECK_STATUS } from "../constants";
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;
@@ -59,9 +59,9 @@ const SettingsPage = () => {
   // 닉네임 수정 관련 상태
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [newNickname, setNewNickname] = useState("");
-  const [duplicateCheckStatus, setDuplicateCheckStatus] = useState<DUPLICATE_CHECK_STATUS>(
-    DUPLICATE_CHECK_STATUS.NONE,
-  );
+  const [duplicateCheckStatus, setDuplicateCheckStatus] = useState<
+    (typeof DUPLICATE_CHECK_STATUS)[keyof typeof DUPLICATE_CHECK_STATUS]
+  >(DUPLICATE_CHECK_STATUS.NONE);
 
   const { data: userProfile } = useQuery({
     queryKey: [userControllerGetUserProfile.name],

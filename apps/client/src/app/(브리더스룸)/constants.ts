@@ -760,3 +760,10 @@ export const ACCEPT_IMAGE_FORMATS: Record<string, string[]> = {
   "image/webp": [".webp"],
   "image/avif": [".avif"],
 };
+
+export const DUPLICATE_CHECK_STATUS = {
+  NONE: "none",
+  CHECKING: "checking",
+  AVAILABLE: "available",
+  DUPLICATE: "duplicate",
+};
