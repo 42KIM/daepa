@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import Loading from "@/components/common/Loading";
 import { isNil, pick, pickBy } from "es-toolkit";
 import { BaseFormData } from "../store/base";
-import { useRegisterStore } from "../store/register";
+import { useRegisterPetStore } from "../store/register.pet";
 
 const formatFormData = (formData: BaseFormData): CreatePetDto | undefined => {
   const data = { ...formData };
@@ -70,7 +70,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
   const router = useRouter();
   const { handleSelect } = useSelect();
   const { formData, step, setStep, setFormData, errors, setErrors, resetForm, page, setPage } =
-    useRegisterStore();
+    useRegisterPetStore();
   const resolvedParams = use(params);
   const funnel = Number(resolvedParams.funnel);
   const visibleSteps = FORM_STEPS.slice(-step - 1);
