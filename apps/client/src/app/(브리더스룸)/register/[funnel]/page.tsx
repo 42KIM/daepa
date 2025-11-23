@@ -3,7 +3,6 @@
 import { FORM_STEPS, GENDER_KOREAN_INFO, OPTION_STEPS, REGISTER_PAGE } from "../../constants";
 import { FormHeader } from "../../components/Form/FormHeader";
 import { useRegisterForm } from "../hooks/useRegisterForm";
-import { FormData, usePetStore } from "../store/pet";
 import { useEffect, use } from "react";
 import { FormField } from "../../components/Form/FormField";
 
@@ -16,8 +15,9 @@ import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/common/Loading";
 import { isNil, pick, pickBy } from "es-toolkit";
+import { RegisterFormData, useRegisterStore } from "../store/register";
 
-const formatFormData = (formData: FormData): CreatePetDto | undefined => {
+const formatFormData = (formData: RegisterFormData): CreatePetDto | undefined => {
   const data = { ...formData };
   if (data.sex && typeof data.sex === "string") {
     const genderEntry = Object.entries(GENDER_KOREAN_INFO).find(
@@ -69,7 +69,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
   const router = useRouter();
   const { handleSelect } = useSelect();
   const { formData, step, setStep, setFormData, errors, setErrors, resetForm, page, setPage } =
-    usePetStore();
+    useRegisterStore();
   const resolvedParams = use(params);
   const funnel = Number(resolvedParams.funnel);
   const visibleSteps = FORM_STEPS.slice(-step - 1);
@@ -130,7 +130,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
     resetForm();
   };
 
-  const createPet = async (formData: FormData) => {
+  const createPet = async (formData: RegisterFormData) => {
     try {
       const formattedData = formatFormData(formData);
       if (!formattedData) {
