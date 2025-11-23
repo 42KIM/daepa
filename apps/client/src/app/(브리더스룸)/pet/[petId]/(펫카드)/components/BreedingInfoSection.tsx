@@ -4,9 +4,9 @@ import {
   OPTION_STEPS,
   SELECTOR_CONFIGS,
 } from "@/app/(브리더스룸)/constants";
-import { FieldName, FormStep } from "@/app/(브리더스룸)/register/types";
+import { FormFieldName, FormStep } from "@/app/(브리더스룸)/pet/types/form.type";
 
-import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
+import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { InfoIcon } from "lucide-react";
 import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
@@ -41,7 +41,7 @@ const BreedingInfoSection = memo(
     }, [isEgg]);
 
     const handleChange = useCallback(
-      (value: { type: FieldName; value: string | string[] | null }) => {
+      (value: { type: FormFieldName; value: string | string[] | null }) => {
         if (!isEditing) return;
         setFormData((prev) => ({ ...prev, [value.type]: value.value }));
       },
@@ -49,7 +49,7 @@ const BreedingInfoSection = memo(
     );
 
     const getDisplayMap = useCallback(
-      (type: FieldName): Record<string, string> => {
+      (type: FormFieldName): Record<string, string> => {
         switch (type) {
           case "morphs": {
             return MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies];
@@ -72,7 +72,7 @@ const BreedingInfoSection = memo(
     );
 
     const handleMultipleSelect = useCallback(
-      (type: FieldName) => {
+      (type: FormFieldName) => {
         const displayMap = getDisplayMap(type);
         const title = SELECTOR_CONFIGS[type as keyof typeof SELECTOR_CONFIGS]?.title || "선택";
 

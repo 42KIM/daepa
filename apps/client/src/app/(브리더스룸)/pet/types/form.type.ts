@@ -1,4 +1,4 @@
-export type FieldName =
+export type FormFieldName =
   | "petId"
   | "species"
   | "morphs"
@@ -25,17 +25,10 @@ export type FieldName =
   | "adoption"
   | "adoption.price";
 
-export type PhotoItem = {
-  fileName: string;
-  size: number;
-  mimeType: string;
-  url: string;
-};
-
 export type FormStep = {
   title: string;
   field: {
-    name: FieldName;
+    name: FormFieldName;
     type: string;
     required?: boolean;
     info?: string;
@@ -45,18 +38,6 @@ export type FormStep = {
   };
 };
 
-export interface FormErrors {
+export interface BaseFormErrors {
   [key: string]: string;
-}
-
-export interface SelectorConfig {
-  title: string;
-  selectList: string[];
-}
-
-export enum DUPLICATE_CHECK_STATUS {
-  NONE = "none",
-  CHECKING = "checking",
-  AVAILABLE = "available",
-  DUPLICATE = "duplicate",
 }

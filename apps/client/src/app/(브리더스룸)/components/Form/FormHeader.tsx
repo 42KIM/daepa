@@ -8,21 +8,13 @@ export const FormHeader = memo(({ funnel }: { funnel: number }) => {
   const router = useRouter();
   const { user } = useUserStore();
 
-  const handleNavigateBack = () => {
-    if (document.referrer.includes("/register/1")) {
-      router.back();
-    } else {
-      router.replace("/register/1");
-    }
-  };
-
   return (
     <>
       {funnel === REGISTER_PAGE.SECOND && (
         <button
           className="mb-2 flex cursor-pointer items-center gap-2 text-gray-500 hover:font-bold hover:text-blue-700"
           type="button"
-          onClick={handleNavigateBack}
+          onClick={() => void router.replace("/register/1")}
         >
           <ArrowLeftCircle className="size-5" />
           이전 단계로 돌아가기

@@ -15,12 +15,18 @@ import Image from "next/image";
 import { buildR2TransformedUrl, cn } from "@/lib/utils";
 import { X, Plus, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
-import { usePetStore } from "../../register/store/pet";
+import { usePetStore } from "../../pet/store/pet";
 import { useCallback, useEffect, useState } from "react";
 import { isNil, range, remove } from "es-toolkit";
 import { ACCEPT_IMAGE_FORMATS } from "../../constants";
 import { tokenStorage } from "@/lib/tokenStorage";
-import { PhotoItem } from "../../register/types";
+
+type PhotoItem = {
+  fileName: string;
+  size: number;
+  mimeType: string;
+  url: string;
+};
 
 interface DndImagePickerProps {
   max?: number;

@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
-import { FieldName, FormStep } from "../../register/types";
+import { FormFieldName, FormStep } from "../../pet/types/form.type";
 import { Minus, Plus } from "lucide-react";
 
 interface NumberFieldProps {
   inputClassName: string;
   field: FormStep["field"];
   value: string;
-  setValue: (value: { type: FieldName; value: string }) => void;
+  setValue: (value: { type: FormFieldName; value: string }) => void;
   disabled?: boolean;
   placeholder?: string;
   stepAmount?: number;

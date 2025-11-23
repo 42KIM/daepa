@@ -9,7 +9,7 @@ import {
   UpdateParentRequestDtoStatus,
 } from "@repo/api-client";
 import { toast } from "sonner";
-import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
+import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { memo, useCallback } from "react";
 import { AxiosError } from "axios";
 

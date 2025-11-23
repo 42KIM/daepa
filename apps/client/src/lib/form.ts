@@ -1,6 +1,5 @@
-import { FormData } from "@/app/(브리더스룸)/register/store/pet";
-import { FormErrors } from "@/app/(브리더스룸)/register/types";
-import { FormStep } from "@/app/(브리더스룸)/register/types";
+import { BaseFormData } from "@/app/(브리더스룸)/pet/store/base";
+import { BaseFormErrors, FormStep } from "@/app/(브리더스룸)/pet/types/form.type";
 
 export const validateStep = ({
   formStep,
@@ -8,10 +7,10 @@ export const validateStep = ({
   currentStep,
 }: {
   formStep: FormStep[];
-  data: FormData;
+  data: BaseFormData;
   currentStep: number;
 }) => {
-  const newErrors: FormErrors = {};
+  const newErrors: BaseFormErrors = {};
   let isValid = true;
 
   // 현재 단계까지의 모든 필드 검사

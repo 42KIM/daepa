@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FieldName, FormErrors, FormStep } from "../../register/types";
+import { FormFieldName, BaseFormErrors, FormStep } from "../../pet/types/form.type";
 import NumberField from "./NumberField";
 import Close from "@mui/icons-material/Close";
 import ParentLink from "../../pet/components/ParentLink";
@@ -12,7 +12,6 @@ import {
 import { toast } from "sonner";
 import { CalendarIcon, InfoIcon } from "lucide-react";
 import { useSelect } from "../../register/hooks/useSelect";
-import { FormData } from "../../register/store/pet";
 import { PetParentDtoWithMessage } from "../../pet/store/parentLink";
 import { usePathname } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -27,15 +26,19 @@ import {
 } from "@repo/api-client";
 import DndImagePicker from "./DndImagePicker";
 import NameInput from "../NameInput";
+import { BaseFormData } from "../../pet/store/base";
 
 interface FormFieldProps {
   label?: string;
   field: FormStep["field"];
-  formData: FormData;
-  errors?: FormErrors;
+  formData: BaseFormData;
+  errors?: BaseFormErrors;
   disabled?: boolean;
-  handleChange: <K extends FieldName>(value: { type: K; value: FormData[K] | null }) => void;
-  handleMultipleSelect?: (type: FieldName) => void;
+  handleChange: <K extends FormFieldName>(value: {
+    type: K;
+    value: BaseFormData[K] | null;
+  }) => void;
+  handleMultipleSelect?: (type: FormFieldName) => void;
 }
 
 export const FormField = ({
@@ -49,7 +52,7 @@ export const FormField = ({
 }: FormFieldProps) => {
   const { handleSelect } = useSelect();
   const { name, placeholder, type } = field;
-  const value = formData[name as keyof FormData];
+  const value = formData[name as keyof BaseFormData];
   const isRegister = usePathname().includes("register");
 
   const error = errors?.[name];

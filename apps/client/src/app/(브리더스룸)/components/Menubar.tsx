@@ -35,6 +35,18 @@ const Menubar = () => {
             {item.title}
           </Link>
         ))}
+        {!pathname.includes("/register/") && (
+          <Link href="/register/1">
+            <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">
+                +
+              </div>
+              <div className="flex cursor-pointer items-center gap-1 px-2 py-1 text-[14px] font-[500] text-blue-600">
+                펫 추가하기
+              </div>
+            </div>
+          </Link>
+        )}
       </div>
 
       <div className="flex items-center gap-2">

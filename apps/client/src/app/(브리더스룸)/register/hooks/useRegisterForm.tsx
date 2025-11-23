@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { DUPLICATE_CHECK_STATUS, FieldName, FormStep } from "../types";
+import { DUPLICATE_CHECK_STATUS } from "../../constants";
+import { FormFieldName, FormStep } from "../../pet/types/form.type";
 import {
   MORPH_LIST_BY_SPECIES,
   REGISTER_PAGE,
@@ -12,21 +13,21 @@ import MultiSelectList from "../../components/selector/MultiSelectList";
 import Dialog from "../../components/Form/Dialog";
 
 import { validateStep } from "@/lib/form";
-import { FormData } from "../store/pet";
 import { toast } from "sonner";
 import { useNameStore } from "../../store/name";
 import { PetDtoSpecies } from "@repo/api-client";
+import { BaseFormData } from "../../pet/store/base";
 
 type SELECTOR_TYPE = "species" | "growth" | "sex";
 
 interface UseRegisterFormProps {
   formStep: FormStep[];
-  formData: FormData;
+  formData: BaseFormData;
   step: number;
   setErrors: (errors: Record<string, string>) => void;
   setStep: (step: number) => void;
-  setFormData: (data: FormData | ((prev: FormData) => FormData)) => void;
-  handleSubmit: (data: FormData) => void;
+  setFormData: (data: BaseFormData | ((prev: BaseFormData) => BaseFormData)) => void;
+  handleSubmit: (data: BaseFormData) => void;
 }
 
 export const useRegisterForm = ({
@@ -97,7 +98,7 @@ export const useRegisterForm = ({
 
   // 입력 필드 변경
   const handleNext = useCallback(
-    <K extends FieldName>({ type, value }: { type: K; value: FormData[K] }) => {
+    <K extends FormFieldName>({ type, value }: { type: K; value: BaseFormData[K] }) => {
       if (
         type === "species" &&
         formData.species !== value &&
@@ -132,7 +133,7 @@ export const useRegisterForm = ({
 
   // displayMap 조회
   const getDisplayMap = useCallback(
-    (type: FieldName): Record<string, string> => {
+    (type: FormFieldName): Record<string, string> => {
       switch (type) {
         case "morphs": {
           return MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies];
@@ -155,7 +156,7 @@ export const useRegisterForm = ({
 
   // 다중 선택 리스트 오픈
   const handleMultipleSelect = useCallback(
-    (type: FieldName) => {
+    (type: FormFieldName) => {
       const displayMap = getDisplayMap(type);
 
       overlay.open(({ isOpen, close, unmount }) => (

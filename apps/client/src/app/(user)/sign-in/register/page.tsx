@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { userControllerCreateInitUserInfo, userControllerVerifyName } from "@repo/api-client";
 import { AxiosError } from "axios";
-import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/register/types";
+import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;
@@ -42,9 +42,9 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterPage = () => {
   const router = useRouter();
-  const [duplicateCheckStatus, setDuplicateCheckStatus] = useState<DUPLICATE_CHECK_STATUS>(
-    DUPLICATE_CHECK_STATUS.NONE,
-  );
+  const [duplicateCheckStatus, setDuplicateCheckStatus] = useState<
+    (typeof DUPLICATE_CHECK_STATUS)[keyof typeof DUPLICATE_CHECK_STATUS]
+  >(DUPLICATE_CHECK_STATUS.NONE);
 
   const { mutateAsync: mutateRegister, isPending: isRegisterPending } = useMutation({
     mutationFn: userControllerCreateInitUserInfo,

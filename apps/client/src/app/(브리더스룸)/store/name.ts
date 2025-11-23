@@ -1,11 +1,13 @@
 import { create } from "zustand";
 
-import { DUPLICATE_CHECK_STATUS } from "../register/types";
+import { DUPLICATE_CHECK_STATUS } from "../constants";
 
 interface nameStore {
-  duplicateCheckStatus: DUPLICATE_CHECK_STATUS;
+  duplicateCheckStatus: (typeof DUPLICATE_CHECK_STATUS)[keyof typeof DUPLICATE_CHECK_STATUS];
 
-  setDuplicateCheckStatus: (duplicateCheckStatus: DUPLICATE_CHECK_STATUS) => void;
+  setDuplicateCheckStatus: (
+    duplicateCheckStatus: (typeof DUPLICATE_CHECK_STATUS)[keyof typeof DUPLICATE_CHECK_STATUS],
+  ) => void;
 }
 
 export const useNameStore = create<nameStore>()((set) => ({

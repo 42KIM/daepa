@@ -1,5 +1,5 @@
 import { Bubbles, DollarSign, Home } from "lucide-react";
-import { FormStep } from "./register/types";
+import { FormStep } from "./pet/types/form.type";
 import {
   AdoptionDtoMethod,
   EggDetailDtoStatus,
@@ -759,4 +759,11 @@ export const ACCEPT_IMAGE_FORMATS: Record<string, string[]> = {
   "image/gif": [".gif"],
   "image/webp": [".webp"],
   "image/avif": [".avif"],
+};
+
+export const DUPLICATE_CHECK_STATUS = {
+  NONE: "none",
+  CHECKING: "checking",
+  AVAILABLE: "available",
+  DUPLICATE: "duplicate",
 };

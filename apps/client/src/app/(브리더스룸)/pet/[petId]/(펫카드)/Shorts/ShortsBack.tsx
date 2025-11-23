@@ -9,7 +9,7 @@ import {
 import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import ParentLink from "../../../components/ParentLink";
 import { PetDto, PetDtoGrowth, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
-import { FormStep } from "@/app/(브리더스룸)/register/types";
+import { FormStep } from "@/app/(브리더스룸)/pet/types/form.type";
 import { format } from "date-fns";
 interface ExtendedPetDto extends PetDto {
   [key: string]: any;

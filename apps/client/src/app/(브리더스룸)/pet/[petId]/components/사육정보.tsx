@@ -1,5 +1,5 @@
 import NameDuplicateCheckInput from "@/app/(브리더스룸)/components/NameDuplicateCheckInput";
-import { usePetStore } from "@/app/(브리더스룸)/register/store/pet";
+import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { useCallback, useEffect, useState } from "react";
 import {
   PetDtoSpecies,
@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { pick, pickBy } from "es-toolkit";
 import { isNil } from "es-toolkit";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
-import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/register/types";
+import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
 import FormMultiSelect from "@/app/(브리더스룸)/components/FormMultiSelect";
 import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarInput";
 import { format } from "date-fns";
