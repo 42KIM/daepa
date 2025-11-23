@@ -28,6 +28,7 @@ import Loading from "@/components/common/Loading";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 import { PetDto } from "@repo/api-client";
 import { getChangedFields } from "@/lib/utils";
+import { AxiosError } from "axios";
 
 const BreedingInfo = ({ petId }: { petId: string }) => {
   const { formData, errors, setFormData } = usePetStore();
@@ -102,7 +103,11 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
       setIsEditMode(false);
     } catch (error) {
       console.error("Failed to update pet:", error);
-      toast.error("펫 정보 수정에 실패했습니다.");
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "펫 정보 수정에 실패했습니다.");
+      } else {
+        toast.error("펫 정보 수정에 실패했습니다. " + (error as Error).message);
+      }
     } finally {
       setIsProcessing(false);
     }
