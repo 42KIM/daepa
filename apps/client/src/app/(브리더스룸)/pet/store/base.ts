@@ -6,11 +6,9 @@ export type BaseFormData = Partial<Record<FormFieldName, any>>;
 export interface BaseFormStore {
   formData: BaseFormData;
   step: number;
-  page: "register" | "detail";
   errors: BaseFormErrors;
   setErrors: (errors: BaseFormErrors) => void;
   setStep: (step: number) => void;
-  setPage: (page: "register" | "detail") => void;
   setFormData: (data: BaseFormData | ((prev: BaseFormData) => BaseFormData)) => void;
   resetForm: () => void;
 }
@@ -25,11 +23,9 @@ export function createFormStore(): StateCreator<BaseFormStore> {
   return (set) => ({
     formData: initialFormData,
     errors: {},
-    page: "register",
     step: 0,
     setErrors: (errors) => set({ errors }),
     setStep: (step) => set({ step }),
-    setPage: (page) => set({ page }),
     setFormData: (data) =>
       set((state) => ({
         formData: typeof data === "function" ? data(state.formData) : data,

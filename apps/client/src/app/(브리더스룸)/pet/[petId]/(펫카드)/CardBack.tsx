@@ -31,7 +31,7 @@ interface CardBackProps {
 
 const CardBack = memo(({ pet, from, isMyPet, isWideScreen }: CardBackProps) => {
   const queryClient = useQueryClient();
-  const { formData, setFormData, setPage } = usePetStore();
+  const { formData, setFormData } = usePetStore();
   const { duplicateCheckStatus } = useNameStore();
   const [isEditing, setIsEditing] = useState(from === "egg");
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
@@ -72,8 +72,7 @@ const CardBack = memo(({ pet, from, isMyPet, isWideScreen }: CardBackProps) => {
 
   useEffect(() => {
     setFormData(initialPetData);
-    setPage("detail");
-  }, [initialPetData, setFormData, setPage]);
+  }, [initialPetData, setFormData]);
 
   const handleSave = useCallback(async () => {
     try {
