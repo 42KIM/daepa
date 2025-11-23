@@ -1,32 +1,9 @@
 import { create } from "zustand";
-import { FieldName, FormErrors } from "../types";
+import { BaseFormStore, FormData, createFormStore } from "./base";
 
-export type FormData = Partial<Record<FieldName, any>>;
-export interface FormStore {
-  formData: FormData;
-  step: number;
-  page: "register" | "detail";
-  errors: FormErrors;
-  setErrors: (errors: FormErrors) => void;
-  setStep: (step: number) => void;
-  setPage: (page: "register" | "detail") => void;
-  setFormData: (data: FormData | ((prev: FormData) => FormData)) => void;
-  resetForm: () => void;
-}
+// 타입 별칭으로 기존 코드와의 호환성 유지
+export type FormStore = BaseFormStore;
+// FormData를 re-export하여 기존 import 경로와의 호환성 유지
+export type { FormData };
 
-const initialFormData: FormData = {};
-
-export const usePetStore = create<FormStore>((set) => ({
-  formData: initialFormData,
-  errors: {},
-  page: "register",
-  step: 0,
-  setErrors: (errors) => set({ errors }),
-  setStep: (step) => set({ step }),
-  setPage: (page) => set({ page }),
-  setFormData: (data) =>
-    set((state) => ({
-      formData: typeof data === "function" ? data(state.formData) : data,
-    })),
-  resetForm: () => set({ formData: initialFormData, errors: {}, step: 0 }),
-}));
+export const usePetStore = create<FormStore>(createFormStore());
