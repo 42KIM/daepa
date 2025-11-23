@@ -16,14 +16,6 @@ import { isNotNil } from "es-toolkit";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
   {
-    accessorKey: "pet.species",
-    header: TABLE_HEADER.species,
-    cell: ({ row }) => {
-      const species = row.original.pet.species;
-      return <div className="capitalize">{SPECIES_KOREAN_ALIAS_INFO[species]}</div>;
-    },
-  },
-  {
     accessorKey: "status",
     header: TABLE_HEADER.adoption_status,
     cell: ({ row }) => {
@@ -31,6 +23,15 @@ export const columns: ColumnDef<AdoptionDto>[] = [
       return <div className="flex">{getStatusBadge(status)}</div>;
     },
   },
+  {
+    accessorKey: "pet.species",
+    header: TABLE_HEADER.species,
+    cell: ({ row }) => {
+      const species = row.original.pet.species;
+      return <div className="capitalize">{SPECIES_KOREAN_ALIAS_INFO[species]}</div>;
+    },
+  },
+
   {
     accessorKey: "pet.name",
     header: TABLE_HEADER.name,
