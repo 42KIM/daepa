@@ -8,7 +8,7 @@ import {
   UserNotificationDtoDetailJson,
   UserNotificationDtoType,
 } from "@repo/api-client";
-import { isEqual, isPlainObject, pick } from "es-toolkit";
+import { isEqual, isPlainObject, isUndefined, pick, uniq } from "es-toolkit";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -156,6 +156,7 @@ export const areArraysEqual = (arr1?: string[], arr2?: string[]): boolean => {
  * @param options.fields - 비교할 필드 목록 (키 배열)
  * @param options.arrayFields - 배열 필드 목록 (순서 무관 비교, 기본값: [])
  * @param options.customComparers - 커스텀 비교 함수 맵 (필드별 비교 로직 커스터마이징)
+ * @param options.convertUndefinedToNull - undefined 값을 null로 변환할지 여부 (기본값: false)
  *
  * @returns 변경된 필드만 포함하는 부분 객체
  *
@@ -167,6 +168,7 @@ export const areArraysEqual = (arr1?: string[], arr2?: string[]): boolean => {
  *   {
  *     fields: ["name", "species", "weight"],
  *     arrayFields: ["morphs", "traits"],
+ *     convertUndefinedToNull: true, // undefined를 null로 변환
  *   }
  * );
  * ```
@@ -182,18 +184,25 @@ export function getChangedFields<
     fields: ReadonlyArray<keyof Current>;
     arrayFields?: ReadonlyArray<keyof Current>;
     customComparers?: Partial<Record<string, (original: unknown, current: unknown) => boolean>>;
+    convertUndefinedToNull?: boolean;
   },
 ): Result {
-  const { fields, arrayFields = [], customComparers = {} } = options;
+  const {
+    fields,
+    arrayFields = [],
+    customComparers = {},
+    convertUndefinedToNull = false,
+  } = options;
+  const allFields = uniq([...fields, ...arrayFields]);
 
   // 원본과 현재 데이터에서 비교할 필드만 추출
-  const originalSelected = pick(original, fields as string[]);
-  const currentSelected = pick(current, fields as string[]);
-
+  const allFieldsArray = allFields.map(String);
+  const originalSelected = pick(original, allFieldsArray);
+  const currentSelected = pick(current, allFieldsArray);
   const changedFields = {} as Record<string, unknown>;
 
   // 일반 필드 비교
-  for (const field of fields) {
+  for (const field of allFields) {
     const fieldStr = String(field);
     const originalValue = originalSelected[fieldStr];
     const currentValue = currentSelected[fieldStr];
@@ -202,7 +211,9 @@ export function getChangedFields<
     const customComparer = customComparers[fieldStr];
     if (customComparer) {
       if (!customComparer(originalValue, currentValue)) {
-        changedFields[fieldStr] = currentValue;
+        // 변경이 감지된 경우에만 undefined를 null로 변환
+        changedFields[fieldStr] =
+          convertUndefinedToNull && isUndefined(currentValue) ? null : currentValue;
       }
       continue;
     }
@@ -212,14 +223,18 @@ export function getChangedFields<
       if (
         !areArraysEqual(originalValue as string[] | undefined, currentValue as string[] | undefined)
       ) {
-        changedFields[fieldStr] = currentValue;
+        // 변경이 감지된 경우에만 undefined를 null로 변환
+        changedFields[fieldStr] =
+          convertUndefinedToNull && isUndefined(currentValue) ? null : currentValue;
       }
       continue;
     }
 
     // 일반 필드 비교 (es-toolkit의 isEqual 활용)
     if (!isEqual(originalValue, currentValue)) {
-      changedFields[fieldStr] = currentValue;
+      // 변경이 감지된 경우에만 undefined를 null로 변환
+      changedFields[fieldStr] =
+        convertUndefinedToNull && isUndefined(currentValue) ? null : currentValue;
     }
   }
 

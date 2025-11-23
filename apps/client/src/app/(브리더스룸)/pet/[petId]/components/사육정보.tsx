@@ -17,8 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { pickBy } from "es-toolkit";
-import { isNil } from "es-toolkit";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
 import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
 import FormMultiSelect from "@/app/(브리더스룸)/components/FormMultiSelect";
@@ -69,6 +67,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
             "eggStatus",
           ],
           arrayFields: ["morphs", "traits", "foods"],
+          convertUndefinedToNull: true, // undefined를 null로 변환하여 서버에서 업데이트되도록 함
         },
       );
     },
@@ -97,10 +96,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
         return;
       }
 
-      // null/undefined 값 제거
-      const updateData = pickBy(changedFields, (value) => !isNil(value));
-
-      await mutateUpdatePet(updateData);
+      await mutateUpdatePet(changedFields);
       await refetch();
       toast.success("펫 정보 수정이 완료되었습니다.");
       setIsEditMode(false);

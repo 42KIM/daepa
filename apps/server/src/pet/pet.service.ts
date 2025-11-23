@@ -49,6 +49,7 @@ import { PetImageEntity } from 'src/pet_image/pet_image.entity';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
+import { isUndefined } from 'es-toolkit';
 
 @Injectable()
 export class PetService {
@@ -290,12 +291,12 @@ export class PetService {
           );
         } else {
           const updateData: Partial<PetDetailEntity> = {};
-          if (sex) updateData.sex = sex;
-          if (morphs) updateData.morphs = morphs;
-          if (traits) updateData.traits = traits;
-          if (foods) updateData.foods = foods;
-          if (weight) updateData.weight = weight;
-          if (growth) updateData.growth = growth;
+          if (!isUndefined(sex)) updateData.sex = sex;
+          if (!isUndefined(morphs)) updateData.morphs = morphs;
+          if (!isUndefined(traits)) updateData.traits = traits;
+          if (!isUndefined(foods)) updateData.foods = foods;
+          if (!isUndefined(weight)) updateData.weight = weight;
+          if (!isUndefined(growth)) updateData.growth = growth;
 
           if (Object.keys(updateData).length > 0) {
             await entityManager.update(PetDetailEntity, { petId }, updateData);
