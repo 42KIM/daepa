@@ -45,7 +45,7 @@ export type FormStep = {
   };
 };
 
-export interface FormErrors {
+export interface BaseFormErrors {
   [key: string]: string;
 }
 

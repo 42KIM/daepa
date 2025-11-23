@@ -1,5 +1,5 @@
 import { StateCreator } from "zustand";
-import { FieldName, FormErrors } from "../types";
+import { FieldName, BaseFormErrors } from "../types";
 
 export type BaseFormData = Partial<Record<FieldName, any>>;
 
@@ -7,8 +7,8 @@ export interface BaseFormStore {
   formData: BaseFormData;
   step: number;
   page: "register" | "detail";
-  errors: FormErrors;
-  setErrors: (errors: FormErrors) => void;
+  errors: BaseFormErrors;
+  setErrors: (errors: BaseFormErrors) => void;
   setStep: (step: number) => void;
   setPage: (page: "register" | "detail") => void;
   setFormData: (data: BaseFormData | ((prev: BaseFormData) => BaseFormData)) => void;
