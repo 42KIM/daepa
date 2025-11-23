@@ -16,10 +16,10 @@ import { useEggStore } from "../../store/egg";
 import { useRegisterForm } from "../../hooks/useRegisterForm";
 import { useCallback, useEffect } from "react";
 import { useSelect } from "../../hooks/useSelect";
-import { FormData } from "../../store/pet";
 import Loading from "@/components/common/Loading";
 import { format } from "date-fns";
 import { useUserStore } from "../../../store/user";
+import { BaseFormData } from "../../store/base";
 
 const EggRegisterPage = () => {
   const router = useRouter();
@@ -87,7 +87,7 @@ const EggRegisterPage = () => {
     e.preventDefault();
   };
 
-  const formatFormData = useCallback((newFormData: FormData) => {
+  const formatFormData = useCallback((newFormData: BaseFormData) => {
     try {
       return {
         species: newFormData.species,
@@ -124,7 +124,7 @@ const EggRegisterPage = () => {
     }
   }, []);
 
-  const createEgg = async (newFormData: FormData) => {
+  const createEgg = async (newFormData: BaseFormData) => {
     if (!newFormData?.father?.petId && !newFormData?.mother?.petId) {
       toast.error("부모 개체 정보를 하나 이상 선택해주세요.");
 
@@ -195,7 +195,7 @@ const EggRegisterPage = () => {
 
 export default EggRegisterPage;
 
-const StepIndicator = ({ steps, formData }: { steps: FormStep[]; formData: FormData }) => {
+const StepIndicator = ({ steps, formData }: { steps: FormStep[]; formData: BaseFormData }) => {
   const isCompleted = (stepId: string) => {
     switch (stepId) {
       case "layingDate":

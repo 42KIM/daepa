@@ -15,9 +15,10 @@ import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/common/Loading";
 import { isNil, pick, pickBy } from "es-toolkit";
-import { RegisterFormData, useRegisterStore } from "../store/register";
+import { BaseFormData } from "../store/base";
+import { useRegisterStore } from "../store/register";
 
-const formatFormData = (formData: RegisterFormData): CreatePetDto | undefined => {
+const formatFormData = (formData: BaseFormData): CreatePetDto | undefined => {
   const data = { ...formData };
   if (data.sex && typeof data.sex === "string") {
     const genderEntry = Object.entries(GENDER_KOREAN_INFO).find(
@@ -130,7 +131,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
     resetForm();
   };
 
-  const createPet = async (formData: RegisterFormData) => {
+  const createPet = async (formData: BaseFormData) => {
     try {
       const formattedData = formatFormData(formData);
       if (!formattedData) {

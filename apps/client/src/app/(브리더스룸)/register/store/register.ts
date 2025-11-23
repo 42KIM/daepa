@@ -1,8 +1,7 @@
 import { create } from "zustand";
-import { BaseFormStore, FormData, createFormStore } from "./base";
+import { BaseFormStore, createFormStore } from "./base";
 
 // 타입 별칭으로 기존 코드와의 호환성 유지
-export type RegisterFormData = FormData;
 export type RegisterStore = BaseFormStore;
 
 export const useRegisterStore = create<RegisterStore>(createFormStore());

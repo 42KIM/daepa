@@ -12,21 +12,21 @@ import MultiSelectList from "../../components/selector/MultiSelectList";
 import Dialog from "../../components/Form/Dialog";
 
 import { validateStep } from "@/lib/form";
-import { FormData } from "../store/pet";
 import { toast } from "sonner";
 import { useNameStore } from "../../store/name";
 import { PetDtoSpecies } from "@repo/api-client";
+import { BaseFormData } from "../store/base";
 
 type SELECTOR_TYPE = "species" | "growth" | "sex";
 
 interface UseRegisterFormProps {
   formStep: FormStep[];
-  formData: FormData;
+  formData: BaseFormData;
   step: number;
   setErrors: (errors: Record<string, string>) => void;
   setStep: (step: number) => void;
-  setFormData: (data: FormData | ((prev: FormData) => FormData)) => void;
-  handleSubmit: (data: FormData) => void;
+  setFormData: (data: BaseFormData | ((prev: BaseFormData) => BaseFormData)) => void;
+  handleSubmit: (data: BaseFormData) => void;
 }
 
 export const useRegisterForm = ({
@@ -97,7 +97,7 @@ export const useRegisterForm = ({
 
   // 입력 필드 변경
   const handleNext = useCallback(
-    <K extends FieldName>({ type, value }: { type: K; value: FormData[K] }) => {
+    <K extends FieldName>({ type, value }: { type: K; value: BaseFormData[K] }) => {
       if (
         type === "species" &&
         formData.species !== value &&

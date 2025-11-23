@@ -1,4 +1,4 @@
-import { FormData } from "@/app/(브리더스룸)/register/store/pet";
+import { BaseFormData } from "@/app/(브리더스룸)/register/store/base";
 import { FormErrors } from "@/app/(브리더스룸)/register/types";
 import { FormStep } from "@/app/(브리더스룸)/register/types";
 
@@ -8,7 +8,7 @@ export const validateStep = ({
   currentStep,
 }: {
   formStep: FormStep[];
-  data: FormData;
+  data: BaseFormData;
   currentStep: number;
 }) => {
   const newErrors: FormErrors = {};

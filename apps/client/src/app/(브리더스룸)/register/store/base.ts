@@ -1,21 +1,21 @@
 import { StateCreator } from "zustand";
 import { FieldName, FormErrors } from "../types";
 
-export type FormData = Partial<Record<FieldName, any>>;
+export type BaseFormData = Partial<Record<FieldName, any>>;
 
 export interface BaseFormStore {
-  formData: FormData;
+  formData: BaseFormData;
   step: number;
   page: "register" | "detail";
   errors: FormErrors;
   setErrors: (errors: FormErrors) => void;
   setStep: (step: number) => void;
   setPage: (page: "register" | "detail") => void;
-  setFormData: (data: FormData | ((prev: FormData) => FormData)) => void;
+  setFormData: (data: BaseFormData | ((prev: BaseFormData) => BaseFormData)) => void;
   resetForm: () => void;
 }
 
-const initialFormData: FormData = {};
+const initialFormData: BaseFormData = {};
 
 /**
  * 공통 form store 생성 팩토리 함수
