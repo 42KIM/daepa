@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FormFieldName, BaseFormErrors, FormStep } from "../../types";
+import { FormFieldName, BaseFormErrors, FormStep } from "../../pet/types/form.type";
 import NumberField from "./NumberField";
 import Close from "@mui/icons-material/Close";
 import ParentLink from "../../pet/components/ParentLink";

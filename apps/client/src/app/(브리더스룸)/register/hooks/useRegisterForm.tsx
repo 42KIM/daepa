@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { DUPLICATE_CHECK_STATUS, FormFieldName, FormStep } from "../../types";
+import { DUPLICATE_CHECK_STATUS } from "../../types";
+import { FormFieldName, FormStep } from "../../pet/types/form.type";
 import {
   MORPH_LIST_BY_SPECIES,
   REGISTER_PAGE,

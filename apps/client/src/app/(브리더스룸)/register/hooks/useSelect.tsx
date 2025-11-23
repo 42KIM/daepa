@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FormFieldName } from "../../types";
+import { FormFieldName } from "../../pet/types/form.type";
 import { overlay } from "overlay-kit";
 import { SELECTOR_CONFIGS } from "../../constants";
 import Selector from "../../components/selector";

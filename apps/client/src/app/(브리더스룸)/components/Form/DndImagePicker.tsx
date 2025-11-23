@@ -20,7 +20,13 @@ import { useCallback, useEffect, useState } from "react";
 import { isNil, range, remove } from "es-toolkit";
 import { ACCEPT_IMAGE_FORMATS } from "../../constants";
 import { tokenStorage } from "@/lib/tokenStorage";
-import { PhotoItem } from "../../types";
+
+type PhotoItem = {
+  fileName: string;
+  size: number;
+  mimeType: string;
+  url: string;
+};
 
 interface DndImagePickerProps {
   max?: number;

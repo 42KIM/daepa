@@ -10,7 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { FormStep } from "../../../types";
+import { FormStep } from "../../../pet/types/form.type";
 import FloatingButton from "@/app/(브리더스룸)/components/FloatingButton";
 import { useEggStore } from "../../../pet/store/egg";
 import { useRegisterForm } from "../../hooks/useRegisterForm";

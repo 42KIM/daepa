@@ -1,6 +1,5 @@
 import { BaseFormData } from "@/app/(브리더스룸)/pet/store/base";
-import { BaseFormErrors } from "@/app/(브리더스룸)/types";
-import { FormStep } from "@/app/(브리더스룸)/types";
+import { BaseFormErrors, FormStep } from "@/app/(브리더스룸)/pet/types/form.type";
 
 export const validateStep = ({
   formStep,

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FormFieldName, FormStep } from "../../types";
+import { FormFieldName, FormStep } from "../../pet/types/form.type";
 import { Minus, Plus } from "lucide-react";
 
 interface NumberFieldProps {

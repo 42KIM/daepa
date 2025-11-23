@@ -4,7 +4,7 @@ import {
   OPTION_STEPS,
   SELECTOR_CONFIGS,
 } from "@/app/(브리더스룸)/constants";
-import { FormFieldName, FormStep } from "@/app/(브리더스룸)/types";
+import { FormFieldName, FormStep } from "@/app/(브리더스룸)/pet/types/form.type";
 
 import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";

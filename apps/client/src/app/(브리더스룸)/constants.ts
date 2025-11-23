@@ -1,5 +1,5 @@
 import { Bubbles, DollarSign, Home } from "lucide-react";
-import { FormStep } from "./types";
+import { FormStep } from "./pet/types/form.type";
 import {
   AdoptionDtoMethod,
   EggDetailDtoStatus,
