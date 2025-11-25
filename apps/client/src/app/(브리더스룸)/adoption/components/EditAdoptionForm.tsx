@@ -13,7 +13,7 @@ import {
   UpdateAdoptionDto,
 } from "@repo/api-client";
 import { useForm, useWatch } from "react-hook-form";
-import { cn } from "@/lib/utils";
+import { cn, getChangedFields } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -34,6 +34,7 @@ import { ADOPTION_METHOD_KOREAN_INFO, SALE_STATUS_KOREAN_INFO } from "../../cons
 import { isUndefined, omitBy } from "es-toolkit";
 import { AdoptionEditFormDto } from "../types";
 import UserList from "../../components/UserList";
+import { isNumber } from "es-toolkit/compat";
 
 const adoptionSchema = z.object({
   price: z.string().optional(),
@@ -65,7 +66,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
   const form = useForm({
     resolver: zodResolver(adoptionSchema),
     defaultValues: {
-      price: adoptionData?.price ? adoptionData.price.toString() : "",
+      price: isNumber(adoptionData?.price) ? adoptionData.price.toString() : "",
       memo: adoptionData?.memo ?? "",
       method: adoptionData?.method ?? undefined,
       buyer: adoptionData?.buyer ?? {},
@@ -123,24 +124,73 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
     const petId = adoptionData.petId;
     const adoptionId = adoptionData?.adoptionId;
 
-    const newAdoptionDto = omitBy(
-      {
-        petId,
-        price: data.price ? Number(data.price) : undefined,
-        adoptionDate: data.adoptionDate?.toISOString(),
-        memo: data.memo,
-        method: data.method ?? undefined,
-        buyerId: data.buyer?.userId,
-        status: data.status ?? undefined,
-      },
-      isUndefined,
-    );
-
     try {
       if (adoptionId) {
-        await updateAdoption({ adoptionId, data: newAdoptionDto });
+        const formValues = {
+          price: data.price ? Number(data.price) : undefined,
+          adoptionDate: data.adoptionDate?.toISOString(),
+          memo: data.memo,
+          method: data.method ?? undefined,
+          buyer: data.buyer,
+          status: data.status ?? undefined,
+        };
+
+        const originalValues = {
+          price: adoptionData.price,
+          adoptionDate: adoptionData.adoptionDate ? new Date(adoptionData.adoptionDate).toISOString() : undefined,
+          memo: adoptionData.memo,
+          method: adoptionData.method,
+          buyer: adoptionData.buyer,
+          status: adoptionData.status,
+        };
+
+        const changedFields = getChangedFields(originalValues, formValues, {
+          fields: ["price", "adoptionDate", "memo", "method", "buyer", "status"],
+          customComparers: {
+            buyer: (orig: unknown, curr: unknown) => {
+              const origBuyer = orig as typeof adoptionData.buyer;
+              const currBuyer = curr as typeof data.buyer;
+              return origBuyer?.userId  === currBuyer?.userId;
+            },
+          },
+          convertUndefinedToNull: true,
+        });
+
+        if (Object.keys(changedFields).length === 0) {
+          toast.info("변경된 사항이 없습니다.");
+          return;
+        }
+
+        // 변경된 필드만 선택하여 API 호출
+        const updateDto = omitBy(
+          {
+            price: isNumber(changedFields.price) ? Number(data.price) : null,
+            adoptionDate: data.adoptionDate?.toISOString() ?? null,
+            memo: data.memo,
+            method: data.method,
+            buyerId: data.buyer?.userId ?? null,
+            status: data.status,
+          },
+          isUndefined,
+        );
+
+        await updateAdoption({ adoptionId, data: updateDto as UpdateAdoptionDto });
       } else {
-        await createAdoption({ ...newAdoptionDto, petId });
+        // 생성 케이스: undefined 값들을 omit하여 API 호출
+        const createDto = omitBy(
+          {
+            petId,
+            price: isNumber(data.price) ? Number(data.price) : undefined,
+            adoptionDate: data.adoptionDate?.toISOString(),
+            memo: data.memo,
+            method: data.method,
+            buyerId: data.buyer?.userId,
+            status: data.status,
+          },
+          isUndefined,
+        );
+
+        await createAdoption(createDto as CreateAdoptionDto);
       }
 
       toast.success("분양 정보가 성공적으로 생성되었습니다.");
@@ -283,15 +333,16 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                     {showUserSelector && isAdoptionReservedOrSold && (
                       <div className="rounded-lg border p-2">
                         <UserList
-                          selectedUserId={field.value?.userId}
+                          selectedUserId={field.value?.userId ?? undefined}
                           onSelect={(buyer) => {
                             // 현재 선택된 사용자와 동일한 사용자를 클릭하면 빈값으로 초기화
                             if (field.value?.userId === buyer.userId) {
                               field.onChange({});
+                              setShowUserSelector(false);
                             } else {
                               field.onChange(buyer);
+                              setShowUserSelector(false);
                             }
-                            setShowUserSelector(false);
                           }}
                         />
                       </div>

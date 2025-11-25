@@ -92,7 +92,7 @@ export class AdoptionService {
   private async updatePetOwner(
     entityManager: EntityManager,
     petId: string,
-    newOwnerId?: string,
+    newOwnerId?: string | null,
   ) {
     await entityManager.update(
       'pets',
