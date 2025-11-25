@@ -40,8 +40,8 @@ const adoptionSchema = z.object({
   price: z.string().optional(),
   adoptionDate: z.date().optional().nullable(),
   memo: z.string().optional(),
-  method: z.enum(["PICKUP", "DELIVERY", "WHOLESALE"]).optional(),
-  buyer: z.object({ userId: z.string().optional(), name: z.string().optional() }).optional(),
+  method: z.enum(["PICKUP", "DELIVERY", "WHOLESALE"]).optional().nullable(),
+  buyer: z.object({ userId: z.string().optional(), name: z.string().optional() }).optional().nullable(),
   status: z
     .enum([
       AdoptionDtoStatus.NFS,
@@ -95,11 +95,11 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
       newStatus !== AdoptionDtoStatus.SOLD
     ) {
       if (form.getValues("buyer")?.userId) {
-        form.setValue("buyer", {});
+        form.setValue("buyer", null);
         setShowUserSelector(false);
       }
       if (form.getValues("adoptionDate")) {
-        form.setValue("adoptionDate", undefined);
+        form.setValue("adoptionDate", null);
       }
     }
 
@@ -115,26 +115,29 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
     mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
   });
 
+  const ADOPTION_FIELDS = ["price", "adoptionDate", "memo", "method", "buyer", "status"] as const;
+
+  const convertFormDataToDto = (formData: AdoptionFormData) => ({
+    price: isNumber(formData.price) ? Number(formData.price) : undefined,
+    adoptionDate: formData.adoptionDate?.toISOString(),
+    memo: formData.memo,
+    method: formData.method,
+    buyer: formData.buyer,
+    status: formData.status,
+  });
+
   const handleFormSubmit = async (data: AdoptionFormData) => {
     if (!adoptionData?.petId) {
       toast.error("펫 정보를 찾을 수 없습니다. 다시 선택해주세요.");
       return;
     }
 
-    const petId = adoptionData.petId;
-    const adoptionId = adoptionData?.adoptionId;
+    const { petId, adoptionId } = adoptionData;
 
     try {
       if (adoptionId) {
-        const formValues = {
-          price: data.price ? Number(data.price) : undefined,
-          adoptionDate: data.adoptionDate?.toISOString(),
-          memo: data.memo,
-          method: data.method ?? undefined,
-          buyer: data.buyer,
-          status: data.status ?? undefined,
-        };
-
+        // 수정 케이스: 변경된 필드만 감지
+        const formValues = convertFormDataToDto(data);
         const originalValues = {
           price: adoptionData.price,
           adoptionDate: adoptionData.adoptionDate ? new Date(adoptionData.adoptionDate).toISOString() : undefined,
@@ -145,47 +148,51 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
         };
 
         const changedFields = getChangedFields(originalValues, formValues, {
-          fields: ["price", "adoptionDate", "memo", "method", "buyer", "status"],
+          fields: ADOPTION_FIELDS,
           customComparers: {
             buyer: (orig: unknown, curr: unknown) => {
               const origBuyer = orig as typeof adoptionData.buyer;
               const currBuyer = curr as typeof data.buyer;
-              return origBuyer?.userId  === currBuyer?.userId;
+              return origBuyer?.userId === currBuyer?.userId;
             },
           },
           convertUndefinedToNull: true,
         });
 
-        if (Object.keys(changedFields).length === 0) {
+        if (!Object.keys(changedFields).length) {
           toast.info("변경된 사항이 없습니다.");
           return;
         }
 
-        // 변경된 필드만 선택하여 API 호출
-        const updateDto = omitBy(
-          {
-            price: isNumber(changedFields.price) ? Number(data.price) : null,
-            adoptionDate: data.adoptionDate?.toISOString() ?? null,
-            memo: data.memo,
-            method: data.method,
-            buyerId: data.buyer?.userId ?? null,
-            status: data.status,
-          },
-          isUndefined,
-        );
+        // 변경된 필드만 추출하여 API 호출
+        const updateDto: Record<string, unknown> = {};
+        if ("price" in changedFields) {
+          updateDto.price = isNumber(data.price) ? Number(data.price) : null;
+        }
+        if ("adoptionDate" in changedFields) {
+          updateDto.adoptionDate = data.adoptionDate?.toISOString() ?? null;
+        }
+        if ("memo" in changedFields) {
+          updateDto.memo = data.memo ?? null;
+        }
+        if ("method" in changedFields) {
+          updateDto.method = data.method ?? null;
+        }
+        if ("buyer" in changedFields) {
+          updateDto.buyerId = data.buyer?.userId ?? null;
+        }
+        if ("status" in changedFields) {
+          updateDto.status = data.status ?? null;
+        }
 
         await updateAdoption({ adoptionId, data: updateDto as UpdateAdoptionDto });
       } else {
-        // 생성 케이스: undefined 값들을 omit하여 API 호출
+        // 생성 케이스: 입력값만 전송
         const createDto = omitBy(
           {
             petId,
-            price: isNumber(data.price) ? Number(data.price) : undefined,
-            adoptionDate: data.adoptionDate?.toISOString(),
-            memo: data.memo,
-            method: data.method,
+            ...convertFormDataToDto(data),
             buyerId: data.buyer?.userId,
-            status: data.status,
           },
           isUndefined,
         );
@@ -333,11 +340,11 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                     {showUserSelector && isAdoptionReservedOrSold && (
                       <div className="rounded-lg border p-2">
                         <UserList
-                          selectedUserId={field.value?.userId ?? undefined}
+                          selectedUserId={field.value?.userId}
                           onSelect={(buyer) => {
                             // 현재 선택된 사용자와 동일한 사용자를 클릭하면 빈값으로 초기화
                             if (field.value?.userId === buyer.userId) {
-                              field.onChange({});
+                              field.onChange(null);
                               setShowUserSelector(false);
                             } else {
                               field.onChange(buyer);
@@ -367,7 +374,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                       variant={field.value === PetAdoptionDtoMethod.PICKUP ? "default" : "outline"}
                       onClick={() => {
                         if (field.value === PetAdoptionDtoMethod.PICKUP) {
-                          field.onChange(undefined);
+                          field.onChange(null);
                         } else {
                           field.onChange(PetAdoptionDtoMethod.PICKUP);
                         }
@@ -383,7 +390,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                       }
                       onClick={() => {
                         if (field.value === PetAdoptionDtoMethod.DELIVERY) {
-                          field.onChange(undefined);
+                          field.onChange(null);
                         } else {
                           field.onChange(PetAdoptionDtoMethod.DELIVERY);
                         }
@@ -399,7 +406,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                       }
                       onClick={() => {
                         if (field.value === PetAdoptionDtoMethod.WHOLESALE) {
-                          field.onChange(undefined);
+                          field.onChange(null);
                         } else {
                           field.onChange(PetAdoptionDtoMethod.WHOLESALE);
                         }
