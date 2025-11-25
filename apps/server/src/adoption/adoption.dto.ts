@@ -7,7 +7,7 @@ import {
   ValidateNested,
   IsArray,
 } from 'class-validator';
-import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { UserProfilePublicDto } from '../user/user.dto';
 
@@ -162,7 +162,26 @@ export class CreateAdoptionDto {
   status?: ADOPTION_SALE_STATUS;
 }
 
-export class UpdateAdoptionDto extends PartialType(CreateAdoptionDto) {
+export class UpdateAdoptionDto {
+  @ApiProperty({
+    description: '분양 가격',
+    example: 50000,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  price?: number | null;
+
+  @ApiProperty({
+    description: '분양 날짜',
+    example: '2024-01-15',
+    required: false,
+  })
+  @Type(() => Date)
+  @IsOptional()
+  @IsDate()
+  adoptionDate?: Date | null;
+
   @ApiProperty({
     description: '입양자 ID',
     example: 'USER_XXXXXXXX',
@@ -170,7 +189,38 @@ export class UpdateAdoptionDto extends PartialType(CreateAdoptionDto) {
   })
   @IsOptional()
   @IsString()
-  buyerId?: string;
+  buyerId?: string | null;
+
+  @ApiProperty({
+    description: '메모',
+    example: '건강한 개체입니다.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  memo?: string | null;
+
+  @ApiProperty({
+    description: '분양 방식',
+    example: 'DELIVERY',
+    enum: PET_ADOPTION_METHOD,
+    'x-enumNames': Object.keys(PET_ADOPTION_METHOD),
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(PET_ADOPTION_METHOD)
+  method?: PET_ADOPTION_METHOD | null;
+
+  @ApiProperty({
+    description: '판매 상태',
+    example: 'ON_SALE',
+    enum: ADOPTION_SALE_STATUS,
+    'x-enumNames': Object.keys(ADOPTION_SALE_STATUS),
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(ADOPTION_SALE_STATUS)
+  status?: ADOPTION_SALE_STATUS | null;
 }
 
 export class AdoptionDto extends PickType(AdoptionBaseDto, [

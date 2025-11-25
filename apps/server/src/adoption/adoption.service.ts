@@ -22,7 +22,7 @@ import { nanoid } from 'nanoid';
 import { PageMetaDto } from 'src/common/page.dto';
 import { PageDto } from 'src/common/page.dto';
 import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
-import { isNil, omitBy } from 'es-toolkit';
+import { isNil, isUndefined, omitBy } from 'es-toolkit';
 import { PetEntity } from 'src/pet/pet.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -48,6 +48,11 @@ export class AdoptionService {
     const { pet, petDetail, seller, buyer, ...adoptionData } = entity;
     return {
       ...adoptionData,
+      price: adoptionData.price ?? undefined,
+      adoptionDate: adoptionData.adoptionDate ?? undefined,
+      method: adoptionData.method ?? undefined,
+      status: adoptionData.status ?? undefined,
+      memo: adoptionData.memo ?? undefined,
       pet: {
         petId: pet.petId,
         type: pet.type,
@@ -412,14 +417,13 @@ export class AdoptionService {
       const newAdoptionEntity = new AdoptionEntity();
       Object.assign(newAdoptionEntity, {
         ...adoptionEntity,
-        ...updateAdoptionDto,
-        status: updateAdoptionDto.status ?? null,
-        price: updateAdoptionDto.price ?? null,
-        adoptionDate: updateAdoptionDto.adoptionDate ?? null,
-        method: updateAdoptionDto.method ?? null,
-        buyerId: updateAdoptionDto.buyerId ?? null,
-        isActive:
-          updateAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD ? false : true,
+        ...omitBy(updateAdoptionDto, isUndefined),
+        // status: updateAdoptionDto.status ?? null,
+        // price: updateAdoptionDto.price ?? null,
+        // adoptionDate: updateAdoptionDto.adoptionDate ?? null,
+        // method: updateAdoptionDto.method ?? null,
+        // buyerId: updateAdoptionDto.buyerId ?? null,
+        isActive: updateAdoptionDto.status !== ADOPTION_SALE_STATUS.SOLD,
       });
 
       await entityManager.save(AdoptionEntity, newAdoptionEntity);
