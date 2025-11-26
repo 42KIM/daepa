@@ -418,12 +418,9 @@ export class AdoptionService {
       Object.assign(newAdoptionEntity, {
         ...adoptionEntity,
         ...omitBy(updateAdoptionDto, isUndefined),
-        // status: updateAdoptionDto.status ?? null,
-        // price: updateAdoptionDto.price ?? null,
-        // adoptionDate: updateAdoptionDto.adoptionDate ?? null,
-        // method: updateAdoptionDto.method ?? null,
-        // buyerId: updateAdoptionDto.buyerId ?? null,
-        isActive: updateAdoptionDto.status !== ADOPTION_SALE_STATUS.SOLD,
+        isActive: isUndefined(updateAdoptionDto.status)
+          ? adoptionEntity.isActive // status가 없으면 기존 isActive 유지
+          : updateAdoptionDto.status !== ADOPTION_SALE_STATUS.SOLD, // status가 있으면 새로 계산
       });
 
       await entityManager.save(AdoptionEntity, newAdoptionEntity);
