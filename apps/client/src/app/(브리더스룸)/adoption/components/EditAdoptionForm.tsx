@@ -56,7 +56,7 @@ type AdoptionFormData = z.infer<typeof adoptionSchema>;
 
 interface EditAdoptionFormProps {
   adoptionData?: AdoptionEditFormDto | null;
-  onSubmit: () => void;
+  onSubmit: (updated?: boolean) => void;
   onCancel: () => void;
 }
 
@@ -161,6 +161,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
 
         if (!Object.keys(changedFields).length) {
           toast.info("변경된 사항이 없습니다.");
+          onSubmit(false)
           return;
         }
 
