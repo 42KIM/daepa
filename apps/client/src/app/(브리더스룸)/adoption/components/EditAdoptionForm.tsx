@@ -168,6 +168,10 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
         // 변경된 필드만 추출하여 API 호출
         const updateDto: Record<string, unknown> = {};
         if ("price" in changedFields) {
+          if (data.price && !/^\d+$/.test(data.price)) {
+            toast.error("분양 가격은 숫자만 입력할 수 있습니다.")
+            return;
+          }
           updateDto.price = data.price === "" || !data.price ? null : Number(data.price);
         }
         if ("adoptionDate" in changedFields) {
