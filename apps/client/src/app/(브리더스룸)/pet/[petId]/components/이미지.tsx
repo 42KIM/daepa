@@ -10,7 +10,7 @@ import {
   UpdatePetDto,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { isNil, pick, pickBy } from "es-toolkit";
+import { isEqual, isNil, pick, pickBy } from "es-toolkit";
 import { ImageUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -28,6 +28,17 @@ const Images = ({ pet }: { pet: PetDto }) => {
   const handleSave = useCallback(async () => {
     try {
       setIsProcessing(true);
+
+      // fileName만 비교하여 변경 여부 확인
+      const originalFileNames = pet.photos?.map((p) => p.fileName) ?? [];
+      const currentFileNames = formData.photos?.map((p: any) => p.fileName) ?? [];
+
+      if (isEqual(originalFileNames, currentFileNames)) {
+        toast.info("변경된 사항이 없습니다.");
+        setIsEditMode(false);
+        return;
+      }
+
       const pickedData = pick(formData, ["photos"]);
       const updateData = pickBy(pickedData, (value) => !isNil(value));
       await mutateUpdatePet(updateData);
@@ -43,7 +54,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [mutateUpdatePet, formData, queryClient, pet.petId]);
+  }, [mutateUpdatePet, formData, queryClient, pet]);
 
   return (
     <div className="shadow-xs flex min-h-[480px] min-w-[340px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
@@ -79,9 +90,9 @@ const Images = ({ pet }: { pet: PetDto }) => {
             isEditMode && "bg-red-600 hover:bg-red-600/90",
             isProcessing && "bg-gray-300",
           )}
-          onClick={() => {
+          onClick={async () => {
             if (isEditMode) {
-              handleSave();
+              await handleSave();
             } else {
               setIsEditMode(true);
             }
