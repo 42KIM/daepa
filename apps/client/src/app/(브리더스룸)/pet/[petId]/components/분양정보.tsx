@@ -267,7 +267,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                     ...prev,
                     adoption: {
                       ...(prev.adoption ?? {}),
-                      price: value.value === "" ? undefined : value.value
+                      price: value.value === "" ? undefined : Number(value.value),
                     },
                   }));
                 }}
