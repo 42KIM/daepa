@@ -118,7 +118,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
   const ADOPTION_FIELDS = ["price", "adoptionDate", "memo", "method", "buyer", "status"] as const;
 
   const convertFormDataToDto = (formData: AdoptionFormData) => ({
-    price: isNumber(formData.price) ? Number(formData.price) : undefined,
+    price: formData.price === "" || !formData.price ? undefined : Number(formData.price),
     adoptionDate: formData.adoptionDate?.toISOString(),
     memo: formData.memo,
     method: formData.method,
@@ -168,7 +168,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
         // 변경된 필드만 추출하여 API 호출
         const updateDto: Record<string, unknown> = {};
         if ("price" in changedFields) {
-          updateDto.price = isNumber(data.price) ? Number(data.price) : null;
+          updateDto.price = data.price === "" || !data.price ? null : Number(data.price);
         }
         if ("adoptionDate" in changedFields) {
           updateDto.adoptionDate = data.adoptionDate?.toISOString() ?? null;
@@ -249,7 +249,12 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
               <FormItem>
                 <FormLabel>분양 가격</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="가격을 입력하세요" type="number" />
+                  <Input
+                    placeholder="가격을 입력하세요"
+                    type="number"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -431,10 +436,11 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                 <FormLabel>메모</FormLabel>
                 <FormControl>
                   <Textarea
-                    {...field}
                     placeholder="분양 관련 메모를 입력하세요"
                     rows={3}
                     className="h-20"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
                   />
                 </FormControl>
                 <FormMessage />
