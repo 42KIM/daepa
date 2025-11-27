@@ -7,12 +7,13 @@ import {
   UpdateAdoptionDto,
   adoptionControllerGetAdoptionByPetId,
   PetAdoptionDtoMethod,
+  UserProfilePublicDto,
 } from "@repo/api-client";
 import FormItem from "./FormItem";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
-import { cn } from "@/lib/utils";
+import { cn, getChangedFields } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
 import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarInput";
@@ -58,6 +59,44 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
     mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
   });
 
+  // 변경된 필드 추출을 위한 설정
+  const getChangedFieldsForAdoption = useCallback(
+    (original: typeof adoption, current: typeof adoptionData): UpdateAdoptionDto => {
+      if (!original) {
+        // 기존 데이터가 없으면 현재 데이터 전체를 변경된 것으로 간주
+        return omitBy(
+          {
+            price: current.price ? Number(current.price) : undefined,
+            adoptionDate: current.adoptionDate,
+            memo: current.memo,
+            method: current.method,
+            buyerId: current.buyer?.userId,
+            status: current.status,
+          },
+          isUndefined,
+        );
+      }
+
+      const changedFields = getChangedFields(
+        original as unknown as Record<string, unknown>,
+        current as unknown as Record<string, unknown>,
+        {
+          fields: ["price", "adoptionDate", "memo", "method", "status", "buyer"],
+          convertUndefinedToNull: true, // undefined를 null로 변환하여 서버에서 업데이트되도록 함
+        },
+      );
+
+      if ('buyer' in changedFields) {
+        const buyer = changedFields['buyer'] as UserProfilePublicDto | null;
+        changedFields['buyerId'] = buyer?.userId ?? null;
+        delete changedFields['buyer'];
+      }
+
+      return changedFields as UpdateAdoptionDto;
+    },
+    [],
+  );
+
   const resetAdoption = useCallback(() => {
     if (isNil(adoption)) {
       setFormData((prev) => ({
@@ -87,44 +126,55 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
 
     const adoptionId = adoptionData?.adoptionId;
 
-    const newAdoptionDto = omitBy(
-      {
-        petId,
-        price: adoptionData.price ? Number(adoptionData.price) : undefined,
-        adoptionDate: adoptionData.adoptionDate,
-        memo: adoptionData.memo,
-        method: adoptionData.method,
-        buyerId: adoptionData.buyer?.userId,
-        status: adoptionData.status,
-      },
-      isUndefined,
-    );
-
     try {
       setIsProcessing(true);
+
       if (adoptionId) {
-        await updateAdoption({ adoptionId, data: newAdoptionDto });
+        // 업데이트 경우: 변경된 필드만 추출
+        const changedFields = getChangedFieldsForAdoption(adoption, adoptionData);
+
+        // 변경사항이 없으면 API 호출하지 않음
+        if (Object.keys(changedFields).length === 0) {
+          toast.info("변경된 사항이 없습니다.");
+          setIsEditMode(false);
+          return;
+        }
+
+        await updateAdoption({ adoptionId, data: changedFields });
       } else {
+        // 생성 경우: 모든 필드 포함
+        const newAdoptionDto = omitBy(
+          {
+            petId,
+            price: adoptionData.price ? Number(adoptionData.price) : undefined,
+            adoptionDate: adoptionData.adoptionDate,
+            memo: adoptionData.memo,
+            method: adoptionData.method,
+            buyerId: adoptionData.buyer?.userId,
+            status: adoptionData.status,
+          },
+          isUndefined,
+        );
         await createAdoption({ ...newAdoptionDto, petId });
       }
 
       setIsEditMode(false);
 
       // 판매완료인 경우, 더 이상 본인 펫이 아님
-      if (newAdoptionDto.status === PetAdoptionDtoStatus.SOLD) {
+      if (adoptionData.status === PetAdoptionDtoStatus.SOLD) {
         toast.success("분양 완료! 분양룸으로 이동합니다.");
         void router.replace("/adoption");
       } else {
         await refetch();
-        toast.success("분양 정보가 성공적으로 생성되었습니다.");
+        toast.success("분양 정보가 성공적으로 업데이트되었습니다.");
       }
     } catch (error) {
-      console.error("분양 생성 실패:", error);
-      toast.error("분양 생성에 실패했습니다. 다시 시도해주세요.");
+      console.error("분양 정보 수정 실패:", error);
+      toast.error("분양 정보 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsProcessing(false);
     }
-  }, [updateAdoption, createAdoption, adoptionData, petId, refetch, setIsProcessing, router]);
+  }, [updateAdoption, createAdoption, adoptionData, petId, refetch, router, adoption, getChangedFieldsForAdoption]);
 
   const handleSelectBuyer = useCallback(() => {
     if (!isEditMode) return;
@@ -140,7 +190,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
             onSelect={(user) => {
               setFormData((prev) => ({
                 ...prev,
-                adoption: { ...prev.adoption, buyer: user },
+                adoption: { ...(prev.adoption ?? {}), buyer: user },
               }));
               close();
             }}
@@ -182,7 +232,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                 return {
                   ...prev,
                   adoption: {
-                    ...prev.adoption,
+                    ...(prev.adoption ?? {}),
                     status: nextStatus,
                     buyer: isNextStatusReservedOrSold ? prev.adoption?.buyer : undefined,
                     adoptionDate: isNextStatusReservedOrSold
@@ -215,7 +265,10 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                 setValue={(value) => {
                   setFormData((prev) => ({
                     ...prev,
-                    adoption: { ...prev.adoption, price: value.value },
+                    adoption: {
+                      ...(prev.adoption ?? {}),
+                      price: value.value === "" ? undefined : Number(value.value),
+                    },
                   }));
                 }}
                 inputClassName={cn(
@@ -239,7 +292,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                   onSelect={(date) => {
                     setFormData((prev) => ({
                       ...prev,
-                      adoption: { ...prev.adoption, adoptionDate: date?.toISOString() },
+                      adoption: { ...(prev.adoption ?? {}), adoptionDate: date?.toISOString() },
                     }));
                   }}
                 />
@@ -301,7 +354,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                     setFormData((prev) => ({
                       ...prev,
                       adoption: {
-                        ...prev.adoption,
+                        ...(prev.adoption ?? {}),
                         method:
                           prev.adoption?.method === PetAdoptionDtoMethod.PICKUP
                             ? undefined
@@ -325,7 +378,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                     setFormData((prev) => ({
                       ...prev,
                       adoption: {
-                        ...prev.adoption,
+                        ...(prev.adoption ?? {}),
                         method:
                           prev.adoption?.method === PetAdoptionDtoMethod.DELIVERY
                             ? undefined
@@ -349,7 +402,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                     setFormData((prev) => ({
                       ...prev,
                       adoption: {
-                        ...prev.adoption,
+                        ...(prev.adoption ?? {}),
                         method:
                           prev.adoption?.method === PetAdoptionDtoMethod.WHOLESALE
                             ? undefined
@@ -383,7 +436,7 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      adoption: { ...prev.adoption, memo: e.target.value },
+                      adoption: { ...(prev.adoption ?? {}), memo: e.target.value },
                     }))
                   }
                   disabled={!isEditMode}

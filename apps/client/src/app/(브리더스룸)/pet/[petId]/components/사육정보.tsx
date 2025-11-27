@@ -17,8 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { pick, pickBy } from "es-toolkit";
-import { isNil } from "es-toolkit";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
 import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
 import FormMultiSelect from "@/app/(브리더스룸)/components/FormMultiSelect";
@@ -28,6 +26,9 @@ import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
 import FormItem from "./FormItem";
 import Loading from "@/components/common/Loading";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
+import { PetDto } from "@repo/api-client";
+import { getChangedFields } from "@/lib/utils";
+import { AxiosError } from "axios";
 
 const BreedingInfo = ({ petId }: { petId: string }) => {
   const { formData, errors, setFormData } = usePetStore();
@@ -47,6 +48,33 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
     mutationFn: (updateData: UpdatePetDto) => petControllerUpdate(pet?.petId ?? "", updateData),
   });
 
+  // 변경된 필드 추출을 위한 설정
+  const getChangedFieldsForPet = useCallback(
+    (original: PetDto, current: typeof formData): UpdatePetDto => {
+      return getChangedFields(
+        original as unknown as Record<string, unknown>,
+        current as unknown as Record<string, unknown>,
+        {
+          fields: [
+            "name",
+            "species",
+            "growth",
+            "sex",
+            "desc",
+            "hatchingDate",
+            "weight",
+            "temperature",
+            "isPublic",
+            "eggStatus",
+          ],
+          arrayFields: ["morphs", "traits", "foods"],
+          convertUndefinedToNull: true, // undefined를 null로 변환하여 서버에서 업데이트되도록 함
+        },
+      );
+    },
+    [],
+  );
+
   const handleSave = useCallback(async () => {
     if (!pet) return;
 
@@ -59,33 +87,31 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
         return;
       }
 
-      const pickedData = pick(formData, [
-        "name",
-        "species",
-        "morphs",
-        "traits",
-        "growth",
-        "sex",
-        "foods",
-        "desc",
-        "hatchingDate",
-        "weight",
-        "temperature",
-        "eggStatus",
-        "isPublic",
-      ]);
-      const updateData = pickBy(pickedData, (value) => !isNil(value));
-      await mutateUpdatePet(updateData);
+      // 변경된 필드만 추출
+      const changedFields = getChangedFieldsForPet(pet, formData);
+
+      // 변경사항이 없으면 API 호출하지 않음
+      if (Object.keys(changedFields).length === 0) {
+        toast.info("변경된 사항이 없습니다.");
+        setIsEditMode(false);
+        return;
+      }
+
+      await mutateUpdatePet(changedFields);
       await refetch();
       toast.success("펫 정보 수정이 완료되었습니다.");
       setIsEditMode(false);
     } catch (error) {
       console.error("Failed to update pet:", error);
-      toast.error("펫 정보 수정에 실패했습니다.");
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "펫 정보 수정에 실패했습니다.");
+      } else {
+        toast.error("펫 정보 수정에 실패했습니다. " + (error as Error).message);
+      }
     } finally {
       setIsProcessing(false);
     }
-  }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch, setIsProcessing]);
+  }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch, getChangedFieldsForPet]);
 
   useEffect(() => {
     if (pet && !isEditMode) {

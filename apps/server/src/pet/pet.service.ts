@@ -49,6 +49,8 @@ import { PetImageEntity } from 'src/pet_image/pet_image.entity';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
+import { isUndefined } from 'es-toolkit';
+import { PairEntity } from 'src/pair/pair.entity';
 
 @Injectable()
 export class PetService {
@@ -262,6 +264,35 @@ export class PetService {
         ...petData
       } = updatePetDto;
 
+      const isSexChanged =
+        !isUndefined(sex) && sex !== existingPet.petDetail?.sex;
+
+      if (isSexChanged) {
+        const pairExists = await entityManager.exists(PairEntity, {
+          where: [
+            { ownerId: existingPet.ownerId, fatherId: petId },
+            { ownerId: existingPet.ownerId, motherId: petId },
+          ],
+        });
+        if (pairExists) {
+          throw new BadRequestException(
+            '페어가 존재하는 펫의 성별을 변경할 수 없습니다. 페어를 먼저 삭제해주세요.',
+          );
+        }
+
+        const childExists = await entityManager.exists(ParentRequestEntity, {
+          where: {
+            parentPetId: petId,
+            status: In([PARENT_STATUS.APPROVED, PARENT_STATUS.PENDING]),
+          },
+        });
+        if (childExists) {
+          throw new BadRequestException(
+            '누군가의 부모로 연결된 펫입니다. 성별을 변경하기 전에 이를 먼저 처리해주세요.',
+          );
+        }
+      }
+
       try {
         if (photos) {
           await this.petImageService.saveAndUploadConfirmedImages(
@@ -290,12 +321,12 @@ export class PetService {
           );
         } else {
           const updateData: Partial<PetDetailEntity> = {};
-          if (sex) updateData.sex = sex;
-          if (morphs) updateData.morphs = morphs;
-          if (traits) updateData.traits = traits;
-          if (foods) updateData.foods = foods;
-          if (weight) updateData.weight = weight;
-          if (growth) updateData.growth = growth;
+          if (!isUndefined(sex)) updateData.sex = sex;
+          if (!isUndefined(morphs)) updateData.morphs = morphs;
+          if (!isUndefined(traits)) updateData.traits = traits;
+          if (!isUndefined(foods)) updateData.foods = foods;
+          if (!isUndefined(weight)) updateData.weight = weight;
+          if (!isUndefined(growth)) updateData.growth = growth;
 
           if (Object.keys(updateData).length > 0) {
             await entityManager.update(PetDetailEntity, { petId }, updateData);

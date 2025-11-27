@@ -100,10 +100,12 @@ const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetai
               // 분양 정보 수정폼
               <EditAdoptionForm
                 adoptionData={adoptionData}
-                onSubmit={() => {
-                  onUpdate();
+                onSubmit={(updated: boolean = true) => {
+                  if (updated) {
+                    onUpdate();
+                    refetch();
+                  }
                   onClose();
-                  refetch();
                 }}
                 onCancel={onClose}
               />

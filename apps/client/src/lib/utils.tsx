@@ -8,7 +8,7 @@ import {
   UserNotificationDtoDetailJson,
   UserNotificationDtoType,
 } from "@repo/api-client";
-import { isPlainObject } from "es-toolkit";
+import { isEqual, isPlainObject, isUndefined, pick, uniq } from "es-toolkit";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -130,3 +130,113 @@ export const castDetailJson = <T extends UserNotificationDtoDetailJson>(
 
   return detailJson as T;
 };
+
+/**
+ * 배열 필드가 동일한지 비교하는 헬퍼 함수 (순서 무관)
+ */
+export const areArraysEqual = (arr1?: string[], arr2?: string[]): boolean => {
+  if (arr1 === arr2) return true;
+  if (!arr1 || !arr2) return arr1 === arr2;
+  if (arr1.length !== arr2.length) return false;
+  // 순서 무관 비교를 위해 정렬 후 isEqual 사용
+  return isEqual([...arr1].sort(), [...arr2].sort());
+};
+
+/**
+ * 범용적으로 사용 가능한 변경된 필드 추출 함수
+ * 원본 데이터와 현재 데이터를 비교하여 변경된 필드만 반환합니다.
+ *
+ * @template Original - 원본 데이터 타입
+ * @template Current - 현재 데이터 타입
+ * @template Result - 결과 객체 타입 (일반적으로 UpdateDto 타입)
+ *
+ * @param original - 원본 데이터
+ * @param current - 현재 데이터
+ * @param options - 옵션 설정
+ * @param options.fields - 비교할 필드 목록 (키 배열)
+ * @param options.arrayFields - 배열 필드 목록 (순서 무관 비교, 기본값: [])
+ * @param options.customComparers - 커스텀 비교 함수 맵 (필드별 비교 로직 커스터마이징)
+ * @param options.convertUndefinedToNull - undefined 값을 null로 변환할지 여부 (기본값: false)
+ *
+ * @returns 변경된 필드만 포함하는 부분 객체
+ *
+ * @example
+ * ```typescript
+ * const changedFields = getChangedFields(
+ *   originalPet,
+ *   currentFormData,
+ *   {
+ *     fields: ["name", "species", "weight"],
+ *     arrayFields: ["morphs", "traits"],
+ *     convertUndefinedToNull: true, // undefined를 null로 변환
+ *   }
+ * );
+ * ```
+ */
+export function getChangedFields<
+  Original extends Record<string, unknown>,
+  Current extends Record<string, unknown>,
+  Result extends Partial<Record<string, unknown>> = Partial<Current>,
+>(
+  original: Original,
+  current: Current,
+  options: {
+    fields: ReadonlyArray<keyof Current>;
+    arrayFields?: ReadonlyArray<keyof Current>;
+    customComparers?: Partial<Record<string, (original: unknown, current: unknown) => boolean>>;
+    convertUndefinedToNull?: boolean;
+  },
+): Result {
+  const {
+    fields,
+    arrayFields = [],
+    customComparers = {},
+    convertUndefinedToNull = false,
+  } = options;
+  const allFields = uniq([...fields, ...arrayFields]);
+
+  // 원본과 현재 데이터에서 비교할 필드만 추출
+  const allFieldsArray = allFields.map(String);
+  const originalSelected = pick(original, allFieldsArray);
+  const currentSelected = pick(current, allFieldsArray);
+  const changedFields = {} as Record<string, unknown>;
+
+  // 일반 필드 비교
+  for (const field of allFields) {
+    const fieldStr = String(field);
+    const originalValue = originalSelected[fieldStr];
+    const currentValue = currentSelected[fieldStr];
+
+    // 커스텀 비교 함수가 있으면 사용
+    const customComparer = customComparers[fieldStr];
+    if (customComparer) {
+      if (!customComparer(originalValue, currentValue)) {
+        // 변경이 감지된 경우에만 undefined를 null로 변환
+        changedFields[fieldStr] =
+          convertUndefinedToNull && isUndefined(currentValue) ? null : currentValue;
+      }
+      continue;
+    }
+
+    // 배열 필드인지 확인
+    if (arrayFields.includes(field)) {
+      if (
+        !areArraysEqual(originalValue as string[] | undefined, currentValue as string[] | undefined)
+      ) {
+        // 변경이 감지된 경우에만 undefined를 null로 변환
+        changedFields[fieldStr] =
+          convertUndefinedToNull && isUndefined(currentValue) ? null : currentValue;
+      }
+      continue;
+    }
+
+    // 일반 필드 비교 (es-toolkit의 isEqual 활용)
+    if (!isEqual(originalValue, currentValue)) {
+      // 변경이 감지된 경우에만 undefined를 null로 변환
+      changedFields[fieldStr] =
+        convertUndefinedToNull && isUndefined(currentValue) ? null : currentValue;
+    }
+  }
+
+  return changedFields as Result;
+}

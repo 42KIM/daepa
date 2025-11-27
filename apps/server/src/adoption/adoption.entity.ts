@@ -29,23 +29,23 @@ export class AdoptionEntity {
   @Column()
   petId: string;
 
-  @Column({ nullable: true })
-  price?: number; // 가격
+  @Column({ type: 'int', nullable: true })
+  price?: number | null; // 가격
 
   @Column({ type: 'date', nullable: true })
-  adoptionDate?: Date; // 분양 날짜
+  adoptionDate?: Date | null; // 분양 날짜
 
   @Column()
   sellerId: string; // 분양자 ID
 
-  @Column({ nullable: true })
-  buyerId?: string; // 입양자 ID
+  @Column({ type: 'varchar', nullable: true })
+  buyerId?: string | null; // 입양자 ID
 
   @Column({ type: 'text', nullable: true })
-  memo?: string; // 메모
+  memo?: string | null; // 메모
 
   @Column({ type: 'enum', enum: PET_ADOPTION_METHOD, nullable: true })
-  method?: PET_ADOPTION_METHOD; // 거래 방식
+  method?: PET_ADOPTION_METHOD | null; // 거래 방식
 
   @CreateDateColumn()
   createdAt: Date;
@@ -62,7 +62,7 @@ export class AdoptionEntity {
   isDeleted: boolean;
 
   @Column({ type: 'enum', enum: ADOPTION_SALE_STATUS, nullable: true })
-  status?: ADOPTION_SALE_STATUS;
+  status?: ADOPTION_SALE_STATUS | null;
 
   // 펫과의 관계 수정
   @OneToOne(() => PetEntity, (pet) => pet.adoption)
