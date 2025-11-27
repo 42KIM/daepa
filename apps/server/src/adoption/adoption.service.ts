@@ -429,7 +429,7 @@ export class AdoptionService {
         await this.updatePetOwner(
           entityManager,
           adoptionEntity.petId,
-          updateAdoptionDto.buyerId,
+          updateAdoptionDto.buyerId ?? adoptionEntity.buyerId,
         );
       }
 
