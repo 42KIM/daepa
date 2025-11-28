@@ -24,6 +24,7 @@ import type {
   KakaoNativeLoginRequestDto,
   PairControllerGetPairListParams,
   PetControllerFindAllParams,
+  SaveFilesDto,
   UnlinkParentDto,
   UpdateAdoptionDto,
   UpdateLayingDto,
@@ -58,6 +59,7 @@ import type {
   ParentLinkDetailJson,
   PetControllerFindAll200,
   PetHiddenStatusDto,
+  PetImageItem,
   PetParentDto,
   TokenResponseDto,
   UserControllerGetUserListSimple200,
@@ -414,6 +416,27 @@ export const pairControllerGetPairDetail = (pairId: string) => {
   return useCustomInstance<PairDetailDto>({ url: `/api/v1/pairs/${pairId}`, method: "GET" });
 };
 
+/**
+ * 펫 ID를 기반으로 해당 펫의 이미지 파일 목록을 조회합니다. 이미지가 없는 경우 null을 반환합니다.
+ * @summary 펫 이미지 조회
+ */
+export const petImageControllerFindOne = (petId: string) => {
+  return useCustomInstance<PetImageItem[]>({ url: `/api/v1/pet-image/${petId}`, method: "GET" });
+};
+
+/**
+ * 펫 ID를 기반으로 이미지를 저장하거나 수정합니다. 기존 이미지가 있으면 업데이트하고, 없으면 새로 생성합니다.
+ * @summary 펫 이미지 저장
+ */
+export const petImageControllerSavePetImages = (petId: string, saveFilesDto: SaveFilesDto) => {
+  return useCustomInstance<CommonResponseDto>({
+    url: `/api/v1/pet-image/${petId}`,
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    data: saveFilesDto,
+  });
+};
+
 export type PetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindAll>>
 >;
@@ -539,6 +562,12 @@ export type PairControllerGetPairListResult = NonNullable<
 >;
 export type PairControllerGetPairDetailResult = NonNullable<
   Awaited<ReturnType<typeof pairControllerGetPairDetail>>
+>;
+export type PetImageControllerFindOneResult = NonNullable<
+  Awaited<ReturnType<typeof petImageControllerFindOne>>
+>;
+export type PetImageControllerSavePetImagesResult = NonNullable<
+  Awaited<ReturnType<typeof petImageControllerSavePetImages>>
 >;
 
 export const getPetControllerFindAllResponsePetParentDtoMock = (
@@ -3482,6 +3511,22 @@ export const getPairControllerGetPairDetailResponseMock = (
   ...overrideResponse,
 });
 
+export const getPetImageControllerFindOneResponseMock = (): PetImageItem[] =>
+  Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    fileName: faker.string.alpha(20),
+    url: faker.string.alpha(20),
+    mimeType: faker.string.alpha(20),
+    size: faker.number.int({ min: undefined, max: undefined }),
+  }));
+
+export const getPetImageControllerSavePetImagesResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -4423,6 +4468,52 @@ export const getPairControllerGetPairDetailMockHandler = (
     );
   });
 };
+
+export const getPetImageControllerFindOneMockHandler = (
+  overrideResponse?:
+    | PetImageItem[]
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<PetImageItem[]> | PetImageItem[]),
+) => {
+  return http.get("*/api/v1/pet-image/:petId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetImageControllerFindOneResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
+export const getPetImageControllerSavePetImagesMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.put("*/api/v1/pet-image/:petId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetImageControllerSavePetImagesResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -4466,4 +4557,6 @@ export const getProjectDaepaAPIMock = () => [
   getLayingControllerUpdateMockHandler(),
   getPairControllerGetPairListMockHandler(),
   getPairControllerGetPairDetailMockHandler(),
+  getPetImageControllerFindOneMockHandler(),
+  getPetImageControllerSavePetImagesMockHandler(),
 ];

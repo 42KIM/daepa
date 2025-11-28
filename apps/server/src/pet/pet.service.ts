@@ -89,9 +89,9 @@ export class PetService {
 
       if (photos) {
         await this.petImageService.saveAndUploadConfirmedImages(
-          em,
           petId,
           photos,
+          em,
         );
 
         const newPhotoOrder = photos.map((photo) =>
@@ -296,9 +296,9 @@ export class PetService {
       try {
         if (photos) {
           await this.petImageService.saveAndUploadConfirmedImages(
-            entityManager,
             petId,
             photos,
+            entityManager,
           );
 
           const newPhotoOrder = photos.map((photo) =>

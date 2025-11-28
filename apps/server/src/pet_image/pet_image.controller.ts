@@ -1,0 +1,64 @@
+import { Controller, Get, Param, Put, Body } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PetImageService } from './pet_image.service';
+import { PetImageItem, SaveFilesDto } from './pet_image.dto';
+import { CommonResponseDto } from 'src/common/response.dto';
+
+@ApiTags('pet-image')
+@Controller('v1/pet-image')
+export class PetImageController {
+  constructor(private readonly petImageService: PetImageService) {}
+
+  @Get(':petId')
+  @ApiOperation({
+    summary: '펫 이미지 조회',
+    description:
+      '펫 ID를 기반으로 해당 펫의 이미지 파일 목록을 조회합니다. 이미지가 없는 경우 빈 배열을 반환합니다.',
+  })
+  @ApiParam({
+    name: 'petId',
+    type: 'string',
+    description: '펫 ID',
+    example: 'pet-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 이미지 파일 목록 조회 성공 (없는 경우 빈 배열)',
+    type: [PetImageItem],
+  })
+  async findOne(@Param('petId') petId: string): Promise<PetImageItem[]> {
+    return this.petImageService.findOneByPetId(petId);
+  }
+
+  @Put(':petId')
+  @ApiOperation({
+    summary: '펫 이미지 저장',
+    description:
+      '펫 ID를 기반으로 이미지를 저장하거나 수정합니다. 기존 이미지가 있으면 업데이트하고, 없으면 새로 생성합니다.',
+  })
+  @ApiParam({
+    name: 'petId',
+    type: 'string',
+    description: '펫 ID',
+    example: 'pet-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 이미지 저장 성공',
+    type: CommonResponseDto,
+  })
+  async savePetImages(
+    @Param('petId') petId: string,
+    @Body() saveFilesDto: SaveFilesDto,
+  ): Promise<CommonResponseDto> {
+    await this.petImageService.saveAndUploadConfirmedImages(
+      petId,
+      saveFilesDto.files,
+    );
+
+    return {
+      success: true,
+      message: '펫 이미지 저장이 완료되었습니다.',
+    };
+  }
+}
