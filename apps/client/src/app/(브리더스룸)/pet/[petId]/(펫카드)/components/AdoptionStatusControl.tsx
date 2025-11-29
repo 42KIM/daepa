@@ -8,14 +8,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  adoptionControllerCreateAdoption,
-  adoptionControllerUpdate,
+  // adoptionControllerCreateAdoption,
+  // adoptionControllerUpdate,
   AdoptionDtoStatus,
   petControllerFindPetByPetId,
   PetDto,
-  UpdateAdoptionDto,
+  // UpdateAdoptionDto,
 } from "@repo/api-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { overlay } from "overlay-kit";
 import { memo, useCallback } from "react";
@@ -34,18 +34,18 @@ const AdoptionStatusControl = memo(({ pet }: AdoptionStatusControlProps) => {
     toast.success("판매 상태가 변경되었습니다.", { id: "adoption-status" });
   }, [pet.petId, queryClient]);
 
-  const { mutateAsync: updateAdoption } = useMutation({
-    mutationFn: async (data: UpdateAdoptionDto) => {
-      if (!pet?.adoption?.adoptionId) {
-        return adoptionControllerCreateAdoption({
-          ...data,
-          petId: pet.petId,
-        });
-      } else {
-        return adoptionControllerUpdate(pet?.adoption?.adoptionId, data);
-      }
-    },
-  });
+  // const { mutateAsync: updateAdoption } = useMutation({
+  //   mutationFn: async (data: UpdateAdoptionDto) => {
+  //     if (!pet?.adoption?.adoptionId) {
+  //       return adoptionControllerCreateAdoption({
+  //         ...data,
+  //         petId: pet.petId,
+  //       });
+  //     } else {
+  //       return adoptionControllerUpdate(pet?.adoption?.adoptionId, data);
+  //     }
+  //   },
+  // });
 
   const handleCreateAdoptionModal = useCallback(
     (newStatus: AdoptionDtoStatus) => {
@@ -68,7 +68,7 @@ const AdoptionStatusControl = memo(({ pet }: AdoptionStatusControlProps) => {
   const handleStatusChange = useCallback(
     async (newStatus: string, onClose: () => void) => {
       try {
-        await updateAdoption({ status: newStatus } as UpdateAdoptionDto);
+        // await updateAdoption({ status: newStatus } as UpdateAdoptionDto);
 
         refreshAndToast();
       } catch (error) {
@@ -81,7 +81,7 @@ const AdoptionStatusControl = memo(({ pet }: AdoptionStatusControlProps) => {
         onClose();
       }
     },
-    [updateAdoption, refreshAndToast],
+    [refreshAndToast],
   );
 
   const handleStatusChangeDialog = useCallback(
