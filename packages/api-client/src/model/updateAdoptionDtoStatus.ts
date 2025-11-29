@@ -8,9 +8,11 @@
 
 /**
  * 판매 상태
+ * @nullable
  */
 export type UpdateAdoptionDtoStatus =
-  (typeof UpdateAdoptionDtoStatus)[keyof typeof UpdateAdoptionDtoStatus];
+  | (typeof UpdateAdoptionDtoStatus)[keyof typeof UpdateAdoptionDtoStatus]
+  | null;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UpdateAdoptionDtoStatus = {

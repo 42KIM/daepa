@@ -84,12 +84,8 @@ export class AdoptionController {
   })
   @ApiResponse({
     status: 200,
-    description: '펫별 분양 정보 조회 성공',
+    description: '펫별 분양 정보 조회 성공 (없으면 data가 null)',
     type: AdoptionDetailResponseDto,
-  })
-  @ApiResponse({
-    status: 404,
-    description: '분양 정보를 찾을 수 없음',
   })
   async getAdoptionByPetId(
     @Param('petId') petId: string,

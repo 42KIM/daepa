@@ -16,6 +16,7 @@ export * from "./adoptionControllerGetAllAdoptionsSexItem";
 export * from "./adoptionControllerGetAllAdoptionsSpecies";
 export * from "./adoptionControllerGetAllAdoptionsStatus";
 export * from "./adoptionDetailResponseDto";
+export * from "./adoptionDetailResponseDtoData";
 export * from "./adoptionDto";
 export * from "./adoptionDtoMethod";
 export * from "./adoptionDtoStatus";

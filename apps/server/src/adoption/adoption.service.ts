@@ -160,7 +160,7 @@ export class AdoptionService {
       ]);
   }
 
-  async findOne(where: FindOptionsWhere<AdoptionEntity>): Promise<AdoptionDto> {
+  async findOne(where: FindOptionsWhere<AdoptionEntity>): Promise<AdoptionDto | null> {
     const qb = this.createAdoptionQueryBuilder().where(
       'adoptions.isDeleted = :isDeleted',
       { isDeleted: false },
@@ -175,7 +175,8 @@ export class AdoptionService {
 
     const adoptionEntity = await qb.getOne();
     if (!adoptionEntity) {
-      throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
+        return null;
+      // throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
     }
 
     return this.toAdoptionDtoOptimized(adoptionEntity);

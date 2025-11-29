@@ -7,7 +7,7 @@ import {
   ValidateNested,
   IsArray,
 } from 'class-validator';
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import {ApiProperty, getSchemaPath, PickType} from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { UserProfilePublicDto } from '../user/user.dto';
 
@@ -167,6 +167,8 @@ export class UpdateAdoptionDto {
     description: '분양 가격',
     example: 50000,
     required: false,
+    nullable: true,
+    type: 'number',
   })
   @IsOptional()
   @IsNumber()
@@ -176,6 +178,9 @@ export class UpdateAdoptionDto {
     description: '분양 날짜',
     example: '2024-01-15',
     required: false,
+    nullable: true,
+    type: 'string',
+    format: 'date-time',
   })
   @Type(() => Date)
   @IsOptional()
@@ -186,6 +191,8 @@ export class UpdateAdoptionDto {
     description: '입양자 ID',
     example: 'USER_XXXXXXXX',
     required: false,
+    nullable: true,
+    type: 'string',
   })
   @IsOptional()
   @IsString()
@@ -195,6 +202,8 @@ export class UpdateAdoptionDto {
     description: '메모',
     example: '건강한 개체입니다.',
     required: false,
+    nullable: true,
+    type: 'string',
   })
   @IsOptional()
   @IsString()
@@ -206,6 +215,7 @@ export class UpdateAdoptionDto {
     enum: PET_ADOPTION_METHOD,
     'x-enumNames': Object.keys(PET_ADOPTION_METHOD),
     required: false,
+    nullable: true,
   })
   @IsOptional()
   @IsEnum(PET_ADOPTION_METHOD)
@@ -217,6 +227,7 @@ export class UpdateAdoptionDto {
     enum: ADOPTION_SALE_STATUS,
     'x-enumNames': Object.keys(ADOPTION_SALE_STATUS),
     required: false,
+    nullable: true,
   })
   @IsOptional()
   @IsEnum(ADOPTION_SALE_STATUS)
@@ -256,9 +267,13 @@ export class AdoptionDto extends PickType(AdoptionBaseDto, [
 
 export class AdoptionDetailResponseDto extends CommonResponseDto {
   @ApiProperty({
-    description: '분양 정보',
+    description: '분양 정보 (없을 수 있음)',
+    type: AdoptionDto,
+    nullable: true,
+    required: false,
   })
-  data: AdoptionDto;
+  @Type(() => AdoptionDto)
+  data: AdoptionDto | null;
 }
 
 export class AdoptionFilterDto extends PageOptionsDto {

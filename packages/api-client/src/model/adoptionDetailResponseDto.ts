@@ -5,13 +5,16 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { AdoptionDto } from "./adoptionDto";
+import type { AdoptionDetailResponseDtoData } from "./adoptionDetailResponseDtoData";
 
 export interface AdoptionDetailResponseDto {
   /** 성공 여부 */
   success: boolean;
   /** 메시지 */
   message: string;
-  /** 분양 정보 */
-  data: AdoptionDto;
+  /**
+   * 분양 정보 (없을 수 있음)
+   * @nullable
+   */
+  data?: AdoptionDetailResponseDtoData;
 }
