@@ -18,7 +18,7 @@ import ParentsSection from "./components/ParentsSection";
 import BreedingInfoSection from "./components/BreedingInfoSection";
 import CardBackActions from "./components/CardBackActions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { isNil, orderBy, pick, pickBy } from "es-toolkit";
+import { isNil, pick, pickBy } from "es-toolkit";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
 import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
 
@@ -39,17 +39,17 @@ const CardBack = memo(({ pet, from, isMyPet, isWideScreen }: CardBackProps) => {
   const initialPetData = useMemo(
     () => ({
       ...pet,
-      photos: orderBy(
-        pet.photos ?? [],
-        [
-          (photo) => {
-            const fileKey = photo.fileName;
-            const index = pet.photoOrder?.indexOf(fileKey);
-            return index === -1 ? Infinity : index;
-          },
-        ],
-        ["asc"],
-      ),
+      // photos: orderBy(
+      //   pet.photos ?? [],
+      //   [
+      //     (photo) => {
+      //       const fileKey = photo.fileName;
+      //       const index = pet.photoOrder?.indexOf(fileKey);
+      //       return index === -1 ? Infinity : index;
+      //     },
+      //   ],
+      //   ["asc"],
+      // ),
     }),
     [pet],
   );

@@ -60,9 +60,6 @@ export class PetEntity {
   @Column({ default: false })
   isDeleted: boolean;
 
-  @Column('json', { nullable: true })
-  photoOrder: string[] | null;
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -74,9 +71,6 @@ export class PetEntity {
     nullable: true,
   })
   adoption: AdoptionEntity | null;
-
-  @OneToOne(() => PetImageEntity, (image) => image.petId)
-  photos: PetImageEntity | null;
 
   @OneToOne(() => PetDetailEntity, (petDetail) => petDetail.petId, {
     nullable: true,

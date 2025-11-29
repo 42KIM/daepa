@@ -18,7 +18,6 @@ import type { PetDtoFather } from "./petDtoFather";
 import type { PetDtoMother } from "./petDtoMother";
 import type { PetAdoptionDto } from "./petAdoptionDto";
 import type { PetDtoStatus } from "./petDtoStatus";
-import type { PetImageItem } from "./petImageItem";
 
 export interface PetDto {
   /** 펫 아이디 */
@@ -33,8 +32,6 @@ export interface PetDto {
   species: PetDtoSpecies;
   /** 펫 출생일 */
   hatchingDate?: string;
-  /** 펫 이미지 목록 */
-  photoOrder?: string[];
   /** 펫 소개말 */
   desc?: string;
   /** 펫 공개 여부 */
@@ -71,6 +68,4 @@ export interface PetDto {
   adoption?: PetAdoptionDto;
   /** 부모 관계 상태 */
   status: PetDtoStatus;
-  /** 펫 이미지 목록 */
-  photos?: PetImageItem[];
 }

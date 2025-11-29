@@ -93,11 +93,6 @@ export class PetService {
           photos,
           em,
         );
-
-        const newPhotoOrder = photos.map((photo) =>
-          photo.fileName.replace('PENDING/', `${petId}/`),
-        );
-        petData.photoOrder = newPhotoOrder;
       }
 
       try {
@@ -201,11 +196,6 @@ export class PetService {
         throw new NotFoundException('펫의 소유자를 찾을 수 없습니다.');
       }
 
-      const { files } =
-        (await entityManager.findOne(PetImageEntity, {
-          where: { petId },
-        })) ?? {};
-
       // 소유자 정보 조회
       const owner = await this.userService.findOneProfile(
         pet.ownerId,
@@ -227,7 +217,6 @@ export class PetService {
         temperature,
         eggStatus,
         owner,
-        photos: files,
       });
     });
   }
@@ -260,7 +249,6 @@ export class PetService {
         growth,
         temperature,
         eggStatus,
-        photos,
         ...petData
       } = updatePetDto;
 
@@ -294,19 +282,6 @@ export class PetService {
       }
 
       try {
-        if (photos) {
-          await this.petImageService.saveAndUploadConfirmedImages(
-            petId,
-            photos,
-            entityManager,
-          );
-
-          const newPhotoOrder = photos.map((photo) =>
-            photo.fileName.replace('PENDING/', `${petId}/`),
-          );
-          petData.photoOrder = newPhotoOrder;
-        }
-
         // 펫 기본 정보 업데이트
         await entityManager.update(PetEntity, { petId }, petData);
 
@@ -381,12 +356,6 @@ export class PetService {
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
         { soldStatus: ADOPTION_SALE_STATUS.SOLD },
-      )
-      .leftJoinAndMapOne(
-        'pets.photos',
-        'pet_images',
-        'pet_images',
-        'pet_images.petId = pets.petId',
       );
 
     if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
@@ -417,7 +386,7 @@ export class PetService {
     // PetDto로 변환하면서 parent_request 상태 정보 포함
     const petDtos = await Promise.all(
       petEntities.map(async (petRaw) => {
-        const { petId, photos, ...pet } = petRaw;
+        const { petId, ...pet } = petRaw;
 
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(petId);
@@ -449,7 +418,6 @@ export class PetService {
           }),
           father: fatherDisplayable,
           mother: motherDisplayable,
-          photos: photos?.files,
         });
 
         return petDto;
@@ -501,12 +469,6 @@ export class PetService {
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
         { soldStatus: ADOPTION_SALE_STATUS.SOLD },
-      )
-      .leftJoinAndMapOne(
-        'pets.photos',
-        'pet_images',
-        'pet_images',
-        'pet_images.petId = pets.petId',
       );
 
     this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto);
@@ -523,7 +485,7 @@ export class PetService {
     // PetDto로 변환하면서 parent_request 상태 정보 포함
     const petDtos = await Promise.all(
       petEntities.map(async (petRaw) => {
-        const { petId, photos, ...pet } = petRaw;
+        const { petId, ...pet } = petRaw;
 
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(petId);
@@ -555,7 +517,6 @@ export class PetService {
           }),
           father: fatherDisplayable,
           mother: motherDisplayable,
-          photos: photos?.files,
         });
 
         return petDto;
