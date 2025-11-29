@@ -54,7 +54,9 @@ const ParentLink = ({
     queryKey: [petImageControllerFindThumbnail.name, parentPetId],
     queryFn: async () => {
       if (!parentPetId) {
-        return { data: [] };
+        return {
+          data: undefined,
+        };
       }
       return petImageControllerFindThumbnail(parentPetId);
     },
