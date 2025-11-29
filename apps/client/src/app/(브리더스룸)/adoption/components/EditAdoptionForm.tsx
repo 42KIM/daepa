@@ -41,7 +41,10 @@ const adoptionSchema = z.object({
   adoptionDate: z.date().optional().nullable(),
   memo: z.string().optional(),
   method: z.enum(["PICKUP", "DELIVERY", "WHOLESALE"]).optional().nullable(),
-  buyer: z.object({ userId: z.string().optional(), name: z.string().optional() }).optional().nullable(),
+  buyer: z
+    .object({ userId: z.string().optional(), name: z.string().optional() })
+    .optional()
+    .nullable(),
   status: z
     .enum([
       AdoptionDtoStatus.NFS,
@@ -140,7 +143,9 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
         const formValues = convertFormDataToDto(data);
         const originalValues = {
           price: adoptionData.price,
-          adoptionDate: adoptionData.adoptionDate ? new Date(adoptionData.adoptionDate).toISOString() : undefined,
+          adoptionDate: adoptionData.adoptionDate
+            ? new Date(adoptionData.adoptionDate).toISOString()
+            : undefined,
           memo: adoptionData.memo,
           method: adoptionData.method,
           buyer: adoptionData.buyer,
@@ -161,7 +166,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
 
         if (!Object.keys(changedFields).length) {
           toast.info("변경된 사항이 없습니다.");
-          onSubmit(false)
+          onSubmit(false);
           return;
         }
 
@@ -169,7 +174,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
         const updateDto: Record<string, unknown> = {};
         if ("price" in changedFields) {
           if (data.price && !/^\d+$/.test(data.price)) {
-            toast.error("분양 가격은 숫자만 입력할 수 있습니다.")
+            toast.error("분양 가격은 숫자만 입력할 수 있습니다.");
             return;
           }
           updateDto.price = data.price === "" || !data.price ? null : Number(data.price);

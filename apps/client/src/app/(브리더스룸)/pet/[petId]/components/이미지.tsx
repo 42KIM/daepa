@@ -72,11 +72,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
           <ImageUp className="h-[20%] w-[20%] text-blue-500/70" />
         </div>
       )}
-      <DndImagePicker
-        disabled={!isEditMode}
-        images={displayImages}
-        onChange={setEditingImages}
-      />
+      <DndImagePicker disabled={!isEditMode} images={displayImages} onChange={setEditingImages} />
 
       <div className="mt-2 flex w-full flex-1 items-end gap-2">
         {isEditMode && (

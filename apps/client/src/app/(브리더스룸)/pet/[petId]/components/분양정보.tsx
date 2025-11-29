@@ -86,10 +86,10 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
         },
       );
 
-      if ('buyer' in changedFields) {
-        const buyer = changedFields['buyer'] as UserProfilePublicDto | null;
-        changedFields['buyerId'] = buyer?.userId ?? null;
-        delete changedFields['buyer'];
+      if ("buyer" in changedFields) {
+        const buyer = changedFields["buyer"] as UserProfilePublicDto | null;
+        changedFields["buyerId"] = buyer?.userId ?? null;
+        delete changedFields["buyer"];
       }
 
       return changedFields as UpdateAdoptionDto;
@@ -174,7 +174,16 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [updateAdoption, createAdoption, adoptionData, petId, refetch, router, adoption, getChangedFieldsForAdoption]);
+  }, [
+    updateAdoption,
+    createAdoption,
+    adoptionData,
+    petId,
+    refetch,
+    router,
+    adoption,
+    getChangedFieldsForAdoption,
+  ]);
 
   const handleSelectBuyer = useCallback(() => {
     if (!isEditMode) return;

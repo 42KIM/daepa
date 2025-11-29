@@ -80,7 +80,7 @@ export const FormField = ({
         return (
           <DndImagePicker
             disabled={disabled}
-            images={(Array.isArray(value) ? value : [])}
+            images={Array.isArray(value) ? value : []}
             onChange={(images) => {
               handleChange({ type: "photos", value: images });
             }}
