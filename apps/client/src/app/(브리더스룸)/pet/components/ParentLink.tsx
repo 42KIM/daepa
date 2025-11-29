@@ -7,12 +7,12 @@ import ParentSearchSelector from "../../components/selector/parentSearch";
 import { Button } from "@/components/ui/button";
 import Dialog from "../../components/Form/Dialog";
 import {
-  GetParentsByPetIdResponseDtoDataFather,
-  GetParentsByPetIdResponseDtoDataMother,
-  PetDtoSpecies,
-  PetHiddenStatusDtoHiddenStatus,
-  PetParentDto,
-  PetParentDtoStatus,
+    GetParentsByPetIdResponseDtoDataFather,
+    GetParentsByPetIdResponseDtoDataMother,
+    PetDtoSpecies,
+    PetHiddenStatusDtoHiddenStatus, petImageControllerFindOne,
+    PetParentDto,
+    PetParentDtoStatus,
 } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import ParentStatusBadge from "../../components/ParentStatusBadge";
@@ -20,7 +20,8 @@ import { usePathname } from "next/navigation";
 import { PetParentDtoWithMessage } from "../store/parentLink";
 import { useUserStore } from "../../store/user";
 import PetThumbnail from "../../components/PetThumbnail";
-import { useCallback } from "react";
+import {useCallback, useMemo} from "react";
+import {useQuery} from "@tanstack/react-query";
 
 interface ParentLinkProps {
   species: PetDtoSpecies;
@@ -44,6 +45,21 @@ const ParentLink = ({
   const { user } = useUserStore();
   const pathname = usePathname();
   const isClickDisabled = pathname.includes("register") || pathname.includes("hatching");
+
+  const parentPetId = useMemo(() => data && 'petId' in data ? data.petId : undefined, [data])
+
+  // TODO: 불필요한 사진을 전송받지 않기 위해 대표 사진만 받는 api 사용 필요
+  const { data: photos = [] } = useQuery({
+    queryKey: [petImageControllerFindOne.name, parentPetId],
+    queryFn: async () => {
+      if (!parentPetId) {
+        return { data: [] };
+      }
+      return petImageControllerFindOne(parentPetId);
+    },
+    select: (response) => response.data,
+    enabled: !!parentPetId,
+  });
 
   const deleteParent = useCallback(
     (data: PetParentDto) => {
@@ -187,7 +203,7 @@ const ParentLink = ({
           className="flex flex-col items-center gap-2"
         >
           <div className="relative w-full">
-            <PetThumbnail imageUrl={parent.photos?.[0]?.url} />
+            <PetThumbnail imageUrl={photos?.[0]?.url} />
             {isMyPet ? (
               <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1">
                 <span className="text-[11px] font-semibold text-blue-600">My Pet</span>

@@ -9,7 +9,6 @@ import type { UserProfilePublicDto } from "./userProfilePublicDto";
 import type { PetParentDtoSpecies } from "./petParentDtoSpecies";
 import type { PetParentDtoStatus } from "./petParentDtoStatus";
 import type { PetParentDtoSex } from "./petParentDtoSex";
-import type { PetImageItem } from "./petImageItem";
 
 export interface PetParentDto {
   /** 펫 아이디 */
@@ -34,6 +33,4 @@ export interface PetParentDto {
   morphs?: string[];
   /** 펫 형질 */
   traits?: string[];
-  /** 펫 이미지 목록 */
-  photos?: PetImageItem[];
 }

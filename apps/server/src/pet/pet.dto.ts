@@ -429,18 +429,6 @@ export class PetParentDto extends PickType(PetSummaryDto, [
   @IsOptional()
   @IsArray()
   traits?: string[];
-
-  @ApiProperty({
-    description: '펫 이미지 목록',
-    required: false,
-    type: 'array',
-    items: { $ref: getSchemaPath(PetImageItem) },
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PetImageItem)
-  photos?: PetImageItem[];
 }
 
 export class PetAdoptionDto {

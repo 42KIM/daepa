@@ -624,15 +624,6 @@ export const getPetControllerFindAllResponsePetParentDtoMock = (
       ),
       undefined,
     ]),
-    photos: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        fileName: faker.string.alpha(20),
-        url: faker.string.alpha(20),
-        mimeType: faker.string.alpha(20),
-        size: faker.number.int({ min: undefined, max: undefined }),
-      })),
-      undefined,
-    ]),
   },
   ...overrideResponse,
 });
@@ -924,15 +915,6 @@ export const getPetControllerFindPetByPetIdResponsePetParentDtoMock = (
       ),
       undefined,
     ]),
-    photos: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        fileName: faker.string.alpha(20),
-        url: faker.string.alpha(20),
-        mimeType: faker.string.alpha(20),
-        size: faker.number.int({ min: undefined, max: undefined }),
-      })),
-      undefined,
-    ]),
   },
   ...overrideResponse,
 });
@@ -1217,15 +1199,6 @@ export const getPetControllerGetParentsByPetIdResponsePetParentDtoMock = (
       ),
       undefined,
     ]),
-    photos: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        fileName: faker.string.alpha(20),
-        url: faker.string.alpha(20),
-        mimeType: faker.string.alpha(20),
-        size: faker.number.int({ min: undefined, max: undefined }),
-      })),
-      undefined,
-    ]),
   },
   ...overrideResponse,
 });
@@ -1439,15 +1412,6 @@ export const getBrPetControllerFindAllResponsePetParentDtoMock = (
       Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
         faker.string.alpha(20),
       ),
-      undefined,
-    ]),
-    photos: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        fileName: faker.string.alpha(20),
-        url: faker.string.alpha(20),
-        mimeType: faker.string.alpha(20),
-        size: faker.number.int({ min: undefined, max: undefined }),
-      })),
       undefined,
     ]),
   },
@@ -1733,15 +1697,6 @@ export const getBrPetControllerGetPetsByYearResponsePetParentDtoMock = (
       ),
       undefined,
     ]),
-    photos: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        fileName: faker.string.alpha(20),
-        url: faker.string.alpha(20),
-        mimeType: faker.string.alpha(20),
-        size: faker.number.int({ min: undefined, max: undefined }),
-      })),
-      undefined,
-    ]),
   },
   ...overrideResponse,
 });
@@ -2015,15 +1970,6 @@ export const getBrPetControllerGetPetsByMonthResponsePetParentDtoMock = (
       Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
         faker.string.alpha(20),
       ),
-      undefined,
-    ]),
-    photos: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        fileName: faker.string.alpha(20),
-        url: faker.string.alpha(20),
-        mimeType: faker.string.alpha(20),
-        size: faker.number.int({ min: undefined, max: undefined }),
-      })),
       undefined,
     ]),
   },
@@ -2322,15 +2268,6 @@ export const getBrPetControllerGetPetsByDateRangeResponsePetParentDtoMock = (
       Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
         faker.string.alpha(20),
       ),
-      undefined,
-    ]),
-    photos: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        fileName: faker.string.alpha(20),
-        url: faker.string.alpha(20),
-        mimeType: faker.string.alpha(20),
-        size: faker.number.int({ min: undefined, max: undefined }),
-      })),
       undefined,
     ]),
   },

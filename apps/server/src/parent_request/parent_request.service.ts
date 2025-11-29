@@ -614,7 +614,6 @@ export class ParentRequestService {
         .createQueryBuilder(ParentRequestEntity, 'pr')
         .leftJoin(PetEntity, 'p', 'p.petId = pr.parentPetId')
         .leftJoin(PetDetailEntity, 'pd', 'pd.petId = pr.parentPetId')
-        .leftJoin(PetImageEntity, 'img', 'img.petId = pr.parentPetId')
         .leftJoin(UserEntity, 'user', 'user.userId = p.ownerId')
         .select([
           'pr.status',
@@ -627,7 +626,6 @@ export class ParentRequestService {
           'pd.sex',
           'pd.morphs',
           'pd.traits',
-          'img.files',
           'user.userId',
           'user.name',
           'user.role',
@@ -656,7 +654,6 @@ export class ParentRequestService {
           morphs: row.pd_morphs ?? undefined,
           traits: row.pd_traits ?? undefined,
           hatchingDate: row.p_hatching_date ?? undefined,
-          photos: row.img_files ?? undefined,
           status: row.pr_status,
           owner: {
             userId: row.user_user_id,
