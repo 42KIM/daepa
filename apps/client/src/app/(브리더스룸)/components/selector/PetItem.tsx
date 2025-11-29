@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import PetThumbnail from "../PetThumbnail";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { petImageControllerFindThumbnail } from "@repo/api-client";
 
 const PetItem = ({
   item,
@@ -12,6 +14,13 @@ const PetItem = ({
   handlePetSelect: (pet: PetParentDtoWithMessage) => void;
   disabled?: boolean;
 }) => {
+  const { data: thumbnail } = useQuery({
+    queryKey: [petImageControllerFindThumbnail.name, item.petId],
+    queryFn: async () => petImageControllerFindThumbnail(item.petId),
+    select: (response) => response.data,
+    enabled: !!item.petId,
+  });
+
   return (
     <button
       key={item.petId}
@@ -28,7 +37,7 @@ const PetItem = ({
     >
       <div className="flex w-full flex-col items-center gap-1">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-          <PetThumbnail imageUrl={item.photos?.[0]?.url} alt={item.name} />
+          <PetThumbnail imageUrl={thumbnail?.url} alt={item.name} />
         </div>
         <div className="flex w-full flex-col items-center gap-1">
           <div className="relative">
