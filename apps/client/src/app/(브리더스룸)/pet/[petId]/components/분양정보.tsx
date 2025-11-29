@@ -215,37 +215,6 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
     <div className="shadow-xs flex min-h-[480px] min-w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">분양정보</div>
 
-      {/* 분양 상태, 가격, 날짜, 입양자, 거래 방식, 메모 */}
-      <FormItem
-        label="분양 상태"
-        content={
-          <SingleSelect
-            disabled={!isEditMode}
-            type="adoptionStatus"
-            initialItem={!isEditMode && isNil(adoption) ? undefined : adoptionData.status}
-            onSelect={(item) => {
-              setFormData((prev) => {
-                const nextStatus = item as PetAdoptionDtoStatus;
-                const isNextStatusReservedOrSold =
-                  nextStatus === PetAdoptionDtoStatus.ON_RESERVATION ||
-                  nextStatus === PetAdoptionDtoStatus.SOLD;
-                return {
-                  ...prev,
-                  adoption: {
-                    ...(prev.adoption ?? {}),
-                    status: nextStatus,
-                    buyer: isNextStatusReservedOrSold ? prev.adoption?.buyer : undefined,
-                    adoptionDate: isNextStatusReservedOrSold
-                      ? prev.adoption?.adoptionDate
-                      : undefined,
-                  },
-                };
-              });
-            }}
-          />
-        }
-      />
-
       {!showAdoptionInfo && (
         <div className="flex h-full items-center justify-center text-[14px] text-gray-600">
           분양 정보를 등록해 관리를 시작해보세요!
@@ -254,6 +223,37 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
 
       {showAdoptionInfo && (
         <>
+          {/* 분양 상태, 가격, 날짜, 입양자, 거래 방식, 메모 */}
+          <FormItem
+            label="분양 상태"
+            content={
+              <SingleSelect
+                disabled={!isEditMode}
+                type="adoptionStatus"
+                initialItem={!isEditMode && isNil(adoption) ? undefined : adoptionData.status}
+                onSelect={(item) => {
+                  setFormData((prev) => {
+                    const nextStatus = item as PetAdoptionDtoStatus;
+                    const isNextStatusReservedOrSold =
+                      nextStatus === PetAdoptionDtoStatus.ON_RESERVATION ||
+                      nextStatus === PetAdoptionDtoStatus.SOLD;
+                    return {
+                      ...prev,
+                      adoption: {
+                        ...(prev.adoption ?? {}),
+                        status: nextStatus,
+                        buyer: isNextStatusReservedOrSold ? prev.adoption?.buyer : undefined,
+                        adoptionDate: isNextStatusReservedOrSold
+                          ? prev.adoption?.adoptionDate
+                          : undefined,
+                      },
+                    };
+                  });
+                }}
+              />
+            }
+          />
+
           <FormItem
             label="가격"
             content={
