@@ -40,7 +40,7 @@ export default function DndImagePicker({
   max = 3,
   disabled,
   images = [],
-  onChange,
+  onChange = () => {},
 }: DndImagePickerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const imageNamesInOrder = images.map(({ fileName }) => fileName);
@@ -77,61 +77,63 @@ export default function DndImagePicker({
 
   const sensors = useSensors(mouseSensor, touchSensor);
 
-  const onAdd = useCallback(async (files: File[]) => {
-    if (!files || files.length === 0 || isLoading) return;
+  const onAdd = useCallback(
+    async (files: File[]) => {
+      if (!files || files.length === 0 || isLoading) return;
 
-    const remain = Math.max(0, max - images.length);
-    const picked = files.slice(0, remain);
+      const remain = Math.max(0, max - images.length);
+      const picked = files.slice(0, remain);
 
-    const targetFiles = picked.filter((f) => {
-      if (f.size > MAX_FILE_SIZE) {
-        toast.error(`이미지 용량이 너무 큽니다 (최대 5MB): ${f.name}`);
-        return false;
+      const targetFiles = picked.filter((f) => {
+        if (f.size > MAX_FILE_SIZE) {
+          toast.error(`이미지 용량이 너무 큽니다 (최대 5MB): ${f.name}`);
+          return false;
+        }
+        return true;
+      });
+
+      if (targetFiles.length === 0) return;
+
+      setIsLoading(true);
+      try {
+        const uploadedPendingFiles = await Promise.all(
+          targetFiles.map(async (file) => {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("petId", "PENDING");
+
+            const response = await fetch("/api/upload/image", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${tokenStorage.getToken()}`,
+              },
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error(`Upload failed for file ${file.name}`);
+            }
+
+            return response.json();
+          }),
+        );
+        const addedPhotos = uploadedPendingFiles.map(({ url, fileName, size, mimeType }) => ({
+          url,
+          fileName,
+          size,
+          mimeType,
+        }));
+
+        onChange([...images, ...addedPhotos]);
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        toast.error("이미지 업로드에 실패했습니다.");
+      } finally {
+        setIsLoading(false);
       }
-      return true;
-    });
-
-    if (targetFiles.length === 0) return;
-
-    setIsLoading(true);
-    try {
-      const uploadedPendingFiles = await Promise.all(
-        targetFiles.map(async (file) => {
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("petId", "PENDING");
-
-          const response = await fetch("/api/upload/image", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${tokenStorage.getToken()}`,
-            },
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error(`Upload failed for file ${file.name}`);
-          }
-
-          const result = await response.json();
-          return result;
-        }),
-      );
-      const addedPhotos = uploadedPendingFiles.map(({ url, fileName, size, mimeType }) => ({
-        url,
-        fileName,
-        size,
-        mimeType,
-      }));
-
-      onChange?.([...images, ...addedPhotos]);
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      toast.error("이미지 업로드에 실패했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [images, max, isLoading, onChange]);
+    },
+    [images, max, isLoading, onChange],
+  );
 
   const onDragEnd = (event: DragEndEvent) => {
     if (disabled || isLoading) return;
@@ -157,7 +159,7 @@ export default function DndImagePicker({
       const prevPhotos = [...images];
       const nextPhotos = order.map((i) => prevPhotos[i]!);
 
-      onChange?.(nextPhotos);
+      onChange(nextPhotos);
     },
     [disabled, isLoading, images, onChange],
   );
