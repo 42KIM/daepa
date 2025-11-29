@@ -30,6 +30,29 @@ export class PetImageController {
     return this.petImageService.findOneByPetId(petId);
   }
 
+  @Get('/thumbnail/:petId')
+  @ApiOperation({
+    summary: '펫 대표이미지(썸네일) 조회',
+    description:
+      '펫 ID를 기반으로 해당 펫의 대표 이미지를 조회합니다. 이미지가 없는 경우 null을 반환합니다.',
+  })
+  @ApiParam({
+    name: 'petId',
+    type: 'string',
+    description: '펫 ID',
+    example: 'pet-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 대표 이미지 조회 성공 (없는 경우 null)',
+    type: PetImageItem,
+  })
+  async findThumbnail(
+    @Param('petId') petId: string,
+  ): Promise<PetImageItem | null> {
+    return this.petImageService.findThumbnailByPetId(petId);
+  }
+
   @Put(':petId')
   @ApiOperation({
     summary: '펫 이미지 저장',

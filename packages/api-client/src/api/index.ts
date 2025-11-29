@@ -437,6 +437,17 @@ export const petImageControllerSavePetImages = (petId: string, saveFilesDto: Sav
   });
 };
 
+/**
+ * 펫 ID를 기반으로 해당 펫의 대표 이미지를 조회합니다. 이미지가 없는 경우 null을 반환합니다.
+ * @summary 펫 대표이미지(썸네일) 조회
+ */
+export const petImageControllerFindThumbnail = (petId: string) => {
+  return useCustomInstance<PetImageItem>({
+    url: `/api/v1/pet-image/thumbnail/${petId}`,
+    method: "GET",
+  });
+};
+
 export type PetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindAll>>
 >;
@@ -568,6 +579,9 @@ export type PetImageControllerFindOneResult = NonNullable<
 >;
 export type PetImageControllerSavePetImagesResult = NonNullable<
   Awaited<ReturnType<typeof petImageControllerSavePetImages>>
+>;
+export type PetImageControllerFindThumbnailResult = NonNullable<
+  Awaited<ReturnType<typeof petImageControllerFindThumbnail>>
 >;
 
 export const getPetControllerFindAllResponsePetParentDtoMock = (
@@ -3361,6 +3375,16 @@ export const getPetImageControllerSavePetImagesResponseMock = (
   ...overrideResponse,
 });
 
+export const getPetImageControllerFindThumbnailResponseMock = (
+  overrideResponse: Partial<PetImageItem> = {},
+): PetImageItem => ({
+  fileName: faker.string.alpha(20),
+  url: faker.string.alpha(20),
+  mimeType: faker.string.alpha(20),
+  size: faker.number.int({ min: undefined, max: undefined }),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -4348,6 +4372,29 @@ export const getPetImageControllerSavePetImagesMockHandler = (
     );
   });
 };
+
+export const getPetImageControllerFindThumbnailMockHandler = (
+  overrideResponse?:
+    | PetImageItem
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<PetImageItem> | PetImageItem),
+) => {
+  return http.get("*/api/v1/pet-image/thumbnail/:petId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetImageControllerFindThumbnailResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -4393,4 +4440,5 @@ export const getProjectDaepaAPIMock = () => [
   getPairControllerGetPairDetailMockHandler(),
   getPetImageControllerFindOneMockHandler(),
   getPetImageControllerSavePetImagesMockHandler(),
+  getPetImageControllerFindThumbnailMockHandler(),
 ];

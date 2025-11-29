@@ -7,7 +7,7 @@ import {
   ValidateNested,
   IsArray,
 } from 'class-validator';
-import {ApiProperty, getSchemaPath, PickType} from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath, PickType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { UserProfilePublicDto } from '../user/user.dto';
 

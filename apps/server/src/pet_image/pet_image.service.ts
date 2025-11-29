@@ -22,6 +22,18 @@ export class PetImageService {
     return petImage?.files ?? [];
   }
 
+  async findThumbnailByPetId(petId: string): Promise<PetImageItem | null> {
+    const petImage = await this.petImageRepository.findOne({
+      where: { petId },
+    });
+
+    if (petImage?.files && petImage.files.length > 0) {
+      return petImage.files[0];
+    }
+
+    return null;
+  }
+
   async saveAndUploadConfirmedImages(
     petId: string,
     imageList: UpsertPetImageDto[],
