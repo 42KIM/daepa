@@ -38,7 +38,7 @@ import { UserProfilePublicDto } from 'src/user/user.dto';
 import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { PageOptionsDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
-import { PetImageItem, UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
+import { UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 import { PetDetailBaseDto } from 'src/pet_detail/pet_detail.dto';
 import { EggDetailDto } from 'src/egg_detail/egg_detail.dto';

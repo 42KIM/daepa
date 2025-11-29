@@ -45,7 +45,6 @@ import { LayingEntity } from 'src/laying/laying.entity';
 import { isMySQLError } from 'src/common/error';
 import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
 import { PetImageService } from 'src/pet_image/pet_image.service';
-import { PetImageEntity } from 'src/pet_image/pet_image.entity';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
