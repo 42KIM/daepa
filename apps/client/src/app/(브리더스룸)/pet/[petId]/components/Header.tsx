@@ -2,31 +2,26 @@ import { Dog } from "lucide-react";
 import QRCode from "./QR코드";
 import Image from "next/image";
 import { buildR2TransformedUrl } from "@/lib/utils";
-import { orderBy } from "es-toolkit";
-import { PetDto } from "@repo/api-client";
+import { PetDto, petImageControllerFindOne } from "@repo/api-client";
 import { SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 
 const Header = ({ pet }: { pet: PetDto }) => {
-  const imagesInOrder = orderBy(
-    pet.photos ?? [],
-    [
-      (photo) => {
-        const fileKey = photo.fileName;
-        const index = pet.photoOrder?.indexOf(fileKey);
-        return index === -1 ? Infinity : index;
-      },
-    ],
-    ["asc"],
-  );
+  const { data: photos = [] } = useQuery({
+    queryKey: [petImageControllerFindOne.name, pet.petId],
+    queryFn: () => petImageControllerFindOne(pet.petId),
+    select: (response) => response.data,
+  });
 
   if (!pet) return null;
+
   return (
     <div className="flex items-center gap-2 pb-3">
       <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-yellow-200">
-        {imagesInOrder[0]?.url ? (
+        {photos[0]?.url ? (
           <Image
-            src={buildR2TransformedUrl(imagesInOrder[0]?.url)}
+            src={buildR2TransformedUrl(photos[0]?.url)}
             alt={pet.petId}
             fill
             className="object-cover"

@@ -28,7 +28,8 @@ const CardFront: React.FC<Props> = ({
   qrCodeDataUrl,
   height = SCREEN_HEIGHT,
 }) => {
-  const allImages = pet.photos ?? [];
+  // const allImages = pet.photos ?? [];
+  const allImages = [] as any[];
   const [currentIndex, setCurrentIndex] = useState(0);
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 60,

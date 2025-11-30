@@ -18,7 +18,8 @@ const ShortsFront = ({
   const [dragStart, setDragStart] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const allImages = pet.photos ?? [];
+  // const allImages = pet.photos ?? [];
+  const allImages = [] as any[];
 
   const changeImage = (direction: "prev" | "next") => {
     if (direction === "prev") {
@@ -75,7 +76,8 @@ const ShortsFront = ({
                 className="absolute h-full w-full"
               >
                 <Image
-                  src={allImages[currentImageIndex]?.url ?? ""}
+                  // src={allImages[currentImageIndex]?.url ?? ""}
+                  src={""}
                   alt={pet.name || "Pet Image"}
                   fill
                   className="object-cover"
