@@ -73,13 +73,14 @@ const CardBack: React.FC<Props> = ({ pet, onCloseBack }) => {
         return (
           <Text style={styles.value}>
             {field.name === 'sex'
-              ? GENDER_KOREAN_INFO[(pet[field.name] as PetDtoSex) ?? 'N'] ?? ''
+              ? (GENDER_KOREAN_INFO[(pet[field.name] as PetDtoSex) ?? 'N'] ??
+                '')
               : field.name === 'species'
-              ? SPECIES_KOREAN_INFO[pet[field.name] as PetDtoSpecies] ??
-                String(pet[field.name] ?? '')
-              : field.name === 'growth'
-              ? GROWTH_KOREAN_INFO[pet[field.name] as PetDtoGrowth] ?? ''
-              : String(pet[field.name] ?? '')}
+                ? (SPECIES_KOREAN_INFO[pet[field.name] as PetDtoSpecies] ??
+                  String(pet[field.name] ?? ''))
+                : field.name === 'growth'
+                  ? (GROWTH_KOREAN_INFO[pet[field.name] as PetDtoGrowth] ?? '')
+                  : String(pet[field.name] ?? '')}
           </Text>
         );
       case 'multipleSelect':

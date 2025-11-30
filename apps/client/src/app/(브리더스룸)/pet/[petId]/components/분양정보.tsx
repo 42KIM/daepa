@@ -86,10 +86,10 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
         },
       );
 
-      if ('buyer' in changedFields) {
-        const buyer = changedFields['buyer'] as UserProfilePublicDto | null;
-        changedFields['buyerId'] = buyer?.userId ?? null;
-        delete changedFields['buyer'];
+      if ("buyer" in changedFields) {
+        const buyer = changedFields["buyer"] as UserProfilePublicDto | null;
+        changedFields["buyerId"] = buyer?.userId ?? null;
+        delete changedFields["buyer"];
       }
 
       return changedFields as UpdateAdoptionDto;
@@ -174,7 +174,16 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [updateAdoption, createAdoption, adoptionData, petId, refetch, router, adoption, getChangedFieldsForAdoption]);
+  }, [
+    updateAdoption,
+    createAdoption,
+    adoptionData,
+    petId,
+    refetch,
+    router,
+    adoption,
+    getChangedFieldsForAdoption,
+  ]);
 
   const handleSelectBuyer = useCallback(() => {
     if (!isEditMode) return;
@@ -215,37 +224,6 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
     <div className="shadow-xs flex min-h-[480px] min-w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">분양정보</div>
 
-      {/* 분양 상태, 가격, 날짜, 입양자, 거래 방식, 메모 */}
-      <FormItem
-        label="분양 상태"
-        content={
-          <SingleSelect
-            disabled={!isEditMode}
-            type="adoptionStatus"
-            initialItem={!isEditMode && isNil(adoption) ? undefined : adoptionData.status}
-            onSelect={(item) => {
-              setFormData((prev) => {
-                const nextStatus = item as PetAdoptionDtoStatus;
-                const isNextStatusReservedOrSold =
-                  nextStatus === PetAdoptionDtoStatus.ON_RESERVATION ||
-                  nextStatus === PetAdoptionDtoStatus.SOLD;
-                return {
-                  ...prev,
-                  adoption: {
-                    ...(prev.adoption ?? {}),
-                    status: nextStatus,
-                    buyer: isNextStatusReservedOrSold ? prev.adoption?.buyer : undefined,
-                    adoptionDate: isNextStatusReservedOrSold
-                      ? prev.adoption?.adoptionDate
-                      : undefined,
-                  },
-                };
-              });
-            }}
-          />
-        }
-      />
-
       {!showAdoptionInfo && (
         <div className="flex h-full items-center justify-center text-[14px] text-gray-600">
           분양 정보를 등록해 관리를 시작해보세요!
@@ -254,6 +232,37 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
 
       {showAdoptionInfo && (
         <>
+          {/* 분양 상태, 가격, 날짜, 입양자, 거래 방식, 메모 */}
+          <FormItem
+            label="분양 상태"
+            content={
+              <SingleSelect
+                disabled={!isEditMode}
+                type="adoptionStatus"
+                initialItem={!isEditMode && isNil(adoption) ? undefined : adoptionData.status}
+                onSelect={(item) => {
+                  setFormData((prev) => {
+                    const nextStatus = item as PetAdoptionDtoStatus;
+                    const isNextStatusReservedOrSold =
+                      nextStatus === PetAdoptionDtoStatus.ON_RESERVATION ||
+                      nextStatus === PetAdoptionDtoStatus.SOLD;
+                    return {
+                      ...prev,
+                      adoption: {
+                        ...(prev.adoption ?? {}),
+                        status: nextStatus,
+                        buyer: isNextStatusReservedOrSold ? prev.adoption?.buyer : undefined,
+                        adoptionDate: isNextStatusReservedOrSold
+                          ? prev.adoption?.adoptionDate
+                          : undefined,
+                      },
+                    };
+                  });
+                }}
+              />
+            }
+          />
+
           <FormItem
             label="가격"
             content={

@@ -22,8 +22,6 @@ export interface CreatePetDto {
   species: CreatePetDtoSpecies;
   /** 펫 출생일 */
   hatchingDate?: string;
-  /** 펫 이미지 목록 */
-  photoOrder?: string[];
   /** 펫 소개말 */
   desc?: string;
   /** 펫 공개 여부 */

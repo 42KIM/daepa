@@ -15,7 +15,6 @@ import Image from "next/image";
 import { buildR2TransformedUrl, cn } from "@/lib/utils";
 import { X, Plus, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
-import { usePetStore } from "../../pet/store/pet";
 import { useCallback, useEffect, useState } from "react";
 import { isNil, range, remove } from "es-toolkit";
 import { ACCEPT_IMAGE_FORMATS } from "../../constants";
@@ -31,27 +30,34 @@ type PhotoItem = {
 interface DndImagePickerProps {
   max?: number;
   disabled?: boolean;
+  images?: PhotoItem[];
+  onChange?: (images: PhotoItem[]) => void;
 }
 
-export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProps) {
-  const { formData, setFormData } = usePetStore();
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+export default function DndImagePicker({
+  max = 3,
+  disabled,
+  images = [],
+  onChange = () => {},
+}: DndImagePickerProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const photos: PhotoItem[] = formData.photos ?? [];
-  const imageNamesInOrder = photos.map(({ fileName }) => fileName) ?? [];
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(photos.length > 0 ? 0 : null);
+  const imageNamesInOrder = images.map(({ fileName }) => fileName);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(images.length > 0 ? 0 : null);
 
   useEffect(() => {
-    if (photos.length === 0) {
+    if (images.length === 0) {
       setSelectedIndex(null);
       return;
     }
     // 선택된 인덱스가 범위를 벗어나면 마지막 항목으로 보정
     setSelectedIndex((prev) => {
       if (prev === null) return 0;
-      if (prev >= photos.length) return photos.length - 1;
+      if (prev >= images.length) return images.length - 1;
       return prev;
     });
-  }, [photos.length]);
+  }, [images]);
 
   // 터치와 마우스 센서 설정
   const mouseSensor = useSensor(MouseSensor, {
@@ -71,66 +77,63 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
 
   const sensors = useSensors(mouseSensor, touchSensor);
 
-  const onAdd = async (files: File[]) => {
-    if (!files || files.length === 0 || isLoading) return;
+  const onAdd = useCallback(
+    async (files: File[]) => {
+      if (!files || files.length === 0 || isLoading) return;
 
-    const currentPhotos: string[] = (formData.photos ?? []) as string[];
-    const remain = Math.max(0, max - currentPhotos.length);
-    const picked = files.slice(0, remain);
+      const remain = Math.max(0, max - images.length);
+      const picked = files.slice(0, remain);
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
-    const targetFiles = picked.filter((f) => {
-      if (f.size > MAX_FILE_SIZE) {
-        toast.error(`이미지 용량이 너무 큽니다 (최대 5MB): ${f.name}`);
-        return false;
+      const targetFiles = picked.filter((f) => {
+        if (f.size > MAX_FILE_SIZE) {
+          toast.error(`이미지 용량이 너무 큽니다 (최대 5MB): ${f.name}`);
+          return false;
+        }
+        return true;
+      });
+
+      if (targetFiles.length === 0) return;
+
+      setIsLoading(true);
+      try {
+        const uploadedPendingFiles = await Promise.all(
+          targetFiles.map(async (file) => {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("petId", "PENDING");
+
+            const response = await fetch("/api/upload/image", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${tokenStorage.getToken()}`,
+              },
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error(`Upload failed for file ${file.name}`);
+            }
+
+            return response.json();
+          }),
+        );
+        const addedPhotos = uploadedPendingFiles.map(({ url, fileName, size, mimeType }) => ({
+          url,
+          fileName,
+          size,
+          mimeType,
+        }));
+
+        onChange([...images, ...addedPhotos]);
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        toast.error("이미지 업로드에 실패했습니다.");
+      } finally {
+        setIsLoading(false);
       }
-      return true;
-    });
-
-    if (targetFiles.length === 0) return;
-
-    setIsLoading(true);
-    try {
-      const uploadedPendingFiles = await Promise.all(
-        targetFiles.map(async (file) => {
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("petId", "PENDING");
-
-          const response = await fetch("/api/upload/image", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${tokenStorage.getToken()}`,
-            },
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error(`Upload failed for file ${file.name}`);
-          }
-
-          const result = await response.json();
-          return result;
-        }),
-      );
-      const addedPhotos = uploadedPendingFiles.map(({ url, fileName, size, mimeType }) => ({
-        url,
-        fileName,
-        size,
-        mimeType,
-      }));
-
-      setFormData((prev) => ({
-        ...prev,
-        photos: [...(prev?.photos ?? []), ...addedPhotos],
-      }));
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      toast.error("이미지 업로드에 실패했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [images, max, isLoading, onChange],
+  );
 
   const onDragEnd = (event: DragEndEvent) => {
     if (disabled || isLoading) return;
@@ -153,14 +156,12 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
     (order: number[]) => {
       if (disabled || isLoading) return;
 
-      setFormData((prev) => {
-        const prevPhotos = [...(prev.photos ?? [])];
-        const nextPhotos = order.map((i) => prevPhotos[i]);
+      const prevPhotos = [...images];
+      const nextPhotos = order.map((i) => prevPhotos[i]!);
 
-        return { ...prev, photos: nextPhotos };
-      });
+      onChange(nextPhotos);
     },
-    [disabled, isLoading, setFormData],
+    [disabled, isLoading, images, onChange],
   );
 
   const { getRootProps, getInputProps, open, isDragActive } = useDropzone({
@@ -171,7 +172,7 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
     onDropAccepted: async (accepted) => {
       if (disabled || isLoading) return;
 
-      const remain = max - photos.length;
+      const remain = max - images.length;
       if (remain < accepted.length) {
         toast.error(`최대 ${max}장까지만 업로드할 수 있습니다.`);
       }
@@ -187,15 +188,13 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
 
   const handleDelete = useCallback(
     (index: number) => {
-      setFormData((prev) => {
-        const nextPhotos = [...(prev.photos ?? [])];
-        if (index < nextPhotos.length) {
-          remove(nextPhotos, (_, i) => i === index);
-        }
-        return { ...prev, photos: nextPhotos };
-      });
+      const nextPhotos = [...images];
+      if (index < nextPhotos.length) {
+        remove(nextPhotos, (_, i) => i === index);
+      }
+      onChange?.(nextPhotos);
     },
-    [setFormData],
+    [images, onChange],
   );
 
   return (
@@ -221,7 +220,7 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
         >
           <SortableContext items={imageNamesInOrder} strategy={rectSortingStrategy}>
             <div className={cn("grid grid-cols-3 gap-2", isDragActive && "ring-2 ring-blue-400")}>
-              {photos.map((photo, index) => (
+              {images.map((photo, index) => (
                 <SortableThumb
                   key={String(imageNamesInOrder[index])}
                   id={String(imageNamesInOrder[index])}
@@ -237,7 +236,7 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
                 />
               ))}
               {!disabled &&
-                photos.length < max &&
+                images.length < max &&
                 (!isLoading ? (
                   <button
                     type="button"
@@ -257,12 +256,12 @@ export default function DndImagePicker({ max = 3, disabled }: DndImagePickerProp
       </div>
 
       {/* 선택한 이미지 미리보기 */}
-      {selectedIndex !== null && photos[selectedIndex] && (
+      {selectedIndex !== null && images[selectedIndex] && (
         <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
           <div className="relative aspect-[4/3] w-full">
             <Image
-              src={buildR2TransformedUrl(photos[selectedIndex].url)}
-              alt={`preview_${photos[selectedIndex].fileName}`}
+              src={buildR2TransformedUrl(images[selectedIndex].url)}
+              alt={`preview_${images[selectedIndex].fileName}`}
               fill
               className="object-cover"
               draggable={false}

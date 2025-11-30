@@ -1,28 +1,37 @@
 import DndImagePicker from "@/app/(브리더스룸)/components/Form/DndImagePicker";
-import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import Loading from "@/components/common/Loading";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  petControllerFindPetByPetId,
-  petControllerUpdate,
+  petImageControllerFindOne,
   PetDto,
-  UpdatePetDto,
+  PetImageItem,
+  petImageControllerSavePetImages,
 } from "@repo/api-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { isEqual, isNil, pick, pickBy } from "es-toolkit";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { isEqual } from "es-toolkit";
 import { ImageUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 const Images = ({ pet }: { pet: PetDto }) => {
-  const queryClient = useQueryClient();
-  const { formData, setFormData } = usePetStore();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  // 편집 중일 때만 임시 상태 사용 (null이면 photos 사용)
+  const [editingImages, setEditingImages] = useState<PetImageItem[] | null>(null);
 
-  const { mutateAsync: mutateUpdatePet } = useMutation({
-    mutationFn: (updateData: UpdatePetDto) => petControllerUpdate(pet.petId, updateData),
+  const { data: photos = [], refetch } = useQuery({
+    queryKey: [petImageControllerFindOne.name, pet.petId],
+    queryFn: () => petImageControllerFindOne(pet.petId),
+    select: (response) => response.data,
+  });
+
+  // 현재 표시할 이미지 (편집 중이면 editingImages, 아니면 photos)
+  const displayImages = editingImages ?? photos;
+
+  const { mutateAsync: mutateSaveImages } = useMutation({
+    mutationFn: (updateFiles: PetImageItem[]) =>
+      petImageControllerSavePetImages(pet.petId, { files: updateFiles }),
   });
 
   const handleSave = useCallback(async () => {
@@ -30,23 +39,21 @@ const Images = ({ pet }: { pet: PetDto }) => {
       setIsProcessing(true);
 
       // fileName만 비교하여 변경 여부 확인
-      const originalFileNames = pet.photos?.map((p) => p.fileName) ?? [];
-      const currentFileNames = formData.photos?.map((p: any) => p.fileName) ?? [];
+      const originalFileNames = photos.map((p) => p.fileName);
+      const currentFileNames = displayImages.map((p) => p.fileName);
 
       if (isEqual(originalFileNames, currentFileNames)) {
         toast.info("변경된 사항이 없습니다.");
+        setEditingImages(null);
         setIsEditMode(false);
         return;
       }
 
-      const pickedData = pick(formData, ["photos"]);
-      const updateData = pickBy(pickedData, (value) => !isNil(value));
-      await mutateUpdatePet(updateData);
-      // TODO: 이미지 전용 api로 교체
-      await queryClient.invalidateQueries({
-        queryKey: [petControllerFindPetByPetId.name, pet.petId],
-      });
+      await mutateSaveImages(displayImages);
+      await refetch();
+
       toast.success("이미지 수정이 완료되었습니다.");
+      setEditingImages(null);
       setIsEditMode(false);
     } catch (error) {
       console.error("이미지 수정 실패:", error);
@@ -54,18 +61,18 @@ const Images = ({ pet }: { pet: PetDto }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [mutateUpdatePet, formData, queryClient, pet]);
+  }, [mutateSaveImages, displayImages, photos, refetch]);
 
   return (
     <div className="shadow-xs flex min-h-[480px] min-w-[340px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">이미지</div>
 
-      {!isEditMode && isNil(formData.photos) && (
+      {!isEditMode && photos.length === 0 && (
         <div className="flex h-full flex-col items-center justify-center">
           <ImageUp className="h-[20%] w-[20%] text-blue-500/70" />
         </div>
       )}
-      <DndImagePicker disabled={!isEditMode} />
+      <DndImagePicker disabled={!isEditMode} images={displayImages} onChange={setEditingImages} />
 
       <div className="mt-2 flex w-full flex-1 items-end gap-2">
         {isEditMode && (
@@ -73,10 +80,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
             disabled={isProcessing}
             className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
             onClick={() => {
-              setFormData((prev) => ({
-                ...prev,
-                photos: pet.photos,
-              }));
+              setEditingImages(null);
               setIsEditMode(false);
             }}
           >
@@ -94,6 +98,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
             if (isEditMode) {
               await handleSave();
             } else {
+              setEditingImages([...photos]);
               setIsEditMode(true);
             }
           }}
@@ -101,7 +106,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
           {isProcessing ? (
             <Loading />
           ) : !isEditMode ? (
-            isNil(formData.photos) ? (
+            photos.length === 0 ? (
               "이미지 등록"
             ) : (
               "이미지 수정"

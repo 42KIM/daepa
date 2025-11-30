@@ -143,8 +143,8 @@ const RegisterScreen = () => {
             emailDuplicateStatus === 'duplicate'
               ? '이미 사용중인 이메일입니다'
               : emailDuplicateStatus === 'error'
-              ? '이메일 형식이 올바르지 않습니다'
-              : undefined
+                ? '이메일 형식이 올바르지 않습니다'
+                : undefined
           }
           successMessage={
             emailDuplicateStatus === 'available'

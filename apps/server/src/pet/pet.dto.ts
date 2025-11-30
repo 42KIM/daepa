@@ -38,7 +38,7 @@ import { UserProfilePublicDto } from 'src/user/user.dto';
 import { CreateParentDto } from 'src/parent_request/parent_request.dto';
 import { PageOptionsDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
-import { PetImageItem, UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
+import { UpsertPetImageDto } from 'src/pet_image/pet_image.dto';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 import { PetDetailBaseDto } from 'src/pet_detail/pet_detail.dto';
 import { EggDetailDto } from 'src/egg_detail/egg_detail.dto';
@@ -111,15 +111,6 @@ export class PetBaseDto {
   hatchingDate?: Date;
 
   @ApiProperty({
-    description: '펫 이미지 목록',
-    example: ['fileName1', 'fileName2'],
-    required: false,
-  })
-  @IsOptional()
-  @IsArray()
-  photoOrder?: string[];
-
-  @ApiProperty({
     description: '펫 소개말',
     example: '저희 대파는 혈통있는 가문 출신의 헷100% 릴리화이트 입니다',
     required: false,
@@ -183,7 +174,6 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   'name',
   'owner',
   'species',
-  'photoOrder',
   'hatchingDate',
   'isPublic',
   'isDeleted',
@@ -242,18 +232,6 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   })
   weight?: number;
 
-  @ApiProperty({
-    description: '펫 이미지 목록',
-    required: false,
-    type: 'array',
-    items: { $ref: getSchemaPath(PetImageItem) },
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PetImageItem)
-  photos?: PetImageItem[];
-
   @Exclude()
   declare desc?: string;
 
@@ -278,18 +256,6 @@ export class PetSummaryAdoptionDto extends PickType(PetSummaryDto, [
   'traits',
   'hatchingDate',
 ]) {
-  @ApiProperty({
-    description: '펫 이미지 목록',
-    required: false,
-    type: 'array',
-    items: { $ref: getSchemaPath(PetImageItem) },
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PetImageItem)
-  photos?: PetImageItem[];
-
   @Exclude()
   declare desc?: string;
 
@@ -463,18 +429,6 @@ export class PetParentDto extends PickType(PetSummaryDto, [
   @IsOptional()
   @IsArray()
   traits?: string[];
-
-  @ApiProperty({
-    description: '펫 이미지 목록',
-    required: false,
-    type: 'array',
-    items: { $ref: getSchemaPath(PetImageItem) },
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PetImageItem)
-  photos?: PetImageItem[];
 }
 
 export class PetAdoptionDto {
@@ -679,18 +633,6 @@ export class PetDto extends PetBaseDto {
   @IsEnum(PARENT_STATUS)
   status?: PARENT_STATUS;
 
-  @ApiProperty({
-    description: '펫 이미지 목록',
-    required: false,
-    type: 'array',
-    items: { $ref: getSchemaPath(PetImageItem) },
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PetImageItem)
-  photos?: PetImageItem[];
-
   @Exclude()
   declare petDetail?: PetDetailBaseDto | undefined;
 
@@ -821,18 +763,6 @@ export class PetSingleDto extends PetBaseDto {
   @IsOptional()
   @IsEnum(PARENT_STATUS)
   status?: PARENT_STATUS;
-
-  @ApiProperty({
-    description: '펫 이미지 목록',
-    required: false,
-    type: 'array',
-    items: { $ref: getSchemaPath(PetImageItem) },
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PetImageItem)
-  photos?: PetImageItem[];
 
   @Exclude()
   declare petDetail?: PetDetailBaseDto | undefined;

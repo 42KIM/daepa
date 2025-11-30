@@ -9,18 +9,34 @@ import type { UpdateAdoptionDtoMethod } from "./updateAdoptionDtoMethod";
 import type { UpdateAdoptionDtoStatus } from "./updateAdoptionDtoStatus";
 
 export interface UpdateAdoptionDto {
-  /** 펫 ID */
-  petId?: string;
-  /** 분양 가격 */
-  price?: number;
-  /** 분양 날짜 */
-  adoptionDate?: string;
-  /** 입양자 ID */
-  buyerId?: string;
-  /** 메모 */
-  memo?: string;
-  /** 분양 방식 */
+  /**
+   * 분양 가격
+   * @nullable
+   */
+  price?: number | null;
+  /**
+   * 분양 날짜
+   * @nullable
+   */
+  adoptionDate?: string | null;
+  /**
+   * 입양자 ID
+   * @nullable
+   */
+  buyerId?: string | null;
+  /**
+   * 메모
+   * @nullable
+   */
+  memo?: string | null;
+  /**
+   * 분양 방식
+   * @nullable
+   */
   method?: UpdateAdoptionDtoMethod;
-  /** 판매 상태 */
+  /**
+   * 판매 상태
+   * @nullable
+   */
   status?: UpdateAdoptionDtoStatus;
 }

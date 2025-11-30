@@ -1,6 +1,6 @@
 "use client";
 
-import { PetDto, PetDtoSex } from "@repo/api-client";
+import { PetDto, PetDtoSex, PetImageItem } from "@repo/api-client";
 import { motion } from "framer-motion";
 import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
@@ -19,24 +19,25 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
-import { orderBy } from "es-toolkit";
 
 const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const swiperRef = useRef<SwiperType>(null);
 
-  const imagesInOrder = orderBy(
-    pet.photos ?? [],
-    [
-      (photo) => {
-        const fileKey = photo.fileName;
-        const index = pet.photoOrder?.indexOf(fileKey);
-        return index === -1 ? Infinity : index;
-      },
-    ],
-    ["asc"],
-  );
+  const imagesInOrder = [] as PetImageItem[];
+  // const imagesInOrder = orderBy(
+  //
+  //   pet.photos ?? [],
+  //   [
+  //     (photo) => {
+  //       const fileKey = photo.fileName;
+  //       const index = pet.photoOrder?.indexOf(fileKey);
+  //       return index === -1 ? Infinity : index;
+  //     },
+  //   ],
+  //   ["asc"],
+  // );
 
   const handleSlideChange = useCallback((swiper: SwiperType) => {
     setCurrentImageIndex(swiper.realIndex);

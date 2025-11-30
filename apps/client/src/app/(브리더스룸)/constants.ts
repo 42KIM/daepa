@@ -83,7 +83,7 @@ export const OPTION_STEPS: FormStep[] = [
     title: "사진",
     field: {
       name: "photos",
-      type: "file",
+      type: "image",
       required: true,
       validation: (value) => value.length > 0,
     },

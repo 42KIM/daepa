@@ -1,10 +1,11 @@
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
 import { Badge } from "@/components/ui/badge";
-import { PetDtoSex } from "@repo/api-client";
+import { PetDtoSex, petImageControllerFindThumbnail } from "@repo/api-client";
 import { Send } from "lucide-react";
 import { useState } from "react";
 import PetThumbnail from "../../PetThumbnail";
+import { useQuery } from "@tanstack/react-query";
 
 interface LinkStepProps {
   selectedPet: PetParentDtoWithMessage;
@@ -15,6 +16,13 @@ interface LinkStepProps {
 const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
   const [message, setMessage] = useState<string | null>(null);
   const { user } = useUserStore();
+
+  const { data: thumbnail } = useQuery({
+    queryKey: [petImageControllerFindThumbnail.name, selectedPet.petId],
+    queryFn: async () => petImageControllerFindThumbnail(selectedPet.petId),
+    select: (response) => response.data,
+    enabled: !!selectedPet.petId,
+  });
 
   const defaultMessage = (pet: PetParentDtoWithMessage) => {
     return `안녕하세요, ${pet.owner?.name}님.\n${pet.name}를 ${
@@ -29,7 +37,7 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
           {/* 상단 정보 영역 */}
           <div className="flex gap-6">
             <div className="relative aspect-square w-72 overflow-hidden rounded-xl">
-              <PetThumbnail imageUrl={selectedPet.photos?.[0]?.url} alt={selectedPet.name} />
+              <PetThumbnail imageUrl={thumbnail?.url} alt={selectedPet.name} />
             </div>
 
             <div className="flex-1">

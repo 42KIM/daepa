@@ -76,8 +76,16 @@ export const FormField = ({
 
   const renderField = () => {
     switch (type) {
-      case "file":
-        return <DndImagePicker disabled={disabled} />;
+      case "image":
+        return (
+          <DndImagePicker
+            disabled={disabled}
+            images={Array.isArray(value) ? value : []}
+            onChange={(images) => {
+              handleChange({ type: "photos", value: images });
+            }}
+          />
+        );
       case "number":
         return disabled && !value ? (
           <div className="h-9 w-full text-left text-gray-400">-</div>

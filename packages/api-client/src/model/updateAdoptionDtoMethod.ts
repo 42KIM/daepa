@@ -8,9 +8,11 @@
 
 /**
  * 분양 방식
+ * @nullable
  */
 export type UpdateAdoptionDtoMethod =
-  (typeof UpdateAdoptionDtoMethod)[keyof typeof UpdateAdoptionDtoMethod];
+  | (typeof UpdateAdoptionDtoMethod)[keyof typeof UpdateAdoptionDtoMethod]
+  | null;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UpdateAdoptionDtoMethod = {

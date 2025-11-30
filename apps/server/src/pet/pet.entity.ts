@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { PET_SPECIES, PET_TYPE } from './pet.constants';
 import { AdoptionEntity } from '../adoption/adoption.entity';
-import { PetImageEntity } from 'src/pet_image/pet_image.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { LayingEntity } from 'src/laying/laying.entity';
@@ -60,9 +59,6 @@ export class PetEntity {
   @Column({ default: false })
   isDeleted: boolean;
 
-  @Column('json', { nullable: true })
-  photoOrder: string[] | null;
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -74,9 +70,6 @@ export class PetEntity {
     nullable: true,
   })
   adoption: AdoptionEntity | null;
-
-  @OneToOne(() => PetImageEntity, (image) => image.petId)
-  photos: PetImageEntity | null;
 
   @OneToOne(() => PetDetailEntity, (petDetail) => petDetail.petId, {
     nullable: true,

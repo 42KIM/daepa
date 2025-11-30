@@ -1,5 +1,13 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsString, IsUrl } from 'class-validator';
+import {
+  IsDate,
+  IsNumber,
+  IsString,
+  IsUrl,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class PetImageItem {
   @ApiProperty({
@@ -76,8 +84,50 @@ export class PetImageBaseDto {
   updatedAt: Date;
 }
 
+export class SaveFilesDto {
+  @ApiProperty({
+    description: '펫 이미지 파일 목록',
+    type: () => [PetImageItem],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PetImageItem)
+  files: PetImageItem[];
+}
+
 export class UpsertPetImageDto extends OmitType(PetImageBaseDto, [
   'id',
   'createdAt',
   'updatedAt',
 ]) {}
+
+export class PetImageResponseDto {
+  @ApiProperty({
+    description: '펫 이미지 아이디',
+    example: 1,
+  })
+  @IsNumber()
+  id: number;
+
+  @ApiProperty({
+    description: '펫 ID',
+    example: 'pet-123',
+  })
+  @IsString()
+  petId: string;
+
+  @ApiProperty({
+    description: '펫 이미지 파일 목록',
+    type: () => [PetImageItem],
+    nullable: true,
+  })
+  files: PetImageItem[] | null;
+
+  @ApiProperty()
+  @IsDate()
+  createdAt: Date;
+
+  @ApiProperty()
+  @IsDate()
+  updatedAt: Date;
+}
