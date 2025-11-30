@@ -90,6 +90,7 @@ export class PetService {
         await this.petImageService.saveAndUploadConfirmedImages(
           petId,
           photos,
+          ownerId,
           em,
         );
       }

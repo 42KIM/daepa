@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PetImageEntity } from './pet_image.entity';
 import { EntityManager, Repository, DataSource } from 'typeorm';
 import { PetImageItem, UpsertPetImageDto } from './pet_image.dto';
 import { R2Service } from 'src/common/cloudflare/r2.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PetEntity } from '../pet/pet.entity';
 
 @Injectable()
 export class PetImageService {
@@ -37,9 +42,20 @@ export class PetImageService {
   async saveAndUploadConfirmedImages(
     petId: string,
     imageList: UpsertPetImageDto[],
+    userId: string,
     manager?: EntityManager,
   ) {
     const run = async (em: EntityManager) => {
+      const pet = await em.findOne(PetEntity, { where: { petId } });
+
+      if (!pet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
+
+      if (pet.ownerId !== userId) {
+        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      }
+
       const needUploadImageList: PetImageItem[] = [];
       const savedImageList: PetImageItem[] = [];
 

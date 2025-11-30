@@ -3,6 +3,8 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PetImageService } from './pet_image.service';
 import { PetImageItem, SaveFilesDto } from './pet_image.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
+import { JwtUser } from '../auth/auth.decorator';
+import { JwtUserPayload } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('pet-image')
 @Controller('v1/pet-image')
@@ -73,10 +75,12 @@ export class PetImageController {
   async savePetImages(
     @Param('petId') petId: string,
     @Body() saveFilesDto: SaveFilesDto,
+    @JwtUser() token: JwtUserPayload,
   ): Promise<CommonResponseDto> {
     await this.petImageService.saveAndUploadConfirmedImages(
       petId,
       saveFilesDto.files,
+      token.userId,
     );
 
     return {
