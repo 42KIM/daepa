@@ -86,16 +86,6 @@ export class PetService {
         ...petData
       } = createPetDto;
 
-      if (photos) {
-        await this.petImageService.saveAndUploadConfirmedImages(
-          petId,
-          photos,
-          ownerId,
-          'create',
-          em,
-        );
-      }
-
       try {
         // 공통 펫 데이터 준비
         const petEntityData = plainToInstance(PetEntity, {
@@ -139,6 +129,17 @@ export class PetService {
             petId,
             ownerId,
             mother,
+            em,
+          );
+        }
+
+        // 이미지 저장 (모든 펫 관련 정보 생성 후)
+        if (photos) {
+          await this.petImageService.saveAndUploadConfirmedImages(
+            petId,
+            photos,
+            ownerId,
+            'create',
             em,
           );
         }
