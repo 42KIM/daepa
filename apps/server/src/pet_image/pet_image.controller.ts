@@ -11,27 +11,6 @@ import { JwtUserPayload } from '../auth/strategies/jwt.strategy';
 export class PetImageController {
   constructor(private readonly petImageService: PetImageService) {}
 
-  @Get(':petId')
-  @ApiOperation({
-    summary: '펫 이미지 조회',
-    description:
-      '펫 ID를 기반으로 해당 펫의 이미지 파일 목록을 조회합니다. 이미지가 없는 경우 빈 배열을 반환합니다.',
-  })
-  @ApiParam({
-    name: 'petId',
-    type: 'string',
-    description: '펫 ID',
-    example: 'pet-123',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '펫 이미지 파일 목록 조회 성공 (없는 경우 빈 배열)',
-    type: [PetImageItem],
-  })
-  async findOne(@Param('petId') petId: string): Promise<PetImageItem[]> {
-    return this.petImageService.findOneByPetId(petId);
-  }
-
   @Get('/thumbnail/:petId')
   @ApiOperation({
     summary: '펫 대표이미지(썸네일) 조회',
@@ -53,6 +32,27 @@ export class PetImageController {
     @Param('petId') petId: string,
   ): Promise<PetImageItem | null> {
     return this.petImageService.findThumbnailByPetId(petId);
+  }
+
+  @Get(':petId')
+  @ApiOperation({
+    summary: '펫 이미지 조회',
+    description:
+      '펫 ID를 기반으로 해당 펫의 이미지 파일 목록을 조회합니다. 이미지가 없는 경우 빈 배열을 반환합니다.',
+  })
+  @ApiParam({
+    name: 'petId',
+    type: 'string',
+    description: '펫 ID',
+    example: 'pet-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 이미지 파일 목록 조회 성공 (없는 경우 빈 배열)',
+    type: [PetImageItem],
+  })
+  async findOne(@Param('petId') petId: string): Promise<PetImageItem[]> {
+    return this.petImageService.findOneByPetId(petId);
   }
 
   @Put(':petId')
