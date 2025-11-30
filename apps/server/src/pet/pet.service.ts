@@ -91,6 +91,7 @@ export class PetService {
           petId,
           photos,
           ownerId,
+          'create',
           em,
         );
       }

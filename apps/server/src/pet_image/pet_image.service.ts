@@ -43,17 +43,26 @@ export class PetImageService {
     petId: string,
     imageList: UpsertPetImageDto[],
     userId: string,
+    type: 'create' | 'update',
     manager?: EntityManager,
   ) {
     const run = async (em: EntityManager) => {
-      const pet = await em.findOne(PetEntity, { where: { petId } });
-
-      if (!pet) {
-        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      if (!['create', 'update'].includes(type)) {
+        throw new ForbiddenException('잘못된 요청입니다.');
       }
 
-      if (pet.ownerId !== userId) {
-        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      if (type === 'update') {
+        const pet = await em.findOne(PetEntity, {
+          where: { petId, isDeleted: false },
+        });
+
+        if (!pet) {
+          throw new NotFoundException('펫을 찾을 수 없습니다.');
+        }
+
+        if (pet.ownerId !== userId) {
+          throw new ForbiddenException('펫의 소유자가 아닙니다.');
+        }
       }
 
       const needUploadImageList: PetImageItem[] = [];
@@ -102,7 +111,6 @@ export class PetImageService {
         },
         {
           conflictPaths: {
-            id: true,
             petId: true,
           },
           skipUpdateIfNoValuesChanged: true,
