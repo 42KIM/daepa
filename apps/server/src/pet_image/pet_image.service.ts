@@ -65,39 +65,55 @@ export class PetImageService {
         }
       }
 
-      const needUploadImageList: PetImageItem[] = [];
-      const savedImageList: PetImageItem[] = [];
+      // 원본 순서를 유지하면서 인덱스와 상태를 추적
+      const imageWithIndexAndStatus = imageList.map((image, index) => ({
+        index,
+        originalImage: image,
+        isPending: image.fileName.startsWith('PENDING/'),
+      }));
 
-      for (const image of imageList) {
-        if (image.fileName.startsWith('PENDING/')) {
-          needUploadImageList.push({
-            fileName: image.fileName,
-            url: image.url,
-            mimeType: image.mimeType,
-            size: image.size,
-          });
-        } else {
-          savedImageList.push({
-            fileName: image.fileName,
-            url: image.url,
-            mimeType: image.mimeType,
-            size: image.size,
-          });
-        }
-      }
+      // pending 이미지만 필터링하여 병렬 처리
+      const pendingImages = imageWithIndexAndStatus.filter(
+        (item) => item.isPending,
+      );
 
-      for (const image of needUploadImageList) {
-        const { fileName, url } = await this.r2Service.updateFileKey(
-          image.fileName,
-          image.fileName.replace('PENDING/', `${petId}/`),
-        );
-        savedImageList.push({
-          fileName: fileName,
-          url: url,
-          mimeType: image.mimeType,
-          size: image.size,
-        });
-      }
+      // 병렬로 R2 업로드 처리
+      const uploadResults = await Promise.all(
+        pendingImages.map(async (item) => ({
+          index: item.index,
+          result: await this.r2Service.updateFileKey(
+            item.originalImage.fileName,
+            item.originalImage.fileName.replace('PENDING/', `${petId}/`),
+          ),
+        })),
+      );
+
+      // 업로드 결과를 Map으로 변환 (빠른 조회)
+      const uploadResultMap = new Map(
+        uploadResults.map((ur) => [ur.index, ur.result]),
+      );
+
+      // 원본 순서대로 최종 배열 구성
+      const savedImageList: PetImageItem[] = imageWithIndexAndStatus.map(
+        (item) => {
+          if (item.isPending) {
+            const uploadResult = uploadResultMap.get(item.index);
+            return {
+              fileName: uploadResult!.fileName,
+              url: uploadResult!.url,
+              mimeType: item.originalImage.mimeType,
+              size: item.originalImage.size,
+            };
+          } else {
+            return {
+              fileName: item.originalImage.fileName,
+              url: item.originalImage.url,
+              mimeType: item.originalImage.mimeType,
+              size: item.originalImage.size,
+            };
+          }
+        },
+      );
 
       if (savedImageList.length === 0) {
         return em.delete(PetImageEntity, { petId });
