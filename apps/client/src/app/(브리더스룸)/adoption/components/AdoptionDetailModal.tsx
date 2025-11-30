@@ -30,7 +30,7 @@ const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetai
     queryKey: [adoptionControllerGetAdoptionByPetId.name, petId],
     queryFn: () => adoptionControllerGetAdoptionByPetId(petId, { includeInactive: "true" }),
     enabled: !!petId,
-    select: (data) => data.data.data,
+    select: (data) => data.data?.data,
   });
 
   const petSummary = adoptionData?.pet;
