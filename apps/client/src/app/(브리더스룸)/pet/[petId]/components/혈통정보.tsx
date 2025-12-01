@@ -1,13 +1,12 @@
 import {
   parentRequestControllerLinkParent,
   parentRequestControllerUnlinkParent,
-  petControllerFindPetByPetId,
   petControllerGetParentsByPetId,
   PetDtoSpecies,
   UnlinkParentDtoRole,
 } from "@repo/api-client";
 import ParentLink from "../../components/ParentLink";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { PetParentDtoWithMessage } from "../../store/parentLink";
 import { AxiosError } from "axios";
@@ -24,12 +23,11 @@ const PedigreeInfo = ({
   petId: string;
   userId?: string;
 }) => {
-  const queryClient = useQueryClient();
   const { user } = useUserStore();
 
   const isMyPet = userId === user?.userId;
 
-  const { data: parents } = useQuery({
+  const { data: parents, refetch } = useQuery({
     queryKey: [petControllerGetParentsByPetId.name, petId],
     queryFn: () => petControllerGetParentsByPetId(petId),
     select: (response) => response.data.data,
@@ -65,10 +63,10 @@ const PedigreeInfo = ({
           role,
           message: value.message ?? "",
         });
+        await refetch();
         toast.success(
           value.isMyPet ? "부모 등록이 완료되었습니다." : "부모 연동 요청이 완료되었습니다.",
         );
-        queryClient.invalidateQueries({ queryKey: [petControllerFindPetByPetId.name, petId] });
       } catch (error) {
         if (error instanceof AxiosError) {
           toast.error(error.response?.data?.message ?? "부모 연동 요청에 실패했습니다.");
@@ -77,7 +75,7 @@ const PedigreeInfo = ({
         }
       }
     },
-    [mutateRequestParent, queryClient, petId],
+    [mutateRequestParent, refetch],
   );
 
   const handleUnlink = useCallback(
@@ -87,8 +85,8 @@ const PedigreeInfo = ({
         return toast.error("부모 연동 해제에 실패했습니다.");
       try {
         await mutateUnlinkParent({ role: label });
+        await refetch();
         toast.success("부모 연동 해제가 완료되었습니다.");
-        queryClient.invalidateQueries({ queryKey: [petControllerFindPetByPetId.name, petId] });
       } catch (error) {
         if (error instanceof AxiosError) {
           toast.error(error.response?.data?.message ?? "부모 연동 해제에 실패했습니다.");
@@ -97,7 +95,7 @@ const PedigreeInfo = ({
         }
       }
     },
-    [parents, mutateUnlinkParent, queryClient, petId],
+    [parents, mutateUnlinkParent, refetch],
   );
 
   return (
