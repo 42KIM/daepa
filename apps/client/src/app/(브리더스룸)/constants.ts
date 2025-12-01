@@ -17,16 +17,6 @@ export const REGISTER_PAGE = {
 
 export const FORM_STEPS: FormStep[] = [
   {
-    title: "개체 이름",
-    field: {
-      name: "name",
-      type: "name",
-      required: true,
-      placeholder: "개체 이름을 입력해주세요",
-      validation: (value) => value.length > 0,
-    },
-  },
-  {
     title: "성별",
     field: {
       name: "sex",
@@ -154,6 +144,16 @@ export const OPTION_STEPS: FormStep[] = [
       name: "desc",
       type: "textarea",
       required: false,
+    },
+  },
+  {
+    title: "개체 이름",
+    field: {
+      name: "name",
+      type: "name",
+      required: true,
+      placeholder: "개체 이름을 입력해주세요",
+      validation: (value) => value.length > 0,
     },
   },
 ];
