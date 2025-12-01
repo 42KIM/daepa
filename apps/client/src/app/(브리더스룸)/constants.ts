@@ -681,14 +681,14 @@ export const SIDEBAR_ITEMS = [
     icon: Home,
   },
   {
-    title: "분양룸",
-    url: "/adoption",
-    icon: DollarSign,
-  },
-  {
     title: "해칭룸",
     url: "/hatching",
     icon: Bubbles,
+  },
+  {
+    title: "분양룸",
+    url: "/adoption",
+    icon: DollarSign,
   },
   // {
   //   title: "알림",
