@@ -65,7 +65,7 @@ const PedigreeInfo = ({
         });
         await refetch();
         toast.success(
-          value.isMyPet ? "부모 등록이 완료되었습니다." : "부모 연동 요청이 완료되었습니다.",
+          value.isMyPet ? "부모 등록이 완료되었습니다." : "부모 요청이 전송되었습니다.",
         );
       } catch (error) {
         if (error instanceof AxiosError) {
@@ -86,7 +86,7 @@ const PedigreeInfo = ({
       try {
         await mutateUnlinkParent({ role: label });
         await refetch();
-        toast.success("부모 연동 해제가 완료되었습니다.");
+        toast.success("부모 연동이 해제되었습니다.");
       } catch (error) {
         if (error instanceof AxiosError) {
           toast.error(error.response?.data?.message ?? "부모 연동 해제에 실패했습니다.");
@@ -115,7 +115,7 @@ const PedigreeInfo = ({
           onSelect={(selectedPet) =>
             handleParentSelect(UnlinkParentDtoRole.FATHER, {
               ...selectedPet,
-              isMyPet: isMyPet,
+              isMyPet: selectedPet.petId === petId,
             })
           }
           onUnlink={() => handleUnlink(UnlinkParentDtoRole.FATHER)}
@@ -128,7 +128,7 @@ const PedigreeInfo = ({
           onSelect={(selectedPet) =>
             handleParentSelect(UnlinkParentDtoRole.MOTHER, {
               ...selectedPet,
-              isMyPet: isMyPet,
+              isMyPet: selectedPet.petId === petId,
             })
           }
           onUnlink={() => handleUnlink(UnlinkParentDtoRole.MOTHER)}
