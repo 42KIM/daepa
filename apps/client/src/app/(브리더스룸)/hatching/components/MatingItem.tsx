@@ -113,6 +113,8 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
               layingData={layingData}
               matingDate={mating.matingDate}
               closeSignal={closeAllTick}
+              father={father}
+              mother={mother}
             />
           ))
         ) : (

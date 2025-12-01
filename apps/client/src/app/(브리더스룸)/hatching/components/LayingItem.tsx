@@ -2,6 +2,7 @@ import {
   brMatingControllerFindAll,
   LayingByDateDto,
   layingControllerUpdate,
+  PetSummaryLayingDto,
 } from "@repo/api-client";
 import CalendarSelect from "./CalendarSelect";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,12 +19,16 @@ interface LayingItemProps {
   layingData: LayingByDateDto;
   matingDate?: string;
   closeSignal?: number;
+  father?: PetSummaryLayingDto;
+  mother?: PetSummaryLayingDto;
 }
 const LayingItem = ({
   layingDates,
   layingData: { layingDate, layings, layingId },
   matingDate,
   closeSignal,
+  father,
+  mother,
 }: LayingItemProps) => {
   const queryClient = useQueryClient();
 
@@ -134,7 +139,13 @@ const LayingItem = ({
         )}
       >
         {layings.map((pet) => (
-          <EggItem key={pet.petId} pet={pet} layingDate={layingDate} />
+          <EggItem
+            key={pet.petId}
+            pet={pet}
+            layingDate={layingDate}
+            fatherName={father?.name}
+            motherName={mother?.name}
+          />
         ))}
       </div>
     </div>

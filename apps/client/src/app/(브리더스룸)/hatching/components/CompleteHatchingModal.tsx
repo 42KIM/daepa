@@ -53,11 +53,13 @@ const CompleteHatchingModal = ({
     if (clutch === undefined || clutchOrder === undefined) {
       return null;
     }
-    // 부모 이름의 첫글자 추출, 없으면 "_" 사용
-    const fatherFirstChar = fatherName ? fatherName.charAt(0) : "_";
-    const motherFirstChar = motherName ? motherName.charAt(0) : "_";
-    // 예: "대x미_2_1" 형식으로 생성
-    return `${fatherFirstChar}x${motherFirstChar}_${clutch}_${clutchOrder}`;
+    // 부모 이름의 첫글자 추출, 없으면 "?" 사용
+    const fatherFirstChar = fatherName ? fatherName.charAt(0) : "?";
+    const motherFirstChar = motherName ? motherName.charAt(0) : "?";
+    // clutchOrder를 알파벳으로 변환 (1 -> A, 2 -> B, ...)
+    const clutchOrderChar = String.fromCharCode(64 + clutchOrder);
+    // 예: "대x미_2A" 형식으로 생성
+    return `${fatherFirstChar}x${motherFirstChar}_${clutch}${clutchOrderChar}`;
   }, [clutch, clutchOrder, fatherName, motherName]);
 
   const [formData, setFormData] = useState<CompleteHatchingDto>({
