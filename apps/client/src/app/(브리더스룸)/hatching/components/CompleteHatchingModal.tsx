@@ -13,7 +13,7 @@ import {
 } from "@repo/api-client";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { format, isBefore } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,10 @@ interface CompleteHatchingModalProps {
   onClose: () => void;
   petId: string;
   layingDate: string;
+  clutch?: number;
+  clutchOrder?: number;
+  fatherName?: string;
+  motherName?: string;
 }
 
 const CompleteHatchingModal = ({
@@ -36,12 +40,29 @@ const CompleteHatchingModal = ({
   onClose,
   petId,
   layingDate,
+  clutch,
+  clutchOrder,
+  fatherName,
+  motherName,
 }: CompleteHatchingModalProps) => {
   const queryClient = useQueryClient();
   const { duplicateCheckStatus } = useNameStore();
+
+  // 자동 이름 생성 로직
+  const generateAutoName = useCallback((): string | null => {
+    if (clutch === undefined || clutchOrder === undefined) {
+      return null;
+    }
+    // 부모 이름의 첫글자 추출, 없으면 "_" 사용
+    const fatherFirstChar = fatherName ? fatherName.charAt(0) : "_";
+    const motherFirstChar = motherName ? motherName.charAt(0) : "_";
+    // 예: "대x미_2_1" 형식으로 생성
+    return `${fatherFirstChar}x${motherFirstChar}_${clutch}_${clutchOrder}`;
+  }, [clutch, clutchOrder, fatherName, motherName]);
+
   const [formData, setFormData] = useState<CompleteHatchingDto>({
     hatchingDate: format(new Date(), "yyyy-MM-dd"),
-    name: "",
+    name: generateAutoName() || "",
     desc: "",
   });
 
@@ -115,6 +136,7 @@ const CompleteHatchingModal = ({
                 className={cn(
                   "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input shadow-xs flex h-10 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base outline-none transition-[color,box-shadow] file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
                   "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+                  "text-blue-600",
                 )}
                 buttonClassName="h-10"
               />
