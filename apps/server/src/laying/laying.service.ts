@@ -11,6 +11,7 @@ import { PetService } from '../pet/pet.service';
 import { CreatePetDto } from '../pet/pet.dto';
 import { PET_TYPE } from 'src/pet/pet.constants';
 import { PARENT_ROLE } from 'src/parent_request/parent_request.constants';
+import { PetEntity } from '../pet/pet.entity';
 import { range } from 'es-toolkit';
 
 @Injectable()
@@ -18,6 +19,8 @@ export class LayingService {
   constructor(
     @InjectRepository(LayingEntity)
     private readonly layingRepository: Repository<LayingEntity>,
+    @InjectRepository(PetEntity)
+    private readonly petRepository: Repository<PetEntity>,
     private readonly petService: PetService,
     private readonly dataSource: DataSource,
   ) {}
@@ -83,5 +86,31 @@ export class LayingService {
     if (result.affected === 0) {
       throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
     }
+  }
+
+  async deleteLaying(id: number) {
+    // 산란 정보 존재 여부 확인
+    const laying = await this.layingRepository.findOne({ where: { id } });
+
+    if (!laying) {
+      throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
+    }
+
+    // 해당 산란 ID를 가지고 있는 삭제되지 않은 펫이 있는지 확인
+    const existingPet = await this.petRepository.findOne({
+      where: {
+        layingId: id,
+        isDeleted: false,
+      },
+    });
+
+    if (existingPet) {
+      throw new BadRequestException(
+        '연관된 산란 정보가 있어서 삭제할 수 없습니다.',
+      );
+    }
+
+    // 산란 정보 삭제
+    await this.layingRepository.delete({ id });
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { LayingService } from './laying.service';
 import { CreateLayingDto, UpdateLayingDto } from './laying.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -44,6 +44,20 @@ export class LayingController {
     return {
       success: true,
       message: '산란 정보가 성공적으로 수정되었습니다.',
+    };
+  }
+
+  @Delete(':id')
+  @ApiResponse({
+    status: 200,
+    description: '산란 정보가 성공적으로 삭제되었습니다.',
+    type: CommonResponseDto,
+  })
+  async delete(@Param('id') id: number): Promise<CommonResponseDto> {
+    await this.layingService.deleteLaying(id);
+    return {
+      success: true,
+      message: '산란 정보가 성공적으로 삭제되었습니다.',
     };
   }
 }
