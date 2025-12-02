@@ -115,7 +115,7 @@ const PedigreeInfo = ({
           onSelect={(selectedPet) =>
             handleParentSelect(UnlinkParentDtoRole.FATHER, {
               ...selectedPet,
-              isMyPet: selectedPet.petId === petId,
+              isMyPet: selectedPet.owner.userId === user?.userId,
             })
           }
           onUnlink={() => handleUnlink(UnlinkParentDtoRole.FATHER)}
@@ -128,7 +128,7 @@ const PedigreeInfo = ({
           onSelect={(selectedPet) =>
             handleParentSelect(UnlinkParentDtoRole.MOTHER, {
               ...selectedPet,
-              isMyPet: selectedPet.petId === petId,
+              isMyPet: selectedPet.owner.userId === user?.userId,
             })
           }
           onUnlink={() => handleUnlink(UnlinkParentDtoRole.MOTHER)}

@@ -49,7 +49,6 @@ const ParentLink = ({
 
   const parentPetId = useMemo(() => (data && "petId" in data ? data.petId : undefined), [data]);
 
-  // TODO: 불필요한 사진을 전송받지 않기 위해 대표 사진만 받는 api 사용 필요
   const { data: thumbnail } = useQuery({
     queryKey: [petImageControllerFindThumbnail.name, parentPetId],
     queryFn: async () => {
