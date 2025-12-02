@@ -207,7 +207,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
 
         {funnel === REGISTER_PAGE.SECOND && (
           <>
-            {OPTION_STEPS.map((step, index) => {
+            {OPTION_STEPS.map((step) => {
               const isNameField = step.field.name === "name";
 
               return (
