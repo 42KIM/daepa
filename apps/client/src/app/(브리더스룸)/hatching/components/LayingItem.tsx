@@ -11,14 +11,13 @@ import { parse } from "date-fns";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import EggItem from "./EggItem";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { ChevronDown, Trash2 } from "lucide-react";
 
 interface LayingItemProps {
   layingDates: string[];
   layingData: LayingByDateDto;
   matingDate?: string;
-  closeSignal?: number;
   father?: PetSummaryLayingDto;
   mother?: PetSummaryLayingDto;
 }
@@ -36,7 +35,6 @@ const LayingItem = ({
   layingDates,
   layingData: { layingDate, layings, layingId },
   matingDate,
-  closeSignal,
   father,
   mother,
 }: LayingItemProps) => {
@@ -48,12 +46,6 @@ const LayingItem = ({
     mutationFn: ({ id, newLayingDate }: { id: number; newLayingDate: string }) =>
       layingControllerUpdate(id, { layingDate: newLayingDate }),
   });
-
-  useEffect(() => {
-    if (closeSignal !== undefined) {
-      setIsOpen(false);
-    }
-  }, [closeSignal]);
 
   const getDisabledDates = useCallback(
     (currentLayingDate: string) => {
