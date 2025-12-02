@@ -12,7 +12,7 @@ import { CreatePetDto } from '../pet/pet.dto';
 import { PET_TYPE } from 'src/pet/pet.constants';
 import { PARENT_ROLE } from 'src/parent_request/parent_request.constants';
 import { PetEntity } from '../pet/pet.entity';
-import { range } from 'es-toolkit';
+import { isNil, range } from 'es-toolkit';
 
 @Injectable()
 export class LayingService {
@@ -40,6 +40,20 @@ export class LayingService {
         throw new BadRequestException(
           '이미 해당 날짜에 산란 정보가 존재합니다.',
         );
+      }
+
+      // clutch 중복 체크 (clutch가 입력된 경우)
+      if (!isNil(createLayingDto.clutch)) {
+        const clutchExists = await entityManager.existsBy(LayingEntity, {
+          matingId: createLayingDto.matingId,
+          clutch: createLayingDto.clutch,
+        });
+
+        if (clutchExists) {
+          throw new BadRequestException(
+            `이미 ${createLayingDto.clutch}차 산란 정보가 존재합니다.`,
+          );
+        }
       }
 
       // 산란 정보 생성

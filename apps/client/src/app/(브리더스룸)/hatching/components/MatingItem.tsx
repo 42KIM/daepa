@@ -2,6 +2,7 @@ import { MatingByDateDto, PetSummaryLayingDto } from "@repo/api-client";
 import { Trash2, NotebookPen } from "lucide-react";
 import { overlay } from "overlay-kit";
 import { memo, useMemo, useState } from "react";
+import { sortBy } from "es-toolkit/compat";
 import CreateLayingModal from "./CreateLayingModal";
 import EditMatingModal from "./EditMatingModal";
 import DeleteMatingModal from "./DeleteMatingModal";
@@ -20,6 +21,14 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
   const [closeAllTick, setCloseAllTick] = useState(0);
   const layingDates = useMemo(
     () => mating.layingsByDate?.map((laying) => laying.layingDate) ?? [],
+    [mating.layingsByDate],
+  );
+
+  const sortedLayingsByDate = useMemo(
+    () => {
+      if (!mating.layingsByDate) return [];
+      return sortBy(mating.layingsByDate, [(laying) => new Date(laying.layingDate).getTime()]);
+    },
     [mating.layingsByDate],
   );
 
@@ -105,8 +114,8 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
       </div>
 
       <div className="mt-2 flex flex-col gap-2">
-        {mating.layingsByDate && mating.layingsByDate.length > 0 ? (
-          mating.layingsByDate.map((layingData) => (
+        {sortedLayingsByDate && sortedLayingsByDate.length > 0 ? (
+          sortedLayingsByDate.map((layingData) => (
             <LayingItem
               key={layingData.layingId}
               layingDates={layingDates}
