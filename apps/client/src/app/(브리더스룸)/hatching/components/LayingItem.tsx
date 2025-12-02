@@ -111,11 +111,16 @@ const LayingItem = ({
   return (
     <div className="rounded-xl border border-gray-200 pt-0 shadow-sm hover:bg-gray-50 hover:shadow-md">
       <div className="flex h-10 items-center justify-between gap-2 px-2">
+        {!!layings?.[0] && (
+          <span className={cn("text-sm font-bold italic text-blue-500")}>
+            {layings[0].clutch}차
+          </span>
+        )}
         <CalendarSelect
           type="edit"
           disabledDates={layingDates}
           triggerText={layingDate}
-          confirmButtonText="산란 날짜 추가"
+          confirmButtonText="산란 날짜 수정"
           onConfirm={(newLayingDate) => handleUpdateLayingDate(layingId, newLayingDate)}
           disabled={getDisabledDates(layingDate)}
         />

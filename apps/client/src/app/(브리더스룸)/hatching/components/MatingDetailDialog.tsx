@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CalendarSelect from "./CalendarSelect";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { MatingByDateDto, MatingByParentsDto } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import { compact } from "es-toolkit";
@@ -35,6 +35,13 @@ const MatingDetailDialog = ({
   const [selectedMatingId, setSelectedMatingId] = useState<number | null>(
     matingGroup?.matingsByDate?.[0]?.id ?? null,
   );
+
+  // matingGroup의 matingsByDate가 변경되면 첫 번째 메이팅을 자동으로 선택
+  useEffect(() => {
+    if (!!matingGroup?.matingsByDate?.[0] && matingGroup.matingsByDate.length > 0) {
+      setSelectedMatingId(matingGroup.matingsByDate[0].id);
+    }
+  }, [matingGroup?.matingsByDate]);
 
   const selectedMating = useMemo(
     () => matingGroup?.matingsByDate?.find((m) => m.id === selectedMatingId) ?? null,
@@ -89,16 +96,11 @@ const MatingDetailDialog = ({
                       className={cn(
                         "cursor-pointer rounded-full px-3 py-1 text-[12px] transition-colors",
                         isActive
-                          ? "bg-gray-300 text-gray-800"
+                          ? "border border-blue-600 bg-blue-100 text-blue-600"
                           : "bg-gray-50 text-gray-700 hover:bg-gray-200",
                       )}
                     >
                       {mating.matingDate}
-                      {mating.layingsByDate && mating.layingsByDate.length > 0 && (
-                        <span className="ml-1 font-semibold text-blue-500">
-                          {mating.layingsByDate?.length}차
-                        </span>
-                      )}
                     </div>
                   );
                 })}
