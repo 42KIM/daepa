@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CalendarSelect from "./CalendarSelect";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { MatingByDateDto, MatingByParentsDto } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import { compact } from "es-toolkit";
@@ -32,16 +32,36 @@ const MatingDetailDialog = ({
     [matingGroup?.matingsByDate, getMatingDates],
   );
 
-  const [selectedMatingId, setSelectedMatingId] = useState<number | null>(
-    matingGroup?.matingsByDate?.[0]?.id ?? null,
-  );
+  const [selectedMatingId, setSelectedMatingId] = useState<number | null>(null);
+  const prevMatingCountRef = useRef<number>(0);
+  const isInitialOpenRef = useRef<boolean>(true);
 
-  // matingGroup의 matingsByDate가 변경되면 첫 번째 메이팅을 자동으로 선택
+  // Dialog 오픈/클로즈 상태 감지
   useEffect(() => {
-    if (!!matingGroup?.matingsByDate?.[0] && matingGroup.matingsByDate.length > 0) {
+    if (isOpen && isInitialOpenRef.current) {
+      // Dialog 최초 오픈 시 가장 최근 메이팅 선택
+      if (matingGroup?.matingsByDate?.[0]) {
+        setSelectedMatingId(matingGroup.matingsByDate[0].id);
+      }
+      isInitialOpenRef.current = false;
+    } else if (!isOpen) {
+      // Dialog 닫혔을 때 다시 초기화
+      isInitialOpenRef.current = true;
+    }
+  }, [isOpen, matingGroup?.matingsByDate]);
+
+  // 메이팅 개수 변화 감지 (새 메이팅 추가 시)
+  useEffect(() => {
+    const currentMatingCount = matingGroup?.matingsByDate?.length ?? 0;
+
+    // 메이팅이 추가되었을 때 (개수가 증가했을 때)
+    if (currentMatingCount > prevMatingCountRef.current && matingGroup?.matingsByDate?.[0]) {
+      // 새로 추가된 메이팅 선택 (배열의 첫 번째 항목)
       setSelectedMatingId(matingGroup.matingsByDate[0].id);
     }
-  }, [matingGroup?.matingsByDate]);
+
+    prevMatingCountRef.current = currentMatingCount;
+  }, [matingGroup?.matingsByDate, matingGroup]);
 
   const selectedMating = useMemo(
     () => matingGroup?.matingsByDate?.find((m) => m.id === selectedMatingId) ?? null,
