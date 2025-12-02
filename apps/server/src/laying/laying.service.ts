@@ -120,7 +120,7 @@ export class LayingService {
 
     if (existingPet) {
       throw new BadRequestException(
-        '연관된 산란 정보가 있어서 삭제할 수 없습니다.',
+        '연관된 알 또는 개체 정보가 있어서 삭제할 수 없습니다.',
       );
     }
 
