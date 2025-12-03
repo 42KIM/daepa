@@ -574,7 +574,6 @@ export class ParentRequestService {
             'petDetail.sex',
           ])
           .where('pet.petId = :parentPetId', { parentPetId })
-          .andWhere('pet.isDeleted = :isDeleted', { isDeleted: false })
           .getOne(),
         entityManager.findOne(PetImageEntity, {
           where: { petId: childPetId },

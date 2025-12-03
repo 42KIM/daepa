@@ -210,6 +210,21 @@ export const columns: ColumnDef<PetDto>[] = [
 
       const father = row.original.father as PetParentDto;
       const status = father?.status ?? "approved";
+      const isDeleted = father.isDeleted;
+      const displayName = isDeleted
+        ? (father.name?.replace(/^DELETED_(.+)_\d+$/, "$1") ?? "이름 없음")
+        : father.name;
+
+      if (isDeleted) {
+        return (
+          <TooltipText
+            text={displayName ?? ""}
+            description="삭제된 펫입니다."
+            className="cursor-not-allowed"
+          />
+        );
+      }
+
       return (
         <LinkButton
           href={`/pet/${father.petId}`}
@@ -249,6 +264,20 @@ export const columns: ColumnDef<PetDto>[] = [
 
       const mother = row.original.mother as PetParentDto;
       const status = mother?.status ?? "approved";
+      const isDeleted = mother.isDeleted;
+      const displayName = isDeleted
+        ? (mother.name?.replace(/^DELETED_(.+)_\d+$/, "$1") ?? "이름 없음")
+        : mother.name;
+
+      if (isDeleted) {
+        return (
+          <TooltipText
+            text={displayName ?? ""}
+            description="삭제된 펫입니다."
+            className="cursor-not-allowed"
+          />
+        );
+      }
       return (
         <LinkButton
           href={`/pet/${mother.petId}`}

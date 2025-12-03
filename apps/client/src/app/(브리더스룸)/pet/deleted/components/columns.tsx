@@ -1,0 +1,101 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+import {
+  GENDER_KOREAN_INFO,
+  SPECIES_KOREAN_ALIAS_INFO,
+  SPECIES_KOREAN_INFO,
+  TABLE_HEADER,
+} from "../../../constants";
+import { PetDto, PetDtoSpecies, PetDtoSex } from "@repo/api-client";
+import { format, isValid, parseISO } from "date-fns";
+import TooltipText from "../../../components/TooltipText";
+import { RestorePetButton } from "./RestorePetButton";
+
+export const columns: ColumnDef<PetDto>[] = [
+  {
+    accessorKey: "species",
+    header: TABLE_HEADER.species,
+    cell: ({ row }) => {
+      const species = row.getValue("species") as PetDtoSpecies;
+      return (
+        <TooltipText
+          title="종"
+          text={SPECIES_KOREAN_ALIAS_INFO[species]}
+          content={SPECIES_KOREAN_INFO[species]}
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "name",
+    header: TABLE_HEADER.pet_name,
+    cell: ({ row }) => {
+      const name = row.getValue("name") as string;
+
+      // DELETED_ 접두사 제거
+      const displayName = name?.replace(/^DELETED_(.+)_\d+$/, "$1") || "이름 없음";
+
+      return <div className="text-gray-700">{displayName}</div>;
+    },
+  },
+  {
+    accessorKey: "sex",
+    header: TABLE_HEADER.sex,
+    cell: ({ row }) => {
+      const sex = row.getValue("sex") as PetDtoSex;
+      return <div className="text-center">{GENDER_KOREAN_INFO[sex] ?? "-"}</div>;
+    },
+  },
+  {
+    accessorKey: "hatchingDate",
+    header: TABLE_HEADER.hatchingDate,
+    cell: ({ cell }) => {
+      const hatchingDate = cell.getValue();
+      if (!hatchingDate) return <div className="text-center">-</div>;
+
+      const raw = hatchingDate as string | Date;
+      const d = typeof raw === "string" ? parseISO(raw) : raw;
+      return <div className="text-center">{isValid(d) ? format(d, "yyyy-MM-dd") : "-"}</div>;
+    },
+  },
+  {
+    accessorKey: "deletedAt",
+    header: "삭제 일시",
+    cell: ({ cell }) => {
+      const deletedAt = cell.getValue();
+      if (!deletedAt) return <div className="text-center">-</div>;
+
+      const raw = deletedAt as string | Date;
+      const d = typeof raw === "string" ? parseISO(raw) : raw;
+      return (
+        <div className="text-center text-sm text-gray-500">
+          {isValid(d) ? format(d, "yyyy-MM-dd HH:mm") : "-"}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "deleteReason",
+    header: "삭제 사유",
+    cell: ({ cell }) => {
+      const reason = cell.getValue() as string;
+      if (!reason) return <div className="text-center text-gray-400">-</div>;
+
+      return (
+        <TooltipText
+          title="삭제 사유"
+          text={reason.length > 20 ? `${reason.slice(0, 20)}...` : reason}
+          content={reason}
+        />
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "작업",
+    cell: ({ row }) => {
+      return <RestorePetButton petId={row.original.petId} />;
+    },
+  },
+];

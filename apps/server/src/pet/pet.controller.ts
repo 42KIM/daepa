@@ -18,6 +18,7 @@ import {
   PetDto,
   PetFilterDto,
   GetParentsByPetIdResponseDto,
+  DeletePetDto,
 } from './pet.dto';
 import { PetService } from './pet.service';
 import {
@@ -160,22 +161,78 @@ export class PetController {
   })
   @ApiResponse({
     status: 400,
-    description: '분양 정보가 있어 삭제할 수 없습니다.',
-  })
-  @ApiResponse({
-    status: 400,
-    description: '자식 펫이 있어 삭제할 수 없습니다.',
+    description: '이미 판매 완료된 분양 정보가 있어 삭제할 수 없습니다.',
   })
   async deletePet(
     @Param('petId') petId: string,
+    @Body() deletePetDto: DeletePetDto,
     @JwtUser() token: JwtUserPayload,
   ): Promise<CommonResponseDto> {
-    await this.petService.deletePet(petId, token.userId);
+    await this.petService.deletePet(
+      petId,
+      token.userId,
+      deletePetDto?.deleteReason,
+    );
 
     return {
       success: true,
       message: '펫 삭제가 완료되었습니다.',
     };
+  }
+
+  @Post(':petId/restore')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 복구가 완료되었습니다.',
+    type: CommonResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '삭제된 펫을 찾을 수 없습니다.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '펫의 소유자가 아닙니다.',
+  })
+  async restorePet(
+    @Param('petId') petId: string,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<CommonResponseDto> {
+    await this.petService.restorePet(petId, token.userId);
+
+    return {
+      success: true,
+      message: '펫 복구가 완료되었습니다.',
+    };
+  }
+
+  @Get('/deleted/list')
+  @ApiExtraModels(PetDto, PageMetaDto)
+  @ApiResponse({
+    status: 200,
+    description: '삭제된 펫 목록 조회 성공',
+    schema: {
+      type: 'object',
+      required: ['data', 'meta'],
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: getSchemaPath(PetDto) },
+        },
+        meta: { $ref: getSchemaPath(PageMetaDto) },
+      },
+    },
+  })
+  async getDeletedPets(
+    @Query() pageOptionsDto: PetFilterDto,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<PageDto<PetDto>> {
+    return this.petService.getDeletedPets(pageOptionsDto, token.userId);
   }
 
   @Post(':petId/hatching')

@@ -8,7 +8,7 @@ import {
   PetSummaryLayingDto,
 } from "@repo/api-client";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronsDown, Cake, TriangleAlert } from "lucide-react";
+import { ChevronsDown, Cake, TriangleAlert, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { memo, useEffect, useState } from "react";
 import CreateMatingForm from "./CreateMatingForm";
@@ -202,7 +202,7 @@ const PairList = memo(() => {
       {/* 헤더 영역 */}
       <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">
-          +
+          <Plus className="h-3 w-3" />
         </div>
         <div
           onClick={() => setIsCreateFormOpen(!isCreateFormOpen)}

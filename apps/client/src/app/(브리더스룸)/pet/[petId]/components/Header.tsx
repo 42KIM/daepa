@@ -6,6 +6,7 @@ import { PetDto, petImageControllerFindOne } from "@repo/api-client";
 import { SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { DeletePetDialog } from "./DeletePetDialog";
 
 const Header = ({ pet }: { pet: PetDto }) => {
   const { data: photos = [] } = useQuery({
@@ -30,7 +31,7 @@ const Header = ({ pet }: { pet: PetDto }) => {
           <Dog className="h-8 w-8 text-gray-500" />
         )}
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-1 flex-col">
         <div className="flex items-center gap-2">
           {pet.name ? (
             <div className="text-[16px] font-bold">{pet.name}</div>
@@ -60,7 +61,10 @@ const Header = ({ pet }: { pet: PetDto }) => {
         </div>
       </div>
 
-      <QRCode petId={pet.petId} />
+      <div className="flex items-center gap-2">
+        <DeletePetDialog petId={pet.petId} petName={pet.name} />
+        <QRCode petId={pet.petId} />
+      </div>
     </div>
   );
 };

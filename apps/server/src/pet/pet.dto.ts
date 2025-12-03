@@ -138,6 +138,27 @@ export class PetBaseDto {
   isDeleted?: boolean;
 
   @ApiProperty({
+    description: '펫 삭제 일시',
+    example: '2024-01-01T00:00:00.000Z',
+    type: 'string',
+    format: 'date-time',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  deletedAt?: Date;
+
+  @ApiProperty({
+    description: '펫 삭제 사유',
+    example: '더 이상 키울 수 없음',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  deleteReason?: string;
+
+  @ApiProperty({
     description: '펫 상세 정보',
     type: PetDetailBaseDto,
     required: false,
@@ -1387,4 +1408,26 @@ export class VerifyPetNameDto {
   @IsNotEmpty()
   @IsString()
   name: string;
+}
+
+export class DeletePetDto {
+  @ApiProperty({
+    description: '펫 삭제 사유',
+    example: '더 이상 키울 수 없음',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  deleteReason?: string;
+}
+
+export class RestorePetDto {
+  @ApiProperty({
+    description: '복구할 펫 아이디',
+    example: 'XXXXXXXX',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+  petId: string;
 }

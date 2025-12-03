@@ -59,6 +59,12 @@ export class PetEntity {
   @Column({ default: false })
   isDeleted: boolean;
 
+  @Column({ type: 'timestamp', nullable: true })
+  deletedAt: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  deleteReason: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

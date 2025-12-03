@@ -28,6 +28,12 @@ export class PairEntity {
   @Column()
   motherId: string;
 
+  @Column({ default: false })
+  isDeleted: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deletedAt: Date | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

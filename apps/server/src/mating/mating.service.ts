@@ -74,7 +74,7 @@ export class MatingService {
         'matings.pair',
         PairEntity,
         'pairs',
-        'pairs.id = matings.pairId',
+        'pairs.id = matings.pairId AND pairs.isDeleted = false',
       )
       .select([
         'matings.id',
