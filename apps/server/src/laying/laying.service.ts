@@ -11,13 +11,16 @@ import { PetService } from '../pet/pet.service';
 import { CreatePetDto } from '../pet/pet.dto';
 import { PET_TYPE } from 'src/pet/pet.constants';
 import { PARENT_ROLE } from 'src/parent_request/parent_request.constants';
-import { range } from 'es-toolkit';
+import { PetEntity } from '../pet/pet.entity';
+import { isNil, range } from 'es-toolkit';
 
 @Injectable()
 export class LayingService {
   constructor(
     @InjectRepository(LayingEntity)
     private readonly layingRepository: Repository<LayingEntity>,
+    @InjectRepository(PetEntity)
+    private readonly petRepository: Repository<PetEntity>,
     private readonly petService: PetService,
     private readonly dataSource: DataSource,
   ) {}
@@ -37,6 +40,20 @@ export class LayingService {
         throw new BadRequestException(
           '이미 해당 날짜에 산란 정보가 존재합니다.',
         );
+      }
+
+      // clutch 중복 체크 (clutch가 입력된 경우)
+      if (!isNil(createLayingDto.clutch)) {
+        const clutchExists = await entityManager.existsBy(LayingEntity, {
+          matingId: createLayingDto.matingId,
+          clutch: createLayingDto.clutch,
+        });
+
+        if (clutchExists) {
+          throw new BadRequestException(
+            `이미 ${createLayingDto.clutch}차 산란 정보가 존재합니다.`,
+          );
+        }
       }
 
       // 산란 정보 생성
@@ -83,5 +100,31 @@ export class LayingService {
     if (result.affected === 0) {
       throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
     }
+  }
+
+  async deleteLaying(id: number) {
+    // 산란 정보 존재 여부 확인
+    const laying = await this.layingRepository.findOne({ where: { id } });
+
+    if (!laying) {
+      throw new NotFoundException('산란 정보를 찾을 수 없습니다.');
+    }
+
+    // 해당 산란 ID를 가지고 있는 삭제되지 않은 펫이 있는지 확인
+    const existingPet = await this.petRepository.findOne({
+      where: {
+        layingId: id,
+        isDeleted: false,
+      },
+    });
+
+    if (existingPet) {
+      throw new BadRequestException(
+        '연관된 알 또는 개체 정보가 있어서 삭제할 수 없습니다.',
+      );
+    }
+
+    // 산란 정보 삭제
+    await this.layingRepository.delete({ id });
   }
 }

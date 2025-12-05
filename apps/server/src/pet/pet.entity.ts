@@ -53,7 +53,7 @@ export class PetEntity {
   @Column({ type: 'varchar', length: 500, nullable: true })
   desc: string | null; // 소개말
 
-  @Column({ default: true })
+  @Column({ default: false })
   isPublic: boolean;
 
   @Column({ default: false })

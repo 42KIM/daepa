@@ -408,12 +408,27 @@ export const layingControllerUpdate = (id: number, updateLayingDto: UpdateLaying
   });
 };
 
+export const layingControllerDelete = (id: number) => {
+  return useCustomInstance<CommonResponseDto>({ url: `/api/v1/layings/${id}`, method: "DELETE" });
+};
+
 export const pairControllerGetPairList = (params: PairControllerGetPairListParams) => {
   return useCustomInstance<PairDto[]>({ url: `/api/v1/pairs`, method: "GET", params });
 };
 
 export const pairControllerGetPairDetail = (pairId: string) => {
   return useCustomInstance<PairDetailDto>({ url: `/api/v1/pairs/${pairId}`, method: "GET" });
+};
+
+/**
+ * 펫 ID를 기반으로 해당 펫의 대표 이미지를 조회합니다. 이미지가 없는 경우 null을 반환합니다.
+ * @summary 펫 대표이미지(썸네일) 조회
+ */
+export const petImageControllerFindThumbnail = (petId: string) => {
+  return useCustomInstance<PetImageItem>({
+    url: `/api/v1/pet-image/thumbnail/${petId}`,
+    method: "GET",
+  });
 };
 
 /**
@@ -434,17 +449,6 @@ export const petImageControllerSavePetImages = (petId: string, saveFilesDto: Sav
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     data: saveFilesDto,
-  });
-};
-
-/**
- * 펫 ID를 기반으로 해당 펫의 대표 이미지를 조회합니다. 이미지가 없는 경우 null을 반환합니다.
- * @summary 펫 대표이미지(썸네일) 조회
- */
-export const petImageControllerFindThumbnail = (petId: string) => {
-  return useCustomInstance<PetImageItem>({
-    url: `/api/v1/pet-image/thumbnail/${petId}`,
-    method: "GET",
   });
 };
 
@@ -568,20 +572,23 @@ export type LayingControllerCreateResult = NonNullable<
 export type LayingControllerUpdateResult = NonNullable<
   Awaited<ReturnType<typeof layingControllerUpdate>>
 >;
+export type LayingControllerDeleteResult = NonNullable<
+  Awaited<ReturnType<typeof layingControllerDelete>>
+>;
 export type PairControllerGetPairListResult = NonNullable<
   Awaited<ReturnType<typeof pairControllerGetPairList>>
 >;
 export type PairControllerGetPairDetailResult = NonNullable<
   Awaited<ReturnType<typeof pairControllerGetPairDetail>>
 >;
+export type PetImageControllerFindThumbnailResult = NonNullable<
+  Awaited<ReturnType<typeof petImageControllerFindThumbnail>>
+>;
 export type PetImageControllerFindOneResult = NonNullable<
   Awaited<ReturnType<typeof petImageControllerFindOne>>
 >;
 export type PetImageControllerSavePetImagesResult = NonNullable<
   Awaited<ReturnType<typeof petImageControllerSavePetImages>>
->;
-export type PetImageControllerFindThumbnailResult = NonNullable<
-  Awaited<ReturnType<typeof petImageControllerFindThumbnail>>
 >;
 
 export const getPetControllerFindAllResponsePetParentDtoMock = (
@@ -3175,6 +3182,14 @@ export const getLayingControllerUpdateResponseMock = (
   ...overrideResponse,
 });
 
+export const getLayingControllerDeleteResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getPairControllerGetPairListResponseMock = (): PairDto[] =>
   Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     id: faker.number.int({ min: undefined, max: undefined }),
@@ -3359,6 +3374,16 @@ export const getPairControllerGetPairDetailResponseMock = (
   ...overrideResponse,
 });
 
+export const getPetImageControllerFindThumbnailResponseMock = (
+  overrideResponse: Partial<PetImageItem> = {},
+): PetImageItem => ({
+  fileName: faker.string.alpha(20),
+  url: faker.string.alpha(20),
+  mimeType: faker.string.alpha(20),
+  size: faker.number.int({ min: undefined, max: undefined }),
+  ...overrideResponse,
+});
+
 export const getPetImageControllerFindOneResponseMock = (): PetImageItem[] =>
   Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     fileName: faker.string.alpha(20),
@@ -3372,16 +3397,6 @@ export const getPetImageControllerSavePetImagesResponseMock = (
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
   message: faker.string.alpha(20),
-  ...overrideResponse,
-});
-
-export const getPetImageControllerFindThumbnailResponseMock = (
-  overrideResponse: Partial<PetImageItem> = {},
-): PetImageItem => ({
-  fileName: faker.string.alpha(20),
-  url: faker.string.alpha(20),
-  mimeType: faker.string.alpha(20),
-  size: faker.number.int({ min: undefined, max: undefined }),
   ...overrideResponse,
 });
 
@@ -4283,6 +4298,29 @@ export const getLayingControllerUpdateMockHandler = (
   });
 };
 
+export const getLayingControllerDeleteMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.delete("*/api/v1/layings/:id", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getLayingControllerDeleteResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getPairControllerGetPairListMockHandler = (
   overrideResponse?:
     | PairDto[]
@@ -4321,6 +4359,29 @@ export const getPairControllerGetPairDetailMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getPairControllerGetPairDetailResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
+export const getPetImageControllerFindThumbnailMockHandler = (
+  overrideResponse?:
+    | PetImageItem
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<PetImageItem> | PetImageItem),
+) => {
+  return http.get("*/api/v1/pet-image/thumbnail/:petId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPetImageControllerFindThumbnailResponseMock(),
       ),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
@@ -4372,29 +4433,6 @@ export const getPetImageControllerSavePetImagesMockHandler = (
     );
   });
 };
-
-export const getPetImageControllerFindThumbnailMockHandler = (
-  overrideResponse?:
-    | PetImageItem
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<PetImageItem> | PetImageItem),
-) => {
-  return http.get("*/api/v1/pet-image/thumbnail/:petId", async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPetImageControllerFindThumbnailResponseMock(),
-      ),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  });
-};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -4436,9 +4474,10 @@ export const getProjectDaepaAPIMock = () => [
   getParentRequestControllerUpdateStatusMockHandler(),
   getLayingControllerCreateMockHandler(),
   getLayingControllerUpdateMockHandler(),
+  getLayingControllerDeleteMockHandler(),
   getPairControllerGetPairListMockHandler(),
   getPairControllerGetPairDetailMockHandler(),
+  getPetImageControllerFindThumbnailMockHandler(),
   getPetImageControllerFindOneMockHandler(),
   getPetImageControllerSavePetImagesMockHandler(),
-  getPetImageControllerFindThumbnailMockHandler(),
 ];

@@ -17,16 +17,6 @@ export const REGISTER_PAGE = {
 
 export const FORM_STEPS: FormStep[] = [
   {
-    title: "개체 이름",
-    field: {
-      name: "name",
-      type: "name",
-      required: true,
-      placeholder: "개체 이름을 입력해주세요",
-      validation: (value) => value.length > 0,
-    },
-  },
-  {
     title: "성별",
     field: {
       name: "sex",
@@ -128,32 +118,42 @@ export const OPTION_STEPS: FormStep[] = [
       validation: (value) => value.length > 0,
     },
   },
-  {
-    title: "해칭 온도",
-    field: {
-      name: "temperature",
-      type: "number",
-      required: false,
-      unit: "°C",
-      placeholder: "해칭 온도를 입력해주세요",
-      validation: (value) => !isNaN(Number(value)) && Number(value) > 0,
-    },
-  },
-  {
-    title: "알 상태",
-    field: {
-      name: "eggStatus",
-      type: "select",
-      required: false,
-      placeholder: "알 상태를 선택해주세요",
-    },
-  },
+  // {
+  //   title: "해칭 온도",
+  //   field: {
+  //     name: "temperature",
+  //     type: "number",
+  //     required: false,
+  //     unit: "°C",
+  //     placeholder: "해칭 온도를 입력해주세요",
+  //     validation: (value) => !isNaN(Number(value)) && Number(value) > 0,
+  //   },
+  // },
+  // {
+  //   title: "알 상태",
+  //   field: {
+  //     name: "eggStatus",
+  //     type: "select",
+  //     required: false,
+  //     placeholder: "알 상태를 선택해주세요",
+  //   },
+  // },
   {
     title: "상세 설명",
     field: {
       name: "desc",
       type: "textarea",
       required: false,
+    },
+  },
+  {
+    title: "개체 이름",
+    field: {
+      name: "name",
+      type: "name",
+      required: true,
+      placeholder: "개체 이름을 입력해주세요",
+      validation: (value) => value.length > 0,
     },
   },
 ];
@@ -681,14 +681,14 @@ export const SIDEBAR_ITEMS = [
     icon: Home,
   },
   {
-    title: "분양룸",
-    url: "/adoption",
-    icon: DollarSign,
-  },
-  {
     title: "해칭룸",
     url: "/hatching",
     icon: Bubbles,
+  },
+  {
+    title: "분양룸",
+    url: "/adoption",
+    icon: DollarSign,
   },
   // {
   //   title: "알림",

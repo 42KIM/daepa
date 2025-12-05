@@ -1,7 +1,8 @@
 import { MatingByDateDto, PetSummaryLayingDto } from "@repo/api-client";
 import { Trash2, NotebookPen } from "lucide-react";
 import { overlay } from "overlay-kit";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
+import { sortBy } from "es-toolkit/compat";
 import CreateLayingModal from "./CreateLayingModal";
 import EditMatingModal from "./EditMatingModal";
 import DeleteMatingModal from "./DeleteMatingModal";
@@ -17,11 +18,15 @@ interface MatingItemProps {
 }
 
 const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) => {
-  const [closeAllTick, setCloseAllTick] = useState(0);
   const layingDates = useMemo(
     () => mating.layingsByDate?.map((laying) => laying.layingDate) ?? [],
     [mating.layingsByDate],
   );
+
+  const sortedLayingsByDate = useMemo(() => {
+    if (!mating.layingsByDate) return [];
+    return sortBy(mating.layingsByDate, [(laying) => new Date(laying.layingDate).getTime()]);
+  }, [mating.layingsByDate]);
 
   const handleAddLayingClick = () => {
     overlay.open(({ isOpen, close }) => (
@@ -66,12 +71,8 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
     ));
   };
 
-  const handleCloseAllLayings = () => {
-    setCloseAllTick((prev) => prev + 1);
-  };
-
   return (
-    <div key={mating.id} className="flex flex-col py-2 dark:border-gray-700">
+    <div key={mating.id} className="flex flex-col pt-5 dark:border-gray-700">
       <div className="flex items-center justify-between gap-1 px-2">
         <div className="flex items-center gap-2">
           <div className="text-[14px] font-semibold text-gray-700 dark:text-gray-200">
@@ -79,40 +80,38 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
               ? format(new Date(mating.matingDate ?? ""), "yyyy년 MM월 dd일")
               : "-"}
           </div>
-          <button
-            type="button"
-            onClick={handleAddLayingClick}
-            className="rounded-lg bg-blue-100 px-2 py-1 text-[12px] font-semibold text-blue-600"
-          >
-            + 산란 추가
-          </button>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="rounded-lg px-2 py-1 text-[12px] text-gray-500 hover:bg-gray-100"
-            onClick={handleCloseAllLayings}
-          >
-            모두 닫기
-          </button>
-          <button type="button" aria-label="교배 정보 수정" onClick={handleEditClick}>
-            <NotebookPen className="h-4 w-4 text-blue-600" />
-          </button>
-          <button type="button" aria-label="교배 정보 삭제" onClick={handleDeleteClick}>
-            <Trash2 className="h-4 w-4 text-red-600" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button type="button" aria-label="교배 정보 수정" onClick={handleEditClick}>
+              <NotebookPen className="h-4 w-4 text-blue-600" />
+            </button>
+            <button type="button" aria-label="교배 정보 삭제" onClick={handleDeleteClick}>
+              <Trash2 className="h-4 w-4 text-red-600" />
+            </button>
+          </div>
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={handleAddLayingClick}
+        className="flex items-center gap-1 self-start rounded-lg px-2 py-0.5 text-[14px] text-blue-600 hover:bg-blue-50"
+      >
+        <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-600">
+          +
+        </div>
+        <span className={"font-medium text-blue-600"}>산란 정보 추가</span>
+      </button>
+
       <div className="mt-2 flex flex-col gap-2">
-        {mating.layingsByDate && mating.layingsByDate.length > 0 ? (
-          mating.layingsByDate.map((layingData) => (
+        {sortedLayingsByDate && sortedLayingsByDate.length > 0 ? (
+          sortedLayingsByDate.map((layingData) => (
             <LayingItem
               key={layingData.layingId}
               layingDates={layingDates}
               layingData={layingData}
               matingDate={mating.matingDate}
-              closeSignal={closeAllTick}
+              father={father}
+              mother={mother}
             />
           ))
         ) : (

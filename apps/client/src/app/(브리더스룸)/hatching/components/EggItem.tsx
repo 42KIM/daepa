@@ -29,9 +29,11 @@ import { cn } from "@/lib/utils";
 interface EggItemProps {
   pet: PetSummaryLayingDto;
   layingDate: string;
+  fatherName?: string;
+  motherName?: string;
 }
 
-const EggItem = ({ pet, layingDate }: EggItemProps) => {
+const EggItem = ({ pet, layingDate, fatherName, motherName }: EggItemProps) => {
   const queryClient = useQueryClient();
   const isHatched = !!pet.hatchingDate;
 
@@ -46,7 +48,7 @@ const EggItem = ({ pet, layingDate }: EggItemProps) => {
   const handleDeleteEgg = async (eggId: string, onClose: () => void) => {
     try {
       await deleteEgg(eggId);
-      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(error.response?.data?.message ?? "개체 삭제에 실패했습니다.");
@@ -85,6 +87,10 @@ const EggItem = ({ pet, layingDate }: EggItemProps) => {
         onClose={close}
         petId={petId}
         layingDate={layingDate}
+        clutch={pet.clutch}
+        clutchOrder={pet.clutchOrder}
+        fatherName={fatherName}
+        motherName={motherName}
       />
     ));
   };
@@ -148,7 +154,9 @@ const EggItem = ({ pet, layingDate }: EggItemProps) => {
                   onValueChange={async (value: UpdatePetDtoEggStatus) => {
                     await updateEggStatus({ eggStatus: value });
                     toast.success("상태가 변경되었습니다.");
-                    queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+                    await queryClient.invalidateQueries({
+                      queryKey: [brMatingControllerFindAll.name],
+                    });
                   }}
                 >
                   <SelectTrigger

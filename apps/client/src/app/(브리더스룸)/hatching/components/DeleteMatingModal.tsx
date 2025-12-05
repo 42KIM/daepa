@@ -44,11 +44,11 @@ const DeleteMatingModal = ({ isOpen, onClose, matingId, matingDate }: DeleteMati
         </DialogHeader>
         <div className="space-y-1">
           <p className="text-sm text-gray-900">
-            {matingDate ?? "(날짜 없음)"}의 메이팅 정보를 삭제하시겠습니까?
+            {matingDate ?? "(날짜 없음)"} 메이팅 정보를 삭제하시겠습니까?
           </p>
           <p className="flex items-center gap-1 text-xs text-red-600">
             <Info className="h-4 w-4" />
-            연관된 알이 있는 경우 삭제할 수 없습니다.
+            연관된 산란 정보가 있는 경우 삭제할 수 없습니다.
           </p>
           <div className="flex justify-end space-x-2">
             <button

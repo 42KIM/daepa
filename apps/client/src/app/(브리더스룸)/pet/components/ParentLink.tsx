@@ -49,7 +49,6 @@ const ParentLink = ({
 
   const parentPetId = useMemo(() => (data && "petId" in data ? data.petId : undefined), [data]);
 
-  // TODO: 불필요한 사진을 전송받지 않기 위해 대표 사진만 받는 api 사용 필요
   const { data: thumbnail } = useQuery({
     queryKey: [petImageControllerFindThumbnail.name, parentPetId],
     queryFn: async () => {
@@ -90,12 +89,10 @@ const ParentLink = ({
             deleteParent(data);
             close();
           }}
-          title={
-            data?.status === PetParentDtoStatus.APPROVED ? "부모 연동 해제" : "부모 연동 요청 취소"
-          }
+          title={data?.status === PetParentDtoStatus.APPROVED ? "부모 연동 해제" : "부모 요청 취소"}
           description={
             data?.status === PetParentDtoStatus.APPROVED
-              ? `부모 연동을 해제하시겠습니까? \n 해제 후 다시 연동 요청을 해야 합니다.`
+              ? "부모 연동을 해제하시겠습니까? \n 타인의 펫인 경우, 해제 시 연동 절차를 다시 진행해야 합니다."
               : "부모 연동 요청을 취소하시겠습니까? \n 부모 개체 주인에게 취소 알림이 발송됩니다."
           }
           onExit={unmount}
