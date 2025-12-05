@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
-import { Trash2, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 import { columns } from "./components/columns";
 import DataTable from "./components/DataTable";
