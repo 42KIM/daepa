@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CalendarSelect from "./CalendarSelect";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { MatingByDateDto, MatingByParentsDto } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import { compact } from "es-toolkit";
@@ -33,9 +33,36 @@ const MatingDetailDialog = ({
     [matingGroup?.matingsByDate, getMatingDates],
   );
 
-  const [selectedMatingId, setSelectedMatingId] = useState<number | null>(
-    matingGroup?.matingsByDate?.[0]?.id ?? null,
-  );
+  const [selectedMatingId, setSelectedMatingId] = useState<number | null>(null);
+  const prevMatingCountRef = useRef<number>(0);
+  const isInitialOpenRef = useRef<boolean>(true);
+
+  // Dialog 오픈/클로즈 상태 감지
+  useEffect(() => {
+    if (isOpen && isInitialOpenRef.current) {
+      // Dialog 최초 오픈 시 가장 최근 메이팅 선택
+      if (matingGroup?.matingsByDate?.[0]) {
+        setSelectedMatingId(matingGroup.matingsByDate[0].id);
+      }
+      isInitialOpenRef.current = false;
+    } else if (!isOpen) {
+      // Dialog 닫혔을 때 다시 초기화
+      isInitialOpenRef.current = true;
+    }
+  }, [isOpen, matingGroup?.matingsByDate]);
+
+  // 메이팅 개수 변화 감지 (새 메이팅 추가 시)
+  useEffect(() => {
+    const currentMatingCount = matingGroup?.matingsByDate?.length ?? 0;
+
+    // 메이팅이 추가되었을 때 (개수가 증가했을 때)
+    if (currentMatingCount > prevMatingCountRef.current && matingGroup?.matingsByDate?.[0]) {
+      // 새로 추가된 메이팅 선택 (배열의 첫 번째 항목)
+      setSelectedMatingId(matingGroup.matingsByDate[0].id);
+    }
+
+    prevMatingCountRef.current = currentMatingCount;
+  }, [matingGroup?.matingsByDate, matingGroup]);
 
   const selectedMating = useMemo(
     () => matingGroup?.matingsByDate?.find((m) => m.id === selectedMatingId) ?? null,
@@ -110,16 +137,11 @@ const MatingDetailDialog = ({
                       className={cn(
                         "cursor-pointer rounded-full px-3 py-1 text-[12px] transition-colors",
                         isActive
-                          ? "bg-gray-300 text-gray-800"
+                          ? "border border-blue-600 bg-blue-100 text-blue-600"
                           : "bg-gray-50 text-gray-700 hover:bg-gray-200",
                       )}
                     >
                       {mating.matingDate}
-                      {mating.layingsByDate && mating.layingsByDate.length > 0 && (
-                        <span className="ml-1 font-semibold text-blue-500">
-                          {mating.layingsByDate?.length}차
-                        </span>
-                      )}
                     </div>
                   );
                 })}

@@ -431,6 +431,10 @@ export const layingControllerUpdate = (id: number, updateLayingDto: UpdateLaying
   });
 };
 
+export const layingControllerDelete = (id: number) => {
+  return useCustomInstance<CommonResponseDto>({ url: `/api/v1/layings/${id}`, method: "DELETE" });
+};
+
 export const pairControllerGetPairList = (params: PairControllerGetPairListParams) => {
   return useCustomInstance<PairDto[]>({ url: `/api/v1/pairs`, method: "GET", params });
 };
@@ -596,6 +600,9 @@ export type LayingControllerCreateResult = NonNullable<
 >;
 export type LayingControllerUpdateResult = NonNullable<
   Awaited<ReturnType<typeof layingControllerUpdate>>
+>;
+export type LayingControllerDeleteResult = NonNullable<
+  Awaited<ReturnType<typeof layingControllerDelete>>
 >;
 export type PairControllerGetPairListResult = NonNullable<
   Awaited<ReturnType<typeof pairControllerGetPairList>>
@@ -3316,6 +3323,14 @@ export const getLayingControllerUpdateResponseMock = (
   ...overrideResponse,
 });
 
+export const getLayingControllerDeleteResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
 export const getPairControllerGetPairListResponseMock = (): PairDto[] =>
   Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     id: faker.number.int({ min: undefined, max: undefined }),
@@ -4470,6 +4485,29 @@ export const getLayingControllerUpdateMockHandler = (
   });
 };
 
+export const getLayingControllerDeleteMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.delete("*/api/v1/layings/:id", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getLayingControllerDeleteResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getPairControllerGetPairListMockHandler = (
   overrideResponse?:
     | PairDto[]
@@ -4625,6 +4663,7 @@ export const getProjectDaepaAPIMock = () => [
   getParentRequestControllerUpdateStatusMockHandler(),
   getLayingControllerCreateMockHandler(),
   getLayingControllerUpdateMockHandler(),
+  getLayingControllerDeleteMockHandler(),
   getPairControllerGetPairListMockHandler(),
   getPairControllerGetPairDetailMockHandler(),
   getPetImageControllerFindThumbnailMockHandler(),

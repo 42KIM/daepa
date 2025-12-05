@@ -207,20 +207,37 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
 
         {funnel === REGISTER_PAGE.SECOND && (
           <>
-            {OPTION_STEPS.map((step) => (
-              <div key={step.title} className="mb-6 space-y-2">
-                <div key={step.field.name}>
-                  <FormField
-                    field={step.field}
-                    handleChange={handleNext}
-                    formData={formData}
-                    errors={errors}
-                    label={step.title}
-                    handleMultipleSelect={handleMultipleSelect}
-                  />
+            {OPTION_STEPS.map((step) => {
+              const isNameField = step.field.name === "name";
+
+              return (
+                <div
+                  key={step.title}
+                  className={cn(
+                    "mb-6 space-y-2",
+                    isNameField &&
+                      "mt-8 rounded-2xl border-2 border-[#1A56B3] bg-blue-50 p-6 dark:bg-blue-900/20",
+                  )}
+                >
+                  <div key={step.field.name}>
+                    <FormField
+                      field={step.field}
+                      handleChange={handleNext}
+                      formData={formData}
+                      errors={errors}
+                      label={
+                        isNameField ? (
+                          <span className="font-semibold text-[#1A56B3]">{step.title} *</span>
+                        ) : (
+                          step.title
+                        )
+                      }
+                      handleMultipleSelect={handleMultipleSelect}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
         <div className="fixed bottom-0 left-0 right-0 z-10 bg-white p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] dark:bg-black">

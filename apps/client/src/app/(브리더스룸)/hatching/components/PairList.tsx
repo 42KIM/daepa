@@ -2,12 +2,11 @@ import Loading from "@/components/common/Loading";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   brMatingControllerFindAll,
-  MatingByParentsDto,
   matingControllerCreateMating,
   PetDtoSpecies,
   PetSummaryLayingDto,
 } from "@repo/api-client";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { ChevronsDown, Cake, TriangleAlert, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { memo, useEffect, useState } from "react";
@@ -64,61 +63,63 @@ const ParentInfo = ({ parent }: { parent: PetSummaryLayingDto | undefined }) => 
 
 const PairList = memo(() => {
   const { ref, inView } = useInView();
-  const queryClient = useQueryClient();
   const { species, father, mother, startDate, endDate, eggStatus } = useMatingFilterStore();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [pair, setPair] = useState<MatingByParentsDto | null>(null);
+  const [selectedPairIndex, setSelectedPairIndex] = useState<number | null>(null);
   const itemPerPage = 10;
 
   const hasFilter =
     !!species || !!father?.petId || !!mother?.petId || !!startDate || !!endDate || !!eggStatus;
 
   // 메이팅 조회 (무한 스크롤)
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: [
-      brMatingControllerFindAll.name,
-      species,
-      father?.petId,
-      mother?.petId,
-      startDate,
-      endDate,
-      eggStatus,
-    ],
-    queryFn: ({ pageParam = 1 }) => {
-      const startYmd = startDate ? format(startDate, "yyyy-MM-dd") : undefined;
-      const endYmd = endDate ? format(endDate, "yyyy-MM-dd") : undefined;
-      const filter = omitBy(
-        {
-          species: species ?? undefined,
-          fatherId: father?.petId,
-          motherId: mother?.petId,
-          startYmd,
-          endYmd,
-          eggStatus: eggStatus ?? undefined,
-        },
-        isNil,
-      );
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch } =
+    useInfiniteQuery({
+      queryKey: [
+        brMatingControllerFindAll.name,
+        species,
+        father?.petId,
+        mother?.petId,
+        startDate,
+        endDate,
+        eggStatus,
+      ],
+      queryFn: ({ pageParam = 1 }) => {
+        const startYmd = startDate ? format(startDate, "yyyy-MM-dd") : undefined;
+        const endYmd = endDate ? format(endDate, "yyyy-MM-dd") : undefined;
+        const filter = omitBy(
+          {
+            species: species ?? undefined,
+            fatherId: father?.petId,
+            motherId: mother?.petId,
+            startYmd,
+            endYmd,
+            eggStatus: eggStatus ?? undefined,
+          },
+          isNil,
+        );
 
-      return brMatingControllerFindAll({
-        page: pageParam,
-        itemPerPage,
-        order: "DESC",
-        ...filter,
-      });
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.data.meta.hasNextPage) {
-        return lastPage.data.meta.page + 1;
-      }
-      return undefined;
-    },
-    select: (resp) => ({
-      items: resp.pages.flatMap((p) => p.data.data),
-      totalCount: resp.pages[0]?.data.meta.totalCount,
-    }),
-  });
+        return brMatingControllerFindAll({
+          page: pageParam,
+          itemPerPage,
+          order: "DESC",
+          ...filter,
+        });
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) => {
+        if (lastPage.data.meta.hasNextPage) {
+          return lastPage.data.meta.page + 1;
+        }
+        return undefined;
+      },
+      select: (resp) => ({
+        items: resp.pages.flatMap((p) => p.data.data),
+        totalCount: resp.pages[0]?.data.meta.totalCount,
+      }),
+    });
+
+  const pair = selectedPairIndex !== null ? (data?.items[selectedPairIndex] ?? null) : null;
 
   // 메이팅 추가
   const { mutateAsync: createMating } = useMutation({
@@ -188,7 +189,18 @@ const PairList = memo(() => {
       });
 
       toast.success("페어 정보가 추가되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      const result = await refetch();
+
+      // 새로운 데이터에서 현재 pair와 동일한 페어를 찾아서 index 업데이트
+      if (result.data?.items && pair) {
+        const updatedIndex = result.data.items.findIndex(
+          (item) =>
+            item.father?.petId === pair.father?.petId && item.mother?.petId === pair.mother?.petId,
+        );
+        if (updatedIndex !== -1) {
+          setSelectedPairIndex(updatedIndex);
+        }
+      }
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(error.response?.data?.message ?? "페어 정보 추가에 실패했습니다.");
@@ -229,7 +241,7 @@ const PairList = memo(() => {
               key={index}
               onClick={() => {
                 setIsOpen(true);
-                setPair(pair);
+                setSelectedPairIndex(index);
               }}
               className="flex cursor-pointer flex-col gap-4 rounded-2xl bg-gray-100 px-4 py-4 shadow-md hover:shadow-xl dark:border-gray-700"
             >
@@ -262,17 +274,17 @@ const PairList = memo(() => {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         matingGroup={pair}
-        onConfirmAdd={(matingDate) => {
+        onConfirmAdd={async (matingDate) => {
           if (!pair?.father || !pair?.mother) {
             toast.error("부모 개체가 없습니다.");
             return;
           }
-          handleAddPairClick({
+          await handleAddPairClick({
             species: pair.father?.species,
             fatherId: pair.father?.petId,
             motherId: pair.mother?.petId,
             matingDate,
-          }).then(() => setIsOpen(false));
+          });
         }}
       />
     </div>

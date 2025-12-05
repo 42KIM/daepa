@@ -66,15 +66,16 @@ export const useRegisterForm = ({
       }
 
       if (Number(funnel) === REGISTER_PAGE.SECOND) {
+        // 펫 생성 전 닉네임 중복 검증
+        if (duplicateCheckStatus !== DUPLICATE_CHECK_STATUS.AVAILABLE) {
+          toast.error("닉네임 중복확인을 완료해주세요.");
+          return;
+        }
         handleSubmit(newFormData);
         return;
       }
 
       if (step === formStep.length) {
-        if (duplicateCheckStatus !== DUPLICATE_CHECK_STATUS.AVAILABLE) {
-          toast.error("닉네임 중복확인을 완료해주세요.");
-          return;
-        }
         router.push("/register/2");
         return;
       }

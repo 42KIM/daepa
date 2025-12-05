@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 import {
   Select,
   SelectContent,
@@ -47,6 +48,18 @@ const CreateLayingModal = ({
     () => layingData?.[layingData.length - 1]?.layingDate,
     [layingData],
   );
+
+  const maxClutch = useMemo(() => {
+    if (!layingData || layingData.length === 0) return 0;
+    // layingData의 각 항목에서 clutch 값을 추출하여 최대값 찾기
+    const clutches = layingData
+      .map((laying) => {
+        // LayingByDateDto 내의 layings 배열에서 첫 번째 항목의 clutch를 가져옴
+        return laying.layings?.[0]?.clutch as number | undefined;
+      })
+      .filter((clutch): clutch is number => clutch !== undefined && clutch !== null);
+    return clutches.length > 0 ? Math.max(...clutches) : 0;
+  }, [layingData]);
 
   const { mutateAsync: createLaying } = useMutation({
     mutationFn: layingControllerCreate,
@@ -94,14 +107,6 @@ const CreateLayingModal = ({
     }
 
     try {
-      // 차수 유효성 검사
-      const currentClutch = parseInt(formData.clutch, 10);
-      const minClutch = layingData?.length || 0;
-      if (currentClutch <= minClutch) {
-        toast.error(`이전 차수 ${minClutch}보다 커야 합니다.`);
-        return;
-      }
-
       await createLaying({
         matingId,
         layingDate: format(new Date(formData.layingDate), "yyyy-MM-dd"),
@@ -113,11 +118,14 @@ const CreateLayingModal = ({
         fatherId,
       });
       toast.success("산란이 추가되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
-    } catch {
-      toast.error("산란 추가에 실패했습니다.");
-    } finally {
+      await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
       onClose();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "산란 추가에 실패했습니다.");
+      } else {
+        toast.error("산란 추가에 실패했습니다.");
+      }
     }
   };
 
@@ -222,16 +230,18 @@ const CreateLayingModal = ({
               <Input
                 id="clutch"
                 type="number"
-                min={(layingData?.length || 0) + 1}
+                min={maxClutch + 1}
                 placeholder="차수를 입력하세요"
                 value={formData.clutch}
                 onChange={(e) => setFormData((prev) => ({ ...prev, clutch: e.target.value }))}
               />
-              <div className="col-span-3">
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <Info className="h-4 w-4" /> 이전 차수 {layingData?.length}보다 커야 합니다.
+              {maxClutch > 0 && (
+                <div className="col-span-3">
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <Info className="h-4 w-4" /> 가장 마지막 차수는 {maxClutch}차 입니다.
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

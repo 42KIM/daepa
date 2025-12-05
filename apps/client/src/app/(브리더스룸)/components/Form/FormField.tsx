@@ -27,9 +27,10 @@ import {
 import DndImagePicker from "./DndImagePicker";
 import NameInput from "../NameInput";
 import { BaseFormData } from "../../pet/store/base";
+import { ReactNode } from "react";
 
 interface FormFieldProps {
-  label?: string;
+  label?: string | ReactNode;
   field: FormStep["field"];
   formData: BaseFormData;
   errors?: BaseFormErrors;
