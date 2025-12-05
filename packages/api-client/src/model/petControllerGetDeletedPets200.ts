@@ -5,10 +5,10 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { PetDto } from "./petDto";
+import type { PetSummaryDto } from "./petSummaryDto";
 import type { PageMetaDto } from "./pageMetaDto";
 
 export type PetControllerGetDeletedPets200 = {
-  data: PetDto[];
+  data: PetSummaryDto[];
   meta: PageMetaDto;
 };

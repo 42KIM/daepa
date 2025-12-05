@@ -1190,71 +1190,6 @@ export const getPetControllerRestorePetResponseMock = (
   ...overrideResponse,
 });
 
-export const getPetControllerGetDeletedPetsResponsePetParentDtoMock = (
-  overrideResponse: Partial<PetParentDto> = {},
-): PetParentDto => ({
-  ...{
-    petId: faker.string.alpha(20),
-    owner: {
-      ...{
-        status: faker.helpers.arrayElement([
-          "pending",
-          "active",
-          "inactive",
-          "suspended",
-          "deleted",
-        ] as const),
-        userId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-        name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-        role: faker.helpers.arrayElement([
-          faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-          undefined,
-        ]),
-        isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-      },
-    },
-    name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-    species: faker.helpers.arrayElement(["CR", "LE", "FT", "KN", "LC", "GG"] as const),
-    hatchingDate: faker.helpers.arrayElement([
-      faker.date.past().toISOString().split("T")[0],
-      undefined,
-    ]),
-    isPublic: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-    isDeleted: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-    status: faker.helpers.arrayElement([
-      "pending",
-      "approved",
-      "rejected",
-      "deleted",
-      "cancelled",
-    ] as const),
-    sex: faker.helpers.arrayElement([
-      faker.helpers.arrayElement(["M", "F", "N"] as const),
-      undefined,
-    ]),
-    morphs: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.string.alpha(20),
-      ),
-      undefined,
-    ]),
-    traits: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.string.alpha(20),
-      ),
-      undefined,
-    ]),
-  },
-  ...overrideResponse,
-});
-
-export const getPetControllerGetDeletedPetsResponsePetHiddenStatusDtoMock = (
-  overrideResponse: Partial<PetHiddenStatusDto> = {},
-): PetHiddenStatusDto => ({
-  ...{ hiddenStatus: faker.helpers.arrayElement(["SECRET", "PENDING", "DELETED"] as const) },
-  ...overrideResponse,
-});
-
 export const getPetControllerGetDeletedPetsResponseMock = (
   overrideResponse: Partial<PetControllerGetDeletedPets200> = {},
 ): PetControllerGetDeletedPets200 => ({
@@ -1288,91 +1223,8 @@ export const getPetControllerGetDeletedPetsResponseMock = (
       faker.date.past().toISOString().split("T")[0],
       undefined,
     ]),
-    desc: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
     isPublic: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     isDeleted: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-    deletedAt: faker.helpers.arrayElement([
-      `${faker.date.past().toISOString().split(".")[0]}Z`,
-      undefined,
-    ]),
-    deleteReason: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-    petDetail: faker.helpers.arrayElement([
-      {
-        ...{
-          growth: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["BABY", "JUVENILE", "PRE_ADULT", "ADULT", "DEAD"] as const),
-            undefined,
-          ]),
-          sex: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["M", "F", "N"] as const),
-            undefined,
-          ]),
-          morphs: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-              faker.string.alpha(20),
-            ),
-            undefined,
-          ]),
-          traits: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-              faker.string.alpha(20),
-            ),
-            undefined,
-          ]),
-          foods: faker.helpers.arrayElement([
-            Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-              faker.string.alpha(20),
-            ),
-            undefined,
-          ]),
-          weight: faker.helpers.arrayElement([
-            faker.number.int({ min: undefined, max: undefined }),
-            undefined,
-          ]),
-        },
-      },
-      undefined,
-    ]),
-    eggDetail: faker.helpers.arrayElement([
-      {
-        ...{
-          temperature: faker.helpers.arrayElement([
-            faker.number.int({ min: undefined, max: undefined }),
-            undefined,
-          ]),
-          status: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["UNFERTILIZED", "FERTILIZED", "HATCHED", "DEAD"] as const),
-            undefined,
-          ]),
-        },
-      },
-      undefined,
-    ]),
-    laying: faker.helpers.arrayElement([
-      {
-        ...{
-          id: faker.number.int({ min: undefined, max: undefined }),
-          matingId: faker.helpers.arrayElement([
-            faker.number.int({ min: undefined, max: undefined }),
-            undefined,
-          ]),
-          layingDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
-          clutch: faker.helpers.arrayElement([
-            faker.number.int({ min: undefined, max: undefined }),
-            undefined,
-          ]),
-          clutchOrder: faker.helpers.arrayElement([
-            faker.number.int({ min: undefined, max: undefined }),
-            undefined,
-          ]),
-        },
-      },
-      undefined,
-    ]),
-    growth: faker.helpers.arrayElement([
-      faker.helpers.arrayElement(["BABY", "JUVENILE", "PRE_ADULT", "ADULT", "DEAD"] as const),
-      undefined,
-    ]),
     sex: faker.helpers.arrayElement([
       faker.helpers.arrayElement(["M", "F", "N"] as const),
       undefined,
@@ -1389,83 +1241,14 @@ export const getPetControllerGetDeletedPetsResponseMock = (
       ),
       undefined,
     ]),
-    foods: faker.helpers.arrayElement([
-      Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.string.alpha(20),
-      ),
+    growth: faker.helpers.arrayElement([
+      faker.helpers.arrayElement(["BABY", "JUVENILE", "PRE_ADULT", "ADULT", "DEAD"] as const),
       undefined,
     ]),
     weight: faker.helpers.arrayElement([
       faker.number.int({ min: undefined, max: undefined }),
       undefined,
     ]),
-    temperature: faker.helpers.arrayElement([
-      faker.number.int({ min: undefined, max: undefined }),
-      undefined,
-    ]),
-    eggStatus: faker.helpers.arrayElement([
-      faker.helpers.arrayElement(["UNFERTILIZED", "FERTILIZED", "HATCHED", "DEAD"] as const),
-      undefined,
-    ]),
-    father: faker.helpers.arrayElement([
-      faker.helpers.arrayElement([
-        { ...getPetControllerGetDeletedPetsResponsePetParentDtoMock() },
-        { ...getPetControllerGetDeletedPetsResponsePetHiddenStatusDtoMock() },
-      ]),
-      undefined,
-    ]),
-    mother: faker.helpers.arrayElement([
-      faker.helpers.arrayElement([
-        { ...getPetControllerGetDeletedPetsResponsePetParentDtoMock() },
-        { ...getPetControllerGetDeletedPetsResponsePetHiddenStatusDtoMock() },
-      ]),
-      undefined,
-    ]),
-    adoption: faker.helpers.arrayElement([
-      {
-        ...{
-          adoptionId: faker.string.alpha(20),
-          price: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
-          adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
-          memo: faker.string.alpha(20),
-          method: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
-            undefined,
-          ]),
-          buyer: faker.helpers.arrayElement([
-            {
-              ...{
-                status: faker.helpers.arrayElement([
-                  "pending",
-                  "active",
-                  "inactive",
-                  "suspended",
-                  "deleted",
-                ] as const),
-                userId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-                role: faker.helpers.arrayElement([
-                  faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
-                  undefined,
-                ]),
-                isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-              },
-            },
-            undefined,
-          ]),
-          petId: faker.string.alpha(20),
-        },
-      },
-      undefined,
-    ]),
-    status: faker.helpers.arrayElement([
-      "pending",
-      "approved",
-      "rejected",
-      "deleted",
-      "cancelled",
-    ] as const),
   })),
   meta: {
     page: faker.number.int({ min: undefined, max: undefined }),
@@ -3297,6 +3080,7 @@ export const getBrMatingControllerFindAllResponseMock = (
             faker.date.past().toISOString().split("T")[0],
             undefined,
           ]),
+          isDeleted: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
           sex: faker.helpers.arrayElement([
             faker.helpers.arrayElement(["M", "F", "N"] as const),
             undefined,
@@ -3357,6 +3141,7 @@ export const getBrMatingControllerFindAllResponseMock = (
             faker.date.past().toISOString().split("T")[0],
             undefined,
           ]),
+          isDeleted: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
           sex: faker.helpers.arrayElement([
             faker.helpers.arrayElement(["M", "F", "N"] as const),
             undefined,
@@ -3431,6 +3216,7 @@ export const getBrMatingControllerFindAllResponseMock = (
               faker.date.past().toISOString().split("T")[0],
               undefined,
             ]),
+            isDeleted: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
             sex: faker.helpers.arrayElement([
               faker.helpers.arrayElement(["M", "F", "N"] as const),
               undefined,

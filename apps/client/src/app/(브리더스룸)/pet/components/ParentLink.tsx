@@ -178,9 +178,6 @@ const ParentLink = ({
   const parent = data as PetParentDto;
   const isMyPet = parent.owner.userId === user?.userId;
   const isDeleted = parent.isDeleted;
-  const displayName = isDeleted
-    ? (parent.name?.replace(/^DELETED_(.+)_\d+$/, "$1") ?? "이름 없음")
-    : parent.name;
 
   return (
     <div className="flex-1">
@@ -239,7 +236,7 @@ const ParentLink = ({
                 label === "모" ? "after:bg-red-400" : "after:bg-[#247DFE]",
               )}
             >
-              {displayName ?? "-"}
+              {parent.name ?? "-"}
             </span>
           </div>
 

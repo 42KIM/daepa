@@ -36,7 +36,10 @@ const ParentInfo = ({ parent }: { parent: PetSummaryLayingDto | undefined }) => 
     <div className="flex flex-1 gap-1">
       <div className="flex flex-1 flex-col">
         <div className="mb-1 font-[500]">
-          <span>{parent.name}</span>
+          <span className={cn(parent.isDeleted && "line-through decoration-red-500")}>
+            {parent.name}
+          </span>
+          <span className="text-[12px] text-red-500">{parent.isDeleted && "[삭제됨]"}</span>
           {parent.weight && (
             <span className="ml-1 text-[12px] text-blue-600">
               | {Number(parent.weight).toLocaleString()}g

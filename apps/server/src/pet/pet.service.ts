@@ -24,6 +24,7 @@ import {
   PetDto,
   PetSingleDto,
   PetParentDto,
+  PetSummaryDto,
 } from './pet.dto';
 import {
   PET_GROWTH,
@@ -738,7 +739,7 @@ export class PetService {
   async getDeletedPets(
     pageOptionsDto: PetFilterDto,
     userId: string,
-  ): Promise<PageDto<PetDto>> {
+  ): Promise<PageDto<PetSummaryDto>> {
     const queryBuilder = this.petRepository
       .createQueryBuilder('pets')
       .where('pets.ownerId = :userId AND pets.isDeleted = :isDeleted', {
@@ -750,24 +751,6 @@ export class PetService {
         'users',
         'users',
         'users.userId = pets.ownerId',
-      )
-      .leftJoinAndMapOne(
-        'pets.petDetail',
-        'pet_details',
-        'petDetail',
-        'petDetail.petId = pets.petId',
-      )
-      .leftJoinAndMapOne(
-        'pets.eggDetail',
-        'egg_details',
-        'eggDetail',
-        'eggDetail.petId = pets.petId',
-      )
-      .leftJoinAndMapOne(
-        'pets.adoption',
-        'adoptions',
-        'adoptions',
-        'adoptions.petId = pets.petId',
       );
 
     // 검색 및 필터링 (키워드, 종, 성별 등)
@@ -782,46 +765,17 @@ export class PetService {
     const totalCount = await queryBuilder.getCount();
     const petEntities = await queryBuilder.getMany();
 
-    // PetDto로 변환
-    const petDtos = await Promise.all(
-      petEntities.map(async (petRaw) => {
-        const { petId, ...pet } = petRaw;
+    // PetSummaryDto로 변환
+    const petDtos = petEntities.map((petRaw) => {
+      const { petId, ...pet } = petRaw;
 
-        const { father, mother } =
-          await this.parentRequestService.getParentsWithRequestStatus(petId);
-        const fatherDisplayable = this.getParentPublicSafe(
-          father,
-          petRaw.ownerId,
-          userId,
-        );
-        const motherDisplayable = this.getParentPublicSafe(
-          mother,
-          petRaw.ownerId,
-          userId,
-        );
+      const petDto = plainToInstance(PetSummaryDto, {
+        ...pet,
+        petId,
+      });
 
-        const petDto = plainToInstance(PetDto, {
-          ...pet,
-          petId,
-          ...(pet.petDetail && {
-            sex: pet.petDetail.sex,
-            morphs: pet.petDetail.morphs,
-            traits: pet.petDetail.traits,
-            foods: pet.petDetail.foods,
-            weight: pet.petDetail.weight,
-            growth: pet.petDetail.growth,
-          }),
-          ...(pet.eggDetail && {
-            temperature: pet.eggDetail.temperature,
-            eggStatus: pet.eggDetail.status,
-          }),
-          father: fatherDisplayable,
-          mother: motherDisplayable,
-        });
-
-        return petDto;
-      }),
-    );
+      return petDto;
+    });
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
     return new PageDto(petDtos, pageMetaDto);

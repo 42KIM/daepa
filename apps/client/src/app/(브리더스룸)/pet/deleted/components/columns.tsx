@@ -1,13 +1,8 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  GENDER_KOREAN_INFO,
-  SPECIES_KOREAN_ALIAS_INFO,
-  SPECIES_KOREAN_INFO,
-  TABLE_HEADER,
-} from "../../../constants";
-import { PetDto, PetDtoSpecies, PetDtoSex } from "@repo/api-client";
+import { SPECIES_KOREAN_ALIAS_INFO, SPECIES_KOREAN_INFO, TABLE_HEADER } from "../../../constants";
+import { PetDto, PetDtoSpecies } from "@repo/api-client";
 import { format, isValid, parseISO } from "date-fns";
 import TooltipText from "../../../components/TooltipText";
 import { RestorePetButton } from "./RestorePetButton";
@@ -33,18 +28,7 @@ export const columns: ColumnDef<PetDto>[] = [
     cell: ({ row }) => {
       const name = row.getValue("name") as string;
 
-      // DELETED_ 접두사 제거
-      const displayName = name?.replace(/^DELETED_(.+)_\d+$/, "$1") || "이름 없음";
-
-      return <div className="text-gray-700">{displayName}</div>;
-    },
-  },
-  {
-    accessorKey: "sex",
-    header: TABLE_HEADER.sex,
-    cell: ({ row }) => {
-      const sex = row.getValue("sex") as PetDtoSex;
-      return <div className="text-center">{GENDER_KOREAN_INFO[sex] ?? "-"}</div>;
+      return <div className="text-gray-700">{name}</div>;
     },
   },
   {

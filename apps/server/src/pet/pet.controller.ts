@@ -19,6 +19,7 @@ import {
   PetFilterDto,
   GetParentsByPetIdResponseDto,
   DeletePetDto,
+  PetSummaryDto,
 } from './pet.dto';
 import { PetService } from './pet.service';
 import {
@@ -212,7 +213,7 @@ export class PetController {
   }
 
   @Get('/deleted/list')
-  @ApiExtraModels(PetDto, PageMetaDto)
+  @ApiExtraModels(PetSummaryDto, PageMetaDto)
   @ApiResponse({
     status: 200,
     description: '삭제된 펫 목록 조회 성공',
@@ -222,7 +223,7 @@ export class PetController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: getSchemaPath(PetDto) },
+          items: { $ref: getSchemaPath(PetSummaryDto) },
         },
         meta: { $ref: getSchemaPath(PageMetaDto) },
       },
@@ -231,7 +232,7 @@ export class PetController {
   async getDeletedPets(
     @Query() pageOptionsDto: PetFilterDto,
     @JwtUser() token: JwtUserPayload,
-  ): Promise<PageDto<PetDto>> {
+  ): Promise<PageDto<PetSummaryDto>> {
     return this.petService.getDeletedPets(pageOptionsDto, token.userId);
   }
 

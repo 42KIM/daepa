@@ -29,8 +29,6 @@ function PetDetailPage({ params }: PetDetailPageProps) {
 
   // 삭제된 펫인 경우 처리
   if (pet.isDeleted) {
-    const displayName = pet.name?.replace(/^DELETED_(.+)_\d+$/, "$1") ?? "이름 없음";
-
     return (
       <div className="mt-10 flex flex-1 items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center">
@@ -39,7 +37,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
           <div className="space-y-1">
             <h1 className="text-[16px] font-[500] text-gray-900">삭제된 펫입니다</h1>
             <p className="text-[14px] font-[500] text-gray-500">
-              <span className="font-semibold">{displayName}</span>은(는) 삭제되어 더 이상 조회할 수
+              <span className="font-semibold">{pet.name}</span>은(는) 삭제되어 더 이상 조회할 수
               없습니다.
             </p>
           </div>

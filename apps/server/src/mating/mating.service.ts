@@ -17,13 +17,14 @@ import { PetSummaryLayingDto } from 'src/pet/pet.dto';
 import { PetEntity } from 'src/pet/pet.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
-import { groupBy, isNil, omitBy, uniq } from 'es-toolkit';
+import { groupBy, uniq } from 'es-toolkit';
 import { PET_SEX } from 'src/pet/pet.constants';
 import { LayingEntity } from 'src/laying/laying.entity';
 import { UpdateMatingDto } from './mating.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { PairEntity } from 'src/pair/pair.entity';
 import { Not } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 
 interface MatingsWithPair {
   id: number;
@@ -74,7 +75,7 @@ export class MatingService {
         'matings.pair',
         PairEntity,
         'pairs',
-        'pairs.id = matings.pairId AND pairs.isDeleted = false',
+        'pairs.id = matings.pairId',
       )
       .select([
         'matings.id',
@@ -205,24 +206,21 @@ export class MatingService {
         });
       }
       const childrenEntities = await childrenQb.getMany();
-      childrenDtos = childrenEntities.map((c) => ({
-        petId: c.petId,
-        species: c.species,
-        ...omitBy(
-          {
-            name: c.name ?? undefined,
-            hatchingDate: c.hatchingDate ?? undefined,
-            sex: c.petDetail?.sex ?? undefined,
-            morphs: c.petDetail?.morphs ?? undefined,
-            traits: c.petDetail?.traits ?? undefined,
-            clutchOrder: c.clutchOrder ?? undefined,
-            temperature: c.eggDetail?.temperature ?? undefined,
-            eggStatus: c.eggDetail?.status ?? undefined,
-            layingId: c.layingId ?? undefined,
-          },
-          isNil,
-        ),
-      }));
+      childrenDtos = childrenEntities.map((c) =>
+        plainToInstance(PetSummaryLayingDto, {
+          petId: c.petId,
+          species: c.species,
+          name: c.name ?? undefined,
+          hatchingDate: c.hatchingDate ?? undefined,
+          sex: c.petDetail?.sex ?? undefined,
+          morphs: c.petDetail?.morphs ?? undefined,
+          traits: c.petDetail?.traits ?? undefined,
+          clutchOrder: c.clutchOrder ?? undefined,
+          temperature: c.eggDetail?.temperature ?? undefined,
+          eggStatus: c.eggDetail?.status ?? undefined,
+          layingId: c.layingId ?? undefined,
+        }),
+      );
     }
 
     // parents(+detail): fatherId/motherId로 배치 조회
@@ -249,6 +247,7 @@ export class MatingService {
           'p.name',
           'p.species',
           'p.hatchingDate',
+          'p.isDeleted',
           'pd.sex',
           'pd.morphs',
           'pd.traits',
@@ -256,21 +255,19 @@ export class MatingService {
         ])
         .getMany();
 
-      parentDtos = parentEntities.map((p) => ({
-        petId: p.petId,
-        species: p.species,
-        ...omitBy(
-          {
-            name: p.name ?? undefined,
-            hatchingDate: p.hatchingDate ?? undefined,
-            sex: p.petDetail?.sex ?? undefined,
-            morphs: p.petDetail?.morphs ?? undefined,
-            traits: p.petDetail?.traits ?? undefined,
-            weight: p.petDetail?.weight ?? undefined,
-          },
-          isNil,
-        ),
-      }));
+      parentDtos = parentEntities.map((p) =>
+        plainToInstance(PetSummaryLayingDto, {
+          petId: p.petId,
+          species: p.species,
+          name: p.name ?? undefined,
+          hatchingDate: p.hatchingDate ?? undefined,
+          isDeleted: p.isDeleted,
+          sex: p.petDetail?.sex ?? undefined,
+          morphs: p.petDetail?.morphs ?? undefined,
+          traits: p.petDetail?.traits ?? undefined,
+          weight: p.petDetail?.weight ?? undefined,
+        }),
+      );
     }
 
     // 메모리 조립

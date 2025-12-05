@@ -14,9 +14,16 @@ interface MatingItemProps {
   father?: PetSummaryLayingDto;
   mother?: PetSummaryLayingDto;
   matingDates: string[];
+  isEditable?: boolean;
 }
 
-const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) => {
+const MatingItem = ({
+  mating,
+  father,
+  mother,
+  matingDates,
+  isEditable = true,
+}: MatingItemProps) => {
   const [closeAllTick, setCloseAllTick] = useState(0);
   const layingDates = useMemo(
     () => mating.layingsByDate?.map((laying) => laying.layingDate) ?? [],
@@ -79,13 +86,15 @@ const MatingItem = ({ mating, father, mother, matingDates }: MatingItemProps) =>
               ? format(new Date(mating.matingDate ?? ""), "yyyy년 MM월 dd일")
               : "-"}
           </div>
-          <button
-            type="button"
-            onClick={handleAddLayingClick}
-            className="rounded-lg bg-blue-100 px-2 py-1 text-[12px] font-semibold text-blue-600"
-          >
-            + 산란 추가
-          </button>
+          {isEditable && (
+            <button
+              type="button"
+              onClick={handleAddLayingClick}
+              className="rounded-lg bg-blue-100 px-2 py-1 text-[12px] font-semibold text-blue-600"
+            >
+              + 산란 추가
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <button
