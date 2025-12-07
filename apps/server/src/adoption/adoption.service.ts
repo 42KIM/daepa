@@ -21,18 +21,22 @@ import {
 import { nanoid } from 'nanoid';
 import { PageMetaDto } from 'src/common/page.dto';
 import { PageDto } from 'src/common/page.dto';
-import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
+import { ADOPTION_SALE_STATUS, PET_HIDDEN_STATUS } from 'src/pet/pet.constants';
 import { isNil, isUndefined, omitBy } from 'es-toolkit';
 import { PetEntity } from 'src/pet/pet.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { USER_STATUS } from 'src/user/user.constant';
+import { ParentRequestService } from '../parent_request/parent_request.service';
+import { PetParentDto } from '../pet/pet.dto';
+import { PARENT_STATUS } from '../parent_request/parent_request.constants';
 
 @Injectable()
 export class AdoptionService {
   constructor(
     @InjectRepository(AdoptionEntity)
     private readonly adoptionRepository: Repository<AdoptionEntity>,
+    private readonly parentRequestService: ParentRequestService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -40,12 +44,30 @@ export class AdoptionService {
     return nanoid(8);
   }
 
-  private toAdoptionDtoOptimized(entity: AdoptionEntity): AdoptionDto {
+  private async toAdoptionDtoOptimized(
+    entity: AdoptionEntity,
+    userId: string,
+  ): Promise<AdoptionDto> {
     if (!entity.pet) {
       throw new Error('Pet information is required for adoption');
     }
 
     const { pet, petDetail, seller, buyer, ...adoptionData } = entity;
+
+    const { father, mother } =
+      await this.parentRequestService.getParentsWithRequestStatus(pet.petId);
+
+    const fatherDisplayable = this.getParentPublicSafe(
+      father,
+      father?.owner?.userId ?? '',
+      userId,
+    );
+    const motherDisplayable = this.getParentPublicSafe(
+      mother,
+      mother?.owner?.userId ?? '',
+      userId,
+    );
+
     return {
       ...adoptionData,
       price: adoptionData.price ?? undefined,
@@ -65,6 +87,8 @@ export class AdoptionService {
             morphs: petDetail?.morphs ?? undefined,
             traits: petDetail?.traits ?? undefined,
             growth: petDetail?.growth ?? undefined,
+            father: fatherDisplayable ?? undefined,
+            mother: motherDisplayable ?? undefined,
           },
           isNil,
         ),
@@ -162,6 +186,7 @@ export class AdoptionService {
 
   async findOne(
     where: FindOptionsWhere<AdoptionEntity>,
+    userId: string,
   ): Promise<AdoptionDto | null> {
     const qb = this.createAdoptionQueryBuilder().where(
       'adoptions.isDeleted = :isDeleted',
@@ -181,7 +206,7 @@ export class AdoptionService {
       // throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
     }
 
-    return this.toAdoptionDtoOptimized(adoptionEntity);
+    return await this.toAdoptionDtoOptimized(adoptionEntity, userId);
   }
 
   async findAll(
@@ -205,8 +230,10 @@ export class AdoptionService {
 
     const [adoptionEntities, totalCount] = await qb.getManyAndCount();
 
-    const adoptionDtos = adoptionEntities.map((entity) =>
-      this.toAdoptionDtoOptimized(entity),
+    const adoptionDtos = await Promise.all(
+      adoptionEntities.map((entity) =>
+        this.toAdoptionDtoOptimized(entity, userId),
+      ),
     );
 
     const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
@@ -469,13 +496,30 @@ export class AdoptionService {
     });
   }
 
-  async findByAdoptionId(adoptionId: string): Promise<AdoptionDto> {
-    const adoption = await this.findOne({ adoptionId: adoptionId });
+  private getParentPublicSafe(
+    parent: PetParentDto | null,
+    parentOwnerId: string | null,
+    userId: string,
+  ) {
+    if (!parent) return null;
 
-    if (!adoption) {
-      throw new NotFoundException('분양 정보를 찾을 수 없습니다.');
+    // 본인 소유 펫
+    const isMyPet = parentOwnerId === userId;
+    if (isMyPet) {
+      return parent;
     }
 
-    return adoption;
+    // 부모 개체 삭제 처리
+    if (parent.isDeleted) {
+      return { hiddenStatus: PET_HIDDEN_STATUS.DELETED };
+    }
+    // 비공개 처리
+    if (!parent.isPublic) {
+      return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
+    }
+    // 부모 요청중
+    if (parent.status === PARENT_STATUS.PENDING) {
+      return { hiddenStatus: PET_HIDDEN_STATUS.PENDING };
+    }
   }
 }

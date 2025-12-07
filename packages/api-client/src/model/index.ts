@@ -191,3 +191,5 @@ export * from "./userSimpleDto";
 export * from "./verifyEmailDto";
 export * from "./verifyNameDto";
 export * from "./verifyPetNameDto";
+export * from "./petSummaryAdoptionDtoFather";
+export * from "./petSummaryAdoptionDtoMother";

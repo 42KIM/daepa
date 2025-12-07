@@ -3,15 +3,24 @@
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import { AdoptionDto } from "@repo/api-client";
+import {
+  AdoptionDto,
+  PetHiddenStatusDtoHiddenStatus,
+  PetParentDto,
+  UpdateParentRequestDtoStatus,
+} from "@repo/api-client";
 import {
   ADOPTION_METHOD_KOREAN_INFO,
   GENDER_KOREAN_INFO,
   GROWTH_KOREAN_INFO,
   SPECIES_KOREAN_ALIAS_INFO,
+  STATUS_MAP,
   TABLE_HEADER,
 } from "../../constants";
 import { isNotNil } from "es-toolkit";
+import LinkButton from "../../components/LinkButton";
+import { BadgeCheck, Lock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
   {
@@ -110,6 +119,94 @@ export const columns: ColumnDef<AdoptionDto>[] = [
       const buyer = row.original?.buyer;
       // TODO!: 입양자 정보 보기 or 입양자 페이지로 이동
       return <div className="text-sm">{buyer ? buyer.name : "-"}</div>;
+    },
+  },
+  {
+    accessorKey: "father",
+    header: "부 개체",
+    cell: ({ row }) => {
+      const father = row.original.pet.father;
+      if (!father) return <div className="text-sm text-gray-400">-</div>;
+      if (
+        "hiddenStatus" in father &&
+        father.hiddenStatus === PetHiddenStatusDtoHiddenStatus.SECRET
+      ) {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
+                  <Lock className="h-3 w-3" />
+                  비공개
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>숨김 처리된 개체입니다</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
+      const fatherExist = father as PetParentDto;
+      const status = fatherExist?.status ?? "approved";
+      return (
+        <LinkButton
+          href={`/pet/${fatherExist.petId}`}
+          label={fatherExist.name ?? ""}
+          tooltip="펫 상세 페이지로 이동"
+          className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
+          icon={
+            status === UpdateParentRequestDtoStatus.APPROVED ? (
+              <BadgeCheck className="h-4 w-4 text-gray-100" />
+            ) : null
+          }
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "mother",
+    header: "모 개체",
+    cell: ({ row }) => {
+      const mother = row.original.pet.mother;
+      if (!mother) return <div className="text-sm text-gray-400">-</div>;
+      if (
+        "hiddenStatus" in mother &&
+        mother.hiddenStatus === PetHiddenStatusDtoHiddenStatus.SECRET
+      ) {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
+                  <Lock className="h-3 w-3" />
+                  비공개
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>숨김 처리된 개체입니다</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
+      const motherExist = mother as PetParentDto;
+      const status = motherExist?.status ?? "approved";
+      return (
+        <LinkButton
+          href={`/pet/${motherExist.petId}`}
+          label={motherExist.name ?? ""}
+          tooltip="펫 상세 페이지로 이동"
+          className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
+          icon={
+            status === UpdateParentRequestDtoStatus.APPROVED ? (
+              <BadgeCheck className="h-4 w-4 text-gray-100" />
+            ) : null
+          }
+        />
+      );
     },
   },
   {

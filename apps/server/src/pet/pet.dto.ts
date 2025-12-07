@@ -245,30 +245,6 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   declare isDeleted?: boolean;
 }
 
-export class PetSummaryAdoptionDto extends PickType(PetSummaryDto, [
-  'petId',
-  'type',
-  'name',
-  'species',
-  'sex',
-  'growth',
-  'morphs',
-  'traits',
-  'hatchingDate',
-]) {
-  @Exclude()
-  declare desc?: string;
-
-  @Exclude()
-  declare createdAt?: Date;
-
-  @Exclude()
-  declare updatedAt?: Date;
-
-  @Exclude()
-  declare isDeleted?: boolean;
-}
-
 export class PetLayingDto extends PickType(PetSummaryDto, [
   'type',
   'petId',
@@ -429,6 +405,57 @@ export class PetParentDto extends PickType(PetSummaryDto, [
   @IsOptional()
   @IsArray()
   traits?: string[];
+}
+
+@ApiExtraModels(PetParentDto, PetHiddenStatusDto)
+export class PetSummaryAdoptionDto extends PickType(PetSummaryDto, [
+  'petId',
+  'type',
+  'name',
+  'species',
+  'sex',
+  'growth',
+  'morphs',
+  'traits',
+  'hatchingDate',
+]) {
+  @ApiProperty({
+    description: '아빠 개체 정보',
+    example: {},
+    required: false,
+    oneOf: [
+      { $ref: getSchemaPath(PetParentDto) },
+      { $ref: getSchemaPath(PetHiddenStatusDto) },
+    ],
+  })
+  @IsOptional()
+  @IsObject()
+  father?: PetParentDto | PetHiddenStatusDto;
+
+  @ApiProperty({
+    description: '엄마 개체 정보',
+    example: {},
+    required: false,
+    oneOf: [
+      { $ref: getSchemaPath(PetParentDto) },
+      { $ref: getSchemaPath(PetHiddenStatusDto) },
+    ],
+  })
+  @IsOptional()
+  @IsObject()
+  mother?: PetParentDto | PetHiddenStatusDto;
+
+  @Exclude()
+  declare desc?: string;
+
+  @Exclude()
+  declare createdAt?: Date;
+
+  @Exclude()
+  declare updatedAt?: Date;
+
+  @Exclude()
+  declare isDeleted?: boolean;
 }
 
 export class PetAdoptionDto {

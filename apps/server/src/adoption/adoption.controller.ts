@@ -89,10 +89,12 @@ export class AdoptionController {
   })
   async getAdoptionByPetId(
     @Param('petId') petId: string,
+    @JwtUser() token: JwtUserPayload,
     @Query('includeInactive') includeInactive?: string,
   ): Promise<AdoptionDetailResponseDto> {
     const data = await this.adoptionService.findOne(
       includeInactive === 'true' ? { petId } : { petId, isActive: true },
+      token.userId,
     );
     return {
       success: true,
