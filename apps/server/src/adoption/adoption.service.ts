@@ -189,16 +189,17 @@ export class AdoptionService {
     userId: string,
   ): Promise<PageDto<AdoptionDto>> {
     const qb = this.createAdoptionQueryBuilder().where(
-      'adoptions.sellerId = :sellerId AND adoptions.isDeleted = :isDeleted',
+      'adoptions.sellerId = :sellerId AND adoptions.status = :status AND adoptions.isDeleted = :isDeleted',
       {
         sellerId: userId,
+        status: ADOPTION_SALE_STATUS.SOLD,
         isDeleted: false,
       },
     );
 
     this.buildAdoptionFilterQuery(qb, pageOptionsDto);
 
-    qb.orderBy('adoptions.createdAt', pageOptionsDto.order)
+    qb.orderBy('adoptions.adoptionDate', pageOptionsDto.order)
       .skip(pageOptionsDto.skip)
       .take(pageOptionsDto.itemPerPage);
 

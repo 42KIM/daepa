@@ -4,7 +4,6 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { AdoptionDto } from "@repo/api-client";
-import { getStatusBadge } from "@/lib/utils";
 import {
   ADOPTION_METHOD_KOREAN_INFO,
   GENDER_KOREAN_INFO,
@@ -16,11 +15,15 @@ import { isNotNil } from "es-toolkit";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
   {
-    accessorKey: "status",
-    header: TABLE_HEADER.adoption_status,
+    accessorKey: "adoptionDate",
+    header: "분양 날짜",
     cell: ({ row }) => {
-      const status = row.original.status;
-      return <div className="flex">{getStatusBadge(status)}</div>;
+      const adoptionDate = row.original.adoptionDate;
+      return (
+        <div className="text-sm">
+          {adoptionDate ? new Date(adoptionDate).toLocaleDateString("ko-KR") : "-"}
+        </div>
+      );
     },
   },
   {
@@ -96,18 +99,6 @@ export const columns: ColumnDef<AdoptionDto>[] = [
       return (
         <div className="font-semibold text-blue-600">
           {isNotNil(price) ? `${price.toLocaleString()}원` : "-"}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "adoptionDate",
-    header: "분양 날짜",
-    cell: ({ row }) => {
-      const adoptionDate = row.original.adoptionDate;
-      return (
-        <div className="text-sm">
-          {adoptionDate ? new Date(adoptionDate).toLocaleDateString("ko-KR") : "-"}
         </div>
       );
     },
