@@ -826,7 +826,7 @@ export const getPetControllerFindAllResponseMock = (
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
           method: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
+            faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
             undefined,
           ]),
           buyer: faker.helpers.arrayElement([
@@ -1616,7 +1616,7 @@ export const getBrPetControllerFindAllResponseMock = (
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
           method: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
+            faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
             undefined,
           ]),
           buyer: faker.helpers.arrayElement([
@@ -1900,7 +1900,7 @@ export const getBrPetControllerGetPetsByYearResponseMock = (): BrPetControllerGe
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
           method: faker.helpers.arrayElement([
-            faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
+            faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
             undefined,
           ]),
           buyer: faker.helpers.arrayElement([
@@ -2196,7 +2196,7 @@ export const getBrPetControllerGetPetsByMonthResponseMock = (
             adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
             memo: faker.string.alpha(20),
             method: faker.helpers.arrayElement([
-              faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
+              faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
               undefined,
             ]),
             buyer: faker.helpers.arrayElement([
@@ -2494,7 +2494,7 @@ export const getBrPetControllerGetPetsByDateRangeResponseMock = (
             adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
             memo: faker.string.alpha(20),
             method: faker.helpers.arrayElement([
-              faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
+              faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
               undefined,
             ]),
             buyer: faker.helpers.arrayElement([
@@ -2698,7 +2698,7 @@ export const getAdoptionControllerGetAllAdoptionsResponseMock = (
     ]),
     memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
     method: faker.helpers.arrayElement([
-      faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
+      faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
       undefined,
     ]),
     status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
@@ -2808,7 +2808,7 @@ export const getAdoptionControllerGetAdoptionByPetIdResponseMock = (
         ]),
         memo: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
         method: faker.helpers.arrayElement([
-          faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE"] as const),
+          faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
           undefined,
         ]),
         status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),

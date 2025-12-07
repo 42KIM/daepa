@@ -19,4 +19,5 @@ export const UpdateAdoptionDtoMethod = {
   PICKUP: "PICKUP",
   DELIVERY: "DELIVERY",
   WHOLESALE: "WHOLESALE",
+  EXPORT: "EXPORT",
 } as const;

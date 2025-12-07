@@ -29,6 +29,7 @@ export enum PET_ADOPTION_METHOD {
   PICKUP = 'PICKUP',
   DELIVERY = 'DELIVERY',
   WHOLESALE = 'WHOLESALE',
+  EXPORT = 'EXPORT',
 }
 
 export enum PET_GROWTH {

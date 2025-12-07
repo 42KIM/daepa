@@ -484,6 +484,7 @@ export const ADOPTION_METHOD_KOREAN_INFO: Record<AdoptionDtoMethod, string> = {
   PICKUP: "직접 거래",
   DELIVERY: "배송",
   WHOLESALE: "도매",
+  EXPORT: "수출",
 };
 
 export const SELECTOR_CONFIGS: Record<
