@@ -26,6 +26,7 @@ import {
   PetParentDto,
   DeletedPetDto,
 } from './pet.dto';
+import { UserProfilePublicDto } from 'src/user/user.dto';
 import {
   PET_GROWTH,
   PET_SEX,
@@ -199,10 +200,19 @@ export class PetService {
       }
 
       // 소유자 정보 조회
-      const owner = await this.userService.findOneProfile(
+      const ownerData = await this.userService.findOneProfile(
         pet.ownerId,
         entityManager,
       );
+
+      // 공개용 owner 정보로 변환 (민감한 정보 제거)
+      const owner = plainToInstance(UserProfilePublicDto, {
+        userId: ownerData.userId,
+        name: ownerData.name,
+        role: ownerData.role,
+        isBiz: ownerData.isBiz,
+        status: ownerData.status,
+      });
 
       const { growth, sex, morphs, traits, foods, weight } = petDetail ?? {};
       const { temperature, status: eggStatus } = eggDetail ?? {};
@@ -359,18 +369,22 @@ export class PetService {
         'petDetail.petId = pets.petId',
       )
       .leftJoinAndMapOne(
-        'pets.eggDetail',
-        'egg_details',
-        'eggDetail',
-        'eggDetail.petId = pets.petId',
-      )
-      .leftJoinAndMapOne(
         'pets.adoption',
         'adoptions',
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
         { soldStatus: ADOPTION_SALE_STATUS.SOLD },
-      );
+      )
+      .select([
+        'pets',
+        'users.userId',
+        'users.name',
+        'users.role',
+        'users.isBiz',
+        'users.status',
+        'petDetail',
+        'adoptions',
+      ]);
 
     if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
       // 자신의 모든 펫 조회 가능
@@ -472,18 +486,22 @@ export class PetService {
         'petDetail.petId = pets.petId',
       )
       .leftJoinAndMapOne(
-        'pets.eggDetail',
-        'egg_details',
-        'eggDetail',
-        'eggDetail.petId = pets.petId',
-      )
-      .leftJoinAndMapOne(
         'pets.adoption',
         'adoptions',
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
         { soldStatus: ADOPTION_SALE_STATUS.SOLD },
-      );
+      )
+      .select([
+        'pets',
+        'users.userId',
+        'users.name',
+        'users.role',
+        'users.isBiz',
+        'users.status',
+        'petDetail',
+        'adoptions',
+      ]);
 
     this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto);
 
@@ -763,7 +781,16 @@ export class PetService {
         'pet_details',
         'petDetail',
         'petDetail.petId = pets.petId',
-      );
+      )
+      .select([
+        'pets',
+        'users.userId',
+        'users.name',
+        'users.role',
+        'users.isBiz',
+        'users.status',
+        'petDetail',
+      ]);
 
     // 검색 및 필터링 (키워드, 종, 성별 등)
     this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto);
