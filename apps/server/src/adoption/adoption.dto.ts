@@ -528,4 +528,22 @@ export class AdoptionFilterDto extends PageOptionsDto {
   @Type(() => Date)
   @IsDate()
   endDate?: Date; // 최대 분양 날짜
+
+  @ApiProperty({
+    description: '부 개체 ID',
+    example: 'PET_XXXXXXXX',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  fatherId?: string; // 부 개체 필터
+
+  @ApiProperty({
+    description: '모 개체 ID',
+    example: 'PET_XXXXXXXX',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  motherId?: string; // 모 개체 필터
 }

@@ -1,15 +1,32 @@
 import { create } from "zustand";
-import { AdoptionControllerGetAllAdoptionsParams } from "@repo/api-client";
+import { AdoptionControllerGetAllAdoptionsParams, PetDto } from "@repo/api-client";
 import { FilterStore } from "./filter";
 
-export const useAdoptionFilterStore = create<
-  FilterStore<AdoptionControllerGetAllAdoptionsParams>
->()((set) => ({
+interface AdoptionFilterState extends FilterStore<AdoptionControllerGetAllAdoptionsParams> {
+  father: PetDto | null;
+  mother: PetDto | null;
+  setFather: (father: PetDto | null) => void;
+  setMother: (mother: PetDto | null) => void;
+}
+
+export const useAdoptionFilterStore = create<AdoptionFilterState>()((set) => ({
   searchFilters: {
     species: "CR",
   },
+  father: null,
+  mother: null,
 
   // Actions
   setSearchFilters: (filters) => set({ searchFilters: filters }),
-  resetFilters: () => set({ searchFilters: {} }),
+  resetFilters: () => set({ searchFilters: {}, father: null, mother: null }),
+  setFather: (father) =>
+    set((state) => ({
+      father,
+      searchFilters: { ...state.searchFilters, fatherId: father?.petId },
+    })),
+  setMother: (mother) =>
+    set((state) => ({
+      mother,
+      searchFilters: { ...state.searchFilters, motherId: mother?.petId },
+    })),
 }));

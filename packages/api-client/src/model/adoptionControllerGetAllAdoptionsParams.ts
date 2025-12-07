@@ -73,4 +73,12 @@ export type AdoptionControllerGetAllAdoptionsParams = {
    * 최대 분양 날짜
    */
   endDate?: string;
+  /**
+   * 부 개체 ID
+   */
+  fatherId?: string;
+  /**
+   * 모 개체 ID
+   */
+  motherId?: string;
 };

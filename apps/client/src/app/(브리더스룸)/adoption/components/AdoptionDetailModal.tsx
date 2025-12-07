@@ -58,11 +58,7 @@ const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetai
         <div className="space-y-4">
           {/* 펫 정보 */}
           {/* TODO!: 추후에는 판매완료된 펫 정보 클릭 시 해당 펫 상세 페이지로 이동하도록 수정 */}
-          <Link
-            href={isSold ? "#" : `/pet/${petId}`}
-            onClick={() => !isSold && onClose()}
-            className={cn(isSold ? "cursor-not-allowed" : "cursor-pointer")}
-          >
+          <Link href={`/pet/${petId}`} onClick={onClose} className={"cursor-pointer"}>
             <Card className="bg-muted mb-4 flex gap-0 border-2 p-4 hover:shadow-md">
               <div className="mb-2 flex items-center gap-2 font-semibold">
                 {name}

@@ -302,6 +302,34 @@ export class AdoptionService {
         endDate: pageOptionsDto.endDate,
       });
     }
+
+    // 부 개체 필터링
+    if (pageOptionsDto.fatherId) {
+      queryBuilder.andWhere(
+        `EXISTS (
+          SELECT 1 FROM parent_requests
+          WHERE parent_requests.child_pet_id = pets.pet_id
+            AND parent_requests.parent_pet_id = :fatherId
+            AND parent_requests.role = 'father'
+            AND parent_requests.status = 'approved'
+        )`,
+        { fatherId: pageOptionsDto.fatherId },
+      );
+    }
+
+    // 모 개체 필터링
+    if (pageOptionsDto.motherId) {
+      queryBuilder.andWhere(
+        `EXISTS (
+          SELECT 1 FROM parent_requests
+          WHERE parent_requests.child_pet_id = pets.pet_id
+            AND parent_requests.parent_pet_id = :motherId
+            AND parent_requests.role = 'mother'
+            AND parent_requests.status = 'approved'
+        )`,
+        { motherId: pageOptionsDto.motherId },
+      );
+    }
   }
 
   async createAdoption(
