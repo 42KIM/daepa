@@ -18,17 +18,6 @@ export function AdoptionFilters() {
     <div className="mb-4 flex flex-wrap items-center gap-2">
       <SelectFilter
         showTitle
-        type="adoptionStatus"
-        initialItem={searchFilters.status}
-        onSelect={(item) => {
-          setSearchFilters({
-            ...searchFilters,
-            status: item,
-          });
-        }}
-      />
-      <SelectFilter
-        showTitle
         type="species"
         initialItem={searchFilters.species}
         onSelect={(item) => {

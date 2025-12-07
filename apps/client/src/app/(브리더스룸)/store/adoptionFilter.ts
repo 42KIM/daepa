@@ -5,7 +5,9 @@ import { FilterStore } from "./filter";
 export const useAdoptionFilterStore = create<
   FilterStore<AdoptionControllerGetAllAdoptionsParams>
 >()((set) => ({
-  searchFilters: {},
+  searchFilters: {
+    species: "CR",
+  },
 
   // Actions
   setSearchFilters: (filters) => set({ searchFilters: filters }),
