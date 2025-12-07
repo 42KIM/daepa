@@ -65,7 +65,7 @@ export function DeletePetDialog({ petId, petName }: DeletePetDialogProps) {
           <AlertDialogDescription className="text-red-500">
             분양 또는 산란 이력이 있는 경우 함께 삭제됩니다.
             <br />
-            삭제된 펫 정보는 복구할 수 없습니다.
+            삭제된 펫은 직접 복구할 수 없습니다.
             <br />
             신중히 선택해주세요.
           </AlertDialogDescription>

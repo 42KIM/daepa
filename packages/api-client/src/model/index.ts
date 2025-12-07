@@ -57,6 +57,8 @@ export * from "./createPetDtoSpecies";
 export * from "./createPetDtoType";
 export * from "./deletePetDto";
 export * from "./deleteUserNotificationDto";
+export * from "./deletedPetDto";
+export * from "./deletedPetDtoSpecies";
 export * from "./detailJson";
 export * from "./eggDetailDto";
 export * from "./eggDetailDtoStatus";

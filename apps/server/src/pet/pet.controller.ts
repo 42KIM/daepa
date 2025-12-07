@@ -19,7 +19,7 @@ import {
   PetFilterDto,
   GetParentsByPetIdResponseDto,
   DeletePetDto,
-  PetSummaryDto,
+  DeletedPetDto,
 } from './pet.dto';
 import { PetService } from './pet.service';
 import {
@@ -76,6 +76,81 @@ export class PetController {
     return {
       success: true,
       message: '펫 등록이 완료되었습니다.',
+    };
+  }
+
+  @Get('/deleted/list')
+  @ApiExtraModels(DeletedPetDto, PageMetaDto)
+  @ApiResponse({
+    status: 200,
+    description: '삭제된 펫 목록 조회 성공',
+    schema: {
+      type: 'object',
+      required: ['data', 'meta'],
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: getSchemaPath(DeletedPetDto) },
+        },
+        meta: { $ref: getSchemaPath(PageMetaDto) },
+      },
+    },
+  })
+  async getDeletedPets(
+    @Query() pageOptionsDto: PetFilterDto,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<PageDto<DeletedPetDto>> {
+    return this.petService.getDeletedPets(pageOptionsDto, token.userId);
+  }
+
+  @Post('/duplicate-check')
+  @ApiResponse({
+    status: 200,
+    description: '닉네임 중복 확인 성공',
+    type: CommonResponseDto,
+  })
+  async verifyName(
+    @Body() verifyNameDto: VerifyPetNameDto,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<CommonResponseDto> {
+    const isExist = await this.petService.isPetNameExist(
+      verifyNameDto.name,
+      token.userId,
+    );
+    if (!isExist) {
+      return {
+        success: true,
+        message: '사용 가능한 닉네임입니다.',
+      };
+    } else {
+      throw new ConflictException('이미 사용중인 닉네임입니다.');
+    }
+  }
+
+  @Get('/parents/:petId')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 부모 정보 조회 성공',
+    type: GetParentsByPetIdResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '펫 부모 정보를 찾을 수 없습니다.',
+  })
+  async getParentsByPetId(
+    @Param('petId') petId: string,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<GetParentsByPetIdResponseDto> {
+    const data = await this.petService.getParentsByPetId(petId, token.userId);
+    return {
+      success: true,
+      message: '펫 정보 조회 성공',
+      data,
     };
   }
 
@@ -212,30 +287,6 @@ export class PetController {
     };
   }
 
-  @Get('/deleted/list')
-  @ApiExtraModels(PetSummaryDto, PageMetaDto)
-  @ApiResponse({
-    status: 200,
-    description: '삭제된 펫 목록 조회 성공',
-    schema: {
-      type: 'object',
-      required: ['data', 'meta'],
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: getSchemaPath(PetSummaryDto) },
-        },
-        meta: { $ref: getSchemaPath(PageMetaDto) },
-      },
-    },
-  })
-  async getDeletedPets(
-    @Query() pageOptionsDto: PetFilterDto,
-    @JwtUser() token: JwtUserPayload,
-  ): Promise<PageDto<PetSummaryDto>> {
-    return this.petService.getDeletedPets(pageOptionsDto, token.userId);
-  }
-
   @Post(':petId/hatching')
   @ApiParam({
     name: 'petId',
@@ -261,57 +312,6 @@ export class PetController {
     return {
       success: true,
       message: '해칭이 완료되었습니다.',
-    };
-  }
-
-  @Post('/duplicate-check')
-  @ApiResponse({
-    status: 200,
-    description: '닉네임 중복 확인 성공',
-    type: CommonResponseDto,
-  })
-  async verifyName(
-    @Body() verifyNameDto: VerifyPetNameDto,
-    @JwtUser() token: JwtUserPayload,
-  ): Promise<CommonResponseDto> {
-    const isExist = await this.petService.isPetNameExist(
-      verifyNameDto.name,
-      token.userId,
-    );
-    if (!isExist) {
-      return {
-        success: true,
-        message: '사용 가능한 닉네임입니다.',
-      };
-    } else {
-      throw new ConflictException('이미 사용중인 닉네임입니다.');
-    }
-  }
-
-  @Get('/parents/:petId')
-  @ApiParam({
-    name: 'petId',
-    description: '펫 아이디',
-    example: 'XXXXXXXX',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '펫 부모 정보 조회 성공',
-    type: GetParentsByPetIdResponseDto,
-  })
-  @ApiResponse({
-    status: 404,
-    description: '펫 부모 정보를 찾을 수 없습니다.',
-  })
-  async getParentsByPetId(
-    @Param('petId') petId: string,
-    @JwtUser() token: JwtUserPayload,
-  ): Promise<GetParentsByPetIdResponseDto> {
-    const data = await this.petService.getParentsByPetId(petId, token.userId);
-    return {
-      success: true,
-      message: '펫 정보 조회 성공',
-      data,
     };
   }
 }

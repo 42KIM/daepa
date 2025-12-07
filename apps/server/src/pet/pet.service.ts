@@ -24,7 +24,7 @@ import {
   PetDto,
   PetSingleDto,
   PetParentDto,
-  PetSummaryDto,
+  DeletedPetDto,
 } from './pet.dto';
 import {
   PET_GROWTH,
@@ -215,6 +215,7 @@ export class PetService {
           name: pet.name,
           isDeleted: pet.isDeleted,
           deletedAt: pet.deletedAt,
+          deleteReason: pet.deleteReason,
         });
       }
 
@@ -729,6 +730,11 @@ export class PetService {
         if (error instanceof HttpException) {
           throw error;
         }
+        if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
+          if (error.message.includes('UNIQUE_OWNER_PET_NAME')) {
+            throw new ConflictException('이미 존재하는 펫 이름입니다.');
+          }
+        }
         throw new InternalServerErrorException(
           '펫 복구 중 오류가 발생했습니다.',
         );
@@ -739,7 +745,7 @@ export class PetService {
   async getDeletedPets(
     pageOptionsDto: PetFilterDto,
     userId: string,
-  ): Promise<PageDto<PetSummaryDto>> {
+  ): Promise<PageDto<DeletedPetDto>> {
     const queryBuilder = this.petRepository
       .createQueryBuilder('pets')
       .where('pets.ownerId = :userId AND pets.isDeleted = :isDeleted', {
@@ -751,6 +757,12 @@ export class PetService {
         'users',
         'users',
         'users.userId = pets.ownerId',
+      )
+      .leftJoinAndMapOne(
+        'pets.petDetail',
+        'pet_details',
+        'petDetail',
+        'petDetail.petId = pets.petId',
       );
 
     // 검색 및 필터링 (키워드, 종, 성별 등)
@@ -767,11 +779,13 @@ export class PetService {
 
     // PetSummaryDto로 변환
     const petDtos = petEntities.map((petRaw) => {
-      const { petId, ...pet } = petRaw;
-
-      const petDto = plainToInstance(PetSummaryDto, {
-        ...pet,
-        petId,
+      const petDto = plainToInstance(DeletedPetDto, {
+        name: petRaw.name,
+        species: petRaw.species,
+        deletedAt: petRaw.deletedAt,
+        deleteReason: petRaw.deleteReason,
+        petId: petRaw.petId,
+        hatchingDate: petRaw.hatchingDate,
       });
 
       return petDto;
