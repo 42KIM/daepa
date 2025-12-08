@@ -1,8 +1,7 @@
-import { ChevronsLeft, Clock7, Mail, SeparatorHorizontal, Settings } from "lucide-react";
+import { ChevronsLeft, Clock7, Mail, Settings } from "lucide-react";
 import { useState } from "react";
 import SidebarPanel from "./SidebarPanel";
 import { cn } from "@/lib/utils";
-import { Divider } from "@mui/material";
 
 type SIDEBAR_TYPE = "알림" | "최근 본" | "설정";
 
