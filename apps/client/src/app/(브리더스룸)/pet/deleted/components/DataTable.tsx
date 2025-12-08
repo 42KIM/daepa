@@ -17,14 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PetDto } from "@repo/api-client";
+import { DeletedPetDto } from "@repo/api-client";
 import Loading from "@/components/common/Loading";
 import { cn } from "@/lib/utils";
 import { RefreshCcw } from "lucide-react";
 
 interface DataTableProps {
-  columns: ColumnDef<PetDto>[];
-  data: PetDto[];
+  columns: ColumnDef<DeletedPetDto>[];
+  data: DeletedPetDto[];
   totalCount?: number;
   hasMore?: boolean;
   isFetchingMore?: boolean;

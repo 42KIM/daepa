@@ -2,12 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { SPECIES_KOREAN_ALIAS_INFO, SPECIES_KOREAN_INFO, TABLE_HEADER } from "../../../constants";
-import { PetDto, PetDtoSpecies } from "@repo/api-client";
+import { DeletedPetDto, PetDtoSpecies } from "@repo/api-client";
 import { format, isValid, parseISO } from "date-fns";
 import TooltipText from "../../../components/TooltipText";
 import { RestorePetButton } from "./RestorePetButton";
 
-export const columns: ColumnDef<PetDto>[] = [
+export const columns: ColumnDef<DeletedPetDto>[] = [
   {
     accessorKey: "species",
     header: TABLE_HEADER.species,

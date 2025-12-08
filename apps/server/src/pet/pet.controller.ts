@@ -275,6 +275,10 @@ export class PetController {
     status: 403,
     description: '펫의 소유자가 아닙니다.',
   })
+  @ApiResponse({
+    status: 409,
+    description: '이미 존재하는 펫 이름입니다.',
+  })
   async restorePet(
     @Param('petId') petId: string,
     @JwtUser() token: JwtUserPayload,

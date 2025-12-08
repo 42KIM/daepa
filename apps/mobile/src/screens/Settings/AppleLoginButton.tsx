@@ -120,7 +120,7 @@ const AppleLoginButton = () => {
         authorizationCode: authorizationCode ?? undefined,
         nonce: nonce ?? undefined,
       });
-    } catch (e: any) {
+    } catch (e) {
       console.log(e);
       Loading.close();
     }
