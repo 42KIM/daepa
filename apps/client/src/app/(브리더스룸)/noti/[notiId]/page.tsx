@@ -319,22 +319,10 @@ export default function NotificationsPage({ params }: NotiPageProps) {
 
           <Link
             href={`/pet/${detailData?.childPet?.id && isString(detailData.childPet.id) ? detailData.childPet.id : ""}`}
-            className="group mx-4 mt-4 flex flex-col rounded-lg border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+            className="w-100 group mx-4 mt-4 flex flex-col rounded-2xl border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
           >
             <div className="flex flex-col gap-3">
-              {detailData?.childPet?.photos ? (
-                <div className="relative w-full overflow-hidden rounded-lg">
-                  <PetThumbnail
-                    imageUrl={detailData?.childPet?.photos[0]?.url}
-                    alt={detailData?.childPet?.name}
-                  />
-                </div>
-              ) : (
-                <div className="bg-foreground/70 dark:bg-foreground/30 flex h-48 w-full items-center justify-center rounded-lg">
-                  <span className="text-4xl">🔗</span>
-                </div>
-              )}
-              <div className="flex flex-col">
+              <div className="flex flex-col px-1">
                 <div className="flex items-center justify-between">
                   <span className="text-base">
                     <span className="font-bold">
@@ -358,6 +346,18 @@ export default function NotificationsPage({ params }: NotiPageProps) {
                   <div className="mt-2 text-sm">{detailData.desc}</div>
                 ) : null}
               </div>
+              {detailData?.childPet?.photos ? (
+                <div className="relative w-full overflow-hidden rounded-lg">
+                  <PetThumbnail
+                    imageUrl={detailData?.childPet?.photos[0]?.url}
+                    alt={detailData?.childPet?.name}
+                  />
+                </div>
+              ) : (
+                <div className="bg-foreground/70 dark:bg-foreground/30 flex h-48 w-full items-center justify-center rounded-lg">
+                  <span className="text-4xl">🔗</span>
+                </div>
+              )}
             </div>
           </Link>
         </div>
