@@ -11,7 +11,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { isEqual } from "es-toolkit";
 import { ImageUp } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const Images = ({ pet }: { pet: PetDto }) => {
@@ -20,7 +20,11 @@ const Images = ({ pet }: { pet: PetDto }) => {
   // 편집 중일 때만 임시 상태 사용 (null이면 photos 사용)
   const [editingImages, setEditingImages] = useState<PetImageItem[] | null>(null);
 
-  const { data: photos = [], refetch } = useQuery({
+  const {
+    data: photos = [],
+    refetch,
+    isSuccess,
+  } = useQuery({
     queryKey: [petImageControllerFindOne.name, pet.petId],
     queryFn: () => petImageControllerFindOne(pet.petId),
     select: (response) => response.data,
@@ -62,6 +66,44 @@ const Images = ({ pet }: { pet: PetDto }) => {
       setIsProcessing(false);
     }
   }, [mutateSaveImages, displayImages, photos, refetch]);
+
+  // 최근 본 펫을 localStorage에 저장
+  useEffect(() => {
+    if (!pet || !isSuccess) return;
+
+    const STORAGE_KEY = "recently_viewed_pets";
+    const MAX_ITEMS = 20;
+
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const currentList = stored ? JSON.parse(stored) : [];
+
+      // 현재 펫 정보
+      const newItem = {
+        petId: pet.petId,
+        name: pet.name,
+        species: pet.species,
+        photoUrl: photos[0]?.url,
+        morphs: pet.morphs,
+        hatchingDate: pet.hatchingDate,
+      };
+
+      // 중복 제거 (같은 petId가 있으면 제거)
+      const filteredList = currentList.filter(
+        (item: { petId: string }) => item.petId !== pet.petId,
+      );
+
+      // 새 항목을 맨 앞에 추가
+      const updatedList = [newItem, ...filteredList].slice(0, MAX_ITEMS);
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+
+      // 커스텀 이벤트 발생시켜서 다른 컴포넌트에 알림
+      window.dispatchEvent(new Event("recentlyViewedUpdated"));
+    } catch (error) {
+      console.error("Failed to save recently viewed pet:", error);
+    }
+  }, [pet, isSuccess, photos]);
 
   return (
     <div className="shadow-xs flex min-h-[480px] min-w-[340px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">

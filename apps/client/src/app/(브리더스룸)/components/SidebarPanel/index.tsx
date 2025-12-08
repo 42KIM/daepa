@@ -2,10 +2,11 @@
 
 import { cn } from "@/lib/utils";
 import NotificationList from "./알림";
+import RecentlyViewedList from "./최근본";
 
 interface SidebarPanelProps {
   isOpen: boolean;
-  type?: "알림" | "최근 본";
+  type?: "알림" | "최근 본" | "설정";
 }
 
 const SidebarPanel = ({ isOpen, type }: SidebarPanelProps) => {
@@ -23,6 +24,7 @@ const SidebarPanel = ({ isOpen, type }: SidebarPanelProps) => {
         </div>
 
         {isOpen && type === "알림" && <NotificationList />}
+        {isOpen && type === "최근 본" && <RecentlyViewedList />}
       </div>
     </div>
   );

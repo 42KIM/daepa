@@ -17,7 +17,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <div className="z-10 flex h-full w-[55px] flex-col items-center gap-2 bg-gray-100">
+      <div className="z-100 fixed right-0 flex h-full w-[55px] flex-col items-center gap-2 bg-gray-100">
         <SidebarItem
           icon={
             <ChevronsLeft

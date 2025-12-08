@@ -23,7 +23,7 @@ export default function BrLayout({
     <main
       className={`relative mx-auto flex min-h-screen w-full ${isPetDetail ? "bg-gray-100" : ""}`}
     >
-      <div className="flex flex-1 flex-col p-2">
+      <div className="mr-[55px] flex flex-1 flex-col p-2">
         <Menubar />
         {children}
       </div>
