@@ -20,27 +20,42 @@ const AdoptionDateRangeFilter = () => {
     }
   };
 
-  const [startDate, setStartDate] = useState<string>(getDateString(searchFilters.startDate));
-  const [endDate, setEndDate] = useState<string>(getDateString(searchFilters.endDate));
+  // 로컬 state로 임시 날짜 관리
+  const [tempStartDate, setTempStartDate] = useState<string>(
+    getDateString(searchFilters.startDate),
+  );
+  const [tempEndDate, setTempEndDate] = useState<string>(getDateString(searchFilters.endDate));
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isEntering, setIsEntering] = useState(false);
 
+  // 모달이 열릴 때 로컬 state를 searchFilters로 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setTempStartDate(getDateString(searchFilters.startDate));
+      setTempEndDate(getDateString(searchFilters.endDate));
+    }
+  }, [isOpen, searchFilters.startDate, searchFilters.endDate]);
+
   useEffect(() => {
     if (!isOpen) return;
 
-    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
       const root = containerRef.current;
-      if (root && !root.contains(event.target as Node)) {
-        setIsOpen(false);
+
+      // 컨테이너 내부를 클릭한 경우 무시
+      if (root && root.contains(target)) {
+        return;
       }
+
+      // 외부 클릭인 경우 닫기
+      setIsOpen(false);
     };
 
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("touchstart", handlePointerDown);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
@@ -53,11 +68,6 @@ const AdoptionDateRangeFilter = () => {
       setIsEntering(false);
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    setStartDate(getDateString(searchFilters.startDate));
-    setEndDate(getDateString(searchFilters.endDate));
-  }, [searchFilters]);
 
   const hasFilter = searchFilters.startDate !== undefined || searchFilters.endDate !== undefined;
 
@@ -107,23 +117,26 @@ const AdoptionDateRangeFilter = () => {
           )}
         >
           <div className="mb-4 font-[500]">분양 날짜</div>
-          <div className="mb-4 flex flex-col gap-3">
-            <div className="w-full">
-              <label className="mb-1 block text-sm text-gray-600">시작 날짜</label>
+          <div className="mb-4 flex items-center gap-1">
+            <div className="min-w-0 flex-1">
+              <label className="mb-1 block text-xs text-gray-600">시작</label>
               <input
                 type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="h-[32px] w-full rounded-lg border border-gray-200 px-2 text-sm focus:border-blue-500 focus:outline-none"
+                value={tempStartDate}
+                max={tempEndDate || undefined}
+                onChange={(e) => setTempStartDate(e.target.value)}
+                className="h-[32px] w-full rounded-lg border border-gray-200 px-1.5 text-sm focus:border-blue-500 focus:outline-none"
               />
             </div>
-            <div className="w-full">
-              <label className="mb-1 block text-sm text-gray-600">종료 날짜</label>
+            <div className="mt-5 text-gray-400">~</div>
+            <div className="min-w-0 flex-1">
+              <label className="mb-1 block text-xs text-gray-600">종료</label>
               <input
                 type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="h-[32px] w-full rounded-lg border border-gray-200 px-2 text-sm focus:border-blue-500 focus:outline-none"
+                value={tempEndDate}
+                min={tempStartDate || undefined}
+                onChange={(e) => setTempEndDate(e.target.value)}
+                className="h-[32px] w-full rounded-lg border border-gray-200 px-1.5 text-sm focus:border-blue-500 focus:outline-none"
               />
             </div>
           </div>
@@ -132,13 +145,14 @@ const AdoptionDateRangeFilter = () => {
             <button
               type="button"
               onClick={() => {
-                setStartDate("");
-                setEndDate("");
+                setTempStartDate("");
+                setTempEndDate("");
                 setSearchFilters({
                   ...searchFilters,
                   startDate: undefined,
                   endDate: undefined,
                 });
+                setIsOpen(false);
               }}
               className="h-[32px] cursor-pointer rounded-lg bg-gray-100 px-3 text-sm font-semibold text-gray-600 hover:bg-gray-200"
             >
@@ -149,14 +163,14 @@ const AdoptionDateRangeFilter = () => {
               onClick={() => {
                 setSearchFilters({
                   ...searchFilters,
-                  startDate: startDate || undefined,
-                  endDate: endDate || undefined,
+                  startDate: tempStartDate || undefined,
+                  endDate: tempEndDate || undefined,
                 });
                 setIsOpen(false);
               }}
               className="h-[32px] cursor-pointer rounded-lg bg-blue-500 px-3 text-sm font-semibold text-white hover:bg-blue-600"
             >
-              저장
+              확인
             </button>
           </div>
         </div>
