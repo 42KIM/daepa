@@ -51,8 +51,12 @@ const NotificationList = () => {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-8 text-center">
-          <div className="mb-2 text-sm font-medium text-gray-900">알림이 없습니다</div>
-          <div className="text-xs text-gray-500">새로운 알림이 도착하면 여기에 표시됩니다</div>
+          <div className="mb-2 text-sm font-medium text-gray-900 dark:text-neutral-100">
+            알림이 없습니다
+          </div>
+          <div className="text-xs text-gray-500 dark:text-neutral-400">
+            새로운 알림이 도착하면 여기에 표시됩니다
+          </div>
         </div>
       )}
 

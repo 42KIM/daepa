@@ -14,14 +14,14 @@ const SidebarPanel = ({ isOpen, type }: SidebarPanelProps) => {
   return (
     <div
       className={cn(
-        "fixed right-[55px] top-0 h-full w-[315px] border-x bg-gray-100 shadow-lg transition-transform duration-300",
+        "fixed right-[55px] top-0 h-full w-[315px] border-x bg-gray-100 shadow-lg transition-transform duration-300 dark:border-gray-900 dark:bg-black",
         isOpen ? "translate-x-0" : "translate-x-[315px]",
       )}
     >
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
-          <h2 className="text-lg font-semibold">{type}</h2>
+          <h2 className="text-lg font-semibold dark:text-gray-100">{type}</h2>
         </div>
 
         {isOpen && type === "알림" && <NotificationList />}

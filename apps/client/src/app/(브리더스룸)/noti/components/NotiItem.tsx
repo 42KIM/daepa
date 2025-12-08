@@ -8,7 +8,7 @@ import NotiTitle from "./NotiTitle";
 import { castDetailJson, cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { NOTIFICATION_TYPE } from "../../constants";
 import StatusBadge from "./StatusBadge";
 import { useNotificationRead } from "@/hooks/useNotificationRead";
@@ -46,7 +46,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
       key={item.id}
       className={cn(
         "m-2 flex flex-1 flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md",
-        item.id === Number(notiId) && "bg-white dark:bg-gray-800",
+        item.id === Number(notiId) && "bg-white dark:bg-neutral-800",
       )}
       onClick={() => {
         handleItemClick(item);

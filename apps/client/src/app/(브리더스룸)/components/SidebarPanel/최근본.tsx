@@ -65,7 +65,7 @@ const RecentlyViewedList = () => {
   return (
     <>
       {items && items.length > 0 && (
-        <div className="flex items-center gap-2 pl-4 text-red-500">
+        <div className="flex items-center gap-2 pl-4 text-red-500 dark:text-red-400">
           <Info size={14} />
           <div className="text-[14px]">최대 {MAX_ITEMS}개의 펫을 확인 가능합니다.</div>
         </div>
@@ -78,8 +78,8 @@ const RecentlyViewedList = () => {
                 key={item.petId}
                 href={`/pet/${item.petId}`}
                 className={cn(
-                  "group flex items-center gap-3 rounded-2xl p-3 hover:bg-gray-200",
-                  item.petId === petId && "bg-gray-200",
+                  "group flex items-center gap-3 rounded-2xl p-3 hover:bg-gray-200 dark:hover:bg-neutral-800",
+                  item.petId === petId && "bg-gray-200 dark:bg-neutral-800",
                 )}
               >
                 {item.photoUrl ? (
@@ -93,11 +93,11 @@ const RecentlyViewedList = () => {
                 )}
                 <div className="flex flex-1 justify-between gap-2 overflow-hidden">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate font-bold">{item.name}</span>
+                    <span className="truncate font-bold dark:text-gray-100">{item.name}</span>
                   </div>
                   <div>
                     {item.species && (
-                      <span className="text-muted-foreground truncate text-xs">
+                      <span className="text-muted-foreground truncate text-xs dark:text-gray-400">
                         {SPECIES_KOREAN_INFO[item.species]}
                       </span>
                     )}
@@ -106,7 +106,10 @@ const RecentlyViewedList = () => {
                         {item.morphs.map((morph, index) => {
                           const length = item.morphs?.length ?? 0;
                           return (
-                            <div key={morph} className="text-[12px] text-blue-600">
+                            <div
+                              key={morph}
+                              className="text-[12px] text-blue-600 dark:text-blue-400"
+                            >
                               <span>{morph}</span>
                               {length - 1 > index && <span> |</span>}
                             </div>
