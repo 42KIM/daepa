@@ -107,8 +107,8 @@ const AdoptionDateRangeFilter = () => {
           )}
         >
           <div className="mb-4 font-[500]">분양 날짜</div>
-          <div className="mb-4 flex items-center gap-2">
-            <div className="flex-1">
+          <div className="mb-4 flex flex-col gap-3">
+            <div className="w-full">
               <label className="mb-1 block text-sm text-gray-600">시작 날짜</label>
               <input
                 type="date"
@@ -117,8 +117,7 @@ const AdoptionDateRangeFilter = () => {
                 className="h-[32px] w-full rounded-lg border border-gray-200 px-2 text-sm focus:border-blue-500 focus:outline-none"
               />
             </div>
-            <div className="mt-6 text-gray-400">~</div>
-            <div className="flex-1">
+            <div className="w-full">
               <label className="mb-1 block text-sm text-gray-600">종료 날짜</label>
               <input
                 type="date"
