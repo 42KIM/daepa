@@ -17,7 +17,7 @@ export default function DeletedPetsPage() {
 
   const { data, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["deletedPets"],
+      queryKey: [petControllerGetDeletedPets.name],
       queryFn: async ({ pageParam = 1 }) => {
         const response = await petControllerGetDeletedPets({
           page: pageParam,

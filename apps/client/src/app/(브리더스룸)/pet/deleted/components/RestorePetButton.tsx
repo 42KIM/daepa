@@ -17,7 +17,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { petControllerRestorePet, UserProfileDtoRole } from "@repo/api-client";
+import {
+  brPetControllerFindAll,
+  petControllerGetDeletedPets,
+  petControllerRestorePet,
+  UserProfileDtoRole,
+} from "@repo/api-client";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
 
 interface RestorePetButtonProps {
@@ -36,8 +41,8 @@ export function RestorePetButton({ petId, petName }: RestorePetButtonProps) {
     },
     onSuccess: () => {
       toast.success("펫이 복구되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["deletedPets"] });
-      queryClient.invalidateQueries({ queryKey: ["petList"] });
+      queryClient.invalidateQueries({ queryKey: [petControllerGetDeletedPets.name] });
+      queryClient.invalidateQueries({ queryKey: [brPetControllerFindAll.name] });
       setOpen(false);
     },
     onError: (error: any) => {

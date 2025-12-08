@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { petControllerDeletePet } from "@repo/api-client";
+import { brPetControllerFindAll, petControllerDeletePet } from "@repo/api-client";
 
 interface DeletePetDialogProps {
   petId: string;
@@ -39,7 +39,7 @@ export function DeletePetDialog({ petId, petName }: DeletePetDialogProps) {
     },
     onSuccess: () => {
       toast.success("펫이 삭제되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["petList"] });
+      queryClient.invalidateQueries({ queryKey: [brPetControllerFindAll.name] });
       router.push("/pet");
     },
     onError: (error: any) => {
