@@ -100,16 +100,18 @@ const MatingItem = ({
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleAddLayingClick}
-        className="flex items-center gap-1 self-start rounded-lg px-2 py-0.5 text-[14px] text-blue-600 hover:bg-blue-50"
-      >
-        <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-600">
-          +
-        </div>
-        <span className={"font-medium text-blue-600"}>산란 정보 추가</span>
-      </button>
+      {isEditable && (
+        <button
+          type="button"
+          onClick={handleAddLayingClick}
+          className="flex items-center gap-1 self-start rounded-lg px-2 py-0.5 text-[14px] text-blue-600 hover:bg-blue-50"
+        >
+          <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-600">
+            +
+          </div>
+          <span className={"font-medium text-blue-600"}>산란 정보 추가</span>
+        </button>
+      )}
 
       <div className="mt-2 flex flex-col gap-2">
         {sortedLayingsByDate && sortedLayingsByDate.length > 0 ? (
