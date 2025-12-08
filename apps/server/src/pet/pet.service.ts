@@ -636,15 +636,6 @@ export class PetService {
           );
         }
 
-        // 해당 펫이 포함된 페어도 soft delete
-        await entityManager
-          .createQueryBuilder()
-          .update(PairEntity)
-          .set({ isDeleted: true, deletedAt: now })
-          .where('(fatherId = :petId OR motherId = :petId)', { petId })
-          .andWhere('isDeleted = false')
-          .execute();
-
         return { petId };
       } catch (error: unknown) {
         if (error instanceof HttpException) {
