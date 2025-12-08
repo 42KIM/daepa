@@ -1231,14 +1231,61 @@ export class PetFilterDto extends PageOptionsDto {
 
   @ApiProperty({
     description: '판매 상태',
-    example: 'ON_SALE',
-    enum: ADOPTION_SALE_STATUS,
-    'x-enumNames': Object.keys(ADOPTION_SALE_STATUS),
+    example: ['ON_SALE', 'NFS'],
+    type: 'array',
+    items: {
+      enum: Object.values(ADOPTION_SALE_STATUS),
+      type: 'string',
+      'x-enumNames': Object.keys(ADOPTION_SALE_STATUS),
+    },
     required: false,
   })
   @IsOptional()
-  @IsEnum(ADOPTION_SALE_STATUS)
-  status?: ADOPTION_SALE_STATUS; // 판매 상태 검색
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.filter(
+        (v): v is ADOPTION_SALE_STATUS =>
+          typeof v === 'string' &&
+          v.trim().length > 0 &&
+          Object.values(ADOPTION_SALE_STATUS).includes(
+            v as ADOPTION_SALE_STATUS,
+          ),
+      );
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length === 0) return undefined;
+      try {
+        const parsed: unknown = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (v): v is ADOPTION_SALE_STATUS =>
+              typeof v === 'string' &&
+              v.trim().length > 0 &&
+              Object.values(ADOPTION_SALE_STATUS).includes(
+                v as ADOPTION_SALE_STATUS,
+              ),
+          );
+        }
+      } catch {
+        // ignore parse error and fallback to comma-split
+      }
+      return trimmed
+        .split(',')
+        .map((v) => v.trim())
+        .filter(
+          (v): v is ADOPTION_SALE_STATUS =>
+            v.length > 0 &&
+            Object.values(ADOPTION_SALE_STATUS).includes(
+              v as ADOPTION_SALE_STATUS,
+            ),
+        );
+    }
+    return undefined;
+  })
+  @IsArray()
+  @IsEnum(ADOPTION_SALE_STATUS, { each: true })
+  status?: ADOPTION_SALE_STATUS[]; // 판매 상태 검색
 
   @ApiProperty({
     description: '펫 성장단계',

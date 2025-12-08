@@ -992,8 +992,8 @@ export class PetService {
     }
 
     // 판매 상태 필터링
-    if (pageOptionsDto.status) {
-      queryBuilder.andWhere('adoptions.status = :status', {
+    if (pageOptionsDto.status && pageOptionsDto.status.length > 0) {
+      queryBuilder.andWhere('adoptions.status IN (:...status)', {
         status: pageOptionsDto.status,
       });
     }

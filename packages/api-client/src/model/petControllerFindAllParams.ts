@@ -8,7 +8,7 @@
 import type { PetControllerFindAllOrder } from "./petControllerFindAllOrder";
 import type { PetControllerFindAllSpecies } from "./petControllerFindAllSpecies";
 import type { PetControllerFindAllSexItem } from "./petControllerFindAllSexItem";
-import type { PetControllerFindAllStatus } from "./petControllerFindAllStatus";
+import type { PetControllerFindAllStatusItem } from "./petControllerFindAllStatusItem";
 import type { PetControllerFindAllGrowthItem } from "./petControllerFindAllGrowthItem";
 import type { PetControllerFindAllFilterType } from "./petControllerFindAllFilterType";
 
@@ -76,7 +76,7 @@ export type PetControllerFindAllParams = {
   /**
    * 판매 상태
    */
-  status?: PetControllerFindAllStatus;
+  status?: PetControllerFindAllStatusItem[];
   /**
    * 펫 성장단계
    */

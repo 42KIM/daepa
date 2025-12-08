@@ -1,6 +1,11 @@
 "use client";
 
-import { GENDER_KOREAN_INFO, GROWTH_KOREAN_INFO, MORPH_LIST_BY_SPECIES } from "../../constants";
+import {
+  GENDER_KOREAN_INFO,
+  GROWTH_KOREAN_INFO,
+  MORPH_LIST_BY_SPECIES,
+  SALE_STATUS_KOREAN_INFO,
+} from "../../constants";
 import SelectFilter from "../../components/SingleSelect";
 import { cn } from "@/lib/utils";
 import MultiSelectFilter from "../../components/MultiSelectFilter";
@@ -71,6 +76,7 @@ export function Filters({ showPublicFilter = true }: FiltersProps) {
       )}
       <MultiSelectFilter type="growth" title="크기" displayMap={GROWTH_KOREAN_INFO} />
       <MultiSelectFilter type="sex" title="성별" displayMap={GENDER_KOREAN_INFO} />
+      <MultiSelectFilter type="status" title="분양상태" displayMap={SALE_STATUS_KOREAN_INFO} />
       {/* TODO: 먹이 필터 추가 */}
 
       <button
