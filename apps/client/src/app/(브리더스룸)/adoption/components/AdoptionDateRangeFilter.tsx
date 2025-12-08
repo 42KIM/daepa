@@ -21,21 +21,11 @@ const AdoptionDateRangeFilter = () => {
   };
 
   // 로컬 state로 임시 날짜 관리
-  const [tempStartDate, setTempStartDate] = useState<string>(
-    getDateString(searchFilters.startDate),
-  );
-  const [tempEndDate, setTempEndDate] = useState<string>(getDateString(searchFilters.endDate));
+  const [tempStartDate, setTempStartDate] = useState<string>("");
+  const [tempEndDate, setTempEndDate] = useState<string>("");
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isEntering, setIsEntering] = useState(false);
-
-  // 모달이 열릴 때 로컬 state를 searchFilters로 초기화
-  useEffect(() => {
-    if (isOpen) {
-      setTempStartDate(getDateString(searchFilters.startDate));
-      setTempEndDate(getDateString(searchFilters.endDate));
-    }
-  }, [isOpen, searchFilters.startDate, searchFilters.endDate]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -100,7 +90,14 @@ const AdoptionDateRangeFilter = () => {
         )}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            // 모달을 열 때 현재 필터 값으로 초기화
+            setTempStartDate(getDateString(searchFilters.startDate));
+            setTempEndDate(getDateString(searchFilters.endDate));
+          }
+          setIsOpen(!isOpen);
+        }}
       >
         <div>{displayText()}</div>
         <ChevronDown className={cn("h-4 w-4", hasFilter ? "text-blue-600" : "text-gray-600")} />
@@ -152,7 +149,6 @@ const AdoptionDateRangeFilter = () => {
                   startDate: undefined,
                   endDate: undefined,
                 });
-                setIsOpen(false);
               }}
               className="h-[32px] cursor-pointer rounded-lg bg-gray-100 px-3 text-sm font-semibold text-gray-600 hover:bg-gray-200"
             >
