@@ -710,30 +710,6 @@ export class PetService {
           );
         }
 
-        // 해당 펫이 포함된 페어 복구 (페어의 부모 둘 다 삭제되지 않은 경우만)
-        const pairsToRestore = await entityManager
-          .createQueryBuilder(PairEntity, 'pair')
-          .leftJoin(PetEntity, 'father', 'pair.fatherId = father.petId')
-          .leftJoin(PetEntity, 'mother', 'pair.motherId = mother.petId')
-          .where('(pair.fatherId = :petId OR pair.motherId = :petId)', {
-            petId,
-          })
-          .andWhere('pair.isDeleted = true')
-          .andWhere('father.isDeleted = false')
-          .andWhere('mother.isDeleted = false')
-          .select('pair.id')
-          .getMany();
-
-        if (pairsToRestore.length > 0) {
-          const pairIds = pairsToRestore.map((p) => p.id);
-          await entityManager
-            .createQueryBuilder()
-            .update(PairEntity)
-            .set({ isDeleted: false, deletedAt: null })
-            .whereInIds(pairIds)
-            .execute();
-        }
-
         return { petId };
       } catch (error: unknown) {
         if (error instanceof HttpException) {
