@@ -1,13 +1,16 @@
-import { ChevronsLeft, Clock7, Mail } from "lucide-react";
+import { ChevronsLeft, Clock7, Mail, SeparatorHorizontal, Settings } from "lucide-react";
 import { useState } from "react";
 import SidebarPanel from "./SidebarPanel";
 import { cn } from "@/lib/utils";
+import { Divider } from "@mui/material";
+
+type SIDEBAR_TYPE = "알림" | "최근 본" | "설정";
 
 const Sidebar = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [type, setType] = useState<"알림" | "최근 본">("알림");
+  const [type, setType] = useState<SIDEBAR_TYPE>("알림");
 
-  const handleClickSidebarItem = (selectedType: "알림" | "최근 본") => {
+  const handleClickSidebarItem = (selectedType: SIDEBAR_TYPE) => {
     setType(selectedType);
     if (isNotificationOpen && type !== selectedType) {
       return;
@@ -29,7 +32,6 @@ const Sidebar = () => {
             />
           }
         />
-
         <SidebarItem
           icon={<Mail className="text-gray-500" onClick={() => handleClickSidebarItem("알림")} />}
           label="알림"
@@ -41,6 +43,14 @@ const Sidebar = () => {
           }
           label="최근 본"
           selected={isNotificationOpen && type === "최근 본"}
+        />
+
+        <SidebarItem
+          icon={
+            <Settings onClick={() => handleClickSidebarItem("설정")} className="text-gray-500" />
+          }
+          label="설정"
+          selected={isNotificationOpen && type === "설정"}
         />
       </div>
       <SidebarPanel type={type} isOpen={isNotificationOpen} />
