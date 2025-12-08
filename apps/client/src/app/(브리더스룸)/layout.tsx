@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "./store/user";
 import Menubar from "./components/Menubar";
+import Sidebar from "./components/Sidebar";
 
 export default function BrLayout({
   children,
@@ -20,12 +21,13 @@ export default function BrLayout({
 
   return (
     <main
-      className={`relative mx-auto min-h-screen w-full max-w-[1920px] p-2 ${
-        isPetDetail ? "bg-gray-100" : ""
-      }`}
+      className={`relative mx-auto flex min-h-screen w-full ${isPetDetail ? "bg-gray-100" : ""}`}
     >
-      <Menubar />
-      {children}
+      <div className="flex flex-1 flex-col p-2">
+        <Menubar />
+        {children}
+      </div>
+      <Sidebar />
     </main>
   );
 }
