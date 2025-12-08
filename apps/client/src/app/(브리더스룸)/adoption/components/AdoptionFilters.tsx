@@ -10,6 +10,7 @@ import SelectFilter from "../../components/SingleSelect";
 import AdoptionMultiSelectFilter from "./AdoptionMultiSelectFilter";
 import { useAdoptionFilterStore } from "../../store/adoptionFilter";
 import AdoptionPriceRangeFilter from "./AdoptionPriceRangeFilter";
+import AdoptionDateRangeFilter from "./AdoptionDateRangeFilter";
 import FilterItem from "./FilterItem";
 import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../components/selector/parentSearch";
@@ -76,6 +77,7 @@ export function AdoptionFilters() {
       <AdoptionMultiSelectFilter type="sex" title="성별" displayMap={GENDER_KOREAN_INFO} />
       <AdoptionMultiSelectFilter type="growth" title="크기" displayMap={GROWTH_KOREAN_INFO} />
       <AdoptionPriceRangeFilter />
+      <AdoptionDateRangeFilter />
 
       <FilterItem
         value={father?.name}
