@@ -23,7 +23,7 @@ const CardBackActions = memo(
     const router = useRouter();
 
     const { mutateAsync: mutateDeletePet } = useMutation({
-      mutationFn: (petId: string) => petControllerDeletePet(petId),
+      mutationFn: (petId: string) => petControllerDeletePet(petId, {}),
     });
 
     const handleConfirmDelete = useCallback(

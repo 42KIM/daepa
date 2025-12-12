@@ -25,6 +25,7 @@ import { PetDto } from "@repo/api-client";
 import Loading from "@/components/common/Loading";
 import { cn } from "@/lib/utils";
 import { RefreshCcw } from "lucide-react";
+import Link from "next/link";
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -94,25 +95,36 @@ export const DataTable = ({
       <div className="w-full">
         {hasFilter && <Filters />}
 
-        <button
-          type="button"
-          aria-label="검색 결과 새로고침"
-          aria-busy={isRefreshing}
-          disabled={isRefreshing}
-          onClick={async () => {
-            if (isRefreshing) return;
-            setIsRefreshing(true);
-            try {
-              await refetch();
-            } finally {
-              timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
-            }
-          }}
-          className="flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
-        >
-          검색된 펫・{totalCount}마리
-          <RefreshCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
-        </button>
+        <div className="mb-2 flex justify-between">
+          <button
+            type="button"
+            aria-label="검색 결과 새로고침"
+            aria-busy={isRefreshing}
+            disabled={isRefreshing}
+            onClick={async () => {
+              if (isRefreshing) return;
+              setIsRefreshing(true);
+              try {
+                await refetch();
+              } finally {
+                timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
+              }
+            }}
+            className="flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+          >
+            검색된 펫・{totalCount}마리
+            <RefreshCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+          </button>
+
+          <Link href="/pet/deleted">
+            <button
+              type="button"
+              className="h-[32px] cursor-pointer rounded-lg px-3 text-sm text-red-600 underline hover:bg-red-100"
+            >
+              삭제된 펫 보기
+            </button>
+          </Link>
+        </div>
 
         <div className="rounded-md">
           <Table>

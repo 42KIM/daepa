@@ -1,7 +1,7 @@
 "use client";
 
-import { Search, X, Lock, User } from "lucide-react";
-import Link from "next/link";
+import { Search, X, Lock, User, Ban } from "lucide-react";
+
 import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../components/selector/parentSearch";
 import { Button } from "@/components/ui/button";
@@ -174,6 +174,8 @@ const ParentLink = ({
 
   const parent = data as PetParentDto;
   const isMyPet = parent.owner.userId === user?.userId;
+  const isDeleted = parent.isDeleted;
+
   return (
     <div className="flex-1">
       <dt className="mb-2 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -193,14 +195,16 @@ const ParentLink = ({
           </Button>
         )}
 
-        <Link
-          href={`/pet/${parent.petId}`}
-          passHref={false}
+        <div
           onClick={(e) => {
             e.stopPropagation();
             if (isClickDisabled) e.preventDefault();
+            else if (!isDeleted) window.location.href = `/pet/${parent.petId}`;
           }}
-          className="flex flex-col items-center gap-2"
+          className={cn(
+            "flex cursor-pointer flex-col items-center gap-2",
+            isDeleted && "cursor-not-allowed opacity-70",
+          )}
         >
           <div className="relative w-full">
             <PetThumbnail imageUrl={thumbnail?.url} />
@@ -212,6 +216,12 @@ const ParentLink = ({
               <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1">
                 <User className="h-3 w-3 text-blue-600" />
                 <span className="text-[11px] font-semibold text-blue-600">{parent.owner.name}</span>
+              </div>
+            )}
+            {isDeleted && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/70">
+                <Ban className="h-6 w-6 text-red-600" />
+                <span className="text-sm font-medium text-red-600">삭제된 펫입니다.</span>
               </div>
             )}
           </div>
@@ -231,7 +241,7 @@ const ParentLink = ({
             {parent.morphs?.join(" | ")}
             {parent.traits?.join(" | ")}
           </div>
-        </Link>
+        </div>
       </div>
     </div>
   );

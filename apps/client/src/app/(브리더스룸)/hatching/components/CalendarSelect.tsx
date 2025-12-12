@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 
 interface CalendarSelectProps {
   type?: "create" | "edit";
@@ -39,7 +39,7 @@ const CalendarSelect = ({
         >
           {type === "create" && (
             <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[12px] text-blue-600">
-              +
+              <Plus className="h-2 w-2" />
             </div>
           )}
           <div className="flex cursor-pointer items-center gap-1 text-blue-600">{triggerText}</div>

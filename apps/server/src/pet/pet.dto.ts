@@ -86,6 +86,14 @@ export class PetBaseDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }): string | undefined => {
+    if (typeof value === 'string' && value.startsWith('DELETED_')) {
+      // DELETED_${name}_${timestamp} 형태에서 원래 이름만 추출
+      const match = value.match(/^DELETED_(.+)_\d+$/);
+      return match ? match[1] : value;
+    }
+    return value as string | undefined;
+  })
   name?: string;
 
   @ApiProperty({
@@ -138,6 +146,27 @@ export class PetBaseDto {
   isDeleted?: boolean;
 
   @ApiProperty({
+    description: '펫 삭제 일시',
+    example: '2024-01-01T00:00:00.000Z',
+    type: 'string',
+    format: 'date-time',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  deletedAt?: Date;
+
+  @ApiProperty({
+    description: '펫 삭제 사유',
+    example: '더 이상 키울 수 없음',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  deleteReason?: string;
+
+  @ApiProperty({
     description: '펫 상세 정보',
     type: PetDetailBaseDto,
     required: false,
@@ -168,6 +197,77 @@ export class PetBaseDto {
   laying?: LayingDto;
 }
 
+export class DeletedPetDto {
+  @ApiProperty({
+    description: '삭제된 펫 이름',
+    example: '대파',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }): string | undefined => {
+    if (typeof value === 'string' && value.startsWith('DELETED_')) {
+      // DELETED_${name}_${timestamp} 형태에서 원래 이름만 추출
+      const match = value.match(/^DELETED_(.+)_\d+$/);
+      return match ? match[1] : value;
+    }
+    return value as string | undefined;
+  })
+  declare name?: string;
+
+  @ApiProperty({
+    description: '펫 종',
+    example: '크레스티드게코',
+    enum: PET_SPECIES,
+    'x-enumNames': Object.keys(PET_SPECIES),
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(PET_SPECIES)
+  species?: PET_SPECIES; // 종별 필터
+
+  @ApiProperty({
+    description: '펫 삭제 일시',
+    example: '2024-01-01T00:00:00.000Z',
+    type: 'string',
+    format: 'date-time',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  deletedAt?: Date;
+
+  @ApiProperty({
+    description: '펫 삭제 사유',
+    example: '더 이상 키울 수 없음',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  deleteReason?: string;
+
+  @ApiProperty({
+    description: '분양 펫 아이디',
+    example: 'XXXXXXXX',
+    required: true,
+  })
+  @IsString()
+  petId: string;
+
+  @ApiProperty({
+    description: '펫 출생일',
+    example: '2024-01-01',
+    type: 'string',
+    format: 'date',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  hatchingDate?: Date;
+}
+
 export class PetSummaryDto extends PickType(PetBaseDto, [
   'petId',
   'type',
@@ -178,6 +278,23 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
   'isPublic',
   'isDeleted',
 ]) {
+  @ApiProperty({
+    description: '펫 이름',
+    example: '대파',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }): string | undefined => {
+    if (typeof value === 'string' && value.startsWith('DELETED_')) {
+      // DELETED_${name}_${timestamp} 형태에서 원래 이름만 추출
+      const match = value.match(/^DELETED_(.+)_\d+$/);
+      return match ? match[1] : value;
+    }
+    return value as string | undefined;
+  })
+  declare name?: string;
+
   @ApiProperty({
     description: '펫 성별(수컷, 암컷, 미구분)',
     example: 'M',
@@ -240,9 +357,6 @@ export class PetSummaryDto extends PickType(PetBaseDto, [
 
   @Exclude()
   declare updatedAt?: Date;
-
-  @Exclude()
-  declare isDeleted?: boolean;
 }
 
 export class PetSummaryAdoptionDto extends PickType(PetSummaryDto, [
@@ -328,7 +442,34 @@ export class PetSummaryLayingDto extends PickType(PetSummaryDto, [
   'morphs',
   'traits',
   'weight',
+  'isDeleted',
 ]) {
+  @ApiProperty({
+    description: '펫 이름',
+    example: '대파',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }): string | undefined => {
+    if (typeof value === 'string' && value.startsWith('DELETED_')) {
+      // DELETED_${name}_${timestamp} 형태에서 원래 이름만 추출
+      const match = value.match(/^DELETED_(.+)_\d+$/);
+      return match ? match[1] : value;
+    }
+    return value as string | undefined;
+  })
+  declare name?: string;
+
+  @ApiProperty({
+    description: '펫 삭제 여부',
+    example: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  declare isDeleted?: boolean;
+
   @ApiProperty({
     description: '산란 아이디',
     example: 1,
@@ -393,6 +534,23 @@ export class PetParentDto extends PickType(PetSummaryDto, [
   'isPublic',
   'isDeleted',
 ]) {
+  @ApiProperty({
+    description: '펫 이름',
+    example: '대파',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }): string | undefined => {
+    if (typeof value === 'string' && value.startsWith('DELETED_')) {
+      // DELETED_${name}_${timestamp} 형태에서 원래 이름만 추출
+      const match = value.match(/^DELETED_(.+)_\d+$/);
+      return match ? match[1] : value;
+    }
+    return value as string | undefined;
+  })
+  declare name?: string;
+
   @ApiProperty({
     description: '부모 관계 상태',
     enum: PARENT_STATUS,
@@ -1387,4 +1545,26 @@ export class VerifyPetNameDto {
   @IsNotEmpty()
   @IsString()
   name: string;
+}
+
+export class DeletePetDto {
+  @ApiProperty({
+    description: '펫 삭제 사유',
+    example: '더 이상 키울 수 없음',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  deleteReason?: string;
+}
+
+export class RestorePetDto {
+  @ApiProperty({
+    description: '복구할 펫 아이디',
+    example: 'XXXXXXXX',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+  petId: string;
 }
