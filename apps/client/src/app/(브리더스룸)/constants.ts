@@ -455,7 +455,7 @@ export const GENDER_KOREAN_INFO: Record<PetDtoSex, string> = {
   N: "미구분",
 };
 
-export const GROWTH_KOREAN_INFO: Record<Exclude<PetDtoGrowth, 'DEAD'>, string> = {
+export const GROWTH_KOREAN_INFO: Partial<Record<PetDtoGrowth, string>> = {
   BABY: "베이비",
   JUVENILE: "아성체",
   PRE_ADULT: "준성체",
