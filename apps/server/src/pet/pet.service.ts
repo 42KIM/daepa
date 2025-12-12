@@ -51,6 +51,7 @@ import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { isUndefined } from 'es-toolkit';
 import { PairEntity } from 'src/pair/pair.entity';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class PetService {
@@ -594,7 +595,7 @@ export class PetService {
       }
 
       try {
-        const now = new Date();
+        const now = DateTime.now().setZone('Asia/Seoul').toJSDate();
 
         // 펫 soft delete
         await entityManager.update(
