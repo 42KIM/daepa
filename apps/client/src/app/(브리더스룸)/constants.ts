@@ -455,12 +455,11 @@ export const GENDER_KOREAN_INFO: Record<PetDtoSex, string> = {
   N: "미구분",
 };
 
-export const GROWTH_KOREAN_INFO: Record<PetDtoGrowth, string> = {
+export const GROWTH_KOREAN_INFO: Record<Exclude<PetDtoGrowth, 'DEAD'>, string> = {
   BABY: "베이비",
   JUVENILE: "아성체",
   PRE_ADULT: "준성체",
   ADULT: "성체",
-  // DEAD: "사망",
 };
 
 export const EGG_STATUS_KOREAN_INFO: Record<EggDetailDtoStatus, string> = {
