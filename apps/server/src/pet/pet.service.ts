@@ -624,19 +624,6 @@ export class PetService {
           );
         }
 
-        // 분양 정보가 있으면 soft delete (판매 전 분양 정보)
-        const adoptionExists = await entityManager.exists(AdoptionEntity, {
-          where: { petId, isDeleted: false },
-        });
-
-        if (adoptionExists) {
-          await entityManager.update(
-            AdoptionEntity,
-            { petId, isDeleted: false },
-            { isDeleted: true },
-          );
-        }
-
         return { petId };
       } catch (error: unknown) {
         if (error instanceof HttpException) {
