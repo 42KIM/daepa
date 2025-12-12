@@ -49,6 +49,16 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     header: TABLE_HEADER.name,
     cell: ({ row }) => {
       const petName = row.original.pet.name;
+      const isDeleted = row.original.pet.isDeleted;
+
+      if (isDeleted) {
+        return (
+          <div className="cursor-not-allowed">
+            <span className="cursor-not-allowed line-through decoration-red-500">{petName}</span>
+            <span className="text-[12px] text-red-500">[삭제됨]</span>
+          </div>
+        );
+      }
       return <div className="font-semibold">{petName}</div>;
     },
   },

@@ -2917,6 +2917,7 @@ export const getAdoptionControllerGetAllAdoptionsResponseMock = (
           faker.date.past().toISOString().split("T")[0],
           undefined,
         ]),
+        isDeleted: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
         sex: faker.helpers.arrayElement([
           faker.helpers.arrayElement(["M", "F", "N"] as const),
           undefined,
@@ -3106,6 +3107,7 @@ export const getAdoptionControllerGetAdoptionByPetIdResponseMock = (
               faker.date.past().toISOString().split("T")[0],
               undefined,
             ]),
+            isDeleted: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
             sex: faker.helpers.arrayElement([
               faker.helpers.arrayElement(["M", "F", "N"] as const),
               undefined,

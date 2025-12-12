@@ -8,7 +8,7 @@
 import type { PetControllerGetDeletedPetsOrder } from "./petControllerGetDeletedPetsOrder";
 import type { PetControllerGetDeletedPetsSpecies } from "./petControllerGetDeletedPetsSpecies";
 import type { PetControllerGetDeletedPetsSexItem } from "./petControllerGetDeletedPetsSexItem";
-import type { PetControllerGetDeletedPetsStatus } from "./petControllerGetDeletedPetsStatus";
+import type { PetControllerGetDeletedPetsStatusItem } from "./petControllerGetDeletedPetsStatusItem";
 import type { PetControllerGetDeletedPetsGrowthItem } from "./petControllerGetDeletedPetsGrowthItem";
 import type { PetControllerGetDeletedPetsFilterType } from "./petControllerGetDeletedPetsFilterType";
 
@@ -76,7 +76,7 @@ export type PetControllerGetDeletedPetsParams = {
   /**
    * 판매 상태
    */
-  status?: PetControllerGetDeletedPetsStatus;
+  status?: PetControllerGetDeletedPetsStatusItem[];
   /**
    * 펫 성장단계
    */

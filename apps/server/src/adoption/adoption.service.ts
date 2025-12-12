@@ -68,6 +68,11 @@ export class AdoptionService {
       userId,
     );
 
+    // 삭제된 펫의 경우 이름에서 실제 이름 추출
+    const petName = pet.isDeleted
+      ? pet.name?.match(/^DELETED_(.+)_\d+$/)?.[1]
+      : pet.name;
+
     return {
       ...adoptionData,
       price: adoptionData.price ?? undefined,
@@ -79,9 +84,10 @@ export class AdoptionService {
         petId: pet.petId,
         type: pet.type,
         species: pet.species,
+        isDeleted: pet.isDeleted,
         ...omitBy(
           {
-            name: pet.name ?? undefined,
+            name: petName ?? undefined,
             hatchingDate: pet.hatchingDate ?? undefined,
             sex: petDetail?.sex ?? undefined,
             morphs: petDetail?.morphs ?? undefined,
@@ -167,6 +173,7 @@ export class AdoptionService {
         'pets.name',
         'pets.species',
         'pets.hatchingDate',
+        'pets.isDeleted',
         'pet_details.sex',
         'pet_details.morphs',
         'pet_details.traits',
