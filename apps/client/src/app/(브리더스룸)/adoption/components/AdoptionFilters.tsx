@@ -82,6 +82,7 @@ export function AdoptionFilters() {
       <FilterItem
         value={father?.name}
         placeholder="부 개체"
+        title="부"
         onClose={() => {
           setFather(null);
         }}
@@ -93,6 +94,7 @@ export function AdoptionFilters() {
       <FilterItem
         value={mother?.name}
         placeholder="모 개체"
+        title="모"
         onClose={() => {
           setMother(null);
         }}

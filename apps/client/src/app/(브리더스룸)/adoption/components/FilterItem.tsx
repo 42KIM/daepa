@@ -4,16 +4,24 @@ import { X } from "lucide-react";
 interface FilterItemProps {
   value?: string;
   placeholder: string;
+  title?: string;
   onClick: () => void;
   onClose: () => void;
 }
 
-const FilterItem = ({ value, placeholder, onClick, onClose }: FilterItemProps) => {
+const FilterItem = ({ value, placeholder, title, onClick, onClose }: FilterItemProps) => {
   const hasValue = Boolean(value?.trim());
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClose();
+  };
+
+  const displayText = () => {
+    if (hasValue) {
+      return title ? `${title}・${value}` : value;
+    }
+    return placeholder;
   };
 
   return (
@@ -32,7 +40,7 @@ const FilterItem = ({ value, placeholder, onClick, onClose }: FilterItemProps) =
         }
       }}
     >
-      {hasValue ? value : placeholder}
+      {displayText()}
       <div>
         {hasValue && (
           <button
