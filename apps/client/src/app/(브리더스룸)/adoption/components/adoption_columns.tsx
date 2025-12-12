@@ -123,7 +123,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
   },
   {
     accessorKey: "father",
-    header: "부 개체",
+    header: "부개체",
     cell: ({ row }) => {
       const father = row.original.pet.father;
       if (!father) return <div className="text-sm text-gray-400">-</div>;
@@ -150,6 +150,19 @@ export const columns: ColumnDef<AdoptionDto>[] = [
 
       const fatherExist = father as PetParentDto;
       const status = fatherExist?.status ?? "approved";
+      const isDeleted = fatherExist.isDeleted;
+
+      if (isDeleted) {
+        return (
+          <div className="cursor-not-allowed">
+            <span className="cursor-not-allowed line-through decoration-red-500">
+              {fatherExist.name}
+            </span>
+            <span className="text-[12px] text-red-500">[삭제됨]</span>
+          </div>
+        );
+      }
+
       return (
         <LinkButton
           href={`/pet/${fatherExist.petId}`}
@@ -167,7 +180,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
   },
   {
     accessorKey: "mother",
-    header: "모 개체",
+    header: "모개체",
     cell: ({ row }) => {
       const mother = row.original.pet.mother;
       if (!mother) return <div className="text-sm text-gray-400">-</div>;
@@ -194,6 +207,19 @@ export const columns: ColumnDef<AdoptionDto>[] = [
 
       const motherExist = mother as PetParentDto;
       const status = motherExist?.status ?? "approved";
+      const isDeleted = motherExist.isDeleted;
+
+      if (isDeleted) {
+        return (
+          <div className="cursor-not-allowed">
+            <span className="cursor-not-allowed line-through decoration-red-500">
+              {motherExist.name}
+            </span>
+            <span className="text-[12px] text-red-500">[삭제됨]</span>
+          </div>
+        );
+      }
+
       return (
         <LinkButton
           href={`/pet/${motherExist.petId}`}
