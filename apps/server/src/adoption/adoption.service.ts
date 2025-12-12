@@ -369,10 +369,11 @@ export class AdoptionService {
   async createAdoption(
     sellerId: string,
     createAdoptionDto: CreateAdoptionDto,
+    entityManager?: EntityManager,
   ): Promise<{ adoptionId: string }> {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+    const run = async (em: EntityManager) => {
       // 펫 존재 여부 확인
-      const pet = await entityManager.findOne(PetEntity, {
+      const pet = await em.findOne(PetEntity, {
         where: { petId: createAdoptionDto.petId, isDeleted: false },
       });
 
@@ -384,7 +385,7 @@ export class AdoptionService {
       }
 
       // 이미 분양 정보가 있는지 확인
-      const existingAdoption = await entityManager.existsBy(AdoptionEntity, {
+      const existingAdoption = await em.existsBy(AdoptionEntity, {
         petId: createAdoptionDto.petId,
         isActive: true,
         isDeleted: false,
@@ -407,7 +408,7 @@ export class AdoptionService {
           );
         }
 
-        const buyer = await entityManager.findOne(UserEntity, {
+        const buyer = await em.findOne(UserEntity, {
           where: { userId: createAdoptionDto.buyerId },
         });
 
@@ -428,26 +429,35 @@ export class AdoptionService {
           createAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD ? false : true,
       });
 
-      await entityManager.save(AdoptionEntity, adoptionEntity);
+      await em.save(AdoptionEntity, adoptionEntity);
 
       if (createAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD) {
         await this.updatePetOwner(
-          entityManager,
+          em,
           createAdoptionDto.petId,
           createAdoptionDto.buyerId,
         );
       }
 
       return { adoptionId };
+    };
+
+    if (entityManager) {
+      return await run(entityManager);
+    }
+
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      return await run(entityManager);
     });
   }
 
   async updateAdoption(
     adoptionId: string,
     updateAdoptionDto: UpdateAdoptionDto,
+    entityManager?: EntityManager,
   ): Promise<{ adoptionId: string }> {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      const adoptionEntity = await entityManager.findOne(AdoptionEntity, {
+    const run = async (em: EntityManager) => {
+      const adoptionEntity = await em.findOne(AdoptionEntity, {
         where: {
           adoptionId,
           isDeleted: false,
@@ -471,7 +481,7 @@ export class AdoptionService {
           );
         }
 
-        const buyer = await entityManager.findOne(UserEntity, {
+        const buyer = await em.findOne(UserEntity, {
           where: { userId: updateAdoptionDto.buyerId },
         });
 
@@ -489,17 +499,25 @@ export class AdoptionService {
           : updateAdoptionDto.status !== ADOPTION_SALE_STATUS.SOLD, // status가 있으면 새로 계산
       });
 
-      await entityManager.save(AdoptionEntity, newAdoptionEntity);
+      await em.save(AdoptionEntity, newAdoptionEntity);
 
       if (updateAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD) {
         await this.updatePetOwner(
-          entityManager,
+          em,
           adoptionEntity.petId,
           updateAdoptionDto.buyerId ?? adoptionEntity.buyerId,
         );
       }
 
       return { adoptionId };
+    };
+
+    if (entityManager) {
+      return await run(entityManager);
+    }
+
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      return await run(entityManager);
     });
   }
 

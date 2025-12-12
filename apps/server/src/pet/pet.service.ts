@@ -41,7 +41,6 @@ import { UserService } from '../user/user.service';
 import { PetFilterDto } from './pet.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { UpdatePetDto } from './pet.dto';
-import { AdoptionEntity } from '../adoption/adoption.entity';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { isMySQLError } from 'src/common/error';
 import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
