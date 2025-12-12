@@ -460,7 +460,7 @@ export const GROWTH_KOREAN_INFO: Record<PetDtoGrowth, string> = {
   JUVENILE: "아성체",
   PRE_ADULT: "준성체",
   ADULT: "성체",
-  DEAD: "사망",
+  // DEAD: "사망",
 };
 
 export const EGG_STATUS_KOREAN_INFO: Record<EggDetailDtoStatus, string> = {
@@ -538,10 +538,10 @@ export const SELECTOR_CONFIGS: Record<
         key: "ADULT",
         value: "성체",
       },
-      {
-        key: "DEAD",
-        value: "사망",
-      },
+      // {
+      //   key: "DEAD",
+      //   value: "사망",
+      // },
     ],
   },
   sex: {
