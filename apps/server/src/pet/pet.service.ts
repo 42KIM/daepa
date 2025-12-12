@@ -578,21 +578,6 @@ export class PetService {
         throw new ForbiddenException('펫의 소유자가 아닙니다.');
       }
 
-      // 이미 판매 완료된 분양이 있는지 확인
-      const hasSoldAdoption = await entityManager.findOne(AdoptionEntity, {
-        where: {
-          petId,
-          isDeleted: false,
-          status: ADOPTION_SALE_STATUS.SOLD,
-        },
-      });
-
-      if (hasSoldAdoption) {
-        throw new BadRequestException(
-          '이미 판매 완료된 분양 정보가 있어 삭제할 수 없습니다.',
-        );
-      }
-
       try {
         const now = DateTime.now().setZone('Asia/Seoul').toJSDate();
 
