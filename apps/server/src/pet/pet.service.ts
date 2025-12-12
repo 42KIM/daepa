@@ -221,7 +221,6 @@ export class PetService {
       if (pet.isDeleted) {
         return plainToInstance(PetSingleDto, {
           petId: pet.petId,
-          owner,
           species: pet.species,
           name: pet.name,
           isDeleted: pet.isDeleted,
