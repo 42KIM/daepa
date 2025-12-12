@@ -21,6 +21,8 @@ export interface PetSummaryLayingDto {
   species: PetSummaryLayingDtoSpecies;
   /** 펫 출생일 */
   hatchingDate?: string;
+  /** 펫 삭제 여부 */
+  isDeleted?: boolean;
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: PetSummaryLayingDtoSex;
   /** 펫 모프 */

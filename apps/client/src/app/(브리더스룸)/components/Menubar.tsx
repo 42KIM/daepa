@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useSearchKeywordStore } from "../store/searchKeyword";
 import UserButton from "./UserButton";
 
@@ -38,8 +38,8 @@ const Menubar = () => {
         {!pathname.includes("/register/") && (
           <Link href="/register/1">
             <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">
-                +
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                <Plus className="h-3 w-3" />
               </div>
               <div className="flex cursor-pointer items-center gap-1 px-2 py-1 text-[14px] font-[500] text-blue-600">
                 펫 추가하기

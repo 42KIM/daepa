@@ -42,7 +42,7 @@ const EggItem = ({ pet, layingDate, fatherName, motherName }: EggItemProps) => {
   });
 
   const { mutateAsync: deleteEgg } = useMutation({
-    mutationFn: petControllerDeletePet,
+    mutationFn: (eggId: string) => petControllerDeletePet(eggId, {}),
   });
 
   const handleDeleteEgg = async (eggId: string, onClose: () => void) => {

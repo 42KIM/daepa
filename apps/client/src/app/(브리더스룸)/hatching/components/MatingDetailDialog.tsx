@@ -20,6 +20,7 @@ const MatingDetailDialog = ({
   matingGroup,
   onConfirmAdd,
 }: MatingDetailDialogProps) => {
+  const isEditable = !matingGroup?.father?.isDeleted && !matingGroup?.mother?.isDeleted;
   // 메이팅 날짜들을 추출하여 Calendar용 날짜 배열 생성
   const getMatingDates = useCallback((matingDates: MatingByDateDto[]) => {
     if (!matingDates) return [];
@@ -75,35 +76,55 @@ const MatingDetailDialog = ({
       <DialogContent className="p-15 flex w-full flex-col rounded-3xl sm:max-w-[860px]">
         <DialogTitle className="flex items-center gap-1 text-[32px]">
           {matingGroup.father?.petId ? (
-            <Link
-              href={`/pet/${matingGroup.father?.petId}`}
-              className="text-blue-600 hover:underline"
-            >
-              {matingGroup.father?.name}
-            </Link>
+            matingGroup.father?.isDeleted ? (
+              <>
+                <span className="cursor-not-allowed line-through decoration-red-500">
+                  {matingGroup.father?.name}
+                </span>
+                <span className="text-[12px] text-red-500">[삭제됨]</span>
+              </>
+            ) : (
+              <Link
+                href={`/pet/${matingGroup.father?.petId}`}
+                className="text-blue-600 hover:underline"
+              >
+                {matingGroup.father?.name}
+              </Link>
+            )
           ) : (
             <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
           )}
           x
           {matingGroup.mother?.petId ? (
-            <Link
-              href={`/pet/${matingGroup.mother?.petId}`}
-              className="text-blue-600 hover:underline"
-            >
-              {matingGroup.mother?.name}
-            </Link>
+            matingGroup.mother?.isDeleted ? (
+              <>
+                <span className="cursor-not-allowed line-through decoration-red-500">
+                  {matingGroup.mother?.name}
+                </span>
+                <span className="text-[12px] text-red-500">[삭제됨]</span>
+              </>
+            ) : (
+              <Link
+                href={`/pet/${matingGroup.mother?.petId}`}
+                className="text-blue-600 hover:underline"
+              >
+                {matingGroup.mother?.name}
+              </Link>
+            )
           ) : (
             <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
           )}
         </DialogTitle>
 
         <div className="flex flex-col gap-2 px-1">
-          <CalendarSelect
-            triggerText="메이팅 날짜 추가"
-            confirmButtonText="메이팅 추가"
-            disabledDates={matingDates}
-            onConfirm={(matingDate) => onConfirmAdd(matingDate)}
-          />
+          {isEditable && (
+            <CalendarSelect
+              triggerText="메이팅 날짜 추가"
+              confirmButtonText="메이팅 추가"
+              disabledDates={matingDates}
+              onConfirm={(matingDate) => onConfirmAdd(matingDate)}
+            />
+          )}
           {matingGroup.matingsByDate && matingGroup.matingsByDate.length > 0 ? (
             <div>
               <div className="flex gap-1 overflow-x-auto whitespace-nowrap">
@@ -129,6 +150,7 @@ const MatingDetailDialog = ({
               <div className="mt-2">
                 {selectedMating ? (
                   <MatingItem
+                    isEditable={isEditable}
                     mating={selectedMating}
                     father={matingGroup.father}
                     mother={matingGroup.mother}
