@@ -685,19 +685,6 @@ export class PetService {
           );
         }
 
-        // 분양 정보 복구
-        const adoptionExists = await entityManager.exists(AdoptionEntity, {
-          where: { petId, isDeleted: true },
-        });
-
-        if (adoptionExists) {
-          await entityManager.update(
-            AdoptionEntity,
-            { petId, isDeleted: true },
-            { isDeleted: false },
-          );
-        }
-
         return { petId };
       } catch (error: unknown) {
         if (error instanceof HttpException) {
