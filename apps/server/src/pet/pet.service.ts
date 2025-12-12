@@ -51,6 +51,7 @@ import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { isUndefined } from 'es-toolkit';
 import { PairEntity } from 'src/pair/pair.entity';
 import { DateTime } from 'luxon';
+import { AdoptionService } from 'src/adoption/adoption.service';
 
 @Injectable()
 export class PetService {
@@ -62,6 +63,7 @@ export class PetService {
     private readonly parentRequestService: ParentRequestService,
     private readonly userService: UserService,
     private readonly petImageService: PetImageService,
+    private readonly adoptionService: AdoptionService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -144,6 +146,9 @@ export class PetService {
             em,
           );
         }
+
+        // 분양 정보 초기화 (필수 필드만 포함)
+        await this.adoptionService.createAdoption(ownerId, { petId }, em);
       } catch (error: unknown) {
         if (error instanceof HttpException) {
           throw error; // 도메인/권한/검증 에러는 원본 유지
