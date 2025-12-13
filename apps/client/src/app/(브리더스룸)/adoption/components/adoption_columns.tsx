@@ -20,7 +20,7 @@ import {
 import { isNotNil } from "es-toolkit";
 import LinkButton from "../../components/LinkButton";
 import { BadgeCheck, Lock } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
   {
@@ -143,19 +143,17 @@ export const columns: ColumnDef<AdoptionDto>[] = [
         father.hiddenStatus === PetHiddenStatusDtoHiddenStatus.SECRET
       ) {
         return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
-                  <Lock className="h-3 w-3" />
-                  비공개
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>숨김 처리된 개체입니다</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
+                <Lock className="h-3 w-3" />
+                비공개
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>숨김 처리된 개체입니다</p>
+            </TooltipContent>
+          </Tooltip>
         );
       }
 
@@ -201,19 +199,17 @@ export const columns: ColumnDef<AdoptionDto>[] = [
         mother.hiddenStatus === PetHiddenStatusDtoHiddenStatus.SECRET
       ) {
         return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
-                  <Lock className="h-3 w-3" />
-                  비공개
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>숨김 처리된 개체입니다</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
+                <Lock className="h-3 w-3" />
+                비공개
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>숨김 처리된 개체입니다</p>
+            </TooltipContent>
+          </Tooltip>
         );
       }
 
