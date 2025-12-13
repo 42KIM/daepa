@@ -856,7 +856,13 @@ export const getPetControllerFindAllResponseMock = (
         ...{
           adoptionId: faker.string.alpha(20),
           price: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
+          status: faker.helpers.arrayElement([
+            "NONE",
+            "NFS",
+            "ON_SALE",
+            "ON_RESERVATION",
+            "SOLD",
+          ] as const),
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
           method: faker.helpers.arrayElement([
@@ -1695,7 +1701,13 @@ export const getBrPetControllerFindAllResponseMock = (
         ...{
           adoptionId: faker.string.alpha(20),
           price: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
+          status: faker.helpers.arrayElement([
+            "NONE",
+            "NFS",
+            "ON_SALE",
+            "ON_RESERVATION",
+            "SOLD",
+          ] as const),
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
           method: faker.helpers.arrayElement([
@@ -1984,7 +1996,13 @@ export const getBrPetControllerGetPetsByYearResponseMock = (): BrPetControllerGe
         ...{
           adoptionId: faker.string.alpha(20),
           price: faker.number.int({ min: undefined, max: undefined }),
-          status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
+          status: faker.helpers.arrayElement([
+            "NONE",
+            "NFS",
+            "ON_SALE",
+            "ON_RESERVATION",
+            "SOLD",
+          ] as const),
           adoptionDate: `${faker.date.past().toISOString().split(".")[0]}Z`,
           memo: faker.string.alpha(20),
           method: faker.helpers.arrayElement([
@@ -2281,6 +2299,7 @@ export const getBrPetControllerGetPetsByMonthResponseMock = (
             adoptionId: faker.string.alpha(20),
             price: faker.number.int({ min: undefined, max: undefined }),
             status: faker.helpers.arrayElement([
+              "NONE",
               "NFS",
               "ON_SALE",
               "ON_RESERVATION",
@@ -2584,6 +2603,7 @@ export const getBrPetControllerGetPetsByDateRangeResponseMock = (
             adoptionId: faker.string.alpha(20),
             price: faker.number.int({ min: undefined, max: undefined }),
             status: faker.helpers.arrayElement([
+              "NONE",
               "NFS",
               "ON_SALE",
               "ON_RESERVATION",
@@ -2864,7 +2884,13 @@ export const getAdoptionControllerGetAllAdoptionsResponseMock = (
       faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
       undefined,
     ]),
-    status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
+    status: faker.helpers.arrayElement([
+      "NONE",
+      "NFS",
+      "ON_SALE",
+      "ON_RESERVATION",
+      "SOLD",
+    ] as const),
     seller: {
       ...{
         status: faker.helpers.arrayElement([
@@ -3054,7 +3080,13 @@ export const getAdoptionControllerGetAdoptionByPetIdResponseMock = (
           faker.helpers.arrayElement(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"] as const),
           undefined,
         ]),
-        status: faker.helpers.arrayElement(["NFS", "ON_SALE", "ON_RESERVATION", "SOLD"] as const),
+        status: faker.helpers.arrayElement([
+          "NONE",
+          "NFS",
+          "ON_SALE",
+          "ON_RESERVATION",
+          "SOLD",
+        ] as const),
         seller: {
           ...{
             status: faker.helpers.arrayElement([

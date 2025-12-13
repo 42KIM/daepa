@@ -11,6 +11,7 @@ export type AdoptionControllerGetAllAdoptionsStatus =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AdoptionControllerGetAllAdoptionsStatus = {
+  NONE: "NONE",
   NFS: "NFS",
   ON_SALE: "ON_SALE",
   ON_RESERVATION: "ON_RESERVATION",

@@ -87,11 +87,12 @@ export class AdoptionBaseDto {
 
   @ApiProperty({
     description: '펫 판매 상태',
-    example: 'ON_SALE',
+    example: 'NONE',
     enum: ADOPTION_SALE_STATUS,
     'x-enumNames': Object.keys(ADOPTION_SALE_STATUS),
   })
-  status?: ADOPTION_SALE_STATUS;
+  @IsEnum(ADOPTION_SALE_STATUS)
+  status: ADOPTION_SALE_STATUS;
 }
 
 export class CreateAdoptionDto {

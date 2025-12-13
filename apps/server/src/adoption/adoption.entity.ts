@@ -61,8 +61,12 @@ export class AdoptionEntity {
   @Column({ default: false })
   isDeleted: boolean;
 
-  @Column({ type: 'enum', enum: ADOPTION_SALE_STATUS, nullable: true })
-  status?: ADOPTION_SALE_STATUS | null;
+  @Column({
+    type: 'enum',
+    enum: ADOPTION_SALE_STATUS,
+    default: ADOPTION_SALE_STATUS.NONE,
+  })
+  status: ADOPTION_SALE_STATUS;
 
   // 펫과의 관계 수정
   @OneToOne(() => PetEntity, (pet) => pet.adoption)

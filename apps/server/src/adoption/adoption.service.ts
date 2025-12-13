@@ -78,7 +78,7 @@ export class AdoptionService {
       price: adoptionData.price ?? undefined,
       adoptionDate: adoptionData.adoptionDate ?? undefined,
       method: adoptionData.method ?? undefined,
-      status: adoptionData.status ?? undefined,
+      status: adoptionData.status,
       memo: adoptionData.memo ?? undefined,
       pet: {
         petId: pet.petId,
