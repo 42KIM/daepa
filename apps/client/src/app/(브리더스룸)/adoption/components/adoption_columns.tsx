@@ -159,7 +159,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
       }
 
       const fatherExist = father as PetParentDto;
-      const status = fatherExist?.status ?? "approved";
+      const status = fatherExist?.status ?? UpdateParentRequestDtoStatus.APPROVED;
       const isDeleted = fatherExist.isDeleted;
 
       if (isDeleted) {
@@ -216,7 +216,7 @@ export const columns: ColumnDef<AdoptionDto>[] = [
       }
 
       const motherExist = mother as PetParentDto;
-      const status = motherExist?.status ?? "approved";
+      const status = motherExist?.status ?? UpdateParentRequestDtoStatus.APPROVED;
       const isDeleted = motherExist.isDeleted;
 
       if (isDeleted) {

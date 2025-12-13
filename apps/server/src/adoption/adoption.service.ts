@@ -221,14 +221,15 @@ export class AdoptionService {
     userId: string,
   ): Promise<PageDto<AdoptionDto>> {
     const qb = this.createAdoptionQueryBuilder().where(
-      'adoptions.sellerId = :sellerId AND adoptions.status = :status AND adoptions.isDeleted = :isDeleted',
+      'adoptions.sellerId = :sellerId AND adoptions.isDeleted = :isDeleted',
       {
         sellerId: userId,
-        status: ADOPTION_SALE_STATUS.SOLD,
         isDeleted: false,
       },
     );
 
+    // findAll은 판매완료된 분양정보만 조회
+    pageOptionsDto.status = ADOPTION_SALE_STATUS.SOLD;
     this.buildAdoptionFilterQuery(qb, pageOptionsDto);
 
     qb.orderBy('adoptions.adoptionDate', pageOptionsDto.order)
