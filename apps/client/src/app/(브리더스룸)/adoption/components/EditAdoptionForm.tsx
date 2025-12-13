@@ -47,6 +47,7 @@ const adoptionSchema = z.object({
     .nullable(),
   status: z
     .enum([
+      AdoptionDtoStatus.NONE,
       AdoptionDtoStatus.NFS,
       AdoptionDtoStatus.ON_SALE,
       AdoptionDtoStatus.ON_RESERVATION,
