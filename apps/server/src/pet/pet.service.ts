@@ -10,10 +10,10 @@ import {
 import { PetEntity } from './pet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  Repository,
-  In,
-  EntityManager,
   DataSource,
+  EntityManager,
+  In,
+  Repository,
   SelectQueryBuilder,
 } from 'typeorm';
 import { nanoid } from 'nanoid';
@@ -21,27 +21,25 @@ import { plainToInstance } from 'class-transformer';
 import {
   CompleteHatchingDto,
   CreatePetDto,
-  PetDto,
-  PetSingleDto,
-  PetParentDto,
   DeletedPetDto,
+  PetDto,
+  PetFilterDto,
+  PetSingleDto,
+  UpdatePetDto,
 } from './pet.dto';
 import { UserProfilePublicDto } from 'src/user/user.dto';
 import {
-  PET_GROWTH,
-  PET_SEX,
   ADOPTION_SALE_STATUS,
+  PET_GROWTH,
   PET_LIST_FILTER_TYPE,
+  PET_SEX,
   PET_TYPE,
-  PET_HIDDEN_STATUS,
 } from './pet.constants';
 import { ParentRequestService } from '../parent_request/parent_request.service';
 import { PARENT_STATUS } from '../parent_request/parent_request.constants';
 import { UserService } from '../user/user.service';
-import { PetFilterDto } from './pet.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
-import { UpdatePetDto } from './pet.dto';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { endOfMonth, format, startOfMonth } from 'date-fns';
 import { isMySQLError } from 'src/common/error';
 import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
 import { PetImageService } from 'src/pet_image/pet_image.service';
@@ -52,6 +50,7 @@ import { isUndefined } from 'es-toolkit';
 import { PairEntity } from 'src/pair/pair.entity';
 import { DateTime } from 'luxon';
 import { AdoptionService } from 'src/adoption/adoption.service';
+import { replaceParentPublicSafe } from '../common/utils/pet-parent.helper';
 
 @Injectable()
 export class PetService {
@@ -422,12 +421,12 @@ export class PetService {
 
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(petId);
-        const fatherDisplayable = this.getParentPublicSafe(
+        const fatherDisplayable = replaceParentPublicSafe(
           father,
           petRaw.ownerId,
           userId,
         );
-        const motherDisplayable = this.getParentPublicSafe(
+        const motherDisplayable = replaceParentPublicSafe(
           mother,
           petRaw.ownerId,
           userId,
@@ -525,12 +524,12 @@ export class PetService {
 
         const { father, mother } =
           await this.parentRequestService.getParentsWithRequestStatus(petId);
-        const fatherDisplayable = this.getParentPublicSafe(
+        const fatherDisplayable = replaceParentPublicSafe(
           father,
           petRaw.ownerId,
           userId,
         );
-        const motherDisplayable = this.getParentPublicSafe(
+        const motherDisplayable = replaceParentPublicSafe(
           mother,
           petRaw.ownerId,
           userId,
@@ -755,8 +754,24 @@ export class PetService {
   async getParentsByPetId(petId: string, userId: string) {
     const { father, mother } =
       await this.parentRequestService.getParentsWithRequestStatus(petId);
-    const fatherDisplayable = this.getParentPublicSafe(father, userId, userId);
-    const motherDisplayable = this.getParentPublicSafe(mother, userId, userId);
+    // petId로 owner 정보
+    const pet = await this.petRepository.findOne({
+      where: { petId },
+    });
+    if (!pet) {
+      throw new NotFoundException('펫을 찾을 수 없습니다.');
+    }
+
+    const fatherDisplayable = replaceParentPublicSafe(
+      father,
+      pet.ownerId,
+      userId,
+    );
+    const motherDisplayable = replaceParentPublicSafe(
+      mother,
+      pet.ownerId,
+      userId,
+    );
     return {
       father: fatherDisplayable ?? undefined,
       mother: motherDisplayable ?? undefined,
@@ -932,12 +947,12 @@ export class PetService {
           await this.parentRequestService.getParentsWithRequestStatus(
             pet.petId,
           );
-        const fatherDisplayable = this.getParentPublicSafe(
+        const fatherDisplayable = replaceParentPublicSafe(
           father,
           pet.ownerId,
           userId,
         );
-        const motherDisplayable = this.getParentPublicSafe(
+        const motherDisplayable = replaceParentPublicSafe(
           mother,
           pet.ownerId,
           userId,
@@ -1136,33 +1151,6 @@ export class PetService {
       queryBuilder.andWhere('petDetail.growth IN (:...growth)', {
         growth: pageOptionsDto.growth,
       });
-    }
-  }
-
-  private getParentPublicSafe(
-    parent: PetParentDto | null,
-    childOwnerId: string | null,
-    userId: string,
-  ) {
-    if (!parent) return null;
-
-    // 본인 소유 펫
-    const isMyPet = childOwnerId === userId;
-    if (isMyPet) {
-      return parent;
-    }
-
-    // 부모 개체 삭제 처리
-    if (parent.isDeleted) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.DELETED };
-    }
-    // 비공개 처리
-    if (!parent.isPublic) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
-    }
-    // 부모 요청중
-    if (parent.status === PARENT_STATUS.PENDING) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.PENDING };
     }
   }
 }
