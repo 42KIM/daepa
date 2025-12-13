@@ -6,13 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 
-/**
- * 펫 판매 상태
- */
-export type AdoptionDtoStatus = (typeof AdoptionDtoStatus)[keyof typeof AdoptionDtoStatus];
+export type PetControllerFindAllStatusItem =
+  (typeof PetControllerFindAllStatusItem)[keyof typeof PetControllerFindAllStatusItem];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AdoptionDtoStatus = {
+export const PetControllerFindAllStatusItem = {
   NONE: "NONE",
   NFS: "NFS",
   ON_SALE: "ON_SALE",

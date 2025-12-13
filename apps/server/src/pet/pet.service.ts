@@ -41,7 +41,6 @@ import { UserService } from '../user/user.service';
 import { PetFilterDto } from './pet.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { UpdatePetDto } from './pet.dto';
-import { AdoptionEntity } from '../adoption/adoption.entity';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { isMySQLError } from 'src/common/error';
 import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
@@ -52,6 +51,7 @@ import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { isUndefined } from 'es-toolkit';
 import { PairEntity } from 'src/pair/pair.entity';
 import { DateTime } from 'luxon';
+import { AdoptionService } from 'src/adoption/adoption.service';
 
 @Injectable()
 export class PetService {
@@ -63,6 +63,7 @@ export class PetService {
     private readonly parentRequestService: ParentRequestService,
     private readonly userService: UserService,
     private readonly petImageService: PetImageService,
+    private readonly adoptionService: AdoptionService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -145,6 +146,9 @@ export class PetService {
             em,
           );
         }
+
+        // 분양 정보 초기화 (필수 필드만 포함)
+        await this.adoptionService.createAdoption(ownerId, { petId }, em);
       } catch (error: unknown) {
         if (error instanceof HttpException) {
           throw error; // 도메인/권한/검증 에러는 원본 유지
@@ -576,21 +580,6 @@ export class PetService {
 
       if (existingPet.ownerId !== userId) {
         throw new ForbiddenException('펫의 소유자가 아닙니다.');
-      }
-
-      // 이미 판매 완료된 분양이 있는지 확인
-      const hasSoldAdoption = await entityManager.findOne(AdoptionEntity, {
-        where: {
-          petId,
-          isDeleted: false,
-          status: ADOPTION_SALE_STATUS.SOLD,
-        },
-      });
-
-      if (hasSoldAdoption) {
-        throw new BadRequestException(
-          '이미 판매 완료된 분양 정보가 있어 삭제할 수 없습니다.',
-        );
       }
 
       try {
@@ -1136,8 +1125,8 @@ export class PetService {
     }
 
     // 판매 상태 필터링
-    if (pageOptionsDto.status) {
-      queryBuilder.andWhere('adoptions.status = :status', {
+    if (pageOptionsDto.status && pageOptionsDto.status.length > 0) {
+      queryBuilder.andWhere('adoptions.status IN (:...status)', {
         status: pageOptionsDto.status,
       });
     }

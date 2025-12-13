@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronDown, X } from "lucide-react";
 
 interface MultiSelectFilterProps {
-  type: "morphs" | "traits" | "foods" | "growth" | "sex";
+  type: "morphs" | "traits" | "foods" | "growth" | "sex" | "status";
   title: string;
   disabled?: boolean;
   displayMap: Record<string, string>; // key -> display label 매핑 (UI 표시용, 있으면 내부적으로 Object.keys(displayMap)을 selectList로 사용)

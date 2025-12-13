@@ -90,7 +90,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
                 <span className="animate-bounce text-2xl">✨</span>
               </div>
             )}
-            분양 영수증{" "}
+            분양 내역{" "}
             {adoption?.adoptionId && adoption?.status !== PetAdoptionDtoStatus.SOLD && (
               <>
                 {isEditable && (
@@ -110,7 +110,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
 
           {adoption?.status === PetAdoptionDtoStatus.SOLD && (
             <div className="text-sm text-red-500 dark:text-red-400">
-              판매 완료된 개체는 수정할 수 없습니다.
+              *분양 완료된 정보는 수정할 수 없습니다.
             </div>
           )}
         </div>

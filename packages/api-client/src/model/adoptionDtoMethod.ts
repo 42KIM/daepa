@@ -16,4 +16,5 @@ export const AdoptionDtoMethod = {
   PICKUP: "PICKUP",
   DELIVERY: "DELIVERY",
   WHOLESALE: "WHOLESALE",
+  EXPORT: "EXPORT",
 } as const;

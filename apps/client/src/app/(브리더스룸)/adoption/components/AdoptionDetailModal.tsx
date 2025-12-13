@@ -20,6 +20,84 @@ interface AdoptionDetailModalProps {
   onUpdate: () => void;
 }
 
+interface PetInfoCardProps {
+  name?: string;
+  species: string;
+  sex?: string;
+  morphs?: string[];
+  traits?: string[];
+  hatchingDate?: string;
+  isDeleted?: boolean;
+  petId: string;
+  onClose: () => void;
+}
+
+const PetInfoCard = ({
+  name,
+  species,
+  sex,
+  morphs,
+  traits,
+  hatchingDate,
+  isDeleted,
+  petId,
+  onClose,
+}: PetInfoCardProps) => {
+  const cardContent = (
+    <Card
+      className={cn(
+        "bg-muted mb-4 flex gap-0 border-2 p-4",
+        isDeleted ? "cursor-not-allowed" : "hover:shadow-md",
+      )}
+    >
+      <div className="mb-2 flex items-center gap-2 font-semibold">
+        {isDeleted ? (
+          <div>
+            <span className="cursor-not-allowed line-through decoration-red-500">{name}</span>
+            <span className="text-[12px] font-normal text-red-500">[삭제됨]</span>
+          </div>
+        ) : (
+          name
+        )}
+
+        <div className="text-muted-foreground text-sm font-normal">
+          / {(SPECIES_KOREAN_INFO as Record<string, string>)[species] || "미분류"}
+        </div>
+        {sex && (
+          <p className="text-sm font-normal text-blue-500">
+            / {(GENDER_KOREAN_INFO as Record<string, string>)[sex]}
+          </p>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 text-sm text-gray-600">
+        {morphs && morphs.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {morphs.map((morph) => (
+              <Badge key={morph}>{morph}</Badge>
+            ))}
+          </div>
+        )}
+        {traits && traits.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {traits.map((trait: string) => `#${trait}`).join(" ")}
+          </div>
+        )}
+        {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
+      </div>
+    </Card>
+  );
+
+  if (isDeleted) {
+    return cardContent;
+  }
+
+  return (
+    <Link href={`/pet/${petId}`} onClick={onClose} className="cursor-pointer">
+      {cardContent}
+    </Link>
+  );
+};
+
 const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetailModalProps) => {
   const {
     data: adoptionData,
@@ -38,7 +116,7 @@ const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetai
 
   const { status } = adoptionData;
   const isSold = status === PetAdoptionDtoStatus.SOLD;
-  const { name, species, hatchingDate, sex, morphs, traits } = petSummary;
+  const { name, species, hatchingDate, sex, morphs, traits, isDeleted } = petSummary;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -57,40 +135,17 @@ const AdoptionDetailModal = ({ isOpen, petId, onClose, onUpdate }: AdoptionDetai
 
         <div className="space-y-4">
           {/* 펫 정보 */}
-          {/* TODO!: 추후에는 판매완료된 펫 정보 클릭 시 해당 펫 상세 페이지로 이동하도록 수정 */}
-          <Link
-            href={isSold ? "#" : `/pet/${petId}`}
-            onClick={() => !isSold && onClose()}
-            className={cn(isSold ? "cursor-not-allowed" : "cursor-pointer")}
-          >
-            <Card className="bg-muted mb-4 flex gap-0 border-2 p-4 hover:shadow-md">
-              <div className="mb-2 flex items-center gap-2 font-semibold">
-                {name}
-
-                <div className="text-muted-foreground text-sm font-normal">
-                  / {SPECIES_KOREAN_INFO[species] || "미분류"}
-                </div>
-                {sex && (
-                  <p className="text-sm font-normal text-blue-500">/ {GENDER_KOREAN_INFO[sex]}</p>
-                )}
-              </div>
-              <div className="flex flex-col gap-2 text-sm text-gray-600">
-                {morphs && morphs.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {morphs.map((morph) => (
-                      <Badge key={morph}>{morph}</Badge>
-                    ))}
-                  </div>
-                )}
-                {traits && traits.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {traits.map((trait: string) => `#${trait}`).join(" ")}
-                  </div>
-                )}
-                {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
-              </div>
-            </Card>
-          </Link>
+          <PetInfoCard
+            name={name}
+            species={species}
+            sex={sex}
+            morphs={morphs}
+            traits={traits}
+            hatchingDate={hatchingDate}
+            isDeleted={isDeleted}
+            petId={petId}
+            onClose={onClose}
+          />
 
           <div className="space-y-3">
             {isSold ? (
