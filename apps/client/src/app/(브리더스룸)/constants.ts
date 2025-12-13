@@ -1,8 +1,8 @@
 import { Bubbles, DollarSign, Home } from "lucide-react";
 import { FormStep } from "./pet/types/form.type";
 import {
-  AdoptionDtoMethod,
   EggDetailDtoStatus,
+  PetAdoptionDtoMethod,
   PetDtoGrowth,
   PetDtoSex,
   PetDtoSpecies,
@@ -399,6 +399,7 @@ export const TRAIT_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>
 };
 
 export const SALE_STATUS_KOREAN_INFO = {
+  NONE: "미정",
   NFS: "분양 안함(NFS)",
   ON_SALE: "분양 가능",
   ON_RESERVATION: "예약 중",
@@ -455,12 +456,11 @@ export const GENDER_KOREAN_INFO: Record<PetDtoSex, string> = {
   N: "미구분",
 };
 
-export const GROWTH_KOREAN_INFO: Record<PetDtoGrowth, string> = {
+export const GROWTH_KOREAN_INFO: Partial<Record<PetDtoGrowth, string>> = {
   BABY: "베이비",
   JUVENILE: "아성체",
   PRE_ADULT: "준성체",
   ADULT: "성체",
-  DEAD: "사망",
 };
 
 export const EGG_STATUS_KOREAN_INFO: Record<EggDetailDtoStatus, string> = {
@@ -480,10 +480,11 @@ export const FOOD_KOREAN_INFO: Record<string, string> = {
   누에: "누에",
 };
 
-export const ADOPTION_METHOD_KOREAN_INFO: Record<AdoptionDtoMethod, string> = {
+export const ADOPTION_METHOD_KOREAN_INFO: Record<PetAdoptionDtoMethod, string> = {
   PICKUP: "직접 거래",
   DELIVERY: "배송",
   WHOLESALE: "도매",
+  EXPORT: "수출",
 };
 
 export const SELECTOR_CONFIGS: Record<
@@ -538,10 +539,10 @@ export const SELECTOR_CONFIGS: Record<
         key: "ADULT",
         value: "성체",
       },
-      {
-        key: "DEAD",
-        value: "사망",
-      },
+      // {
+      //   key: "DEAD",
+      //   value: "사망",
+      // },
     ],
   },
   sex: {
@@ -649,6 +650,10 @@ export const SELECTOR_CONFIGS: Record<
   adoptionStatus: {
     title: "분양 상태",
     selectList: [
+      {
+        key: "NONE",
+        value: "미정",
+      },
       {
         key: "NFS",
         value: "분양 안함(NFS)",

@@ -24,7 +24,9 @@ import {
   PetDto,
   PetSingleDto,
   PetParentDto,
+  DeletedPetDto,
 } from './pet.dto';
+import { UserProfilePublicDto } from 'src/user/user.dto';
 import {
   PET_GROWTH,
   PET_SEX,
@@ -39,9 +41,7 @@ import { UserService } from '../user/user.service';
 import { PetFilterDto } from './pet.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
 import { UpdatePetDto } from './pet.dto';
-import { AdoptionEntity } from '../adoption/adoption.entity';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
-import { LayingEntity } from 'src/laying/laying.entity';
 import { isMySQLError } from 'src/common/error';
 import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
 import { PetImageService } from 'src/pet_image/pet_image.service';
@@ -50,6 +50,8 @@ import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { isUndefined } from 'es-toolkit';
 import { PairEntity } from 'src/pair/pair.entity';
+import { DateTime } from 'luxon';
+import { AdoptionService } from 'src/adoption/adoption.service';
 
 @Injectable()
 export class PetService {
@@ -61,6 +63,7 @@ export class PetService {
     private readonly parentRequestService: ParentRequestService,
     private readonly userService: UserService,
     private readonly petImageService: PetImageService,
+    private readonly adoptionService: AdoptionService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -143,6 +146,9 @@ export class PetService {
             em,
           );
         }
+
+        // 분양 정보 초기화 (필수 필드만 포함)
+        await this.adoptionService.createAdoption(ownerId, { petId }, em);
       } catch (error: unknown) {
         if (error instanceof HttpException) {
           throw error; // 도메인/권한/검증 에러는 원본 유지
@@ -174,7 +180,7 @@ export class PetService {
   async findPetByPetId(petId: string): Promise<PetSingleDto> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       const pet = await entityManager.findOne(PetEntity, {
-        where: { petId, isDeleted: false },
+        where: { petId },
       });
 
       if (!pet) {
@@ -199,13 +205,33 @@ export class PetService {
       }
 
       // 소유자 정보 조회
-      const owner = await this.userService.findOneProfile(
+      const ownerData = await this.userService.findOneProfile(
         pet.ownerId,
         entityManager,
       );
 
+      // 공개용 owner 정보로 변환 (민감한 정보 제거)
+      const owner = plainToInstance(UserProfilePublicDto, {
+        userId: ownerData.userId,
+        name: ownerData.name,
+        role: ownerData.role,
+        isBiz: ownerData.isBiz,
+        status: ownerData.status,
+      });
+
       const { growth, sex, morphs, traits, foods, weight } = petDetail ?? {};
       const { temperature, status: eggStatus } = eggDetail ?? {};
+
+      if (pet.isDeleted) {
+        return plainToInstance(PetSingleDto, {
+          petId: pet.petId,
+          species: pet.species,
+          name: pet.name,
+          isDeleted: pet.isDeleted,
+          deletedAt: pet.deletedAt,
+          deleteReason: pet.deleteReason,
+        });
+      }
 
       return plainToInstance(PetSingleDto, {
         ...pet,
@@ -347,18 +373,22 @@ export class PetService {
         'petDetail.petId = pets.petId',
       )
       .leftJoinAndMapOne(
-        'pets.eggDetail',
-        'egg_details',
-        'eggDetail',
-        'eggDetail.petId = pets.petId',
-      )
-      .leftJoinAndMapOne(
         'pets.adoption',
         'adoptions',
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
         { soldStatus: ADOPTION_SALE_STATUS.SOLD },
-      );
+      )
+      .select([
+        'pets',
+        'users.userId',
+        'users.name',
+        'users.role',
+        'users.isBiz',
+        'users.status',
+        'petDetail',
+        'adoptions',
+      ]);
 
     if (pageOptionsDto.filterType === PET_LIST_FILTER_TYPE.MY) {
       // 자신의 모든 펫 조회 가능
@@ -460,18 +490,22 @@ export class PetService {
         'petDetail.petId = pets.petId',
       )
       .leftJoinAndMapOne(
-        'pets.eggDetail',
-        'egg_details',
-        'eggDetail',
-        'eggDetail.petId = pets.petId',
-      )
-      .leftJoinAndMapOne(
         'pets.adoption',
         'adoptions',
         'adoptions',
         'adoptions.petId = pets.petId AND adoptions.isDeleted = false AND adoptions.status != :soldStatus',
         { soldStatus: ADOPTION_SALE_STATUS.SOLD },
-      );
+      )
+      .select([
+        'pets',
+        'users.userId',
+        'users.name',
+        'users.role',
+        'users.isBiz',
+        'users.status',
+        'petDetail',
+        'adoptions',
+      ]);
 
     this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto);
 
@@ -529,7 +563,11 @@ export class PetService {
     return new PageDto(petDtos, pageMetaDto);
   }
 
-  async deletePet(petId: string, userId: string): Promise<{ petId: string }> {
+  async deletePet(
+    petId: string,
+    userId: string,
+    deleteReason?: string,
+  ): Promise<{ petId: string }> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       // 펫 존재 여부 및 소유권 확인
       const existingPet = await entityManager.findOne(PetEntity, {
@@ -544,53 +582,23 @@ export class PetService {
         throw new ForbiddenException('펫의 소유자가 아닙니다.');
       }
 
-      // 연관된 데이터 확인 (분양 정보 등)
-      const hasAdoption = await entityManager.findOne(AdoptionEntity, {
-        where: { petId, isDeleted: false },
-      });
-
-      if (hasAdoption) {
-        throw new BadRequestException('분양 정보가 있어 삭제할 수 없습니다.');
-      }
-
       try {
+        const now = DateTime.now().setZone('Asia/Seoul').toJSDate();
+
+        // 펫 soft delete
         await entityManager.update(
           PetEntity,
           { petId },
           {
             name: `DELETED_${existingPet.name}_${Date.now()}`,
             isDeleted: true,
+            deletedAt: now,
+            deleteReason: deleteReason || null,
           },
         );
 
+        // 펫 상세 정보 soft delete
         if (existingPet.type === PET_TYPE.PET) {
-          // 자식 펫이 있는지 확인 (이 펫을 부모로 하는 펫들)
-          const childrenPets = await entityManager.existsBy(
-            ParentRequestEntity,
-            {
-              parentPetId: petId,
-              status: In([PARENT_STATUS.APPROVED, PARENT_STATUS.PENDING]),
-            },
-          );
-
-          if (childrenPets) {
-            throw new BadRequestException('자식 펫이 있어 삭제할 수 없습니다.');
-          }
-
-          // layingId가 있고, 해당 laying에 연동된 다른 펫이 없으면 laying도 삭제
-          if (existingPet.layingId) {
-            const remainingPets = await entityManager.existsBy(PetEntity, {
-              layingId: existingPet.layingId,
-              isDeleted: false,
-            });
-
-            if (!remainingPets) {
-              await entityManager.delete(LayingEntity, {
-                id: existingPet.layingId,
-              });
-            }
-          }
-
           await entityManager.update(
             PetDetailEntity,
             { petId },
@@ -604,19 +612,144 @@ export class PetService {
           );
         }
 
-        // 연관된 parent_request들을 모두 삭제 상태로 변경
-        await this.parentRequestService.deleteAllParentRequestsByPet(
-          petId,
-          entityManager,
-        );
-
         return { petId };
-      } catch {
+      } catch (error: unknown) {
+        if (error instanceof HttpException) {
+          throw error;
+        }
         throw new InternalServerErrorException(
           '펫 삭제 중 오류가 발생했습니다.',
         );
       }
     });
+  }
+
+  async restorePet(petId: string, userId: string): Promise<{ petId: string }> {
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      // 삭제된 펫 존재 여부 및 소유권 확인
+      const existingPet = await entityManager.findOne(PetEntity, {
+        where: { petId, isDeleted: true },
+      });
+
+      if (!existingPet) {
+        throw new NotFoundException('삭제된 펫을 찾을 수 없습니다.');
+      }
+
+      if (existingPet.ownerId !== userId) {
+        throw new ForbiddenException('펫의 소유자가 아닙니다.');
+      }
+
+      try {
+        // 원래 이름 복구 (DELETED_ 접두사 제거)
+        const originalName = existingPet.name?.replace(
+          /^DELETED_(.+)_\d+$/,
+          '$1',
+        );
+
+        // 펫 복구
+        await entityManager.update(
+          PetEntity,
+          { petId },
+          {
+            name: originalName || existingPet.name,
+            isDeleted: false,
+            deletedAt: null,
+            deleteReason: null,
+          },
+        );
+
+        // 펫 상세 정보 복구
+        if (existingPet.type === PET_TYPE.PET) {
+          await entityManager.update(
+            PetDetailEntity,
+            { petId },
+            { isDeleted: false },
+          );
+        } else {
+          await entityManager.update(
+            EggDetailEntity,
+            { petId },
+            { isDeleted: false },
+          );
+        }
+
+        return { petId };
+      } catch (error: unknown) {
+        if (error instanceof HttpException) {
+          throw error;
+        }
+        if (isMySQLError(error) && error.code === 'ER_DUP_ENTRY') {
+          if (error.message.includes('UNIQUE_OWNER_PET_NAME')) {
+            throw new ConflictException('이미 존재하는 펫 이름입니다.');
+          }
+        }
+        throw new InternalServerErrorException(
+          '펫 복구 중 오류가 발생했습니다.',
+        );
+      }
+    });
+  }
+
+  async getDeletedPets(
+    pageOptionsDto: PetFilterDto,
+    userId: string,
+  ): Promise<PageDto<DeletedPetDto>> {
+    const queryBuilder = this.petRepository
+      .createQueryBuilder('pets')
+      .where('pets.ownerId = :userId AND pets.isDeleted = :isDeleted', {
+        userId,
+        isDeleted: true,
+      })
+      .leftJoinAndMapOne(
+        'pets.owner',
+        'users',
+        'users',
+        'users.userId = pets.ownerId',
+      )
+      .leftJoinAndMapOne(
+        'pets.petDetail',
+        'pet_details',
+        'petDetail',
+        'petDetail.petId = pets.petId',
+      )
+      .select([
+        'pets',
+        'users.userId',
+        'users.name',
+        'users.role',
+        'users.isBiz',
+        'users.status',
+        'petDetail',
+      ]);
+
+    // 검색 및 필터링 (키워드, 종, 성별 등)
+    this.buildPetListSearchFilterQuery(queryBuilder, pageOptionsDto);
+
+    // 정렬: 삭제 날짜 기준 내림차순
+    queryBuilder
+      .orderBy('pets.deletedAt', 'DESC')
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.itemPerPage);
+
+    const totalCount = await queryBuilder.getCount();
+    const petEntities = await queryBuilder.getMany();
+
+    // PetSummaryDto로 변환
+    const petDtos = petEntities.map((petRaw) => {
+      const petDto = plainToInstance(DeletedPetDto, {
+        name: petRaw.name,
+        species: petRaw.species,
+        deletedAt: petRaw.deletedAt,
+        deleteReason: petRaw.deleteReason,
+        petId: petRaw.petId,
+        hatchingDate: petRaw.hatchingDate,
+      });
+
+      return petDto;
+    });
+
+    const pageMetaDto = new PageMetaDto({ totalCount, pageOptionsDto });
+    return new PageDto(petDtos, pageMetaDto);
   }
 
   async getParentsByPetId(petId: string, userId: string) {
@@ -992,8 +1125,8 @@ export class PetService {
     }
 
     // 판매 상태 필터링
-    if (pageOptionsDto.status) {
-      queryBuilder.andWhere('adoptions.status = :status', {
+    if (pageOptionsDto.status && pageOptionsDto.status.length > 0) {
+      queryBuilder.andWhere('adoptions.status IN (:...status)', {
         status: pageOptionsDto.status,
       });
     }

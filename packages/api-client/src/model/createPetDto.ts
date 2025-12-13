@@ -28,6 +28,10 @@ export interface CreatePetDto {
   isPublic?: boolean;
   /** 펫 삭제 여부 */
   isDeleted?: boolean;
+  /** 펫 삭제 일시 */
+  deletedAt?: string;
+  /** 펫 삭제 사유 */
+  deleteReason?: string;
   /** 펫 성장단계 */
   growth?: CreatePetDtoGrowth;
   /** 펫 성별(수컷, 암컷, 미구분) */

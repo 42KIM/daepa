@@ -9,6 +9,8 @@ import type { PetSummaryAdoptionDtoType } from "./petSummaryAdoptionDtoType";
 import type { PetSummaryAdoptionDtoSpecies } from "./petSummaryAdoptionDtoSpecies";
 import type { PetSummaryAdoptionDtoSex } from "./petSummaryAdoptionDtoSex";
 import type { PetSummaryAdoptionDtoGrowth } from "./petSummaryAdoptionDtoGrowth";
+import type { PetSummaryAdoptionDtoFather } from "./petSummaryAdoptionDtoFather";
+import type { PetSummaryAdoptionDtoMother } from "./petSummaryAdoptionDtoMother";
 
 export interface PetSummaryAdoptionDto {
   /** 펫 아이디 */
@@ -21,6 +23,8 @@ export interface PetSummaryAdoptionDto {
   species: PetSummaryAdoptionDtoSpecies;
   /** 펫 출생일 */
   hatchingDate?: string;
+  /** 펫 삭제 여부 */
+  isDeleted?: boolean;
   /** 펫 성별(수컷, 암컷, 미구분) */
   sex?: PetSummaryAdoptionDtoSex;
   /** 펫 모프 */
@@ -29,4 +33,8 @@ export interface PetSummaryAdoptionDto {
   traits?: string[];
   /** 펫 성장단계 */
   growth?: PetSummaryAdoptionDtoGrowth;
+  /** 아빠 개체 정보 */
+  father?: PetSummaryAdoptionDtoFather;
+  /** 엄마 개체 정보 */
+  mother?: PetSummaryAdoptionDtoMother;
 }

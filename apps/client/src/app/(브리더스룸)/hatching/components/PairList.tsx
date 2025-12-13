@@ -7,7 +7,7 @@ import {
   PetSummaryLayingDto,
 } from "@repo/api-client";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { ChevronsDown, Cake, TriangleAlert } from "lucide-react";
+import { ChevronsDown, Cake, TriangleAlert, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { memo, useEffect, useState } from "react";
 import CreateMatingForm from "./CreateMatingForm";
@@ -35,7 +35,10 @@ const ParentInfo = ({ parent }: { parent: PetSummaryLayingDto | undefined }) => 
     <div className="flex flex-1 gap-1">
       <div className="flex flex-1 flex-col">
         <div className="mb-1 font-[500]">
-          <span>{parent.name}</span>
+          <span className={cn(parent.isDeleted && "line-through decoration-red-500")}>
+            {parent.name}
+          </span>
+          <span className="text-[12px] text-red-500">{parent.isDeleted && "[삭제됨]"}</span>
           {parent.weight && (
             <span className="ml-1 text-[12px] text-blue-600">
               | {Number(parent.weight).toLocaleString()}g
@@ -214,7 +217,7 @@ const PairList = memo(() => {
       {/* 헤더 영역 */}
       <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">
-          +
+          <Plus className="h-3 w-3" />
         </div>
         <div
           onClick={() => setIsCreateFormOpen(!isCreateFormOpen)}

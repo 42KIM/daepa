@@ -16,7 +16,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { adoptionControllerGetAllAdoptions } from "@repo/api-client";
-import { RefreshCcw } from "lucide-react";
+import { Plus, RefreshCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { overlay } from "overlay-kit";
 import Loading from "@/components/common/Loading";
@@ -128,7 +128,7 @@ const AdoptionTable = () => {
         {/* 헤더 영역 */}
         <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
           <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">
-            +
+            <Plus className="h-3 w-3" />
           </div>
           <div
             onClick={handleCreateAdoption}

@@ -358,78 +358,30 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
             label="거래 방식"
             content={
               <div className="flex h-[32px] items-center gap-1 rounded-lg bg-gray-100 p-1">
-                <button
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      adoption: {
-                        ...(prev.adoption ?? {}),
-                        method:
-                          prev.adoption?.method === PetAdoptionDtoMethod.PICKUP
-                            ? undefined
-                            : PetAdoptionDtoMethod.PICKUP,
-                      },
-                    }))
-                  }
-                  className={cn(
-                    "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                    adoptionData.method === PetAdoptionDtoMethod.PICKUP
-                      ? "bg-blue-100 text-blue-600 shadow-sm"
-                      : "text-gray-600",
-                    !isEditMode && "cursor-not-allowed",
-                  )}
-                  disabled={!isEditMode}
-                >
-                  {ADOPTION_METHOD_KOREAN_INFO[PetAdoptionDtoMethod.PICKUP]}
-                </button>
-                <button
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      adoption: {
-                        ...(prev.adoption ?? {}),
-                        method:
-                          prev.adoption?.method === PetAdoptionDtoMethod.DELIVERY
-                            ? undefined
-                            : PetAdoptionDtoMethod.DELIVERY,
-                      },
-                    }))
-                  }
-                  className={cn(
-                    "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                    adoptionData.method === PetAdoptionDtoMethod.DELIVERY
-                      ? "bg-blue-100 text-blue-600 shadow-sm"
-                      : "text-gray-600",
-                    !isEditMode && "cursor-not-allowed",
-                  )}
-                  disabled={!isEditMode}
-                >
-                  {ADOPTION_METHOD_KOREAN_INFO[PetAdoptionDtoMethod.DELIVERY]}
-                </button>
-                <button
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      adoption: {
-                        ...(prev.adoption ?? {}),
-                        method:
-                          prev.adoption?.method === PetAdoptionDtoMethod.WHOLESALE
-                            ? undefined
-                            : PetAdoptionDtoMethod.WHOLESALE,
-                      },
-                    }))
-                  }
-                  className={cn(
-                    "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                    adoptionData.method === PetAdoptionDtoMethod.WHOLESALE
-                      ? "bg-blue-100 text-blue-600 shadow-sm"
-                      : "text-gray-600",
-                    !isEditMode && "cursor-not-allowed",
-                  )}
-                  disabled={!isEditMode}
-                >
-                  {ADOPTION_METHOD_KOREAN_INFO[PetAdoptionDtoMethod.WHOLESALE]}
-                </button>
+                {Object.values(PetAdoptionDtoMethod).map((method) => (
+                  <button
+                    key={method}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        adoption: {
+                          ...(prev.adoption ?? {}),
+                          method: prev.adoption?.method === method ? undefined : method,
+                        },
+                      }))
+                    }
+                    className={cn(
+                      "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
+                      adoptionData.method === method
+                        ? "bg-blue-100 text-blue-600 shadow-sm"
+                        : "text-gray-600",
+                      !isEditMode && "cursor-not-allowed",
+                    )}
+                    disabled={!isEditMode}
+                  >
+                    {ADOPTION_METHOD_KOREAN_INFO[method]}
+                  </button>
+                ))}
               </div>
             }
           />

@@ -37,6 +37,10 @@ export interface PetSingleDto {
   isPublic?: boolean;
   /** 펫 삭제 여부 */
   isDeleted?: boolean;
+  /** 펫 삭제 일시 */
+  deletedAt?: string;
+  /** 펫 삭제 사유 */
+  deleteReason?: string;
   /** 펫 상세 정보 */
   petDetail?: PetDetailBaseDto;
   /** 알 상세 정보 */

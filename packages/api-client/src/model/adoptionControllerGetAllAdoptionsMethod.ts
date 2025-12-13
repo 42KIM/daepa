@@ -14,4 +14,5 @@ export const AdoptionControllerGetAllAdoptionsMethod = {
   PICKUP: "PICKUP",
   DELIVERY: "DELIVERY",
   WHOLESALE: "WHOLESALE",
+  EXPORT: "EXPORT",
 } as const;

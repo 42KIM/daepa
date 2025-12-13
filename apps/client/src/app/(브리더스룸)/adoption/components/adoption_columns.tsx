@@ -3,24 +3,36 @@
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import { AdoptionDto } from "@repo/api-client";
-import { getStatusBadge } from "@/lib/utils";
+import {
+  AdoptionDto,
+  PetHiddenStatusDtoHiddenStatus,
+  PetParentDto,
+  UpdateParentRequestDtoStatus,
+} from "@repo/api-client";
 import {
   ADOPTION_METHOD_KOREAN_INFO,
   GENDER_KOREAN_INFO,
   GROWTH_KOREAN_INFO,
   SPECIES_KOREAN_ALIAS_INFO,
+  STATUS_MAP,
   TABLE_HEADER,
 } from "../../constants";
 import { isNotNil } from "es-toolkit";
+import LinkButton from "../../components/LinkButton";
+import { BadgeCheck, Lock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
   {
-    accessorKey: "status",
-    header: TABLE_HEADER.adoption_status,
+    accessorKey: "adoptionDate",
+    header: "분양 날짜",
     cell: ({ row }) => {
-      const status = row.original.status;
-      return <div className="flex">{getStatusBadge(status)}</div>;
+      const adoptionDate = row.original.adoptionDate;
+      return (
+        <div className="text-sm">
+          {adoptionDate ? new Date(adoptionDate).toLocaleDateString("ko-KR") : "-"}
+        </div>
+      );
     },
   },
   {
@@ -37,6 +49,16 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     header: TABLE_HEADER.name,
     cell: ({ row }) => {
       const petName = row.original.pet.name;
+      const isDeleted = row.original.pet.isDeleted;
+
+      if (isDeleted) {
+        return (
+          <div className="cursor-not-allowed">
+            <span className="cursor-not-allowed line-through decoration-red-500">{petName}</span>
+            <span className="text-[12px] text-red-500">[삭제됨]</span>
+          </div>
+        );
+      }
       return <div className="font-semibold">{petName}</div>;
     },
   },
@@ -101,24 +123,124 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     },
   },
   {
-    accessorKey: "adoptionDate",
-    header: "분양 날짜",
-    cell: ({ row }) => {
-      const adoptionDate = row.original.adoptionDate;
-      return (
-        <div className="text-sm">
-          {adoptionDate ? new Date(adoptionDate).toLocaleDateString("ko-KR") : "-"}
-        </div>
-      );
-    },
-  },
-  {
     accessorKey: "buyer.name",
     header: "입양자",
     cell: ({ row }) => {
       const buyer = row.original?.buyer;
       // TODO!: 입양자 정보 보기 or 입양자 페이지로 이동
       return <div className="text-sm">{buyer ? buyer.name : "-"}</div>;
+    },
+  },
+  {
+    id: "father",
+    header: "부개체",
+    accessorFn: (row) => row.pet.father,
+    cell: ({ row }) => {
+      const father = row.original.pet.father;
+      if (!father) return <div className="text-sm text-gray-400">-</div>;
+      if (
+        "hiddenStatus" in father &&
+        father.hiddenStatus === PetHiddenStatusDtoHiddenStatus.SECRET
+      ) {
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
+                <Lock className="h-3 w-3" />
+                비공개
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>숨김 처리된 개체입니다</p>
+            </TooltipContent>
+          </Tooltip>
+        );
+      }
+
+      const fatherExist = father as PetParentDto;
+      const status = fatherExist?.status ?? UpdateParentRequestDtoStatus.APPROVED;
+      const isDeleted = fatherExist.isDeleted ?? false;
+
+      if (isDeleted) {
+        return (
+          <div className="cursor-not-allowed">
+            <span className="cursor-not-allowed line-through decoration-red-500">
+              {fatherExist.name}
+            </span>
+            <span className="text-[12px] text-red-500">[삭제됨]</span>
+          </div>
+        );
+      }
+
+      return (
+        <LinkButton
+          href={`/pet/${fatherExist.petId}`}
+          label={fatherExist.name ?? ""}
+          tooltip="펫 상세 페이지로 이동"
+          className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
+          icon={
+            status === UpdateParentRequestDtoStatus.APPROVED ? (
+              <BadgeCheck className="h-4 w-4 text-gray-100" />
+            ) : null
+          }
+        />
+      );
+    },
+  },
+  {
+    id: "mother",
+    accessorFn: (row) => row.pet.mother,
+    header: "모개체",
+    cell: ({ row }) => {
+      const mother = row.original.pet.mother;
+      if (!mother) return <div className="text-sm text-gray-400">-</div>;
+      if (
+        "hiddenStatus" in mother &&
+        mother.hiddenStatus === PetHiddenStatusDtoHiddenStatus.SECRET
+      ) {
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex cursor-help items-center gap-1 text-sm text-gray-400">
+                <Lock className="h-3 w-3" />
+                비공개
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>숨김 처리된 개체입니다</p>
+            </TooltipContent>
+          </Tooltip>
+        );
+      }
+
+      const motherExist = mother as PetParentDto;
+      const status = motherExist?.status ?? UpdateParentRequestDtoStatus.APPROVED;
+      const isDeleted = motherExist.isDeleted ?? false;
+
+      if (isDeleted) {
+        return (
+          <div className="cursor-not-allowed">
+            <span className="cursor-not-allowed line-through decoration-red-500">
+              {motherExist.name}
+            </span>
+            <span className="text-[12px] text-red-500">[삭제됨]</span>
+          </div>
+        );
+      }
+
+      return (
+        <LinkButton
+          href={`/pet/${motherExist.petId}`}
+          label={motherExist.name ?? ""}
+          tooltip="펫 상세 페이지로 이동"
+          className={`${STATUS_MAP[status].color} hover:text-accent/80 font-semibold text-white`}
+          icon={
+            status === UpdateParentRequestDtoStatus.APPROVED ? (
+              <BadgeCheck className="h-4 w-4 text-gray-100" />
+            ) : null
+          }
+        />
+      );
     },
   },
   {

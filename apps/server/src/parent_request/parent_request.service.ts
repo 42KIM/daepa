@@ -27,6 +27,7 @@ import { USER_ROLE, USER_STATUS } from 'src/user/user.constant';
 import { UserNotificationEntity } from 'src/user_notification/user_notification.entity';
 import { CreateUserNotificationDto } from 'src/user_notification/user_notification.dto';
 import { PairEntity } from 'src/pair/pair.entity';
+import { plainToInstance } from 'class-transformer';
 
 interface ParentRawData {
   pr_status: PARENT_STATUS;
@@ -574,7 +575,6 @@ export class ParentRequestService {
             'petDetail.sex',
           ])
           .where('pet.petId = :parentPetId', { parentPetId })
-          .andWhere('pet.isDeleted = :isDeleted', { isDeleted: false })
           .getOne(),
         entityManager.findOne(PetImageEntity, {
           where: { petId: childPetId },
@@ -646,7 +646,7 @@ export class ParentRequestService {
       let mother: PetParentDto | null = null;
 
       for (const row of parentData) {
-        const base: PetParentDto = {
+        const base = plainToInstance(PetParentDto, {
           petId: row.p_pet_id,
           name: row.p_name ?? '',
           species: row.p_species as PET_SPECIES,
@@ -664,7 +664,7 @@ export class ParentRequestService {
           },
           isPublic: !!row.p_is_public,
           isDeleted: !!row.p_is_deleted,
-        };
+        });
 
         const info = { ...base, photos: row.img_files ?? undefined };
 

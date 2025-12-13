@@ -8,7 +8,9 @@ export interface FilterStore<PetControllerFindAllParams> {
 }
 
 export const useFilterStore = create<FilterStore<PetControllerFindAllParams>>()((set) => ({
-  searchFilters: {},
+  searchFilters: {
+    species: "CR",
+  },
 
   // Actions
   setSearchFilters: (filters) => set({ searchFilters: filters }),

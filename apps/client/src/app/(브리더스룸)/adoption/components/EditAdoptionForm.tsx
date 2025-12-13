@@ -40,13 +40,14 @@ const adoptionSchema = z.object({
   price: z.string().optional(),
   adoptionDate: z.date().optional().nullable(),
   memo: z.string().optional(),
-  method: z.enum(["PICKUP", "DELIVERY", "WHOLESALE"]).optional().nullable(),
+  method: z.enum(["PICKUP", "DELIVERY", "WHOLESALE", "EXPORT"]).optional().nullable(),
   buyer: z
     .object({ userId: z.string().optional(), name: z.string().optional() })
     .optional()
     .nullable(),
   status: z
     .enum([
+      AdoptionDtoStatus.NONE,
       AdoptionDtoStatus.NFS,
       AdoptionDtoStatus.ON_SALE,
       AdoptionDtoStatus.ON_RESERVATION,
@@ -384,52 +385,23 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                 <FormLabel>거래 방식</FormLabel>
                 <FormControl>
                   <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={field.value === PetAdoptionDtoMethod.PICKUP ? "default" : "outline"}
-                      onClick={() => {
-                        if (field.value === PetAdoptionDtoMethod.PICKUP) {
-                          field.onChange(null);
-                        } else {
-                          field.onChange(PetAdoptionDtoMethod.PICKUP);
-                        }
-                      }}
-                      className="h-10 flex-1"
-                    >
-                      {ADOPTION_METHOD_KOREAN_INFO[PetAdoptionDtoMethod.PICKUP]}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={
-                        field.value === PetAdoptionDtoMethod.DELIVERY ? "default" : "outline"
-                      }
-                      onClick={() => {
-                        if (field.value === PetAdoptionDtoMethod.DELIVERY) {
-                          field.onChange(null);
-                        } else {
-                          field.onChange(PetAdoptionDtoMethod.DELIVERY);
-                        }
-                      }}
-                      className="h-10 flex-1"
-                    >
-                      {ADOPTION_METHOD_KOREAN_INFO[PetAdoptionDtoMethod.DELIVERY]}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={
-                        field.value === PetAdoptionDtoMethod.WHOLESALE ? "default" : "outline"
-                      }
-                      onClick={() => {
-                        if (field.value === PetAdoptionDtoMethod.WHOLESALE) {
-                          field.onChange(null);
-                        } else {
-                          field.onChange(PetAdoptionDtoMethod.WHOLESALE);
-                        }
-                      }}
-                      className="h-10 flex-1"
-                    >
-                      {ADOPTION_METHOD_KOREAN_INFO[PetAdoptionDtoMethod.WHOLESALE]}
-                    </Button>
+                    {Object.values(PetAdoptionDtoMethod).map((method) => (
+                      <Button
+                        key={method}
+                        type="button"
+                        variant={field.value === method ? "default" : "outline"}
+                        onClick={() => {
+                          if (field.value === method) {
+                            field.onChange(null);
+                          } else {
+                            field.onChange(method);
+                          }
+                        }}
+                        className="h-10 flex-1"
+                      >
+                        {ADOPTION_METHOD_KOREAN_INFO[method]}
+                      </Button>
+                    ))}
                   </div>
                 </FormControl>
                 <FormMessage />
