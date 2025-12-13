@@ -166,12 +166,11 @@ export default function NotificationsPage({ params }: NotiPageProps) {
       const res = await deleteNotification({ id: data.id, receiverId: data.receiverId });
       if (res?.data?.success) {
         toast.success("알림이 삭제되었습니다.");
-
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
       }
     } catch {
       toast.error("알림 삭제에 실패했습니다.");
     } finally {
+      await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
       close?.();
     }
   };

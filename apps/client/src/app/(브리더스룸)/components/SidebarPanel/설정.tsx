@@ -83,7 +83,7 @@ const SettingList = () => {
           <h4 className="mb-2 text-sm font-semibold text-blue-900 dark:text-neutral-300">
             도움이 필요하신가요?
           </h4>
-          <p className="text-blue-70 text-xs dark:text-neutral-400">
+          <p className="text-xs text-blue-800 dark:text-neutral-400">
             문의사항이 있으시면 고객센터로 연락해주세요.
           </p>
         </div>

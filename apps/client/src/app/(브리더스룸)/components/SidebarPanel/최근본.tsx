@@ -87,9 +87,7 @@ const RecentlyViewedList = () => {
                     <PetThumbnail imageUrl={item.photoUrl} alt={item.name} />
                   </div>
                 ) : (
-                  <div className="bg-foreground/10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl">
-                    <span className="text-2xl"></span>
-                  </div>
+                  <div className="bg-foreground/10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl" />
                 )}
                 <div className="flex flex-1 justify-between gap-2 overflow-hidden">
                   <div className="flex items-center justify-between gap-2">
