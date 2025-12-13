@@ -132,8 +132,9 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     },
   },
   {
-    accessorKey: "father",
+    id: "father",
     header: "부개체",
+    accessorFn: (row) => row.pet.father,
     cell: ({ row }) => {
       const father = row.original.pet.father;
       if (!father) return <div className="text-sm text-gray-400">-</div>;
@@ -189,7 +190,8 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     },
   },
   {
-    accessorKey: "mother",
+    id: "mother",
+    accessorFn: (row) => row.pet.mother,
     header: "모개체",
     cell: ({ row }) => {
       const mother = row.original.pet.mother;
