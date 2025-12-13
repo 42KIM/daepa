@@ -59,12 +59,12 @@ export class AdoptionService {
 
     const fatherDisplayable = this.getParentPublicSafe(
       father,
-      father?.owner?.userId ?? '',
+      pet.ownerId,
       userId,
     );
     const motherDisplayable = this.getParentPublicSafe(
       mother,
-      mother?.owner?.userId ?? '',
+      pet.ownerId,
       userId,
     );
 
@@ -522,30 +522,43 @@ export class AdoptionService {
     });
   }
 
+  /**
+   * 상태별 부모 펫 노출 정보
+   * @param parentPet - 부모 펫 정보
+   * @param childPetOwnerId - 자식 펫의 소유자 ID
+   * @param viewerId - 현재 조회자 ID
+   * @returns 조회 권한에 따라 부모 펫 정보, 숨김 상태, 또는 null 반환
+   * @private
+   */
   private getParentPublicSafe(
-    parent: PetParentDto | null,
-    parentOwnerId: string | null,
-    userId: string,
+    parentPet: PetParentDto | null,
+    childPetOwnerId: string | null,
+    viewerId: string,
   ) {
-    if (!parent) return null;
+    // 부모 펫이 없으면 null 반환
+    if (!parentPet) return null;
 
-    // 본인 소유 펫
-    const isMyPet = parentOwnerId === userId;
-    if (isMyPet) {
-      return parent;
+    const isViewingMyPet = childPetOwnerId === viewerId; // 내 펫을 보고 있는가?
+    const isViewingMyPetAndParentPetMine =
+      isViewingMyPet && parentPet.owner.userId === viewerId; // 내 펫을 보고 있으면서, 부모 펫도 내 펫인가?
+
+    if (isViewingMyPet) {
+      if (!parentPet.isPublic && !isViewingMyPetAndParentPetMine) {
+        return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
+      }
+
+      return parentPet;
     }
 
-    // 부모 개체 삭제 처리
-    if (parent.isDeleted) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.DELETED };
+    if (parentPet.status === PARENT_STATUS.APPROVED) {
+      if (!parentPet.isPublic) {
+        return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
+      }
+
+      return parentPet;
     }
-    // 비공개 처리
-    if (!parent.isPublic) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
-    }
-    // 부모 요청중
-    if (parent.status === PARENT_STATUS.PENDING) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.PENDING };
-    }
+
+    // 그 외의 경우 (거절됨, 취소됨 등) null 반환
+    return null;
   }
 }
