@@ -10,10 +10,10 @@ import {
 import { PetEntity } from './pet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  Repository,
-  In,
-  EntityManager,
   DataSource,
+  EntityManager,
+  In,
+  Repository,
   SelectQueryBuilder,
 } from 'typeorm';
 import { nanoid } from 'nanoid';
@@ -21,27 +21,27 @@ import { plainToInstance } from 'class-transformer';
 import {
   CompleteHatchingDto,
   CreatePetDto,
-  PetDto,
-  PetSingleDto,
-  PetParentDto,
   DeletedPetDto,
+  PetDto,
+  PetFilterDto,
+  PetParentDto,
+  PetSingleDto,
+  UpdatePetDto,
 } from './pet.dto';
 import { UserProfilePublicDto } from 'src/user/user.dto';
 import {
-  PET_GROWTH,
-  PET_SEX,
   ADOPTION_SALE_STATUS,
-  PET_LIST_FILTER_TYPE,
-  PET_TYPE,
+  PET_GROWTH,
   PET_HIDDEN_STATUS,
+  PET_LIST_FILTER_TYPE,
+  PET_SEX,
+  PET_TYPE,
 } from './pet.constants';
 import { ParentRequestService } from '../parent_request/parent_request.service';
 import { PARENT_STATUS } from '../parent_request/parent_request.constants';
 import { UserService } from '../user/user.service';
-import { PetFilterDto } from './pet.dto';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
-import { UpdatePetDto } from './pet.dto';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { endOfMonth, format, startOfMonth } from 'date-fns';
 import { isMySQLError } from 'src/common/error';
 import { ParentRequestEntity } from 'src/parent_request/parent_request.entity';
 import { PetImageService } from 'src/pet_image/pet_image.service';
@@ -755,8 +755,24 @@ export class PetService {
   async getParentsByPetId(petId: string, userId: string) {
     const { father, mother } =
       await this.parentRequestService.getParentsWithRequestStatus(petId);
-    const fatherDisplayable = this.getParentPublicSafe(father, userId, userId);
-    const motherDisplayable = this.getParentPublicSafe(mother, userId, userId);
+    // petId로 owner 정보
+    const pet = await this.petRepository.findOne({
+      where: { petId },
+    });
+    if (!pet) {
+      throw new NotFoundException('펫을 찾을 수 없습니다.');
+    }
+
+    const fatherDisplayable = this.getParentPublicSafe(
+      father,
+      pet.ownerId,
+      userId,
+    );
+    const motherDisplayable = this.getParentPublicSafe(
+      mother,
+      pet.ownerId,
+      userId,
+    );
     return {
       father: fatherDisplayable ?? undefined,
       mother: motherDisplayable ?? undefined,
@@ -1139,30 +1155,43 @@ export class PetService {
     }
   }
 
+  /**
+   * 상태별 부모 펫 노출 정보
+   * @param parentPet - 부모 펫 정보
+   * @param childPetOwnerId - 자식 펫의 소유자 ID
+   * @param viewerId - 현재 조회자 ID
+   * @returns 조회 권한에 따라 부모 펫 정보, 숨김 상태, 또는 null 반환
+   * @private
+   */
   private getParentPublicSafe(
-    parent: PetParentDto | null,
-    childOwnerId: string | null,
-    userId: string,
+    parentPet: PetParentDto | null,
+    childPetOwnerId: string | null,
+    viewerId: string,
   ) {
-    if (!parent) return null;
+    // 부모 펫이 없으면 null 반환
+    if (!parentPet) return null;
 
-    // 본인 소유 펫
-    const isMyPet = childOwnerId === userId;
-    if (isMyPet) {
-      return parent;
+    const isViewingMyPet = childPetOwnerId === viewerId; // 내 펫을 보고 있는가?
+    const isViewingMyPetAndParentPetMine =
+      isViewingMyPet && parentPet.owner.userId === viewerId; // 내 펫을 보고 있으면서, 부모 펫도 내 펫인가?
+
+    if (isViewingMyPet) {
+      if (!parentPet.isPublic && !isViewingMyPetAndParentPetMine) {
+        return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
+      }
+
+      return parentPet;
     }
 
-    // 부모 개체 삭제 처리
-    if (parent.isDeleted) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.DELETED };
+    if (parentPet.status === PARENT_STATUS.APPROVED) {
+      if (!parentPet.isPublic) {
+        return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
+      }
+
+      return parentPet;
     }
-    // 비공개 처리
-    if (!parent.isPublic) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
-    }
-    // 부모 요청중
-    if (parent.status === PARENT_STATUS.PENDING) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.PENDING };
-    }
+
+    // 그 외의 경우 (거절됨, 취소됨 등) null 반환
+    return null;
   }
 }
