@@ -81,7 +81,7 @@ export class PetImageController {
       petId,
       saveFilesDto.files,
       token.userId,
-      'create',
+      'update',
     );
 
     return {
