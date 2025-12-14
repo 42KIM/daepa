@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsEmail,
+  Matches,
 } from 'class-validator';
 import { OAUTH_PROVIDER } from 'src/auth/auth.constants';
 import { Exclude } from 'class-transformer';
@@ -25,6 +26,9 @@ class UserBaseDto {
     description: '회원 이름',
   })
   @IsString()
+  @Matches(/^(?!DELETED_).*$/, {
+    message: '사용자 이름은 "DELETED_"로 시작할 수 없습니다.',
+  })
   name: string;
 
   @ApiProperty({
@@ -207,6 +211,9 @@ export class VerifyNameDto {
     description: '닉네임',
   })
   @IsString()
+  @Matches(/^(?!DELETED_).*$/, {
+    message: '사용자 이름은 "DELETED_"로 시작할 수 없습니다.',
+  })
   name: string;
 }
 

@@ -698,4 +698,30 @@ export class ParentRequestService {
         return USER_NOTIFICATION_TYPE.PARENT_REQUEST;
     }
   }
+
+  /**
+   * 특정 펫과 관련된 PENDING 상태의 부모 요청이 존재하는지 확인
+   * @param petId - 자식 또는 부모로 포함된 펫 ID
+   * @param manager - 선택적 EntityManager (외부 트랜잭션 지원)
+   * @returns PENDING 요청 존재 여부
+   */
+  async hasPendingRequestsByPetId(
+    petId: string,
+    manager?: EntityManager,
+  ): Promise<boolean> {
+    const run = async (em: EntityManager) => {
+      return em.existsBy(ParentRequestEntity, [
+        { childPetId: petId, status: PARENT_STATUS.PENDING },
+        { parentPetId: petId, status: PARENT_STATUS.PENDING },
+      ]);
+    };
+
+    if (manager) {
+      return run(manager);
+    }
+
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      return run(entityManager);
+    });
+  }
 }

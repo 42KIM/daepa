@@ -10,6 +10,7 @@ import {
   IsNotEmpty,
   ValidateNested,
   ValidateIf,
+  Matches,
 } from 'class-validator';
 import {
   PET_ADOPTION_METHOD,
@@ -86,6 +87,9 @@ export class PetBaseDto {
   })
   @IsOptional()
   @IsString()
+  @Matches(/^(?!DELETED_).*$/, {
+    message: '펫 이름은 "DELETED_"로 시작할 수 없습니다.',
+  })
   @Transform(({ value }): string | undefined => {
     if (typeof value === 'string' && value.startsWith('DELETED_')) {
       // DELETED_${name}_${timestamp} 형태에서 원래 이름만 추출
@@ -1616,6 +1620,9 @@ export class VerifyPetNameDto {
   })
   @IsNotEmpty()
   @IsString()
+  @Matches(/^(?!DELETED_).*$/, {
+    message: '펫 이름은 "DELETED_"로 시작할 수 없습니다.',
+  })
   name: string;
 }
 
