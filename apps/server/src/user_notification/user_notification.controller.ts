@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Patch, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Query,
+  Param,
+  ParseIntPipe,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserNotificationService } from './user_notification.service';
 import { PageMetaDto, PageOptionsDto } from 'src/common/page.dto';
 import {
@@ -42,6 +52,53 @@ export class UserNotificationController {
       pageOptionsDto,
       token.userId,
     );
+  }
+
+  @Get('unread/count')
+  @ApiResponse({
+    status: 200,
+    description: '읽지 않은 알림 개수 조회',
+    schema: {
+      type: 'object',
+      properties: {
+        count: {
+          type: 'number',
+          description: '읽지 않은 알림 개수',
+        },
+      },
+    },
+  })
+  async getUnreadCount(@JwtUser() token: JwtUserPayload) {
+    const count = await this.userNotificationService.getUnreadCount(
+      token.userId,
+    );
+    return { count };
+  }
+
+  @Get(':id')
+  @ApiResponse({
+    status: 200,
+    description: '알림 상세 조회',
+    type: UserNotificationDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '알림을 찾을 수 없습니다.',
+  })
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<UserNotificationDto> {
+    const notification = await this.userNotificationService.findOne(
+      id,
+      token.userId,
+    );
+
+    if (!notification) {
+      throw new NotFoundException('알림을 찾을 수 없습니다.');
+    }
+
+    return notification;
   }
 
   @Patch()

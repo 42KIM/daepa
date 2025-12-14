@@ -10,6 +10,8 @@ import Header from "./components/Header";
 import AdoptionInfo from "./components/분양정보";
 import Images from "./components/이미지";
 import PedigreeInfo from "./components/혈통정보";
+import Loading from "@/components/common/Loading";
+
 interface PetDetailPageProps {
   params: Promise<{
     petId: string;
@@ -19,11 +21,32 @@ interface PetDetailPageProps {
 function PetDetailPage({ params }: PetDetailPageProps) {
   const { petId } = use(params);
 
-  const { data: pet } = useQuery({
+  const {
+    data: pet,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: [petControllerFindPetByPetId.name, petId],
     queryFn: () => petControllerFindPetByPetId(petId),
     select: (response) => response.data.data,
   });
+
+  if (isLoading) return <Loading />;
+
+  if (isError) {
+    const status = (error as any)?.response?.status;
+    return (
+      <div className="flex h-full flex-1 flex-col items-center justify-center gap-2">
+        <p className="text-lg font-semibold text-gray-700">
+          {status === 404 ? "펫을 찾을 수 없습니다" : "펫 정보를 불러오는 중 오류가 발생했습니다"}
+        </p>
+        <p className="text-sm text-gray-500">
+          {status === 404 ? "존재하지 않거나 삭제된 펫입니다" : "잠시 후 다시 시도해주세요"}
+        </p>
+      </div>
+    );
+  }
 
   if (!pet) return null;
 
@@ -69,7 +92,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
         <AdoptionInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
 
         {/* 사진 */}
-        <Images petId={petId} ownerId={pet.owner.userId ?? ""} />
+        <Images pet={pet} />
 
         {/* 혈통 정보 */}
         <PedigreeInfo species={pet.species} petId={petId} userId={pet.owner.userId ?? ""} />

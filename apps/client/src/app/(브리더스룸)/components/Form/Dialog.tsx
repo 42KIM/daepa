@@ -32,7 +32,7 @@ const Dialog = ({
   return (
     <AlertDialog open={isOpen}>
       <AlertDialogContent className="rounded-3xl">
-        <AlertDialogTitle className="p-4 pb-2">{title}</AlertDialogTitle>
+        <AlertDialogTitle className="p-2 pb-2">{title}</AlertDialogTitle>
         <AlertDialogDescription className="whitespace-pre-line px-4">
           {description}
         </AlertDialogDescription>

@@ -24,11 +24,9 @@ import {
 } from "lucide-react";
 import DeleteAccountButton from "./components/DeleteAccountButton";
 import { Switch } from "@/components/ui/switch";
-import { useRouter } from "next/navigation";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  authControllerSignOut,
   userControllerGetUserProfile,
   userControllerCreateInitUserInfo,
   userControllerVerifyName,
@@ -39,16 +37,16 @@ import Image from "next/image";
 import { USER_STATUS_MAP } from "@/app/(브리더스룸)/constants";
 import { cn } from "@/lib/utils";
 import { AxiosError } from "axios";
-import { tokenStorage } from "@/lib/tokenStorage";
 import { providerIconMap } from "../../(user)/constants";
 import { DUPLICATE_CHECK_STATUS } from "../constants";
+import { useLogout } from "@/hooks/useLogout";
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;
 
 const SettingsPage = () => {
-  const router = useRouter();
   const queryClient = useQueryClient();
+  const { logout } = useLogout();
   const { theme, setTheme } = useTheme();
   const [notifications, setNotifications] = useState({
     email: true,
@@ -69,10 +67,6 @@ const SettingsPage = () => {
     select: (response) => response.data.data,
   });
 
-  const { mutateAsync: signOut } = useMutation({
-    mutationFn: authControllerSignOut,
-  });
-
   const { mutateAsync: updateNickname, isPending: isUpdatingNickname } = useMutation({
     mutationFn: userControllerCreateInitUserInfo,
   });
@@ -81,20 +75,6 @@ const SettingsPage = () => {
     mutationFn: userControllerVerifyName,
   });
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      tokenStorage.removeToken();
-      toast.success("로그아웃 되었습니다.");
-      router.replace("/pet");
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        toast.error(error.response?.data?.message ?? "로그아웃에 실패했습니다.");
-      } else {
-        toast.error("로그아웃에 실패했습니다.");
-      }
-    }
-  };
   const toggleNotification = (type: keyof typeof notifications) => {
     setNotifications((prev) => ({
       ...prev,
@@ -507,7 +487,7 @@ const SettingsPage = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleSignOut}
+              onClick={logout}
               className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
             >
               로그아웃

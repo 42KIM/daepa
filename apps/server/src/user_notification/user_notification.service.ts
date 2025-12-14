@@ -15,6 +15,7 @@ import {
   UserNotificationDto,
 } from './user_notification.dto';
 import { plainToInstance } from 'class-transformer';
+import { USER_NOTIFICATION_STATUS } from './user_notification.constant';
 
 @Injectable()
 export class UserNotificationService {
@@ -110,5 +111,15 @@ export class UserNotificationService {
     }
 
     return plainToInstance(UserNotificationDto, userNotificationEntity);
+  }
+
+  async getUnreadCount(userId: string): Promise<number> {
+    return await this.userNotificationRepository.count({
+      where: {
+        receiverId: userId,
+        status: USER_NOTIFICATION_STATUS.UNREAD,
+        isDeleted: false,
+      },
+    });
   }
 }
