@@ -52,9 +52,20 @@ const NameDuplicateCheckInput = ({
         toast.success("사용 가능한 이름입니다.");
       }
     } catch (error: unknown) {
-      if (error instanceof AxiosError && error.response?.status === 409) {
-        setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.DUPLICATE);
-        toast.error("이미 사용중인 이름입니다.");
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 409) {
+          setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.DUPLICATE);
+          toast.error("이미 사용중인 이름입니다.");
+        } else if (error.response?.status === 400) {
+          // 서버 유효성 검증 에러 (예: DELETED_ 접두사)
+          setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
+          const message = error.response?.data?.message;
+          const errorMessage = Array.isArray(message) ? message[0] : message;
+          toast.error(errorMessage || "유효하지 않은 이름입니다.");
+        } else {
+          setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
+          toast.error("중복확인 중 오류가 발생했습니다. 다시 시도해주세요.");
+        }
       } else {
         setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
         toast.error("중복확인 중 오류가 발생했습니다. 다시 시도해주세요.");
