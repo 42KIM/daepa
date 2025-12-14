@@ -502,6 +502,17 @@ export class AdoptionService {
       await em.save(AdoptionEntity, newAdoptionEntity);
 
       if (updateAdoptionDto.status === ADOPTION_SALE_STATUS.SOLD) {
+        const hasPendingRequest =
+          await this.parentRequestService.hasPendingRequestsByPetId(
+            newAdoptionEntity.petId,
+            em,
+          );
+        if (hasPendingRequest) {
+          throw new BadRequestException(
+            '이 펫과 관련된 부모 요청을 모두 처리한 후 다시 시도해주세요.',
+          );
+        }
+
         await this.updatePetOwner(
           em,
           adoptionEntity.petId,

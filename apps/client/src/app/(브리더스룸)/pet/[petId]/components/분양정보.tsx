@@ -9,6 +9,7 @@ import {
   PetAdoptionDtoMethod,
   UserProfilePublicDto,
 } from "@repo/api-client";
+import { AxiosError } from "axios";
 import FormItem from "./FormItem";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -144,6 +145,64 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
           return;
         }
 
+        if (adoptionData.status === PetAdoptionDtoStatus.SOLD) {
+          // 판매완료 확인 모달
+          const confirmed = await new Promise<boolean>((resolve) => {
+            overlay.open(({ isOpen, close }) => (
+              <Dialog
+                open={isOpen}
+                onOpenChange={() => {
+                  resolve(false);
+                  close();
+                }}
+              >
+                <DialogContent className="rounded-3xl p-6">
+                  <DialogTitle className="text-sm font-semibold text-red-500">주의!</DialogTitle>
+                  <div className="flex flex-col py-2 text-gray-600">
+                    <span className={"font-semibold"}>정말 분양완료 처리하시겠습니까?</span>
+                    <span className={"text-sm"}>
+                      - 분양완료 후에는 개체의 소유권이 완전히 이전됩니다.
+                    </span>
+                    <span className={"text-sm"}>
+                      - 더이상 개체 정보를 수정하거나 삭제할 수 없습니다.
+                    </span>
+                    <span className={"text-sm text-red-500 underline"}>
+                      - 이 펫과 관련된 처리되지 않은 부모 요청이 있는 경우, 완료 처리가
+                      불가능합니다.
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1"
+                      variant="outline"
+                      onClick={() => {
+                        resolve(false);
+                        close();
+                      }}
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                      onClick={() => {
+                        resolve(true);
+                        close();
+                      }}
+                    >
+                      확인
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            ));
+          });
+
+          if (!confirmed) {
+            setIsProcessing(false);
+            return;
+          }
+        }
+
         await updateAdoption({ adoptionId, data: changedFields });
       } else {
         // 생성 경우: 모든 필드 포함
@@ -172,9 +231,16 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
         await refetch();
         toast.success("분양 정보가 성공적으로 업데이트되었습니다.");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("분양 정보 수정 실패:", error);
-      toast.error("분양 정보 수정에 실패했습니다. 다시 시도해주세요.");
+
+      if (error instanceof AxiosError) {
+        const message = error.response?.data?.message;
+        const errorMessage = Array.isArray(message) ? message[0] : message;
+        toast.error(errorMessage || "분양 정보 수정에 실패했습니다. 다시 시도해주세요.");
+      } else {
+        toast.error("분양 정보 수정에 실패했습니다. 다시 시도해주세요.");
+      }
     } finally {
       setIsProcessing(false);
     }
