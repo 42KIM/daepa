@@ -126,7 +126,7 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
 
   return (
     <div className="shadow-xs flex h-fit flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
-      <div className="text-[14px] font-[600] text-gray-600">사육정보</div>
+      <div className="text-[14px] font-[600] text-gray-600">펫정보</div>
 
       <FormItem
         label="공개 여부"

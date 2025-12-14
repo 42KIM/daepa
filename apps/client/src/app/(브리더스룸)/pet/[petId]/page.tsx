@@ -5,7 +5,7 @@ import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Ban } from "lucide-react";
 
-import BreedingInfo from "./components/사육정보";
+import BreedingInfo from "./components/펫정보";
 import Header from "./components/Header";
 import AdoptionInfo from "./components/분양정보";
 import Images from "./components/이미지";
@@ -62,14 +62,16 @@ function PetDetailPage({ params }: PetDetailPageProps) {
       <Header pet={pet} />
 
       <div className="flex flex-wrap gap-3 max-[960px]:flex-wrap">
-        {/* 사육정보 (개체 이름, 종, 성별, 크기, 모프, 형질, 먹이) */}
+        {/* 펫정보 (개체 이름, 종, 성별, 크기, 모프, 형질, 먹이) */}
         <BreedingInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
+
         {/* 분양 정보 */}
         <AdoptionInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
 
         {/* 사진 */}
         <Images petId={petId} ownerId={pet.owner.userId ?? ""} />
 
+        {/* 혈통 정보 */}
         <PedigreeInfo species={pet.species} petId={petId} userId={pet.owner.userId ?? ""} />
       </div>
     </div>
