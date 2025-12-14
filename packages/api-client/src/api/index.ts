@@ -68,6 +68,7 @@ import type {
   UserControllerGetUserListSimple200,
   UserDto,
   UserNotificationControllerFindAll200,
+  UserNotificationControllerGetUnreadCount200,
   UserNotificationDto,
   UserProfileResponseDto,
 } from "../model";
@@ -183,6 +184,13 @@ export const userNotificationControllerDelete = (
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     data: deleteUserNotificationDto,
+  });
+};
+
+export const userNotificationControllerGetUnreadCount = () => {
+  return useCustomInstance<UserNotificationControllerGetUnreadCount200>({
+    url: `/api/v1/user-notification/unread/count`,
+    method: "GET",
   });
 };
 
@@ -521,6 +529,9 @@ export type UserNotificationControllerUpdateResult = NonNullable<
 >;
 export type UserNotificationControllerDeleteResult = NonNullable<
   Awaited<ReturnType<typeof userNotificationControllerDelete>>
+>;
+export type UserNotificationControllerGetUnreadCountResult = NonNullable<
+  Awaited<ReturnType<typeof userNotificationControllerGetUnreadCount>>
 >;
 export type UserNotificationControllerFindOneResult = NonNullable<
   Awaited<ReturnType<typeof userNotificationControllerFindOne>>
@@ -1473,6 +1484,16 @@ export const getUserNotificationControllerDeleteResponseMock = (
 ): CommonResponseDto => ({
   success: faker.datatype.boolean(),
   message: faker.string.alpha(20),
+  ...overrideResponse,
+});
+
+export const getUserNotificationControllerGetUnreadCountResponseMock = (
+  overrideResponse: Partial<UserNotificationControllerGetUnreadCount200> = {},
+): UserNotificationControllerGetUnreadCount200 => ({
+  count: faker.helpers.arrayElement([
+    faker.number.int({ min: undefined, max: undefined }),
+    undefined,
+  ]),
   ...overrideResponse,
 });
 
@@ -4103,6 +4124,31 @@ export const getUserNotificationControllerDeleteMockHandler = (
   });
 };
 
+export const getUserNotificationControllerGetUnreadCountMockHandler = (
+  overrideResponse?:
+    | UserNotificationControllerGetUnreadCount200
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) =>
+        | Promise<UserNotificationControllerGetUnreadCount200>
+        | UserNotificationControllerGetUnreadCount200),
+) => {
+  return http.get("*/api/v1/user-notification/unread/count", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUserNotificationControllerGetUnreadCountResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getUserNotificationControllerFindOneMockHandler = (
   overrideResponse?:
     | UserNotificationDto
@@ -4920,6 +4966,7 @@ export const getProjectDaepaAPIMock = () => [
   getUserNotificationControllerFindAllMockHandler(),
   getUserNotificationControllerUpdateMockHandler(),
   getUserNotificationControllerDeleteMockHandler(),
+  getUserNotificationControllerGetUnreadCountMockHandler(),
   getUserNotificationControllerFindOneMockHandler(),
   getBrPetControllerFindAllMockHandler(),
   getBrPetControllerGetPetsByYearMockHandler(),

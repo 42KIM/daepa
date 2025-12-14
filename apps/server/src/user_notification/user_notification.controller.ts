@@ -54,6 +54,27 @@ export class UserNotificationController {
     );
   }
 
+  @Get('unread/count')
+  @ApiResponse({
+    status: 200,
+    description: '읽지 않은 알림 개수 조회',
+    schema: {
+      type: 'object',
+      properties: {
+        count: {
+          type: 'number',
+          description: '읽지 않은 알림 개수',
+        },
+      },
+    },
+  })
+  async getUnreadCount(@JwtUser() token: JwtUserPayload) {
+    const count = await this.userNotificationService.getUnreadCount(
+      token.userId,
+    );
+    return { count };
+  }
+
   @Get(':id')
   @ApiResponse({
     status: 200,
