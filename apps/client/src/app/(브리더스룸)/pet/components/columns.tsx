@@ -84,7 +84,7 @@ export const columns: ColumnDef<PetDto>[] = [
       return (
         <TooltipText
           title={SALE_STATUS_KOREAN_INFO[adoptionData?.status]}
-          text={SALE_STATUS_KOREAN_INFO[adoptionData?.status] || "미정"}
+          text={SALE_STATUS_KOREAN_INFO[adoptionData?.status] ?? "미정"}
           description={adoptionData?.memo ?? ""}
           content={
             <div className="capitalize">
