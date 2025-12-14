@@ -4,26 +4,30 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   petImageControllerFindOne,
-  PetDto,
   PetImageItem,
   petImageControllerSavePetImages,
+  PetDto,
 } from "@repo/api-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { isEqual } from "es-toolkit";
 import { ImageUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useIsMyPet } from "@/hooks/useIsMyPet";
 
 const Images = ({ pet }: { pet: PetDto }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   // 편집 중일 때만 임시 상태 사용 (null이면 photos 사용)
   const [editingImages, setEditingImages] = useState<PetImageItem[] | null>(null);
+  const ownerId = pet.owner.userId ?? "";
+
+  const isViewingMyPet = useIsMyPet(ownerId);
 
   const {
     data: photos = [],
-    refetch,
     isSuccess,
+    refetch,
   } = useQuery({
     queryKey: [petImageControllerFindOne.name, pet.petId],
     queryFn: () => petImageControllerFindOne(pet.petId),
@@ -116,48 +120,50 @@ const Images = ({ pet }: { pet: PetDto }) => {
       )}
       <DndImagePicker disabled={!isEditMode} images={displayImages} onChange={setEditingImages} />
 
-      <div className="mt-2 flex w-full flex-1 items-end gap-2">
-        {isEditMode && (
+      {isViewingMyPet && (
+        <div className="mt-2 flex w-full flex-1 items-end gap-2">
+          {isEditMode && (
+            <Button
+              disabled={isProcessing}
+              className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
+              onClick={() => {
+                setEditingImages(null);
+                setIsEditMode(false);
+              }}
+            >
+              취소
+            </Button>
+          )}
           <Button
             disabled={isProcessing}
-            className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
-            onClick={() => {
-              setEditingImages(null);
-              setIsEditMode(false);
+            className={cn(
+              "flex-2 h-10 cursor-pointer rounded-lg font-bold",
+              isEditMode && "bg-red-600 hover:bg-red-600/90",
+              isProcessing && "bg-gray-300",
+            )}
+            onClick={async () => {
+              if (isEditMode) {
+                await handleSave();
+              } else {
+                setEditingImages([...photos]);
+                setIsEditMode(true);
+              }
             }}
           >
-            취소
-          </Button>
-        )}
-        <Button
-          disabled={isProcessing}
-          className={cn(
-            "flex-2 h-10 cursor-pointer rounded-lg font-bold",
-            isEditMode && "bg-red-600 hover:bg-red-600/90",
-            isProcessing && "bg-gray-300",
-          )}
-          onClick={async () => {
-            if (isEditMode) {
-              await handleSave();
-            } else {
-              setEditingImages([...photos]);
-              setIsEditMode(true);
-            }
-          }}
-        >
-          {isProcessing ? (
-            <Loading />
-          ) : !isEditMode ? (
-            photos.length === 0 ? (
-              "이미지 등록"
+            {isProcessing ? (
+              <Loading />
+            ) : !isEditMode ? (
+              photos.length === 0 ? (
+                "이미지 등록"
+              ) : (
+                "이미지 수정"
+              )
             ) : (
-              "이미지 수정"
-            )
-          ) : (
-            "수정된 사항 저장하기"
-          )}
-        </Button>
-      </div>
+              "수정된 사항 저장하기"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
