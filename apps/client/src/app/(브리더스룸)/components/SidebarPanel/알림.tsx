@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { userNotificationControllerFindAll, UserNotificationDto } from "@repo/api-client";
+import { userNotificationControllerFindAll } from "@repo/api-client";
 import { useInView } from "react-intersection-observer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Loading from "@/components/common/Loading";
 import NotiItem from "../../noti/components/NotiItem";
 
 const NotificationList = () => {
-  const [items, setItems] = useState<UserNotificationDto[]>([]);
   const { ref, inView } = useInView();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
@@ -28,12 +27,8 @@ const NotificationList = () => {
       }
       return undefined;
     },
+    select: (response) => response.pages.flatMap((page) => page.data.data),
   });
-
-  useEffect(() => {
-    if (!data?.pages) return;
-    setItems(data?.pages.flatMap((page) => page.data.data));
-  }, [data?.pages]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -43,9 +38,9 @@ const NotificationList = () => {
 
   return (
     <ScrollArea className="flex h-full flex-1 pb-[60px]">
-      {items && items.length > 0 ? (
+      {data && data.length > 0 ? (
         <div className="flex flex-col">
-          {items.map((item) => (
+          {data.map((item) => (
             <NotiItem key={item.id} item={item} />
           ))}
         </div>
