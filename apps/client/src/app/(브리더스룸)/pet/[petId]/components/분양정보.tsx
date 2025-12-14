@@ -13,6 +13,7 @@ import FormItem from "./FormItem";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
+import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
 import { cn, getChangedFields } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
@@ -37,6 +38,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
   const router = useRouter();
 
   const { formData, setFormData } = usePetStore();
+  const { setAdoption } = useAdoptionStore();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -53,6 +55,16 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
     () => formData?.adoption ?? {},
     [formData?.adoption],
   );
+
+  useEffect(() => {
+    if (adoption) {
+      setAdoption({
+        petId: adoption?.petId,
+        price: adoption?.price,
+        status: adoption?.status,
+      });
+    }
+  }, [adoption, setAdoption]);
 
   const { mutateAsync: updateAdoption } = useMutation({
     mutationFn: ({ adoptionId, data }: { adoptionId: string; data: UpdateAdoptionDto }) =>

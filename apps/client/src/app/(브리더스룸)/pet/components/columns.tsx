@@ -21,6 +21,7 @@ import {
   PetParentDto,
   PetHiddenStatusDtoHiddenStatus,
   AdoptionDto,
+  PetAdoptionDtoStatus,
 } from "@repo/api-client";
 import LinkButton from "../../components/LinkButton";
 import { format, isValid, parseISO } from "date-fns";
@@ -45,9 +46,9 @@ export const columns: ColumnDef<PetDto>[] = [
       return (
         <div className="text-center">
           {isPublic ? (
-            <LockOpen className="h-4 w-4 text-blue-600" />
+            <LockOpen className="h-4 w-4 text-neutral-800" />
           ) : (
-            <Lock className="h-4 w-4 text-red-600" />
+            <Lock className="h-4 w-4 text-yellow-500" />
           )}
         </div>
       );
@@ -75,15 +76,15 @@ export const columns: ColumnDef<PetDto>[] = [
 
       if (!adoptionData?.status) return <span>미정</span>;
 
+      if (adoptionData?.status === PetAdoptionDtoStatus.NFS)
+        return <div className="w-fit rounded-md bg-pink-500 px-2 text-white">NFS</div>;
+
+      if (adoptionData?.status === PetAdoptionDtoStatus.NONE)
+        return <span className="text-gray-500">미정</span>;
       return (
         <TooltipText
-          title={
-            SALE_STATUS_KOREAN_INFO[adoptionData?.status as keyof typeof SALE_STATUS_KOREAN_INFO]
-          }
-          text={
-            SALE_STATUS_KOREAN_INFO[adoptionData?.status as keyof typeof SALE_STATUS_KOREAN_INFO] ||
-            "미정"
-          }
+          title={SALE_STATUS_KOREAN_INFO[adoptionData?.status]}
+          text={SALE_STATUS_KOREAN_INFO[adoptionData?.status] || "미정"}
           description={adoptionData?.memo ?? ""}
           content={
             <div className="capitalize">

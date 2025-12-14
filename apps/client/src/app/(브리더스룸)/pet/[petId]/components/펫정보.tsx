@@ -30,6 +30,7 @@ import { PetDto } from "@repo/api-client";
 import { getChangedFields } from "@/lib/utils";
 import { AxiosError } from "axios";
 import { useIsMyPet } from "@/hooks/useIsMyPet";
+import { useBreedingInfoStore } from "../../store/breedingInfo";
 
 const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) => {
   const { formData, errors, setFormData } = usePetStore();
@@ -37,6 +38,7 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const { setBreedingInfo } = useBreedingInfoStore();
   const isViewingMyPet = useIsMyPet(ownerId);
 
   const { data: pet, refetch } = useQuery({
@@ -121,6 +123,15 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
       setFormData(pet);
     }
   }, [pet, setFormData, isEditMode]);
+
+  useEffect(() => {
+    if (pet?.petId) {
+      setBreedingInfo({
+        petId: pet.petId,
+        isPublic: pet?.isPublic,
+      });
+    }
+  }, [pet?.petId, pet?.isPublic, setBreedingInfo]);
 
   if (!pet || Object.keys(formData).length === 0) return null;
 

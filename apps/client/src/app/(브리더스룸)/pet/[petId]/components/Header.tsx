@@ -1,12 +1,14 @@
 import { Dog } from "lucide-react";
 import QRCode from "./QR코드";
 import Image from "next/image";
-import { buildR2TransformedUrl } from "@/lib/utils";
-import { PetDto, petImageControllerFindOne } from "@repo/api-client";
+import { buildR2TransformedUrl, cn } from "@/lib/utils";
+import { PetAdoptionDtoStatus, PetDto, petImageControllerFindOne } from "@repo/api-client";
 import { SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { DeletePetDialog } from "./DeletePetDialog";
+import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
+import { useBreedingInfoStore } from "../../store/breedingInfo";
 
 const Header = ({ pet }: { pet: PetDto }) => {
   const { data: photos = [] } = useQuery({
@@ -15,20 +17,25 @@ const Header = ({ pet }: { pet: PetDto }) => {
     select: (response) => response.data,
   });
 
+  const { breedingInfo } = useBreedingInfoStore();
+  const breedingData = breedingInfo?.petId === pet?.petId ? breedingInfo : null;
+  const { adoption } = useAdoptionStore();
+  const adoptionData = adoption?.petId === pet?.petId ? adoption : null;
+
   if (!pet) return null;
 
   return (
     <div className="flex items-center gap-2 pb-3">
-      <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-yellow-200">
+      <div className="h-18 w-18 relative flex items-center justify-center rounded-2xl bg-yellow-200">
         {photos[0]?.url ? (
           <Image
             src={buildR2TransformedUrl(photos[0]?.url)}
             alt={pet.petId}
             fill
-            className="object-cover"
+            className="rounded-2xl object-cover"
           />
         ) : (
-          <Dog className="h-8 w-8 text-gray-500" />
+          <Dog className="h-12 w-12 text-gray-500" />
         )}
       </div>
       <div className="flex flex-1 flex-col">
@@ -56,8 +63,25 @@ const Header = ({ pet }: { pet: PetDto }) => {
           )}
           <div className="text-sm text-gray-500">{SPECIES_KOREAN_INFO[pet.species]}</div>
         </div>
+
+        <div className="flex items-center gap-1">
+          <div
+            className={cn(
+              "flex h-[26px] w-fit items-center justify-center rounded-md px-2 text-sm font-semibold text-white",
+              breedingData?.isPublic ? "bg-neutral-800" : "bg-yellow-500 text-neutral-700",
+            )}
+          >
+            {breedingData?.isPublic ? "공개" : "비공개"}
+          </div>
+          {adoptionData?.status === PetAdoptionDtoStatus.NFS && (
+            <div className="flex h-[26px] w-fit items-center justify-center rounded-md bg-pink-500 px-2 text-sm font-semibold text-white">
+              NFS
+            </div>
+          )}
+        </div>
+
         <div className="text-[18px] font-semibold text-gray-800">
-          {pet.adoption?.price && `${pet.adoption.price.toLocaleString()}원`}
+          {adoptionData?.price && `${adoptionData.price.toLocaleString()}원`}
         </div>
       </div>
 
