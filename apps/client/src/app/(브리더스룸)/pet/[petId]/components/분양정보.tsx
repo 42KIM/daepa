@@ -26,17 +26,21 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import Loading from "@/components/common/Loading";
 import { useRouter } from "next/navigation";
 import { ADOPTION_METHOD_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
+import { useIsMyPet } from "@/hooks/useIsMyPet";
 
 interface AdoptionInfoProps {
   petId: string;
+  ownerId: string;
 }
 
-const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
+const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
   const router = useRouter();
 
   const { formData, setFormData } = usePetStore();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const isViewingMyPet = useIsMyPet(ownerId);
 
   const { data: adoption, refetch } = useQuery({
     queryKey: [adoptionControllerGetAdoptionByPetId.name, petId],
@@ -419,47 +423,49 @@ const AdoptionInfo = ({ petId }: AdoptionInfoProps) => {
         </>
       )}
 
-      <div className="mt-2 flex w-full flex-1 items-end gap-2">
-        {isEditMode && (
+      {isViewingMyPet && (
+        <div className="mt-2 flex w-full flex-1 items-end gap-2">
+          {isEditMode && (
+            <Button
+              disabled={isProcessing}
+              className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
+              onClick={() => {
+                resetAdoption();
+                setIsEditMode(false);
+              }}
+            >
+              취소
+            </Button>
+          )}
           <Button
             disabled={isProcessing}
-            className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
+            className={cn(
+              "flex-2 h-10 cursor-pointer rounded-lg font-bold",
+              isEditMode && "bg-red-600 hover:bg-red-600/90",
+              isProcessing && "bg-gray-300",
+            )}
             onClick={() => {
-              resetAdoption();
-              setIsEditMode(false);
+              if (isEditMode) {
+                handleSave();
+              } else {
+                setIsEditMode(true);
+              }
             }}
           >
-            취소
-          </Button>
-        )}
-        <Button
-          disabled={isProcessing}
-          className={cn(
-            "flex-2 h-10 cursor-pointer rounded-lg font-bold",
-            isEditMode && "bg-red-600 hover:bg-red-600/90",
-            isProcessing && "bg-gray-300",
-          )}
-          onClick={() => {
-            if (isEditMode) {
-              handleSave();
-            } else {
-              setIsEditMode(true);
-            }
-          }}
-        >
-          {isProcessing ? (
-            <Loading />
-          ) : !isEditMode ? (
-            !showAdoptionInfo ? (
-              "분양 정보 등록"
+            {isProcessing ? (
+              <Loading />
+            ) : !isEditMode ? (
+              !showAdoptionInfo ? (
+                "분양 정보 등록"
+              ) : (
+                "수정하기"
+              )
             ) : (
-              "수정하기"
-            )
-          ) : (
-            "수정된 사항 저장하기"
-          )}
-        </Button>
-      </div>
+              "수정된 사항 저장하기"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

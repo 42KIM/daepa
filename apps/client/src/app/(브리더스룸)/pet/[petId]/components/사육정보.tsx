@@ -1,6 +1,6 @@
 import NameDuplicateCheckInput from "@/app/(브리더스룸)/components/NameDuplicateCheckInput";
 import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   PetDtoSpecies,
   petControllerFindPetByPetId,
@@ -29,12 +29,15 @@ import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 import { PetDto } from "@repo/api-client";
 import { getChangedFields } from "@/lib/utils";
 import { AxiosError } from "axios";
+import { useIsMyPet } from "@/hooks/useIsMyPet";
 
-const BreedingInfo = ({ petId }: { petId: string }) => {
+const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) => {
   const { formData, errors, setFormData } = usePetStore();
   const { duplicateCheckStatus } = useNameStore();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const isViewingMyPet = useIsMyPet(ownerId);
 
   const { data: pet, refetch } = useQuery({
     queryKey: [petControllerFindPetByPetId.name, petId],
@@ -42,7 +45,7 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
     select: (response) => response.data.data,
   });
 
-  const isEgg = pet?.type === PetDtoType.EGG;
+  const isEgg = useMemo(() => pet?.type === PetDtoType.EGG, [pet?.type]);
 
   const { mutateAsync: mutateUpdatePet } = useMutation({
     mutationFn: (updateData: UpdatePetDto) => petControllerUpdate(pet?.petId ?? "", updateData),
@@ -345,36 +348,38 @@ const BreedingInfo = ({ petId }: { petId: string }) => {
         </>
       )}
 
-      <div className="mt-2 flex w-full flex-1 gap-2">
-        {isEditMode && (
+      {isViewingMyPet && (
+        <div className="mt-2 flex w-full flex-1 gap-2">
+          {isEditMode && (
+            <Button
+              disabled={isProcessing}
+              className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
+              onClick={() => {
+                setFormData(pet);
+                setIsEditMode(false);
+              }}
+            >
+              취소
+            </Button>
+          )}
           <Button
-            disabled={isProcessing}
-            className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
+            className={cn(
+              "flex-2 h-10 cursor-pointer rounded-lg font-bold",
+              isEditMode && "bg-red-600 hover:bg-red-600/90",
+              isProcessing && "bg-gray-300",
+            )}
             onClick={() => {
-              setFormData(pet);
-              setIsEditMode(false);
+              if (!isEditMode) {
+                setIsEditMode(true);
+              } else {
+                handleSave();
+              }
             }}
           >
-            취소
+            {isProcessing ? <Loading /> : !isEditMode ? "수정하기" : "수정된 사항 저장하기"}
           </Button>
-        )}
-        <Button
-          className={cn(
-            "flex-2 h-10 cursor-pointer rounded-lg font-bold",
-            isEditMode && "bg-red-600 hover:bg-red-600/90",
-            isProcessing && "bg-gray-300",
-          )}
-          onClick={() => {
-            if (!isEditMode) {
-              setIsEditMode(true);
-            } else {
-              handleSave();
-            }
-          }}
-        >
-          {isProcessing ? <Loading /> : !isEditMode ? "수정하기" : "수정된 사항 저장하기"}
-        </Button>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -63,12 +63,12 @@ function PetDetailPage({ params }: PetDetailPageProps) {
 
       <div className="flex flex-wrap gap-3 max-[960px]:flex-wrap">
         {/* 사육정보 (개체 이름, 종, 성별, 크기, 모프, 형질, 먹이) */}
-        <BreedingInfo petId={petId} />
+        <BreedingInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
         {/* 분양 정보 */}
-        <AdoptionInfo petId={petId} />
+        <AdoptionInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
 
         {/* 사진 */}
-        <Images pet={pet} />
+        <Images petId={petId} ownerId={pet.owner.userId ?? ""} />
 
         <PedigreeInfo species={pet.species} petId={petId} userId={pet.owner.userId} />
       </div>
