@@ -65,18 +65,16 @@ export class PetImageService {
     const savedImageList = await this.uploadPendingImages(imageList, petId);
 
     // 3. DB 저장 (트랜잭션 내부)
-    const saveOperation = async (entityManager: EntityManager) => {
+    const run = async (entityManager: EntityManager) => {
       return this.saveToDatabase(petId, savedImageList, entityManager);
     };
 
     if (manager) {
-      // 외부 트랜잭션이 있으면 그것을 사용
-      return saveOperation(manager);
+      return run(manager);
     }
 
-    // 새로운 트랜잭션 시작 (DB 저장만 수행하므로 빠름)
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      return saveOperation(entityManager);
+      return run(entityManager);
     });
   }
 
