@@ -63,8 +63,8 @@ const SettingList = () => {
                 onExit={unmount}
                 isOpen={isOpen}
                 onCloseAction={close}
-                onConfirmAction={() => {
-                  logout();
+                onConfirmAction={async () => {
+                  await logout();
                   close();
                 }}
               />

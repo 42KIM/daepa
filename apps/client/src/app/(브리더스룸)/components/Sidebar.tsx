@@ -27,7 +27,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <div className="z-100 fixed right-0 flex h-full w-[55px] flex-col items-center gap-2 bg-gray-100 dark:bg-black">
+      <div className="fixed right-0 z-50 flex h-full w-[55px] flex-col items-center gap-2 bg-gray-100 dark:bg-black">
         <SidebarItem
           icon={
             <ChevronsLeft
@@ -38,6 +38,7 @@ const Sidebar = () => {
             />
           }
           onClick={() => setIsNotificationOpen((prev) => !prev)}
+          aria-label={isNotificationOpen ? "사이드바 닫기" : "사이드바 열기"}
         />
         <SidebarItem
           icon={
@@ -80,15 +81,22 @@ const SidebarItem = ({
   label,
   selected,
   onClick,
+  "aria-label": ariaLabel,
 }: {
   icon: React.ReactNode;
   label?: string;
   selected?: boolean;
   onClick?: () => void;
+  "aria-label"?: string;
 }) => {
   return (
     <div className="flex h-[64px] items-center justify-center">
-      <button type="button" className="flex flex-col items-center" onClick={onClick}>
+      <button
+        type="button"
+        className="flex flex-col items-center"
+        onClick={onClick}
+        aria-label={ariaLabel}
+      >
         <div
           className={cn(
             "rounded-lg p-2 hover:bg-gray-200 dark:hover:bg-neutral-800",

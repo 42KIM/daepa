@@ -42,7 +42,7 @@ interface NotiPageProps {
 
 export default function NotificationsPage({ params }: NotiPageProps) {
   const { notiId } = use(params);
-  const { data } = useQuery({
+  const { data, refetch: refetchNotification } = useQuery({
     queryKey: [userNotificationControllerFindOne.name, notiId],
     queryFn: () => userNotificationControllerFindOne(notiId),
     enabled: !!notiId,
@@ -96,10 +96,8 @@ export default function NotificationsPage({ params }: NotiPageProps) {
         toast.error(error?.response?.data?.message ?? "부모 연동 상태 변경에 실패했습니다.");
       }
     } finally {
+      await refetchNotification();
       await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
-      await queryClient.invalidateQueries({
-        queryKey: [userNotificationControllerFindOne.name, notiId],
-      });
       close?.();
     }
   };
@@ -166,12 +164,12 @@ export default function NotificationsPage({ params }: NotiPageProps) {
       const res = await deleteNotification({ id: data.id, receiverId: data.receiverId });
       if (res?.data?.success) {
         toast.success("알림이 삭제되었습니다.");
+
+        await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+        close?.();
       }
     } catch {
       toast.error("알림 삭제에 실패했습니다.");
-    } finally {
-      await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
-      close?.();
     }
   };
 
@@ -321,49 +319,51 @@ export default function NotificationsPage({ params }: NotiPageProps) {
             )}
           </div>
 
-          <Link
-            href={`/pet/${detailData?.childPet?.id && isString(detailData.childPet.id) ? detailData.childPet.id : ""}`}
-            className="w-100 group mx-4 mt-4 flex flex-col rounded-2xl border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
-          >
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col px-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-base">
-                    <span className="font-bold">
-                      {detailData?.childPet?.name && isString(detailData.childPet.name)
-                        ? detailData.childPet.name
-                        : ""}
+          {detailData?.childPet?.id && isString(detailData.childPet.id) ? (
+            <Link
+              href={`/pet/${detailData.childPet.id}`}
+              className="w-100 group mx-4 mt-4 flex flex-col rounded-2xl border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col px-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base">
+                      <span className="font-bold">
+                        {detailData?.childPet?.name && isString(detailData.childPet.name)
+                          ? detailData.childPet.name
+                          : ""}
+                      </span>
+                      프로필로 이동
                     </span>
-                    프로필로 이동
-                  </span>
-                  <ArrowUpRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    <ArrowUpRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </div>
+                  <div className="flex gap-1">
+                    {renderMorphs()}
+                    {renderTraits()}
+                    <span className="text-muted-foreground text-xs">{renderLayingInfo()}</span>
+                  </div>
+                  {detailData &&
+                  "desc" in detailData &&
+                  detailData.desc &&
+                  isString(detailData.desc) ? (
+                    <div className="mt-2 text-sm">{detailData.desc}</div>
+                  ) : null}
                 </div>
-                <div className="flex gap-1">
-                  {renderMorphs()}
-                  {renderTraits()}
-                  <span className="text-muted-foreground text-xs">{renderLayingInfo()}</span>
-                </div>
-                {detailData &&
-                "desc" in detailData &&
-                detailData.desc &&
-                isString(detailData.desc) ? (
-                  <div className="mt-2 text-sm">{detailData.desc}</div>
-                ) : null}
+                {detailData?.childPet?.photos ? (
+                  <div className="relative w-full overflow-hidden rounded-lg">
+                    <PetThumbnail
+                      imageUrl={detailData?.childPet?.photos[0]?.url}
+                      alt={detailData?.childPet?.name}
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-foreground/70 dark:bg-foreground/30 flex h-48 w-full items-center justify-center rounded-lg">
+                    <span className="text-4xl">🔗</span>
+                  </div>
+                )}
               </div>
-              {detailData?.childPet?.photos ? (
-                <div className="relative w-full overflow-hidden rounded-lg">
-                  <PetThumbnail
-                    imageUrl={detailData?.childPet?.photos[0]?.url}
-                    alt={detailData?.childPet?.name}
-                  />
-                </div>
-              ) : (
-                <div className="bg-foreground/70 dark:bg-foreground/30 flex h-48 w-full items-center justify-center rounded-lg">
-                  <span className="text-4xl">🔗</span>
-                </div>
-              )}
-            </div>
-          </Link>
+            </Link>
+          ) : null}
         </div>
       ) : (
         <div className="text-muted-foreground p-8 text-center">알림을 선택해주세요. </div>

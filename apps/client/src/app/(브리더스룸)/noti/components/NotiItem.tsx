@@ -13,6 +13,7 @@ import { NOTIFICATION_TYPE } from "../../constants";
 import StatusBadge from "./StatusBadge";
 import { useNotificationRead } from "@/hooks/useNotificationRead";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface NotiItemProps {
   item: UserNotificationDto;
@@ -30,12 +31,12 @@ const NotiItem = ({ item }: NotiItemProps) => {
     async (item: UserNotificationDto) => {
       if (!item) return;
 
-      router.push(`/noti/${item.id}`);
-
       try {
         await setNotificationRead(item);
-      } catch (error) {
-        console.error(error);
+      } catch {
+        toast.error("알림 읽음 처리에 실패했습니다.");
+      } finally {
+        router.push(`/noti/${item.id}`);
       }
     },
     [setNotificationRead, router],
@@ -43,6 +44,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
 
   return (
     <button
+      type="button"
       key={item.id}
       className={cn(
         "m-2 flex flex-1 flex-col items-start gap-2 rounded-xl border bg-neutral-50 p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:bg-white hover:shadow-md dark:hover:bg-neutral-800",
