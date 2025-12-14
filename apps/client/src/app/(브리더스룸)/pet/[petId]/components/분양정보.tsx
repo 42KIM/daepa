@@ -9,6 +9,7 @@ import {
   PetAdoptionDtoMethod,
   UserProfilePublicDto,
 } from "@repo/api-client";
+import { AxiosError } from "axios";
 import FormItem from "./FormItem";
 import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -166,7 +167,8 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                       - 더이상 개체 정보를 수정하거나 삭제할 수 없습니다.
                     </span>
                     <span className={"text-sm text-red-500 underline"}>
-                      - 이 개체와 관련된 승인되지 않은 모든 부모 요청이 취소됩니다.
+                      - 이 펫과 관련된 처리되지 않은 부모 요청이 있는 경우, 완료 처리가
+                      불가능합니다.
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -229,9 +231,16 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
         await refetch();
         toast.success("분양 정보가 성공적으로 업데이트되었습니다.");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("분양 정보 수정 실패:", error);
-      toast.error("분양 정보 수정에 실패했습니다. 다시 시도해주세요.");
+
+      if (error instanceof AxiosError) {
+        const message = error.response?.data?.message;
+        const errorMessage = Array.isArray(message) ? message[0] : message;
+        toast.error(errorMessage || "분양 정보 수정에 실패했습니다. 다시 시도해주세요.");
+      } else {
+        toast.error("분양 정보 수정에 실패했습니다. 다시 시도해주세요.");
+      }
     } finally {
       setIsProcessing(false);
     }
