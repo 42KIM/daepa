@@ -21,15 +21,14 @@ import {
 import { nanoid } from 'nanoid';
 import { PageMetaDto } from 'src/common/page.dto';
 import { PageDto } from 'src/common/page.dto';
-import { ADOPTION_SALE_STATUS, PET_HIDDEN_STATUS } from 'src/pet/pet.constants';
+import { ADOPTION_SALE_STATUS } from 'src/pet/pet.constants';
 import { isNil, isUndefined, omitBy } from 'es-toolkit';
 import { PetEntity } from 'src/pet/pet.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { USER_STATUS } from 'src/user/user.constant';
 import { ParentRequestService } from '../parent_request/parent_request.service';
-import { PetParentDto } from '../pet/pet.dto';
-import { PARENT_STATUS } from '../parent_request/parent_request.constants';
+import { replaceParentPublicSafe } from '../common/utils/pet-parent.helper';
 
 @Injectable()
 export class AdoptionService {
@@ -57,14 +56,14 @@ export class AdoptionService {
     const { father, mother } =
       await this.parentRequestService.getParentsWithRequestStatus(pet.petId);
 
-    const fatherDisplayable = this.getParentPublicSafe(
+    const fatherDisplayable = replaceParentPublicSafe(
       father,
-      father?.owner?.userId ?? '',
+      pet.ownerId,
       userId,
     );
-    const motherDisplayable = this.getParentPublicSafe(
+    const motherDisplayable = replaceParentPublicSafe(
       mother,
-      mother?.owner?.userId ?? '',
+      pet.ownerId,
       userId,
     );
 
@@ -520,32 +519,5 @@ export class AdoptionService {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       return await run(entityManager);
     });
-  }
-
-  private getParentPublicSafe(
-    parent: PetParentDto | null,
-    parentOwnerId: string | null,
-    userId: string,
-  ) {
-    if (!parent) return null;
-
-    // 본인 소유 펫
-    const isMyPet = parentOwnerId === userId;
-    if (isMyPet) {
-      return parent;
-    }
-
-    // 부모 개체 삭제 처리
-    if (parent.isDeleted) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.DELETED };
-    }
-    // 비공개 처리
-    if (!parent.isPublic) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.SECRET };
-    }
-    // 부모 요청중
-    if (parent.status === PARENT_STATUS.PENDING) {
-      return { hiddenStatus: PET_HIDDEN_STATUS.PENDING };
-    }
   }
 }
