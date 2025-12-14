@@ -13,6 +13,7 @@ import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
 import { Info } from "lucide-react";
+import { useIsMyPet } from "@/hooks/useIsMyPet";
 
 const PedigreeInfo = ({
   species,
@@ -21,11 +22,11 @@ const PedigreeInfo = ({
 }: {
   species: PetDtoSpecies;
   petId: string;
-  userId?: string;
+  userId: string;
 }) => {
   const { user } = useUserStore();
 
-  const isMyPet = userId === user?.userId;
+  const isMyPet = useIsMyPet(userId);
 
   const { data: parents, refetch } = useQuery({
     queryKey: [petControllerGetParentsByPetId.name, petId],
