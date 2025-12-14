@@ -1,6 +1,7 @@
 import {
   UpdateUserNotificationDto,
   userNotificationControllerFindAll,
+  userNotificationControllerGetUnreadCount,
   userNotificationControllerUpdate,
   UserNotificationDto,
   UserNotificationDtoStatus,
@@ -23,6 +24,9 @@ export const useNotificationRead = () => {
         try {
           await updateNotification({ id: item.id, status: UserNotificationDtoStatus.READ });
           queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+          queryClient.invalidateQueries({
+            queryKey: [userNotificationControllerGetUnreadCount.name],
+          });
         } catch (error) {
           if (error instanceof AxiosError) {
             toast.error(error.response?.data?.message ?? "알림 읽음 처리에 실패했습니다.");

@@ -2,27 +2,22 @@
 import { SIDEBAR_ITEMS } from "../constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import { useSearchKeywordStore } from "../store/searchKeyword";
 import UserButton from "./UserButton";
 
 const Menubar = () => {
-  const router = useRouter();
   const pathname = usePathname();
   const { setSearchKeyword } = useSearchKeywordStore();
 
   return (
     <div className="flex h-[52px] items-center justify-between">
       <div className="flex items-center">
-        <button
-          type="button"
-          className="mr-10 cursor-pointer font-bold"
-          onClick={() => router.push("/pet")}
-        >
+        <Link href="/pet" className="mr-10 cursor-pointer font-bold">
           브리더스룸
-        </button>
+        </Link>
         {SIDEBAR_ITEMS.map((item) => (
           <Link
             className={cn(

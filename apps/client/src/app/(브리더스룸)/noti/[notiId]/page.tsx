@@ -1,41 +1,53 @@
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Trash2 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { format, formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
-import { ArrowUpRight } from "lucide-react";
+"use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { castDetailJson, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  parentRequestControllerUpdateStatus,
   ParentLinkDetailJson,
+  parentRequestControllerUpdateStatus,
   UpdateParentRequestDto,
   UpdateParentRequestDtoStatus,
   userNotificationControllerDelete,
   userNotificationControllerFindAll,
+  userNotificationControllerFindOne,
   UserNotificationDtoType,
 } from "@repo/api-client";
-import Link from "next/link";
-import { toast } from "sonner";
-import { NOTIFICATION_TYPE } from "../../constants";
-import { Badge } from "@/components/ui/badge";
-import NotiTitle from "./NotiTitle";
-import { castDetailJson, cn, formatDateToYYYYMMDDString } from "@/lib/utils";
-import { isString } from "es-toolkit";
-import { isNumber } from "@/lib/typeGuards";
-import { memo } from "react";
-import { overlay } from "overlay-kit";
-import RejectModal from "./RejectModal";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import StatusBadge from "./StatusBadge";
+import { isNumber } from "@/lib/typeGuards";
+import { Badge } from "@/components/ui/badge";
+import { use } from "react";
+import { toast } from "sonner";
+import { overlay } from "overlay-kit";
 import Dialog from "../../components/Form/Dialog";
 import PetThumbnail from "../../components/PetThumbnail";
-import useUserNotificationStore from "../../store/userNotification";
+import { Button } from "@/components/ui/button";
+import { ArrowUpRight, Trash2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import RejectModal from "../components/RejectModal";
+import { NOTIFICATION_TYPE } from "../../constants";
+import StatusBadge from "../components/StatusBadge";
+import NotiTitle from "../components/NotiTitle";
+import { format, formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
+import Link from "next/link";
+import { isString } from "es-toolkit";
 
-const NotiDisplay = memo(() => {
-  const { notification: data, setNotification } = useUserNotificationStore();
+interface NotiPageProps {
+  params: Promise<{
+    notiId: number;
+  }>;
+}
+
+export default function NotificationsPage({ params }: NotiPageProps) {
+  const { notiId } = use(params);
+  const { data, refetch: refetchNotification } = useQuery({
+    queryKey: [userNotificationControllerFindOne.name, notiId],
+    queryFn: () => userNotificationControllerFindOne(notiId),
+    enabled: !!notiId,
+    select: (data) => data.data,
+  });
 
   const queryClient = useQueryClient();
 
@@ -84,6 +96,7 @@ const NotiDisplay = memo(() => {
         toast.error(error?.response?.data?.message ?? "부모 연동 상태 변경에 실패했습니다.");
       }
     } finally {
+      await refetchNotification();
       await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
       close?.();
     }
@@ -151,50 +164,21 @@ const NotiDisplay = memo(() => {
       const res = await deleteNotification({ id: data.id, receiverId: data.receiverId });
       if (res?.data?.success) {
         toast.success("알림이 삭제되었습니다.");
-        setNotification(null);
 
-        queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+        await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+        close?.();
       }
     } catch {
       toast.error("알림 삭제에 실패했습니다.");
-    } finally {
-      close?.();
     }
   };
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between p-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled={!data}
-              onClick={() => {
-                if (data?.id && data?.receiverId) {
-                  overlay.open(({ isOpen, close, unmount }) => (
-                    <Dialog
-                      title="알림 삭제"
-                      description="알림을 삭제하시겠습니까?"
-                      onExit={unmount}
-                      isOpen={isOpen}
-                      onCloseAction={close}
-                      onConfirmAction={() => handleDeleteNotification(close)}
-                    />
-                  ));
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>삭제</TooltipContent>
-        </Tooltip>
-
+      <div className="flex items-center p-2">
         {data?.type === UserNotificationDtoType.PARENT_REQUEST && (
           <form>
-            <div className="grid gap-4">
+            <div className="mr-2 grid gap-4">
               <div className="flex items-center gap-2">
                 <Button
                   onClick={(e) => {
@@ -233,6 +217,33 @@ const NotiDisplay = memo(() => {
             </div>
           </form>
         )}
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={!data}
+              onClick={() => {
+                if (data?.id && data?.receiverId) {
+                  overlay.open(({ isOpen, close, unmount }) => (
+                    <Dialog
+                      title="알림 삭제"
+                      description="알림을 삭제하시겠습니까?"
+                      onExit={unmount}
+                      isOpen={isOpen}
+                      onCloseAction={close}
+                      onConfirmAction={() => handleDeleteNotification(close)}
+                    />
+                  ));
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>삭제</TooltipContent>
+        </Tooltip>
       </div>
       <Separator />
       {data ? (
@@ -308,56 +319,55 @@ const NotiDisplay = memo(() => {
             )}
           </div>
 
-          <Link
-            href={`/pet/${detailData?.childPet?.id && isString(detailData.childPet.id) ? detailData.childPet.id : ""}`}
-            className="group mx-4 mt-4 flex flex-col rounded-lg border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
-          >
-            <div className="flex flex-col gap-3">
-              {detailData?.childPet?.photos ? (
-                <div className="relative w-full overflow-hidden rounded-lg">
-                  <PetThumbnail
-                    imageUrl={detailData?.childPet?.photos[0]?.url}
-                    alt={detailData?.childPet?.name}
-                  />
-                </div>
-              ) : (
-                <div className="bg-foreground/70 dark:bg-foreground/30 flex h-48 w-full items-center justify-center rounded-lg">
-                  <span className="text-4xl">🔗</span>
-                </div>
-              )}
-              <div className="flex flex-col">
-                <div className="flex items-center justify-between">
-                  <span className="text-base">
-                    <span className="font-bold">
-                      {detailData?.childPet?.name && isString(detailData.childPet.name)
-                        ? detailData.childPet.name
-                        : ""}
+          {detailData?.childPet?.id && isString(detailData.childPet.id) ? (
+            <Link
+              href={`/pet/${detailData.childPet.id}`}
+              className="w-100 group mx-4 mt-4 flex flex-col rounded-2xl border p-3 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col px-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base">
+                      <span className="font-bold">
+                        {detailData?.childPet?.name && isString(detailData.childPet.name)
+                          ? detailData.childPet.name
+                          : ""}
+                      </span>
+                      프로필로 이동
                     </span>
-                    프로필로 이동
-                  </span>
-                  <ArrowUpRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    <ArrowUpRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </div>
+                  <div className="flex gap-1">
+                    {renderMorphs()}
+                    {renderTraits()}
+                    <span className="text-muted-foreground text-xs">{renderLayingInfo()}</span>
+                  </div>
+                  {detailData &&
+                  "desc" in detailData &&
+                  detailData.desc &&
+                  isString(detailData.desc) ? (
+                    <div className="mt-2 text-sm">{detailData.desc}</div>
+                  ) : null}
                 </div>
-                <div className="flex gap-1">
-                  {renderMorphs()}
-                  {renderTraits()}
-                  <span className="text-muted-foreground text-xs">{renderLayingInfo()}</span>
-                </div>
-                {detailData &&
-                "desc" in detailData &&
-                detailData.desc &&
-                isString(detailData.desc) ? (
-                  <div className="mt-2 text-sm">{detailData.desc}</div>
-                ) : null}
+                {detailData?.childPet?.photos ? (
+                  <div className="relative w-full overflow-hidden rounded-lg">
+                    <PetThumbnail
+                      imageUrl={detailData?.childPet?.photos[0]?.url}
+                      alt={detailData?.childPet?.name}
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-foreground/70 dark:bg-foreground/30 flex h-48 w-full items-center justify-center rounded-lg">
+                    <span className="text-4xl">🔗</span>
+                  </div>
+                )}
               </div>
-            </div>
-          </Link>
+            </Link>
+          ) : null}
         </div>
       ) : (
         <div className="text-muted-foreground p-8 text-center">알림을 선택해주세요. </div>
       )}
     </div>
   );
-});
-NotiDisplay.displayName = "NotiDisplay";
-
-export default NotiDisplay;
+}

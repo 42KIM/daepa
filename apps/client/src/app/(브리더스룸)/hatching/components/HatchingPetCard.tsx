@@ -20,6 +20,7 @@ import { ko } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import TooltipText from "../../components/TooltipText";
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 interface PetCardProps {
   date: string;
@@ -72,11 +73,7 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
             const morphs = pet.morphs?.join(" | ");
             const traits = pet.traits?.join(" | ");
             return (
-              <div
-                key={pet.petId}
-                className="w-full cursor-pointer"
-                onClick={() => router.push(`/pet/${pet.petId}`)}
-              >
+              <Link href={`/pet/${pet.petId}`} key={pet.petId} className="w-full">
                 <div
                   className={cn(
                     "flex w-full flex-1 items-center justify-between p-2 text-[14px] hover:rounded-xl hover:bg-gray-100",
@@ -167,7 +164,7 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                         })()}
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
       </div>

@@ -8,62 +8,53 @@ import NotiTitle from "./NotiTitle";
 import { castDetailJson, cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { NOTIFICATION_TYPE } from "../../constants";
 import StatusBadge from "./StatusBadge";
-import useUserNotificationStore from "../../store/userNotification";
 import { useNotificationRead } from "@/hooks/useNotificationRead";
+import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface NotiItemProps {
   item: UserNotificationDto;
 }
 
 const NotiItem = ({ item }: NotiItemProps) => {
+  const router = useRouter();
+  const { notiId } = useParams();
+
   const detailJson = castDetailJson<ParentLinkDetailJson>(item.type, item?.detailJson);
 
-  const { notification } = useUserNotificationStore();
-  const selectedNotificationId = notification?.id;
   const { setNotificationRead } = useNotificationRead();
-
-  const { setNotification } = useUserNotificationStore();
 
   const handleItemClick = useCallback(
     async (item: UserNotificationDto) => {
       if (!item) return;
 
-      setNotification(item);
-
       try {
         await setNotificationRead(item);
-      } catch (error) {
-        console.error(error);
+      } catch {
+        toast.error("알림 읽음 처리에 실패했습니다.");
+      } finally {
+        router.push(`/noti/${item.id}`);
       }
     },
-    [setNotification, setNotificationRead],
+    [setNotificationRead, router],
   );
-
-  useEffect(() => {
-    if (selectedNotificationId) {
-      const itemElement = document.getElementById(`noti-item-${selectedNotificationId}`);
-      if (itemElement) {
-        itemElement.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-  }, [selectedNotificationId]);
 
   return (
     <button
+      type="button"
       key={item.id}
-      id={`noti-item-${item.id}`}
       className={cn(
-        "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md",
-        item.id === selectedNotificationId && "bg-blue-200 dark:bg-gray-800",
+        "m-2 flex flex-1 flex-col items-start gap-2 rounded-xl border bg-neutral-50 p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:bg-white hover:shadow-md dark:hover:bg-neutral-800",
+        item.id === Number(notiId) && "bg-white dark:bg-neutral-800",
       )}
       onClick={() => {
         handleItemClick(item);
       }}
     >
-      <div className="flex w-full flex-col gap-1">
+      <div className="flex w-full flex-1 flex-col gap-1">
         <div className="flex items-center">
           <div className="flex items-center gap-2">
             <Badge
@@ -80,7 +71,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
           <div
             className={cn(
               "ml-auto text-xs",
-              item.id === notification?.id ? "text-foreground" : "text-muted-foreground",
+              item.id === Number(notiId) ? "text-foreground" : "text-muted-foreground",
             )}
           >
             {formatDistanceToNow(new Date(item.createdAt), {
@@ -90,9 +81,14 @@ const NotiItem = ({ item }: NotiItemProps) => {
           </div>
         </div>
         <NotiTitle
-          href={detailJson?.parentPet?.id ? `/pet/${detailJson.parentPet.id}` : undefined}
-          displayText={detailJson?.childPet?.name ?? ""}
-          label={detailJson?.parentPet?.name}
+          leftLink={{
+            href: detailJson?.parentPet?.id ? `/pet/${detailJson.parentPet.id}` : undefined,
+            name: detailJson?.parentPet?.name,
+          }}
+          rightLink={{
+            href: detailJson?.childPet?.id ? `/pet/${detailJson.childPet.id}` : undefined,
+            name: detailJson?.childPet?.name,
+          }}
         />
       </div>
       <div className="text-muted-foreground line-clamp-2 text-xs">
