@@ -1,31 +1,21 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Param,
   Query,
   Patch,
+  Post,
 } from '@nestjs/common';
-import {
-  ApiExtraModels,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdoptionService } from './adoption.service';
 import {
-  CreateAdoptionDto,
   UpdateAdoptionDto,
-  AdoptionDto,
   AdoptionDetailResponseDto,
-  AdoptionFilterDto,
+  CreateAdoptionDto,
 } from './adoption.dto';
 import { JwtUser } from '../auth/auth.decorator';
 import { JwtUserPayload } from '../auth/strategies/jwt.strategy';
-import { PageMetaDto } from 'src/common/page.dto';
-import { PageDto } from 'src/common/page.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 
 @ApiTags('분양')
@@ -48,30 +38,6 @@ export class AdoptionController {
       success: true,
       message: '분양 정보 생성 성공',
     };
-  }
-
-  @Get()
-  @ApiExtraModels(AdoptionDto, PageMetaDto)
-  @ApiResponse({
-    status: 200,
-    description: '분양 전체 리스트 조회 성공',
-    schema: {
-      type: 'object',
-      required: ['data', 'meta'],
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: getSchemaPath(AdoptionDto) },
-        },
-        meta: { $ref: getSchemaPath(PageMetaDto) },
-      },
-    },
-  })
-  async getAllAdoptions(
-    @Query() pageOptionsDto: AdoptionFilterDto,
-    @JwtUser() token: JwtUserPayload,
-  ): Promise<PageDto<AdoptionDto>> {
-    return this.adoptionService.findAll(pageOptionsDto, token.userId);
   }
 
   @Get('/by-pet/:petId')

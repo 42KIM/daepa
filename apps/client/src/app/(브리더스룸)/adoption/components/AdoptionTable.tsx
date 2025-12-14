@@ -15,7 +15,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { adoptionControllerGetAllAdoptions } from "@repo/api-client";
 import { Plus, RefreshCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { overlay } from "overlay-kit";
@@ -30,6 +29,7 @@ import { Card } from "@/components/ui/card";
 import { PackageSearch } from "lucide-react";
 import { AdoptionFilters } from "./AdoptionFilters";
 import { columns } from "./adoption_columns";
+import { brAdoptionControllerGetAllAdoptions } from "@repo/api-client";
 
 const AdoptionTable = () => {
   const { ref, inView } = useInView();
@@ -42,9 +42,9 @@ const AdoptionTable = () => {
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: [adoptionControllerGetAllAdoptions.name, searchFilters],
+      queryKey: [brAdoptionControllerGetAllAdoptions.name, searchFilters],
       queryFn: ({ pageParam = 1 }) =>
-        adoptionControllerGetAllAdoptions({
+        brAdoptionControllerGetAllAdoptions({
           page: pageParam,
           itemPerPage,
           order: "DESC",

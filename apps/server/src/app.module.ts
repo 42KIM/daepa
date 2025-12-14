@@ -49,6 +49,7 @@ import { EggDetailEntity } from './egg_detail/egg_detail.entity';
 import { PetDetailEntity } from './pet_detail/pet_detail.entity';
 import { PairController } from './pair/pair.controller';
 import { PairService } from './pair/pair.service';
+import { BrAdoptionController } from './adoption/br/br.adoption.controller';
 
 const ENTITIES = [
   UserEntity,
@@ -101,6 +102,7 @@ const ENTITIES = [
     AuthController,
     UserController,
     AdoptionController,
+    BrAdoptionController,
     MatingController,
     BrMatingController,
     ParentRequestController,

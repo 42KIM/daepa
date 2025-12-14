@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { adoptionControllerGetAllAdoptions, AdoptionDto } from "@repo/api-client";
+import { AdoptionDto, brAdoptionControllerGetAllAdoptions } from "@repo/api-client";
 import Loading from "@/components/common/Loading";
 import { overlay } from "overlay-kit";
 import AdoptionDetailModal from "./AdoptionDetailModal";
@@ -66,7 +66,7 @@ export const AdoptionDataTable = ({
         petId={petId}
         onUpdate={() => {
           queryClient.invalidateQueries({
-            queryKey: [adoptionControllerGetAllAdoptions.name],
+            queryKey: [brAdoptionControllerGetAllAdoptions.name],
           });
         }}
       />
