@@ -8,13 +8,11 @@ import Dialog from "../../components/Form/Dialog";
 import { useUserStore } from "../../store/user";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useLogout } from "@/hooks/useLogout";
+import Link from "next/link";
 
 const SettingList = () => {
-  const router = useRouter();
   const { user } = useUserStore();
   const { theme, setTheme } = useTheme();
   const { logout } = useLogout();
@@ -25,15 +23,13 @@ const SettingList = () => {
   return (
     <ScrollArea className="h-full flex-1 pb-[60px]">
       <div className="flex flex-col p-4 pt-0">
-        <Button
-          type="button"
-          variant="outline"
-          className="group mb-4 w-full justify-between rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800"
-          onClick={() => router.push("/settings")}
+        <Link
+          href="/settings"
+          className="group mb-4 flex h-[36px] w-full items-center justify-between rounded-2xl border bg-white px-4 text-sm font-[500] shadow-sm dark:hover:bg-gray-800"
         >
           <span>전체 설정 보기</span>
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </Button>
+        </Link>
 
         {/* 계정 정보 */}
         <div className="mb-6 text-sm">
