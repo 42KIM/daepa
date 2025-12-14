@@ -45,7 +45,7 @@ const NotiItem = ({ item }: NotiItemProps) => {
     <button
       key={item.id}
       className={cn(
-        "m-2 flex flex-1 flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md",
+        "m-2 flex flex-1 flex-col items-start gap-2 rounded-xl border bg-neutral-50 p-3 text-left text-sm shadow-sm transition-all duration-200 hover:scale-[1.01] hover:bg-white hover:shadow-md dark:hover:bg-neutral-800",
         item.id === Number(notiId) && "bg-white dark:bg-neutral-800",
       )}
       onClick={() => {
@@ -79,9 +79,14 @@ const NotiItem = ({ item }: NotiItemProps) => {
           </div>
         </div>
         <NotiTitle
-          href={detailJson?.parentPet?.id ? `/pet/${detailJson.parentPet.id}` : undefined}
-          displayText={detailJson?.childPet?.name ?? ""}
-          label={detailJson?.parentPet?.name}
+          leftLink={{
+            href: detailJson?.parentPet?.id ? `/pet/${detailJson.parentPet.id}` : undefined,
+            name: detailJson?.parentPet?.name,
+          }}
+          rightLink={{
+            href: detailJson?.childPet?.id ? `/pet/${detailJson.childPet.id}` : undefined,
+            name: detailJson?.childPet?.name,
+          }}
         />
       </div>
       <div className="text-muted-foreground line-clamp-2 text-xs">

@@ -269,9 +269,14 @@ export default function NotificationsPage({ params }: NotiPageProps) {
                   <StatusBadge item={data} />
                 </div>
                 <NotiTitle
-                  href={detailData?.parentPet?.id ? `/pet/${detailData.parentPet.id}` : undefined}
-                  displayText={detailData?.childPet?.name ?? ""}
-                  label={detailData?.parentPet?.name}
+                  leftLink={{
+                    href: detailData?.parentPet?.id ? `/pet/${detailData.parentPet.id}` : undefined,
+                    name: detailData?.parentPet?.name,
+                  }}
+                  rightLink={{
+                    href: detailData?.childPet?.id ? `/pet/${detailData.childPet.id}` : undefined,
+                    name: detailData?.childPet?.name,
+                  }}
                 />
               </div>
             </div>

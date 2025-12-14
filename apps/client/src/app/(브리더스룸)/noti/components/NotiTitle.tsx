@@ -2,27 +2,31 @@ import { ArrowLeftRight } from "lucide-react";
 import LinkButton from "../../components/LinkButton";
 
 const NotiTitle = ({
-  displayText,
-  label,
-  href,
+  leftLink,
+  rightLink,
 }: {
-  displayText: string;
-  label?: string;
-  href?: string;
+  leftLink: {
+    href?: string;
+    name?: string;
+  };
+  rightLink: {
+    href?: string;
+    name?: string;
+  };
 }) => {
-  if (!displayText) return null;
-
   return (
     <div className="flex items-center gap-2">
-      {href ? (
-        <LinkButton href={href} label={label ?? ""} tooltip="프로필로 이동" />
+      {leftLink.href && leftLink.name ? (
+        <LinkButton href={leftLink.href} label={leftLink.name} tooltip="프로필로 이동" />
       ) : (
-        <div>{displayText}</div>
+        <div>{leftLink.name ?? "알수없음"}</div>
       )}
       <ArrowLeftRight className="h-4 w-4" />
-      <div className="flex items-center">
-        <div>{displayText}</div>
-      </div>
+      {rightLink.href && rightLink.name ? (
+        <LinkButton href={rightLink.href} label={rightLink.name} tooltip="프로필로 이동" />
+      ) : (
+        <div>{rightLink.name ?? "알수없음"}</div>
+      )}
     </div>
   );
 };
