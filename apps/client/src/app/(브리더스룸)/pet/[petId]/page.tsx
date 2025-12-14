@@ -92,7 +92,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
         <AdoptionInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
 
         {/* 사진 */}
-        <Images petId={petId} ownerId={pet.owner.userId ?? ""} />
+        <Images pet={pet} />
 
         {/* 혈통 정보 */}
         <PedigreeInfo species={pet.species} petId={petId} userId={pet.owner.userId ?? ""} />
