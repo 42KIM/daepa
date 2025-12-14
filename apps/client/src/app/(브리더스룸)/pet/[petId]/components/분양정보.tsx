@@ -144,6 +144,63 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
           return;
         }
 
+        if (adoptionData.status === PetAdoptionDtoStatus.SOLD) {
+          // 판매완료 확인 모달
+          const confirmed = await new Promise<boolean>((resolve) => {
+            overlay.open(({ isOpen, close }) => (
+              <Dialog
+                open={isOpen}
+                onOpenChange={() => {
+                  resolve(false);
+                  close();
+                }}
+              >
+                <DialogContent className="rounded-3xl p-6">
+                  <DialogTitle className="text-sm font-semibold text-red-500">주의!</DialogTitle>
+                  <div className="flex flex-col py-2 text-gray-600">
+                    <span className={"font-semibold"}>정말 분양완료 처리하시겠습니까?</span>
+                    <span className={"text-sm"}>
+                      - 분양완료 후에는 개체의 소유권이 완전히 이전됩니다.
+                    </span>
+                    <span className={"text-sm"}>
+                      - 더이상 개체 정보를 수정하거나 삭제할 수 없습니다.
+                    </span>
+                    <span className={"text-sm text-red-500 underline"}>
+                      - 이 개체와 관련된 승인되지 않은 모든 부모 요청이 취소됩니다.
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1"
+                      variant="outline"
+                      onClick={() => {
+                        resolve(false);
+                        close();
+                      }}
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                      onClick={() => {
+                        resolve(true);
+                        close();
+                      }}
+                    >
+                      확인
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            ));
+          });
+
+          if (!confirmed) {
+            setIsProcessing(false);
+            return;
+          }
+        }
+
         await updateAdoption({ adoptionId, data: changedFields });
       } else {
         // 생성 경우: 모든 필드 포함
