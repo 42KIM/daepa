@@ -118,26 +118,7 @@ export const OPTION_STEPS: FormStep[] = [
       validation: (value) => value.length > 0,
     },
   },
-  // {
-  //   title: "해칭 온도",
-  //   field: {
-  //     name: "temperature",
-  //     type: "number",
-  //     required: false,
-  //     unit: "°C",
-  //     placeholder: "해칭 온도를 입력해주세요",
-  //     validation: (value) => !isNaN(Number(value)) && Number(value) > 0,
-  //   },
-  // },
-  // {
-  //   title: "알 상태",
-  //   field: {
-  //     name: "eggStatus",
-  //     type: "select",
-  //     required: false,
-  //     placeholder: "알 상태를 선택해주세요",
-  //   },
-  // },
+
   {
     title: "상세 설명",
     field: {
@@ -539,10 +520,6 @@ export const SELECTOR_CONFIGS: Record<
         key: "ADULT",
         value: "성체",
       },
-      // {
-      //   key: "DEAD",
-      //   value: "사망",
-      // },
     ],
   },
   sex: {
@@ -707,6 +684,13 @@ export const SIDEBAR_ITEMS = [
   // },
 ];
 
+export const NOTIFICATION_MESSAGE: Record<UserNotificationDtoType, string> = {
+  parent_request: "님이 회원님에게 부모 요청을 보냈습니다.",
+  parent_accept: "님이 부모 연동 요청을 수락했습니다.",
+  parent_reject: "님이 부모 연동 요청을 거절했습니다.",
+  parent_cancel: "님이 부모 연동 요청을 취소했습니다.",
+};
+
 export const NOTIFICATION_TYPE: Record<UserNotificationDtoType, { label: string; color: string }> =
   {
     parent_request: {
@@ -729,11 +713,11 @@ export const NOTIFICATION_TYPE: Record<UserNotificationDtoType, { label: string;
 
 export const STATUS_MAP = {
   pending: {
-    label: "요청 대기중",
+    label: "대기중",
     color: "bg-yellow-600 ",
   },
   rejected: {
-    label: "요청 거절됨",
+    label: "거절됨",
     color: "bg-red-700",
   },
   approved: {

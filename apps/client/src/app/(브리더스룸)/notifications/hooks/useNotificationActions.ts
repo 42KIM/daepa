@@ -1,0 +1,74 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  parentRequestControllerUpdateStatus,
+  userNotificationControllerDelete,
+  userNotificationControllerFindAll,
+  UpdateParentRequestDto,
+  UpdateParentRequestDtoStatus,
+} from "@repo/api-client";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
+
+export const useNotificationActions = () => {
+  const queryClient = useQueryClient();
+
+  const { mutateAsync: updateParentStatus } = useMutation({
+    mutationFn: ({ id, status, rejectReason }: UpdateParentRequestDto & { id: number }) =>
+      parentRequestControllerUpdateStatus(id, { status, rejectReason }),
+  });
+
+  const { mutateAsync: deleteNotification } = useMutation({
+    mutationFn: ({ id, receiverId }: { id: number; receiverId: string }) =>
+      userNotificationControllerDelete({ id, receiverId }),
+  });
+
+  const handleProcessedRequest = () => {
+    toast.error("이미 처리된 요청입니다.");
+  };
+
+  const handleUpdate = async (
+    id: number,
+    status: UpdateParentRequestDtoStatus,
+    rejectReason?: string,
+    close?: () => void,
+  ) => {
+    try {
+      const res = await updateParentStatus({
+        id,
+        status,
+        rejectReason,
+      });
+
+      toast.success(
+        res?.data?.message ??
+          `부모 연동이 ${status === UpdateParentRequestDtoStatus.APPROVED ? "수락" : status === UpdateParentRequestDtoStatus.CANCELLED ? "취소" : "거절"} 되었습니다.`,
+      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast.error(error?.response?.data?.message ?? "부모 연동 상태 변경에 실패했습니다.");
+      }
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+      close?.();
+    }
+  };
+
+  const handleDeleteNotification = async (id: number, receiverId: string, close?: () => void) => {
+    try {
+      const res = await deleteNotification({ id, receiverId });
+      if (res?.data?.success) {
+        await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
+        toast.success("알림이 삭제되었습니다.");
+        close?.();
+      }
+    } catch {
+      toast.error("알림 삭제에 실패했습니다.");
+    }
+  };
+
+  return {
+    handleProcessedRequest,
+    handleUpdate,
+    handleDeleteNotification,
+  };
+};
