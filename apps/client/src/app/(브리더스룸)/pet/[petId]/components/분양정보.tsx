@@ -303,7 +303,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
   }, [adoptionData.status]);
 
   return (
-    <div className="shadow-xs flex min-h-[480px] min-w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">분양정보</div>
 
       {!showAdoptionInfo && (

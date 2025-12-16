@@ -110,12 +110,12 @@ const Images = ({ pet }: { pet: PetDto }) => {
   }, [pet, isSuccess, photos]);
 
   return (
-    <div className="shadow-xs flex min-h-[480px] min-w-[340px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">이미지</div>
 
       {!isEditMode && photos.length === 0 && (
         <div className="flex h-full flex-col items-center justify-center">
-          <ImageUp className="h-[20%] w-[20%] text-blue-500/70" />
+          <ImageUp className="h-[10%] w-[10%] text-blue-500/70" />
         </div>
       )}
       <DndImagePicker disabled={!isEditMode} images={displayImages} onChange={setEditingImages} />

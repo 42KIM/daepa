@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 
 interface FloatingButtonProps {
-  leftButton: {
+  leftButton?: {
     title: string;
     onClick: () => void;
   };
-  rightButton?: {
+  rightButton: {
     title: string;
     onClick: () => void;
   };
