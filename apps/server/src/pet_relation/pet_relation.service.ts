@@ -83,6 +83,47 @@ export class PetRelationService {
   }
 
   /**
+   * 펫의 특정 부모 관계를 제거합니다 (NULL로 설정)
+   * @param petId - 자식 펫 ID
+   * @param role - 제거할 부모 역할 (FATHER | MOTHER)
+   * @param manager - 선택적 EntityManager (외부 트랜잭션 지원)
+   */
+  async removeParentRelation(
+    petId: string,
+    role: PARENT_ROLE,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const run = async (em: EntityManager) => {
+      // 기존 레코드 조회
+      const existing = await em.findOne(PetRelationEntity, {
+        where: { petId },
+      });
+
+      if (existing) {
+        // UPDATE: 해당 role의 부모 ID를 NULL로 설정
+        const updateData: Partial<PetRelationEntity> = {};
+        if (role === PARENT_ROLE.FATHER) {
+          updateData.fatherId = null;
+        } else if (role === PARENT_ROLE.MOTHER) {
+          updateData.motherId = null;
+        }
+
+        await em.update(PetRelationEntity, { petId }, updateData);
+      }
+      // 레코드가 없으면 아무 작업도 하지 않음
+    };
+
+    if (manager) {
+      await run(manager);
+      return;
+    }
+
+    return this.dataSource.transaction(async (entityManager: EntityManager) => {
+      await run(entityManager);
+    });
+  }
+
+  /**
    * 같은 부모를 가진 모든 자식 펫 ID 조회
    * @param fatherId - 부 펫 ID
    * @param motherId - 모 펫 ID

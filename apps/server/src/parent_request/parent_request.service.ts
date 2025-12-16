@@ -310,6 +310,15 @@ export class ParentRequestService {
         }
       }
 
+      // APPROVED 상태였던 부모 관계를 해제하는 경우 pet_relations 업데이트
+      if (parentRequest.status === PARENT_STATUS.APPROVED) {
+        await this.petRelationService.removeParentRelation(
+          petId,
+          role,
+          entityManager,
+        );
+      }
+
       await entityManager.update(
         ParentRequestEntity,
         { id: parentRequest.id },
