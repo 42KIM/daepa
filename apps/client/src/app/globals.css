@@ -133,6 +133,27 @@ body {
   animation: fade-in-up 0.3s ease-out forwards;
 }
 
+/* 이름 필드 등에서 사용하는 흔들림 애니메이션 */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out 0.5s;
+  will-change: transform;
+}
+
 :root {
   --radius: 0.5rem;
   --background: oklch(1 0 0);
@@ -214,6 +235,10 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+
+    a {
+      @apply cursor-pointer;
+    }
 
     button {
       @apply cursor-pointer;

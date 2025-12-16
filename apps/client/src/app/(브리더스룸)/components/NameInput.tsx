@@ -116,7 +116,7 @@ const NameInput = ({
             onClick={handleDuplicateCheck}
             disabled={isDuplicateCheckDisabled}
             className={cn(
-              "bg-blue-600 px-4 text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500",
+              "bg-black/90 px-4 text-sm font-medium hover:bg-black disabled:bg-gray-300 disabled:text-gray-500",
               buttonClassName,
             )}
           >
