@@ -3,7 +3,7 @@
 import { FORM_STEPS, GENDER_KOREAN_INFO, OPTION_STEPS, REGISTER_PAGE } from "../../constants";
 import { FormHeader } from "../../components/Form/FormHeader";
 import { useRegisterForm } from "../hooks/useRegisterForm";
-import { useCallback, useEffect, use } from "react";
+import { useCallback, useEffect, use, useRef, useState } from "react";
 import { FormField } from "../../components/Form/FormField";
 
 import { useSelect } from "../hooks/useSelect";
@@ -19,6 +19,8 @@ import { useRegisterPetStore } from "../../pet/store/register.pet";
 import { overlay } from "overlay-kit";
 import Dialog from "../../components/Form/Dialog";
 import { cn } from "@/lib/utils";
+import FloatingButton from "../../components/FloatingButton";
+import { useIsMobile } from "@/hooks/useMobile";
 
 const formatFormData = (formData: BaseFormData): CreatePetDto | undefined => {
   const data = { ...formData };
@@ -70,12 +72,15 @@ const formatFormData = (formData: BaseFormData): CreatePetDto | undefined => {
 
 export default function RegisterPage({ params }: { params: Promise<{ funnel: string }> }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const { handleSelect } = useSelect();
   const { formData, step, setStep, setFormData, errors, setErrors, resetForm } =
     useRegisterPetStore();
   const resolvedParams = use(params);
   const funnel = Number(resolvedParams.funnel);
   const visibleSteps = FORM_STEPS.slice(-step - 1);
+  const nameFieldRef = useRef<HTMLDivElement>(null);
+  const [shouldShake, setShouldShake] = useState(false);
 
   const { mutateAsync: mutateCreatePet, isPending: isCreating } = useMutation({
     mutationFn: petControllerCreate,
@@ -157,6 +162,8 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
     setStep,
     setFormData,
     handleSubmit: createPet,
+    nameFieldRef,
+    setShouldShake,
   });
 
   const handleReset = useCallback(() => {
@@ -213,10 +220,12 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
               return (
                 <div
                   key={step.title}
+                  ref={isNameField ? nameFieldRef : null}
                   className={cn(
                     "mb-6 space-y-2",
                     isNameField &&
-                      "mt-8 rounded-2xl border-2 border-[#1A56B3] bg-blue-50 p-6 dark:bg-blue-900/20",
+                      "mt-8 rounded-2xl border-2 border-red-600/80 bg-red-50 p-6 dark:bg-red-900/20",
+                    shouldShake && isNameField && "animate-shake",
                   )}
                 >
                   <div key={step.field.name}>
@@ -227,7 +236,7 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
                       errors={errors}
                       label={
                         isNameField ? (
-                          <span className="font-semibold text-[#1A56B3]">{step.title} *</span>
+                          <span className="font-semibold text-red-600/80">{step.title} *</span>
                         ) : (
                           step.title
                         )
@@ -240,32 +249,18 @@ export default function RegisterPage({ params }: { params: Promise<{ funnel: str
             })}
           </>
         )}
-        <div className="fixed bottom-0 left-0 right-0 z-10 bg-white p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] dark:bg-black">
-          <div className="mx-auto flex max-w-[640px] items-center gap-2">
-            <button
-              type="submit"
-              className={cn(
-                "h-12 flex-1 cursor-pointer rounded-2xl bg-[#247DFE] text-lg font-bold text-white",
-              )}
-              onClick={() => goNext()}
-            >
-              {funnel === REGISTER_PAGE.SECOND ? "완료" : "다음"}
-            </button>
-            {formData.species && (
-              <button
-                type="button"
-                onClick={handleReset}
-                className={cn(
-                  "flex w-fit shrink-0 items-center rounded-lg px-2 py-1 hover:bg-gray-100",
-                )}
-              >
-                <span className="flex cursor-pointer items-center gap-1 px-2 py-1 text-[14px] font-[500] text-blue-600">
-                  초기화
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
+
+        <FloatingButton
+          leftButton={{
+            title: "초기화",
+            onClick: () => handleReset(),
+          }}
+          rightButton={{
+            title: funnel === REGISTER_PAGE.SECOND ? "완료" : "다음",
+            onClick: () => goNext(),
+          }}
+          className={cn(!isMobile && "mr-[55px]")}
+        />
       </form>
     </div>
   );

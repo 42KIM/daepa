@@ -185,8 +185,10 @@ const EggRegisterPage = () => {
         ))}
 
         <FloatingButton
-          label={step === EGG_REGISTER_STEPS.length - 1 ? "등록" : "다음"}
-          onClick={() => goNext(formData)}
+          rightButton={{
+            title: step === EGG_REGISTER_STEPS.length - 1 ? "등록" : "다음",
+            onClick: () => goNext(formData),
+          }}
         />
       </form>
     </div>
