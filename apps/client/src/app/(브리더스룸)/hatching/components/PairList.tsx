@@ -137,7 +137,7 @@ const PairList = memo(() => {
 
   if (data?.items && data.items.length === 0 && !hasFilter) {
     return (
-      <div className="flex flex-col items-center space-y-4">
+      <div className="flex flex-col items-center space-y-4 px-2">
         <span className="inline-flex animate-bounce items-center gap-2 rounded-full bg-blue-900/90 px-4 py-2 text-sm text-white">
           <ChevronsDown className="h-4 w-4" />
           클릭해서 페어를 추가해보세요!
@@ -213,7 +213,7 @@ const PairList = memo(() => {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col px-2">
       {/* 헤더 영역 */}
       <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">

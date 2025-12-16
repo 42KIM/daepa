@@ -78,8 +78,8 @@ const RecentlyViewedList = () => {
                 key={item.petId}
                 href={`/pet/${item.petId}`}
                 className={cn(
-                  "group flex items-center gap-3 rounded-2xl p-3 hover:bg-gray-200 dark:hover:bg-neutral-800",
-                  item.petId === petId && "bg-gray-200 dark:bg-neutral-800",
+                  "group flex items-center gap-3 rounded-xl p-2 hover:bg-gray-50 hover:shadow-lg dark:hover:bg-neutral-800",
+                  item.petId === petId && "bg-gray-50 shadow-lg dark:bg-neutral-800",
                 )}
               >
                 {item.photoUrl ? (
