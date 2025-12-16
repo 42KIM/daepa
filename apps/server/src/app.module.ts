@@ -51,6 +51,7 @@ import { PairController } from './pair/pair.controller';
 import { PairService } from './pair/pair.service';
 import { BrAdoptionController } from './adoption/br/br.adoption.controller';
 import { PetRelationEntity } from './pet_relation/pet_relation.entity';
+import { PetRelationService } from './pet_relation/pet_relation.service';
 
 const ENTITIES = [
   UserEntity,
@@ -129,6 +130,7 @@ const ENTITIES = [
     R2Service,
     PetImageService,
     PairService,
+    PetRelationService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

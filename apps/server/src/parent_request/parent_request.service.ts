@@ -10,7 +10,6 @@ import { EntityManager, DataSource, In } from 'typeorm';
 import { ParentRequestEntity } from './parent_request.entity';
 import {
   CreateParentDto,
-  CreateParentRequestDto,
   UnlinkParentDto,
   UpdateParentRequestDto,
 } from './parent_request.dto';
@@ -28,6 +27,7 @@ import { UserNotificationEntity } from 'src/user_notification/user_notification.
 import { CreateUserNotificationDto } from 'src/user_notification/user_notification.dto';
 import { PairEntity } from 'src/pair/pair.entity';
 import { plainToInstance } from 'class-transformer';
+import { PetRelationService } from '../pet_relation/pet_relation.service';
 
 interface ParentRawData {
   pr_status: PARENT_STATUS;
@@ -52,6 +52,7 @@ interface ParentRawData {
 export class ParentRequestService {
   constructor(
     private readonly userNotificationService: UserNotificationService,
+    private readonly petRelationService: PetRelationService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -159,6 +160,16 @@ export class ParentRequestService {
         message,
         status: isParentMyPet ? PARENT_STATUS.APPROVED : PARENT_STATUS.PENDING,
       });
+
+      // isParentMyPet인 경우는 연동상태가 즉시 확정이기 때문에 pet_relation에 펫-부모 정보를 업데이트한다.
+      if (isParentMyPet) {
+        await this.petRelationService.upsertParentRelation(
+          childPetId,
+          role,
+          parentId,
+          entityManager,
+        );
+      }
 
       // 내 펫이 아닌 경우 요청 알림 전송
       if (!isParentMyPet) {
@@ -367,6 +378,16 @@ export class ParentRequestService {
         { id: parentRequest.id },
         updateParentRequestDto,
       );
+
+      // updateParentRequestDto.status가 approved인 경우는 펫-부모 정보를 업데이트한다.
+      if (updateParentRequestDto.status === PARENT_STATUS.APPROVED) {
+        await this.petRelationService.upsertParentRelation(
+          parentRequest.childPetId,
+          parentRequest.role,
+          parentRequest.parentPetId,
+          entityManager,
+        );
+      }
 
       // 상대방에게 답장 알림 전송
       const createNotification: CreateUserNotificationDto = {
