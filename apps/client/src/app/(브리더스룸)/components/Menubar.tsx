@@ -12,13 +12,15 @@ import SearchInput from "./SearchInput";
 const Menubar = ({ unreadCount }: { unreadCount: number }) => {
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const isPetDetail = pathname?.startsWith("/pet/") ?? false;
+
   const { setSearchKeyword } = useSearchKeywordStore();
 
   return (
     <div
       className={cn(
         "flex h-[52px] items-center justify-between px-2",
-        isMobile && "bg-background sticky left-0 top-0 z-50 w-full",
+        isMobile && !isPetDetail && "bg-background sticky left-0 top-0 z-50 w-full",
       )}
     >
       <div className="flex items-center">

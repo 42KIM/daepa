@@ -652,11 +652,6 @@ export const SELECTOR_CONFIGS: Record<
 };
 
 export const SIDEBAR_ITEMS = [
-  // {
-  //   title: "개체 등록",
-  //   url: "/register/1",
-  //   icon: Inbox,
-  // },
   {
     title: "홈",
     url: "/pet",
@@ -672,20 +667,10 @@ export const SIDEBAR_ITEMS = [
     url: "/adoption",
     icon: DollarSign,
   },
-  // {
-  //   title: "알림",
-  //   url: "/noti",
-  //   icon: Bell,
-  // },
-  // {
-  //   title: "쇼츠",
-  //   url: "/shorts",
-  //   icon: Film,
-  // },
 ];
 
 export const NOTIFICATION_MESSAGE: Record<UserNotificationDtoType, string> = {
-  parent_request: "님이 회원님에게 부모 요청을 보냈습니다.",
+  parent_request: "님이 회원님에게 부모 연동 요청을 보냈습니다.",
   parent_accept: "님이 부모 연동 요청을 수락했습니다.",
   parent_reject: "님이 부모 연동 요청을 거절했습니다.",
   parent_cancel: "님이 부모 연동 요청을 취소했습니다.",

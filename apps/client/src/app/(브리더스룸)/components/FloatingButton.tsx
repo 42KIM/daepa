@@ -33,7 +33,7 @@ const FloatingButton = ({ leftButton, rightButton, className }: FloatingButtonPr
         {rightButton && (
           <button
             type="button"
-            className={cn("flex-2 h-12 rounded-xl bg-black text-lg font-[700] text-white")}
+            className={cn("h-12 flex-[2] rounded-xl bg-black text-lg font-[700] text-white")}
             onClick={rightButton.onClick}
           >
             {rightButton.title}

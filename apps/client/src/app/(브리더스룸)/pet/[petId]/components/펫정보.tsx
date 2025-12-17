@@ -198,7 +198,7 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
           )}
           <Button
             className={cn(
-              "flex-2 h-10 cursor-pointer rounded-lg font-bold",
+              "h-10 flex-[2] cursor-pointer rounded-lg font-bold",
               isEditMode && "bg-red-600 hover:bg-red-600/90",
               isProcessing && "bg-gray-300",
             )}

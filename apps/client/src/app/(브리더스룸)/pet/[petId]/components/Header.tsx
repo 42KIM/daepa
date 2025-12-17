@@ -17,7 +17,7 @@ interface HeaderProps {
   pet: PetDto;
   tabs: { id: string; label: string; ref: React.RefObject<HTMLDivElement | null> }[];
   activeTab: TabType;
-  onTabClick: (tabId: TabType, ref: React.RefObject<HTMLDivElement>) => void;
+  onTabClick: (tabId: TabType, ref: React.RefObject<HTMLDivElement | null>) => void;
 }
 
 const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
@@ -48,8 +48,8 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
   return (
     <div
       className={cn(
-        "sticky top-0 z-10 flex flex-col gap-2 bg-gray-100 transition-all",
-        isScrolled ? "py-1" : "",
+        "sticky top-0 z-10 flex flex-col gap-2 bg-gray-100 px-2 transition-all transition-shadow duration-200",
+        isScrolled ? "pt-2 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]" : "",
       )}
     >
       <div className="flex items-center gap-2">
@@ -162,7 +162,7 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
       </div>
 
       {/* Tab Navigation - Only visible on screens 580px or smaller */}
-      <div className="sticky top-[72px] z-10 hidden gap-2 overflow-x-auto border-b border-gray-200 bg-white p-2 px-1 max-[580px]:flex">
+      <div className="sticky top-[72px] z-10 hidden overflow-x-auto border-b border-gray-200 max-[580px]:flex">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -170,10 +170,10 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
               onTabClick(tab.id as TabType, tab.ref as React.RefObject<HTMLDivElement>)
             }
             className={cn(
-              "whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors",
+              "whitespace-nowrap px-4 py-2 text-sm transition-colors",
               activeTab === tab.id
-                ? "bg-neutral-800 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                ? "border-b-2 border-neutral-800 font-[600]"
+                : "text-neutral-600 hover:bg-gray-200",
             )}
           >
             {tab.label}

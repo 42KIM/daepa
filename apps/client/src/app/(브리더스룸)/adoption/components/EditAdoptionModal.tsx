@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import PetItem from "../../components/selector/PetItem";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tabs } from "@/components/ui/tabs";
+import Loading from "@/components/common/Loading";
 
 const CREATE_ADOPTION_MODAL_STEP = {
   PET_SELECT: 1,
@@ -190,13 +191,7 @@ const EditAdoptionModal = ({
                     })}
                   {hasNextPage && (
                     <div ref={ref} className="h-20 text-center">
-                      {isFetchingNextPage ? (
-                        <div className="flex items-center justify-center">
-                          <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
-                        </div>
-                      ) : (
-                        <div className="text-muted-foreground">더 불러오는 중...</div>
-                      )}
+                      {isFetchingNextPage && <Loading />}
                     </div>
                   )}
                 </div>

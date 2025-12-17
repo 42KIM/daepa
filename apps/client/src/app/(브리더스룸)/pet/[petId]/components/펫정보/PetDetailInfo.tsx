@@ -74,7 +74,7 @@ export const PetDetailInfo = ({ formData, isEditMode, onFieldChange }: PetDetail
           <FormMultiSelect
             disabled={!isEditMode}
             title="모프"
-            displayMap={MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies]}
+            displayMap={formData.species ? MORPH_LIST_BY_SPECIES[formData.species] : {}}
             initialItems={formData.morphs}
             onSelect={(items) => onFieldChange("morphs", items)}
           />
@@ -87,7 +87,7 @@ export const PetDetailInfo = ({ formData, isEditMode, onFieldChange }: PetDetail
           <FormMultiSelect
             disabled={!isEditMode}
             title="형질"
-            displayMap={TRAIT_LIST_BY_SPECIES[formData.species as PetDtoSpecies]}
+            displayMap={formData.species ? TRAIT_LIST_BY_SPECIES[formData.species] : {}}
             initialItems={formData.traits}
             onSelect={(items) => onFieldChange("traits", items)}
           />

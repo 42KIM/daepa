@@ -108,7 +108,7 @@ const PedigreeInfo = ({
         이미지 혹은 이름을 클릭하면 상세 페이지로 이동합니다.
       </div>
 
-      <div className="flex gap-3 max-[650px]:flex-col">
+      <div className="flex gap-3 max-[400px]:flex-col">
         <ParentLink
           species={species}
           label="부"
