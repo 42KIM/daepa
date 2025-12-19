@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useIsMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
 import { PetControllerFindAllFilterType } from "@repo/api-client";
 import { ChevronRight, Search } from "lucide-react";
@@ -26,6 +27,7 @@ const Header = ({
   allowMyPetOnly = false,
   className,
 }: HeaderProps) => {
+  const isMobile = useIsMobile();
   const [keyword, setKeyword] = useState("");
 
   return (
@@ -36,6 +38,11 @@ const Header = ({
           className={`text-[16px] font-bold ${step === 2 ? "text-gray-400 hover:text-gray-700" : ""}`}
         >
           개체 검색
+          {step === 1 && allowMyPetOnly && (
+            <span className="ml-1 text-xs font-[500] text-red-600">
+              * 나의 펫만 선택 가능합니다.
+            </span>
+          )}
         </button>
         {step === 2 && (
           <>
@@ -46,50 +53,55 @@ const Header = ({
       </div>
 
       {step === 1 && (
-        <div className="flex items-center gap-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <Input
-              placeholder="펫 이름으로 검색하세요"
-              className="h-8 rounded-lg bg-gray-100 pl-9"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  setSearchQuery(keyword);
-                }
-              }}
-            />
+        <div className={cn("flex items-center gap-2", isMobile && "flex-col items-start")}>
+          <div className="flex gap-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <Input
+                placeholder="펫 이름으로 검색하세요"
+                className="h-8 rounded-lg bg-gray-100 pl-9"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearchQuery(keyword);
+                  }
+                }}
+              />
+            </div>
+            <Button className="h-8 rounded-lg text-[14px]" onClick={() => setSearchQuery(keyword)}>
+              검색
+            </Button>
           </div>
-          <Button className="h-8 rounded-lg text-[14px]" onClick={() => setSearchQuery(keyword)}>
-            검색
-          </Button>
 
-          <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
-            <button
-              onClick={() => setSearchType(PetControllerFindAllFilterType.MY)}
-              className={cn(
-                "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
-                searchType === PetControllerFindAllFilterType.MY
-                  ? "bg-white shadow-sm"
-                  : "text-gray-600",
-              )}
-            >
-              내 개체
-            </button>
-            <button
-              disabled={allowMyPetOnly}
-              onClick={() => setSearchType(PetControllerFindAllFilterType.NOT_MY)}
-              className={cn(
-                "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800 disabled:cursor-not-allowed disabled:opacity-50",
-                searchType === PetControllerFindAllFilterType.NOT_MY
-                  ? "bg-white shadow-sm"
-                  : "text-gray-600",
-              )}
-            >
-              타인의 개체
-            </button>
-          </div>
+          {!allowMyPetOnly && (
+            <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
+              <button
+                onClick={() => setSearchType(PetControllerFindAllFilterType.MY)}
+                className={cn(
+                  "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
+                  searchType === PetControllerFindAllFilterType.MY
+                    ? "bg-white shadow-sm"
+                    : "text-gray-600",
+                  isMobile && "text-xs",
+                )}
+              >
+                내 개체
+              </button>
+              <button
+                onClick={() => setSearchType(PetControllerFindAllFilterType.NOT_MY)}
+                className={cn(
+                  "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800 disabled:cursor-not-allowed disabled:opacity-50",
+                  searchType === PetControllerFindAllFilterType.NOT_MY
+                    ? "bg-white shadow-sm"
+                    : "text-gray-600",
+                  isMobile && "text-xs",
+                )}
+              >
+                타인의 개체
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

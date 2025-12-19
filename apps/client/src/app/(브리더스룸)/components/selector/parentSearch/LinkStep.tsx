@@ -7,6 +7,8 @@ import { useState } from "react";
 import PetThumbnail from "../../PetThumbnail";
 import { useQuery } from "@tanstack/react-query";
 import FloatingButton from "../../FloatingButton";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface LinkStepProps {
   selectedPet: PetParentDtoWithMessage;
@@ -17,6 +19,7 @@ interface LinkStepProps {
 const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
   const [message, setMessage] = useState<string | null>(null);
   const { user } = useUserStore();
+  const isMobile = useIsMobile();
 
   const { data: thumbnail } = useQuery({
     queryKey: [petImageControllerFindThumbnail.name, selectedPet.petId],
@@ -32,12 +35,17 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
   };
 
   return (
-    <div className="px-2 pb-20">
+    <div className="pb-20">
       {selectedPet && (
         <div className="space-y-6">
           {/* 상단 정보 영역 */}
-          <div className="flex gap-6">
-            <div className="relative aspect-square w-40 overflow-hidden rounded-xl">
+          <div className={cn("gap-6", !isMobile && "flex")}>
+            <div
+              className={cn(
+                "relative mb-2 aspect-square overflow-hidden rounded-xl",
+                !isMobile && "w-60",
+              )}
+            >
               <PetThumbnail imageUrl={thumbnail?.url} alt={selectedPet.name} />
             </div>
 
@@ -131,7 +139,7 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
             </div>
           ) : (
             <FloatingButton
-              leftButton={{
+              rightButton={{
                 title: "연결",
                 onClick: () => onSelect(selectedPet),
               }}

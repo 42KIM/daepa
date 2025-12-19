@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { compact } from "es-toolkit";
 import MatingItem from "./MatingItem";
 import Link from "next/link";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface MatingDetailDialogProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const MatingDetailDialog = ({
   matingGroup,
   onConfirmAdd,
 }: MatingDetailDialogProps) => {
+  const isMobile = useIsMobile();
   const isEditable = !matingGroup?.father?.isDeleted && !matingGroup?.mother?.isDeleted;
   // 메이팅 날짜들을 추출하여 Calendar용 날짜 배열 생성
   const getMatingDates = useCallback((matingDates: MatingByDateDto[]) => {
@@ -73,8 +75,12 @@ const MatingDetailDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-15 flex w-full flex-col rounded-3xl sm:max-w-[860px]">
-        <DialogTitle className="flex items-center gap-1 text-[32px]">
+      <DialogContent
+        className={cn("p-15 flex w-full flex-col rounded-3xl sm:max-w-[860px]", isMobile && "p-6")}
+      >
+        <DialogTitle
+          className={cn("flex items-center gap-1 text-[28px]", isMobile && "pt-3 text-[18px]")}
+        >
           {matingGroup.father?.petId ? (
             matingGroup.father?.isDeleted ? (
               <>
@@ -84,10 +90,7 @@ const MatingDetailDialog = ({
                 <span className="text-[12px] text-red-500">[삭제됨]</span>
               </>
             ) : (
-              <Link
-                href={`/pet/${matingGroup.father?.petId}`}
-                className="text-blue-600 hover:underline"
-              >
+              <Link href={`/pet/${matingGroup.father?.petId}`} className="text-blue-600 underline">
                 {matingGroup.father?.name}
               </Link>
             )
@@ -104,10 +107,7 @@ const MatingDetailDialog = ({
                 <span className="text-[12px] text-red-500">[삭제됨]</span>
               </>
             ) : (
-              <Link
-                href={`/pet/${matingGroup.mother?.petId}`}
-                className="text-blue-600 hover:underline"
-              >
+              <Link href={`/pet/${matingGroup.mother?.petId}`} className="text-blue-600 underline">
                 {matingGroup.mother?.name}
               </Link>
             )
@@ -116,7 +116,7 @@ const MatingDetailDialog = ({
           )}
         </DialogTitle>
 
-        <div className="flex flex-col gap-2 px-1">
+        <div className={cn("flex flex-col gap-2 px-1", isMobile && "px-0")}>
           {isEditable && (
             <CalendarSelect
               triggerText="메이팅 날짜 추가"
