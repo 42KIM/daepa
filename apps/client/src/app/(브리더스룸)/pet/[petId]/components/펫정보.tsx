@@ -166,14 +166,6 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
         isEgg={isEgg}
         onNameChange={(name) => updateField("name", name)}
         onHatchingDateChange={(date) => updateField("hatchingDate", date)}
-        onSpeciesChange={(species) =>
-          setFormData({
-            ...formData,
-            species,
-            morphs: undefined,
-            traits: undefined,
-          })
-        }
       />
 
       {/* 상세 정보 (일반 펫인 경우) */}

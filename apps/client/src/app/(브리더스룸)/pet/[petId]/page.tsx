@@ -24,7 +24,7 @@ type TabType = "breeding" | "adoption" | "images" | "pedigree";
 function PetDetailPage({ params }: PetDetailPageProps) {
   const { petId } = use(params);
   const [activeTab, setActiveTab] = useState<TabType>("images");
-  const isScrollingRef = useRef<RefObject<HTMLDivElement | null>>(null);
+  const isScrollingRef = useRef<boolean>(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const breedingRef = useRef<HTMLDivElement>(null);
@@ -97,7 +97,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
 
   const handleTabClick = (tabId: TabType, ref: React.RefObject<HTMLDivElement | null>) => {
     // 프로그래밍 방식 스크롤 플래그 설정
-    isScrollingRef.current = null;
+    isScrollingRef.current = true;
 
     // 탭 즉시 변경
     setActiveTab(tabId);
@@ -123,7 +123,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
 
       // 스크롤이 멈춘 후 100ms 대기 후 플래그 해제
       scrollTimeoutRef.current = setTimeout(() => {
-        isScrollingRef.current = null;
+        isScrollingRef.current = false;
         window.removeEventListener("scroll", handleScrollEnd);
       }, 100);
     };

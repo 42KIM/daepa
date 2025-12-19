@@ -10,7 +10,7 @@ import { SelectItem } from "./SelectItem";
 interface SingleSelectProps {
   type: keyof typeof SELECTOR_CONFIGS;
   initialItem?: any;
-  onSelect: (item: any) => void;
+  onSelect?: (item: any) => void;
   disabled?: boolean;
   showTitle?: boolean;
   saveASAP?: boolean; // 즉시 반영
@@ -132,7 +132,7 @@ const SingleSelect = ({
             isEntering
               ? "translate-y-0 scale-100 opacity-100"
               : "-translate-y-1 scale-95 opacity-0",
-            isMobile && "w-50",
+            isMobile && "w-48",
           )}
         >
           <div className="mb-2 font-[500]">{SELECTOR_CONFIGS[type].title}</div>
@@ -145,7 +145,7 @@ const SingleSelect = ({
                 }}
                 isSelected={selectedItem === null}
                 onClick={() => {
-                  onSelect(null);
+                  onSelect?.(null);
                   setIsOpen(false);
                 }}
               />
@@ -158,7 +158,7 @@ const SingleSelect = ({
                 isSelected={selectedItem === item.key}
                 onClick={() => {
                   if (saveASAP) {
-                    onSelect(item.key);
+                    onSelect?.(item.key);
                     setIsOpen(false);
                   } else {
                     setSelectedItem(item.key);
@@ -180,7 +180,7 @@ const SingleSelect = ({
               </button>
               <button
                 onClick={() => {
-                  onSelect(selectedItem);
+                  onSelect?.(selectedItem);
                   setIsOpen(false);
                 }}
                 className="h-[32px] cursor-pointer rounded-lg bg-blue-500 px-3 text-sm font-semibold text-white hover:bg-blue-600"

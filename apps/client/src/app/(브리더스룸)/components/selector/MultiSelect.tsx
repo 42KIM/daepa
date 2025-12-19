@@ -153,7 +153,7 @@ const MultiSelectFilter = ({
             isEntering
               ? "translate-y-0 scale-100 opacity-100"
               : "-translate-y-1 scale-95 opacity-0",
-            isMobile && "w-50",
+            isMobile && "w-48",
           )}
         >
           <div className="mb-2 font-[500]">{title}</div>

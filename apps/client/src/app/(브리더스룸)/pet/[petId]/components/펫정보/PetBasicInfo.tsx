@@ -4,6 +4,7 @@ import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSele
 import FormItem from "../FormItem";
 import { format } from "date-fns";
 import { PetDtoSpecies } from "@repo/api-client";
+import { Info } from "lucide-react";
 
 interface PetBasicInfoProps {
   formData: {
@@ -20,7 +21,6 @@ interface PetBasicInfoProps {
   isEgg: boolean;
   onNameChange: (name: string) => void;
   onHatchingDateChange: (date: string) => void;
-  onSpeciesChange: (species: PetDtoSpecies) => void;
 }
 
 export const PetBasicInfo = ({
@@ -30,7 +30,6 @@ export const PetBasicInfo = ({
   isEgg,
   onNameChange,
   onHatchingDateChange,
-  onSpeciesChange,
 }: PetBasicInfoProps) => {
   return (
     <>
@@ -66,13 +65,14 @@ export const PetBasicInfo = ({
 
       <FormItem
         label="종"
-        content={
-          <SingleSelect
-            disabled
-            type="species"
-            initialItem={formData.species}
-            onSelect={(item) => onSpeciesChange(item as PetDtoSpecies)}
-          />
+        content={<SingleSelect disabled type="species" initialItem={formData.species} />}
+        subContent={
+          isEditMode ? (
+            <div className="mt-1 flex items-center gap-1">
+              <Info size={14} color="red" />
+              <span className="text-xs text-red-600">종은 수정 불가능합니다.</span>
+            </div>
+          ) : null
         }
       />
     </>

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { BrAccessOnly } from 'src/common/decorators/roles.decorator';
 import {
   PairDetailDto,
@@ -54,7 +62,7 @@ export class PairController {
     type: CommonResponseDto,
   })
   async updatePair(
-    @Param('pairId') pairId: number,
+    @Param('pairId', ParseIntPipe) pairId: number,
     @Body() updatePairDto: UpdatePairDto,
     @JwtUser() token: JwtUserPayload,
   ): Promise<CommonResponseDto> {
