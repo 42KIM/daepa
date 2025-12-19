@@ -1,6 +1,6 @@
 import NameDuplicateCheckInput from "@/app/(브리더스룸)/components/NameDuplicateCheckInput";
 import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarInput";
-import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
+import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSelect";
 import FormItem from "../FormItem";
 import { format } from "date-fns";
 import { PetDtoSpecies } from "@repo/api-client";

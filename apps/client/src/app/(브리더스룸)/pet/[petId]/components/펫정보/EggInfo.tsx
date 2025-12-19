@@ -1,4 +1,4 @@
-import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
+import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSelect";
 import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
 import FormItem from "../FormItem";
 import { cn } from "@/lib/utils";

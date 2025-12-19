@@ -6,7 +6,7 @@ import {
   GROWTH_KOREAN_INFO,
   GENDER_KOREAN_INFO,
 } from "../../constants";
-import SelectFilter from "../../components/SingleSelect";
+import SelectFilter from "../../components/selector/SingleSelect";
 import AdoptionMultiSelectFilter from "./AdoptionMultiSelectFilter";
 import { useAdoptionFilterStore } from "../../store/adoptionFilter";
 import AdoptionPriceRangeFilter from "./AdoptionPriceRangeFilter";

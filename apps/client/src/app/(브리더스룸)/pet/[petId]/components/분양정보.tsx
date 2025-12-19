@@ -11,7 +11,7 @@ import {
 } from "@repo/api-client";
 import { AxiosError } from "axios";
 import FormItem from "./FormItem";
-import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
+import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
