@@ -23,7 +23,7 @@ const FloatingButton = ({ leftButton, rightButton, className }: FloatingButtonPr
       <div className="mx-auto flex max-w-[640px] gap-2">
         {leftButton && (
           <button
-            type="submit"
+            type="button"
             className={cn("h-12 flex-1 rounded-xl bg-gray-200 text-lg font-[700] text-gray-700")}
             onClick={leftButton.onClick}
           >

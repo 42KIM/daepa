@@ -15,7 +15,7 @@ type TabType = "breeding" | "adoption" | "images" | "pedigree";
 
 interface HeaderProps {
   pet: PetDto;
-  tabs: { id: string; label: string; ref: React.RefObject<HTMLDivElement | null> }[];
+  tabs: { id: TabType; label: string; ref: React.RefObject<HTMLDivElement | null> }[];
   activeTab: TabType;
   onTabClick: (tabId: TabType, ref: React.RefObject<HTMLDivElement | null>) => void;
 }
@@ -162,13 +162,11 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
       </div>
 
       {/* Tab Navigation - Only visible on screens 580px or smaller */}
-      <div className="sticky top-[72px] z-10 hidden overflow-x-auto border-b border-gray-200 max-[580px]:flex">
+      <div className="hidden overflow-x-auto border-b border-gray-200 max-[580px]:flex">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() =>
-              onTabClick(tab.id as TabType, tab.ref as React.RefObject<HTMLDivElement>)
-            }
+            onClick={() => onTabClick(tab.id, tab.ref)}
             className={cn(
               "whitespace-nowrap px-4 py-2 text-sm transition-colors",
               activeTab === tab.id

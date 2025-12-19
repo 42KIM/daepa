@@ -11,6 +11,7 @@ import AdoptionInfo from "./components/분양정보";
 import Images from "./components/이미지";
 import PedigreeInfo from "./components/혈통정보";
 import Loading from "@/components/common/Loading";
+import { isAxiosError } from "axios";
 
 interface PetDetailPageProps {
   params: Promise<{
@@ -130,7 +131,11 @@ function PetDetailPage({ params }: PetDetailPageProps) {
     window.addEventListener("scroll", handleScrollEnd);
   };
 
-  const tabs = [
+  const tabs: {
+    id: TabType;
+    label: string;
+    ref: RefObject<HTMLDivElement | null>;
+  }[] = [
     { id: "images", label: "이미지", ref: imagesRef },
     { id: "breeding", label: "펫정보", ref: breedingRef },
     { id: "adoption", label: "분양정보", ref: adoptionRef },
@@ -139,8 +144,8 @@ function PetDetailPage({ params }: PetDetailPageProps) {
 
   if (isLoading) return <Loading />;
 
-  if (isError) {
-    const status = (error as any)?.response?.status;
+  if (isError && isAxiosError(error)) {
+    const status = error?.response?.status;
     return (
       <div className="flex h-full flex-1 flex-col items-center justify-center gap-2">
         <p className="text-lg font-semibold text-gray-700">
