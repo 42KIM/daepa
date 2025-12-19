@@ -6,13 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface UpdateMatingDto {
-  /** 아빠 펫 ID */
-  fatherId?: string;
-  /** 엄마 펫 ID */
-  motherId?: string;
-  /** 메이팅 날짜 */
-  matingDate: string;
+export interface UpdatePairDto {
   /** 해칭 메모 */
   desc?: string;
 }

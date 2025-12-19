@@ -15,4 +15,8 @@ export interface MatingByParentsDto {
   mother?: PetSummaryLayingDto;
   /** 메이팅 정보 */
   matingsByDate: MatingByDateDto[];
+  /** 페어 메모 */
+  desc?: string;
+  /** 펫 쌍 ID */
+  pairId: number;
 }

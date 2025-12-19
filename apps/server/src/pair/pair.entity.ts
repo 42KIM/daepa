@@ -28,6 +28,9 @@ export class PairEntity {
   @Column()
   motherId: string;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  desc: string | null; // 소개말
+
   @CreateDateColumn()
   createdAt: Date;
 
