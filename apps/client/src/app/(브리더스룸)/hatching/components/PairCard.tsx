@@ -170,8 +170,7 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
   const status = getStatus();
 
   return (
-    <button
-      type="button"
+    <div
       onClick={onClick}
       className="group relative flex cursor-pointer flex-col gap-3 rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800"
     >
@@ -299,7 +298,7 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
           </div>
         </div>
       </div>
-    </button>
+    </div>
   );
 };
 
