@@ -7,7 +7,7 @@ import { updatePairProps } from "./PairList";
 import ParentCard from "./ParentCard";
 import TooltipText from "../../components/TooltipText";
 import { useMemo } from "react";
-import { maxBy, orderBy } from "es-toolkit";
+import { orderBy } from "es-toolkit";
 interface PairCardProps {
   pair: MatingByParentsDto;
   onClickUpdateDesc: (data: updatePairProps) => void;
