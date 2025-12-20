@@ -23,8 +23,10 @@ export const useNotificationRead = () => {
       if (item.status === UserNotificationDtoStatus.UNREAD) {
         try {
           await updateNotification({ id: item.id, status: UserNotificationDtoStatus.READ });
-          queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
-          queryClient.invalidateQueries({
+          await queryClient.invalidateQueries({
+            queryKey: [userNotificationControllerFindAll.name],
+          });
+          await queryClient.invalidateQueries({
             queryKey: [userNotificationControllerGetUnreadCount.name],
           });
         } catch (error) {
