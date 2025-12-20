@@ -54,11 +54,11 @@ const NotificationItem = ({
       <button
         type="button"
         className="flex items-center justify-between gap-2 rounded-xl px-2 py-1 hover:bg-gray-50 hover:shadow-lg dark:hover:bg-neutral-800"
-        onClick={() => {
+        onClick={async () => {
           setIsNotificationOpen((prev) => !prev);
 
           if (!isNotificationOpen && item.status === UserNotificationDtoStatus.UNREAD) {
-            handleItemClick(item);
+            await handleItemClick(item);
           }
         }}
       >
