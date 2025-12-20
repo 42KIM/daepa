@@ -4,8 +4,6 @@ import { overlay } from "overlay-kit";
 import RejectModal from "./RejectModal";
 
 interface NotificationActionsProps {
-  alreadyProcessed: boolean;
-  onProcessedRequest: () => void;
   onUpdate: (
     status: UpdateParentRequestDtoStatus,
     rejectReason?: string,
@@ -14,18 +12,12 @@ interface NotificationActionsProps {
   onClose: () => void;
 }
 
-const NotificationActions = ({
-  alreadyProcessed,
-  onProcessedRequest,
-  onUpdate,
-  onClose,
-}: NotificationActionsProps) => {
+const NotificationActions = ({ onUpdate, onClose }: NotificationActionsProps) => {
   return (
     <div className="flex items-center gap-2">
       <Button
         onClick={(e) => {
           e.preventDefault();
-          if (alreadyProcessed) return onProcessedRequest();
 
           overlay.open(({ isOpen, close }) => (
             <RejectModal

@@ -22,10 +22,6 @@ export const useNotificationActions = () => {
       userNotificationControllerDelete({ id, receiverId }),
   });
 
-  const handleProcessedRequest = () => {
-    toast.error("이미 처리된 요청입니다.");
-  };
-
   const handleUpdate = async (
     id: number,
     status: UpdateParentRequestDtoStatus,
@@ -67,7 +63,6 @@ export const useNotificationActions = () => {
   };
 
   return {
-    handleProcessedRequest,
     handleUpdate,
     handleDeleteNotification,
   };

@@ -22,7 +22,6 @@ interface NotificationExpandedContentProps {
     rejectReason?: string,
     close?: () => void,
   ) => Promise<void>;
-  onProcessedRequest: () => void;
   onClose: () => void;
 }
 
@@ -32,7 +31,6 @@ const NotificationExpandedContent = ({
   className,
   onDeleteNotification,
   onUpdate,
-  onProcessedRequest,
   onClose,
 }: NotificationExpandedContentProps) => {
   const detailData = castDetailJson<ParentLinkDetailJson>(item.type, item?.detailJson);
@@ -102,12 +100,7 @@ const NotificationExpandedContent = ({
 
           {/* 액션 버튼 (부모 연동 요청인 경우) */}
           {item.type === UserNotificationDtoType.PARENT_REQUEST && !alreadyProcessed && (
-            <NotificationActions
-              alreadyProcessed={alreadyProcessed}
-              onProcessedRequest={onProcessedRequest}
-              onUpdate={onUpdate}
-              onClose={onClose}
-            />
+            <NotificationActions onUpdate={onUpdate} onClose={onClose} />
           )}
         </div>
       </div>

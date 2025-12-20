@@ -20,8 +20,7 @@ const NotificationItem = ({
 }) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const { setNotificationRead } = useNotificationRead();
-  const { handleProcessedRequest, handleUpdate, handleDeleteNotification } =
-    useNotificationActions();
+  const { handleUpdate, handleDeleteNotification } = useNotificationActions();
 
   const handleItemClick = useCallback(
     async (item: UserNotificationDto) => {
@@ -71,7 +70,6 @@ const NotificationItem = ({
         isOpen={isNotificationOpen}
         onDeleteNotification={handleDeleteWrapper}
         onUpdate={handleUpdateWrapper}
-        onProcessedRequest={handleProcessedRequest}
         onClose={() => setIsNotificationOpen(false)}
         className={expandedContentClassName}
       />
