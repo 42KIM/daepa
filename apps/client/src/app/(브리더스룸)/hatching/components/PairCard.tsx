@@ -190,9 +190,9 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
               최근 산란:
               <span className="font-[600] text-gray-900">
                 {" "}
-                {DateTime.fromFormat(latestLaying.date ?? "", "yyyy-MM-dd").toFormat(
-                  "yy년 M월 d일",
-                )}{" "}
+                {latestLaying.date
+                  ? DateTime.fromFormat(latestLaying.date, "yyyy-MM-dd").toFormat("yy년 M월 d일")
+                  : "?"}{" "}
                 ({latestLaying.layingIndex}차)
               </span>
             </span>
