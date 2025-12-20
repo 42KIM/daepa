@@ -45,6 +45,8 @@ export const useNotificationActions = () => {
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         toast.error(error?.response?.data?.message ?? "부모 연동 상태 변경에 실패했습니다.");
+      } else {
+        toast.error("부모 연동 상태 변경에 실패했습니다.");
       }
     }
   };
