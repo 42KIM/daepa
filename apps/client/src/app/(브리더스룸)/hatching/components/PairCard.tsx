@@ -84,14 +84,10 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
 
   // 온도 기반 해칭 기간 계산 (일 단위)
   // 파충류(크레스티드 게코) 기준: 온도에 따라 부화 기간이 달라짐
-  // 25°C 기준: 약 65일
-  // 27-28°C: 약 55일
-  // 22-24°C: 약 75일
+  // 25°C 기준: 약 60일
+  // 1°C 오를 때마다 10일 감소, 1°C 내릴때마다 10일 추가
   const getIncubationDays = (temperature = 25) => {
-    if (temperature >= 27) return 55;
-    if (temperature >= 25) return 65;
-    if (temperature >= 22) return 75;
-    return 65; // 기본값
+    return 60 - (temperature - 25) * 10;
   };
 
   // 해칭 임박한 알 찾기: 아직 부화하지 않은 유정란 중 가장 가까운 예상 해칭일
