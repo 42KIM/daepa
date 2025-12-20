@@ -73,7 +73,7 @@ const NotificationExpandedContent = ({
 
             <Button
               variant="ghost"
-              className="flex flex-1 justify-end"
+              className="ml-auto flex"
               size="icon"
               disabled={!item}
               onClick={() => {
