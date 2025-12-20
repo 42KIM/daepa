@@ -6,6 +6,8 @@ import { DateTime } from "luxon";
 import { updatePairProps } from "./PairList";
 import ParentCard from "./ParentCard";
 import TooltipText from "../../components/TooltipText";
+import { useMemo } from "react";
+import { maxBy, orderBy } from "es-toolkit";
 interface PairCardProps {
   pair: MatingByParentsDto;
   onClickUpdateDesc: (data: updatePairProps) => void;
@@ -64,41 +66,21 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
   const latestMatingDate = latestMating?.matingDate;
   const latestMatingIndex = pair.matingsByDate?.length ?? 1; // 배열의 첫 번째는 1차
 
-  // 가장 최근 산란 정보 찾기
-  const latestLaying: { date: string; matingIndex: number; layingIndex: number } | null =
-    pair.matingsByDate?.reduce<{ date: string; matingIndex: number; layingIndex: number } | null>(
-      (latest, mating, matingIdx) => {
-        return (
-          mating.layingsByDate?.reduce<{
-            date: string;
-            matingIndex: number;
-            layingIndex: number;
-          } | null>((innerLatest, laying, layingIdx) => {
-            const layingDate = DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd");
+  // 가장 최근 메이팅(시즌) 내에서 가장 최근 산란 정보 찾기
+  const latestLaying = useMemo(() => {
+    if (!latestMating?.layingsByDate || latestMating.layingsByDate.length === 0) {
+      return null;
+    }
 
-            if (!innerLatest) {
-              return {
-                date: laying.layingDate,
-                matingIndex: matingIdx + 1,
-                layingIndex: layingIdx + 1,
-              };
-            }
+    const layingsOrdersByDesc = orderBy(latestMating.layingsByDate, ["layingDate"], ["desc"]);
+    const latestLayingDate = layingsOrdersByDesc[0]?.layingDate;
+    const latestLayingIndex = layingsOrdersByDesc.length;
 
-            const currentLatest = DateTime.fromFormat(innerLatest.date, "yyyy-MM-dd");
-            if (layingDate > currentLatest) {
-              return {
-                date: laying.layingDate,
-                matingIndex: matingIdx + 1,
-                layingIndex: layingIdx + 1,
-              };
-            }
-
-            return innerLatest;
-          }, latest) ?? latest
-        );
-      },
-      null,
-    ) ?? null;
+    return {
+      date: latestLayingDate,
+      layingIndex: latestLayingIndex,
+    };
+  }, [latestMating?.layingsByDate]);
 
   // 온도 기반 해칭 기간 계산 (일 단위)
   // 파충류(크레스티드 게코) 기준: 온도에 따라 부화 기간이 달라짐
@@ -212,8 +194,10 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
               최근 산란:
               <span className="font-[600] text-gray-900">
                 {" "}
-                {DateTime.fromFormat(latestLaying.date, "yyyy-MM-dd").toFormat("yy년 M월 d일")} (
-                {latestLaying.matingIndex}시즌 {latestLaying.layingIndex}차)
+                {DateTime.fromFormat(latestLaying.date ?? "", "yyyy-MM-dd").toFormat(
+                  "yy년 M월 d일",
+                )}{" "}
+                ({latestLaying.layingIndex}차)
               </span>
             </span>
           </div>
