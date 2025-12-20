@@ -56,9 +56,14 @@ export const useNotificationActions = () => {
         await queryClient.invalidateQueries({ queryKey: [userNotificationControllerFindAll.name] });
         toast.success("알림이 삭제되었습니다.");
         close?.();
+      } else {
+        toast.error("알림 삭제에 실패했습니다.");
       }
-    } catch {
-      toast.error("알림 삭제에 실패했습니다.");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error?.response?.data?.message ?? error);
+      }
+      toast.error(`알림 삭제에 실패했습니다. ${error}`);
     }
   };
 
