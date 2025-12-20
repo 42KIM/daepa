@@ -42,19 +42,25 @@ const MonthlyCalendar = memo(() => {
 
     return Object.entries(monthlyData).reduce(
       (acc, [date, pets]) => {
-        const hatched = pets.filter((pet) => pet.type === PetDtoType.PET).length;
-        const egg = pets.filter((pet) => pet.type === PetDtoType.EGG).length;
+        // 현재 탭에 맞는 펫만 필터링
+        const filteredPets =
+          tab === "all"
+            ? pets
+            : pets.filter((pet) => pet.type === tab);
+
+        const hatched = filteredPets.filter((pet) => pet.type === PetDtoType.PET).length;
+        const egg = filteredPets.filter((pet) => pet.type === PetDtoType.EGG).length;
 
         acc[date] = {
           hatched,
           egg,
-          total: pets.length,
+          total: filteredPets.length,
         };
         return acc;
       },
       {} as Record<string, { hatched: number; egg: number; total: number }>,
     );
-  }, [monthlyData]);
+  }, [monthlyData, tab]);
 
   const visibleData = useMemo(() => (monthlyData ?? {}) as Record<string, PetDto[]>, [monthlyData]);
   const sortedEntries = useMemo(() => {
