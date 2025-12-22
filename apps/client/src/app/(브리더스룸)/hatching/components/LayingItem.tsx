@@ -1,176 +1,140 @@
+"use client";
+
 import {
   brMatingControllerFindAll,
   LayingByDateDto,
-  layingControllerUpdate,
-  layingControllerDelete,
   PetSummaryLayingDto,
+  UpdatePetDto,
+  petControllerDeletePet,
+  petControllerUpdate,
+  UpdatePetDtoEggStatus,
 } from "@repo/api-client";
-import CalendarSelect from "./CalendarSelect";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { parse } from "date-fns";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import React from "react";
+
+import { overlay } from "overlay-kit";
+import EditEggModal from "./EditEggModal";
+import CompleteHatchingModal from "./CompleteHatchingModal";
+import ConfirmDialog from "../../components/Form/Dialog";
+
 import EggItem from "./EggItem";
-import React, { useState, useCallback } from "react";
-import { ChevronDown, Trash2 } from "lucide-react";
 
 interface LayingItemProps {
-  layingDates: string[];
   layingData: LayingByDateDto;
-  matingDate?: string;
   father?: PetSummaryLayingDto;
   mother?: PetSummaryLayingDto;
 }
-const toDate = (s: string): Date => {
-  if (/^\d{8}$/.test(s)) return parse(s, "yyyyMMdd", new Date());
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return parse(s, "yyyy-MM-dd", new Date());
-  return new Date(s);
-};
 
-const normalizeDate = (date: Date): Date => {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-};
-
-const LayingItem = ({
-  layingDates,
-  layingData: { layingDate, layings, layingId },
-  matingDate,
-  father,
-  mother,
-}: LayingItemProps) => {
+const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: LayingItemProps) => {
   const queryClient = useQueryClient();
 
-  const [isOpen, setIsOpen] = useState(false);
-
-  const { mutateAsync: updateLayingDate } = useMutation({
-    mutationFn: ({ id, newLayingDate }: { id: number; newLayingDate: string }) =>
-      layingControllerUpdate(id, { layingDate: newLayingDate }),
+  const { mutateAsync: updateEggStatus } = useMutation({
+    mutationFn: ({ eggId, data }: { eggId: string; data: UpdatePetDto }) =>
+      petControllerUpdate(eggId, data),
   });
 
-  const getDisabledDates = useCallback(
-    (currentLayingDate: string) => {
-      const currentDate = normalizeDate(toDate(currentLayingDate));
-      const matingDateObj = matingDate ? normalizeDate(toDate(matingDate)) : null;
+  const { mutateAsync: deleteEgg } = useMutation({
+    mutationFn: (eggId: string) => petControllerDeletePet(eggId, {}),
+  });
 
-      return (date: Date) => {
-        const normalizedDate = normalizeDate(date);
-
-        // 현재 산란일 자체는 비활성화 (편집 모드에서 현재 날짜는 선택 불가)
-        return (
-          normalizedDate.getTime() === currentDate.getTime() ||
-          (matingDateObj !== null && normalizedDate.getTime() < matingDateObj.getTime())
-        );
-      };
-    },
-    [matingDate],
-  );
-
-  const handleUpdateLayingDate = useCallback(
-    async (layingId: number, newLayingDate: string) => {
-      try {
-        await updateLayingDate({
-          id: layingId,
-          newLayingDate,
-        });
-        toast.success("산란일 수정에 성공했습니다.");
-        await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
-      } catch (error) {
-        if (error instanceof AxiosError) {
-          toast.error(error.response?.data?.message ?? "산란일 수정에 실패했습니다.");
-        } else {
-          toast.error("산란일 수정에 실패했습니다.");
-        }
+  const handleUpdate = async ({
+    eggId,
+    value,
+  }: {
+    eggId: string;
+    value: UpdatePetDtoEggStatus;
+  }) => {
+    try {
+      await updateEggStatus({
+        eggId,
+        data: { eggStatus: value },
+      });
+      toast.success("상태가 변경되었습니다.");
+      await queryClient.invalidateQueries({
+        queryKey: [brMatingControllerFindAll.name],
+      });
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "개체 수정에 실패했습니다.");
+      } else {
+        toast.error("개체 수정에 실패했습니다.");
       }
-    },
-    [updateLayingDate, queryClient],
-  );
+    }
+  };
 
-  const handleDeleteLaying = useCallback(
-    async (layingId: number) => {
-      try {
-        await layingControllerDelete(layingId);
-        toast.success("산란 정보가 성공적으로 삭제되었습니다.");
-        await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
-      } catch (error) {
-        if (error instanceof AxiosError) {
-          toast.error(error.response?.data?.message ?? "산란 정보 삭제에 실패했습니다.");
-        } else {
-          toast.error("산란 정보 삭제에 실패했습니다.");
-        }
+  const handleDeleteEgg = async (eggId: string, onClose: () => void) => {
+    try {
+      await deleteEgg(eggId);
+      await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      onClose();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message ?? "개체 삭제에 실패했습니다.");
+      } else {
+        toast.error("개체 삭제에 실패했습니다.");
       }
-    },
-    [queryClient],
-  );
+    }
+  };
 
-  const handleHeaderClick = useCallback(
-    (e: React.MouseEvent) => {
-      // 삭제 버튼과 캘린더 클릭은 무시
-      if ((e.target as HTMLElement).closest('button') ||
-          (e.target as HTMLElement).closest('[data-field-name="matingDate"]')) {
-        return;
-      }
-      setIsOpen((prev) => !prev);
-    },
-    [],
-  );
+  const handleDeleteEggClick = (e: React.MouseEvent, eggId: string) => {
+    e.stopPropagation();
+    overlay.open(({ isOpen, close, unmount }) => (
+      <ConfirmDialog
+        isOpen={isOpen}
+        onCloseAction={close}
+        onConfirmAction={() => handleDeleteEgg(eggId, close)}
+        onExit={unmount}
+        title="개체 삭제 안내"
+        description={`정말로 삭제하시겠습니까? \n 삭제 후 복구할 수 없습니다.`}
+      />
+    ));
+  };
+
+  const handleEditEggClick = (e: React.MouseEvent, egg: PetSummaryLayingDto) => {
+    e.stopPropagation();
+    overlay.open(({ isOpen, close }) => <EditEggModal isOpen={isOpen} onClose={close} egg={egg} />);
+  };
+
+  const handleHatching = (
+    e: React.MouseEvent,
+    petId: string,
+    clutch?: number,
+    clutchOrder?: number,
+  ) => {
+    e.stopPropagation();
+    overlay.open(({ isOpen, close }) => (
+      <CompleteHatchingModal
+        isOpen={isOpen}
+        onClose={close}
+        petId={petId}
+        layingDate={layingDate}
+        clutch={clutch}
+        clutchOrder={clutchOrder}
+        fatherName={father?.name}
+        motherName={mother?.name}
+      />
+    ));
+  };
 
   return (
-    <div className="rounded-xl border border-gray-200 pt-0 shadow-sm hover:bg-gray-50 hover:shadow-md">
-      <div
-        onClick={handleHeaderClick}
-        className="flex h-10 cursor-pointer items-center gap-2 px-2 transition-colors"
-      >
-        <div className="flex h-full items-center justify-center">
-          <ChevronDown
-            className={`h-4 w-4 text-blue-600 transition-transform duration-300 ${
-              isOpen ? "rotate-180" : "rotate-0"
-            }`}
-          />
-        </div>
-
-        {!!layings?.[0] && (
-          <span className="text-sm font-bold italic text-blue-500">
-            {layings[0].clutch}차
-          </span>
-        )}
-        <div onClick={(e) => e.stopPropagation()}>
-          <CalendarSelect
-            type="edit"
-            disabledDates={layingDates}
-            triggerText={layingDate}
-            confirmButtonText="산란 날짜 수정"
-            onConfirm={(newLayingDate) => handleUpdateLayingDate(layingId, newLayingDate)}
-            disabled={getDisabledDates(layingDate)}
-          />
-        </div>
-        <div className="flex-1" />
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteLaying(layingId);
-          }}
-          className="rounded-lg p-1 text-red-600 hover:bg-red-50 transition-colors"
-          title="산란 정보 삭제"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div
-        className={`grid grid-cols-2 gap-1 overflow-hidden pt-0 transition-all duration-300 ease-in-out md:grid-cols-3 ${
-          isOpen ? "max-h-[1000px] p-2 pt-0 opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        {layings.map((pet) => (
-          <EggItem
-            key={pet.petId}
-            pet={pet}
-            layingDate={layingDate}
-            fatherName={father?.name}
-            motherName={mother?.name}
-          />
-        ))}
-      </div>
+    <div className="mb-4 flex flex-col">
+      {layings.map((pet) => (
+        <EggItem
+          key={pet.petId}
+          pet={pet}
+          handleHatching={(e) => handleHatching(e, pet.petId, pet.clutch, pet.clutchOrder)}
+          handleDeleteEggClick={(e) => handleDeleteEggClick(e, pet.petId)}
+          handleEditEggClick={(e) => handleEditEggClick(e, pet)}
+          handleUpdate={(value) =>
+            handleUpdate({
+              eggId: pet.petId,
+              value,
+            })
+          }
+        />
+      ))}
     </div>
   );
 };

@@ -1,14 +1,24 @@
-import { MatingByDateDto, PetSummaryLayingDto } from "@repo/api-client";
+import {
+  brMatingControllerFindAll,
+  layingControllerUpdate,
+  MatingByDateDto,
+  PetSummaryLayingDto,
+} from "@repo/api-client";
 import { Trash2, NotebookPen } from "lucide-react";
 import { overlay } from "overlay-kit";
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { sortBy } from "es-toolkit/compat";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import CreateLayingModal from "./CreateLayingModal";
 import EditMatingModal from "./EditMatingModal";
 import DeleteMatingModal from "./DeleteMatingModal";
 
 import LayingItem from "./LayingItem";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
+import CalendarSelect from "./CalendarSelect";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 interface MatingItemProps {
   mating: MatingByDateDto;
@@ -25,6 +35,13 @@ const MatingItem = ({
   matingDates,
   isEditable = true,
 }: MatingItemProps) => {
+  const queryClient = useQueryClient();
+
+  const { mutateAsync: updateLayingDate } = useMutation({
+    mutationFn: ({ id, newLayingDate }: { id: number; newLayingDate: string }) =>
+      layingControllerUpdate(id, { layingDate: newLayingDate }),
+  });
+
   const layingDates = useMemo(
     () => mating.layingsByDate?.map((laying) => laying.layingDate) ?? [],
     [mating.layingsByDate],
@@ -32,7 +49,9 @@ const MatingItem = ({
 
   const sortedLayingsByDate = useMemo(() => {
     if (!mating.layingsByDate) return [];
-    return sortBy(mating.layingsByDate, [(laying) => new Date(laying.layingDate).getTime()]);
+    return sortBy(mating.layingsByDate, [
+      (laying) => DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd").toMillis(),
+    ]);
   }, [mating.layingsByDate]);
 
   const handleAddLayingClick = () => {
@@ -78,14 +97,55 @@ const MatingItem = ({
     ));
   };
 
+  const getDisabledDates = useCallback(
+    (currentLayingDate: string) => {
+      const currentDate = DateTime.fromFormat(currentLayingDate, "yyyy-MM-dd").startOf("day");
+      const matingDateObj = mating.matingDate
+        ? DateTime.fromFormat(mating.matingDate, "yyyy-MM-dd").startOf("day")
+        : null;
+
+      return (date: Date) => {
+        const normalizedDate = DateTime.fromJSDate(date).startOf("day");
+
+        // 현재 산란일 자체는 비활성화 (편집 모드에서 현재 날짜는 선택 불가)
+        return (
+          normalizedDate.toMillis() === currentDate.toMillis() ||
+          (matingDateObj !== null && normalizedDate.toMillis() < matingDateObj.toMillis())
+        );
+      };
+    },
+    [mating.matingDate],
+  );
+
+  const handleUpdateLayingDate = useCallback(
+    async (layingId: number, newLayingDate: string) => {
+      try {
+        await updateLayingDate({
+          id: layingId,
+          newLayingDate,
+        });
+        toast.success("산란일 수정에 성공했습니다.");
+        await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          toast.error(error.response?.data?.message ?? "산란일 수정에 실패했습니다.");
+        } else {
+          toast.error("산란일 수정에 실패했습니다.");
+        }
+      }
+    },
+    [updateLayingDate, queryClient],
+  );
+
   return (
-    <div key={mating.id} className="flex flex-col pt-5 dark:border-gray-700">
-      <div className="flex items-center justify-between gap-1 px-2">
+    <ScrollArea className="relative flex h-[calc(100vh-400px)] w-full flex-col">
+      <div className="mb-5 flex flex-col justify-center gap-1">
         <div className="flex items-center gap-2">
-          <div className="text-[14px] font-semibold text-gray-700 dark:text-gray-200">
+          <div className="font-semibold text-gray-700 dark:text-gray-200">
             {mating.matingDate
-              ? format(new Date(mating.matingDate ?? ""), "yyyy년 MM월 dd일")
+              ? DateTime.fromFormat(mating.matingDate, "yyyy-MM-dd").toFormat("yyyy년 MM월 dd일 ")
               : "-"}
+            <span className="text-sm font-[400] text-gray-500">메이팅</span>
           </div>
           {isEditable && (
             <div className="flex items-center gap-1">
@@ -98,38 +158,48 @@ const MatingItem = ({
             </div>
           )}
         </div>
-      </div>
-
-      {isEditable && (
         <button
           type="button"
           onClick={handleAddLayingClick}
-          className="flex items-center gap-1 self-start rounded-lg px-2 py-0.5 text-[14px] text-blue-600 hover:bg-blue-50"
+          className="flex w-fit items-center gap-1 rounded-lg bg-blue-50 px-2 py-0.5 text-[14px] text-blue-600"
         >
           <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-600">
             +
           </div>
           <span className={"font-medium text-blue-600"}>산란 정보 추가</span>
         </button>
-      )}
+      </div>
 
-      <div className="mt-2 flex flex-col gap-2">
-        {sortedLayingsByDate && sortedLayingsByDate.length > 0 ? (
-          sortedLayingsByDate.map((layingData) => (
+      {sortedLayingsByDate &&
+        sortedLayingsByDate.length > 0 &&
+        sortedLayingsByDate.map((layingData) => (
+          <div key={layingData.layingId} className="mb-7">
+            <div className="sticky top-0 z-10 flex text-[15px] font-semibold text-gray-700">
+              <span className="mr-1 text-blue-500">{layingData.layings[0]?.clutch}차</span>
+
+              <CalendarSelect
+                type="edit"
+                triggerTextClassName="text-gray-600 text-sm"
+                disabledDates={layingDates}
+                triggerText={DateTime.fromFormat(layingData.layingDate, "yyyy-MM-dd").toFormat(
+                  "M월 d일",
+                )}
+                confirmButtonText="산란 날짜 수정"
+                onConfirm={(newLayingDate) =>
+                  handleUpdateLayingDate(layingData.layingId, newLayingDate)
+                }
+                disabled={getDisabledDates(layingData.layingDate)}
+              />
+            </div>
             <LayingItem
               key={layingData.layingId}
-              layingDates={layingDates}
               layingData={layingData}
-              matingDate={mating.matingDate}
               father={father}
               mother={mother}
             />
-          ))
-        ) : (
-          <div className="px-2 text-[12px] text-gray-500">아직 산란 정보가 없습니다.</div>
-        )}
-      </div>
-    </div>
+          </div>
+        ))}
+    </ScrollArea>
   );
 };
 

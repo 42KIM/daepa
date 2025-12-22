@@ -1,7 +1,7 @@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
+import { DateTime } from "luxon";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Pencil, Plus } from "lucide-react";
@@ -12,6 +12,7 @@ interface CalendarSelectProps {
   triggerText?: string;
   confirmButtonText?: string;
   initialDate?: string;
+  triggerTextClassName?: string;
   disabled?: (date: Date) => boolean;
   onConfirm: (matingDate: string) => void;
 }
@@ -24,6 +25,7 @@ const CalendarSelect = ({
   confirmButtonText,
   initialDate,
   disabled,
+  triggerTextClassName,
 }: CalendarSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [matingDate, setMatingDate] = useState<string | undefined>(initialDate);
@@ -34,7 +36,7 @@ const CalendarSelect = ({
         <button
           data-field-name="matingDate"
           className={cn(
-            "flex w-fit items-center justify-center gap-1 rounded-lg px-1 text-[14px] font-[500] text-blue-600 hover:bg-blue-50",
+            "flex w-fit items-center justify-center gap-1 rounded-lg px-1 text-[14px] font-semibold text-blue-500 hover:bg-blue-50",
           )}
         >
           {type === "create" && (
@@ -42,17 +44,19 @@ const CalendarSelect = ({
               <Plus className="h-2 w-2" />
             </div>
           )}
-          <div className="flex cursor-pointer items-center gap-1 text-blue-600">{triggerText}</div>
+          <div className={cn("flex cursor-pointer items-center gap-1", triggerTextClassName)}>
+            {triggerText}
+          </div>
           {type === "edit" && <Pencil className="h-3 w-3 text-blue-600" />}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-fit p-0" align="start">
         <Calendar
           mode="single"
-          selected={matingDate ? parseISO(matingDate) : undefined}
+          selected={matingDate ? DateTime.fromISO(matingDate).toJSDate() : undefined}
           onSelect={(date) => {
             if (date) {
-              const dateString = format(date, "yyyy-MM-dd");
+              const dateString = DateTime.fromJSDate(date).toFormat("yyyy-MM-dd");
 
               if (disabledDates.includes(dateString)) {
                 toast.error(`이미 등록된 날짜입니다.`);
@@ -68,7 +72,7 @@ const CalendarSelect = ({
           }}
           disabled={disabled}
           modifiers={{
-            hasMating: disabledDates.map((d) => parseISO(d)),
+            hasMating: disabledDates.map((d) => DateTime.fromISO(d).toJSDate()),
           }}
           modifiersStyles={{
             hasMating: {
@@ -91,7 +95,8 @@ const CalendarSelect = ({
           }}
           className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-b-2xl bg-gray-800 p-2 text-sm font-semibold text-white transition-colors hover:bg-black"
         >
-          {matingDate ? format(parseISO(matingDate), "yyyy년 MM월 dd일") : ""} {confirmButtonText}
+          {matingDate ? DateTime.fromISO(matingDate).toFormat("yyyy년 MM월 dd일") : ""}{" "}
+          {confirmButtonText}
         </button>
       </PopoverContent>
     </Popover>
