@@ -119,7 +119,7 @@ const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: Lay
   };
 
   return (
-    <div className="mb-4 flex flex-col">
+    <div className="flex flex-col">
       {layings.map((pet) => (
         <EggItem
           key={pet.petId}

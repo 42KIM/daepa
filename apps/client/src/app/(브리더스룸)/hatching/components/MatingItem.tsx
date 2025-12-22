@@ -6,8 +6,8 @@ import {
 } from "@repo/api-client";
 import { Trash2, NotebookPen } from "lucide-react";
 import { overlay } from "overlay-kit";
-import { memo, useCallback, useMemo } from "react";
-import { sortBy } from "es-toolkit/compat";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { orderBy } from "es-toolkit";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import CreateLayingModal from "./CreateLayingModal";
 import EditMatingModal from "./EditMatingModal";
@@ -19,6 +19,7 @@ import CalendarSelect from "./CalendarSelect";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { cn } from "@/lib/utils";
 
 interface MatingItemProps {
   mating: MatingByDateDto;
@@ -49,10 +50,45 @@ const MatingItem = ({
 
   const sortedLayingsByDate = useMemo(() => {
     if (!mating.layingsByDate) return [];
-    return sortBy(mating.layingsByDate, [
-      (laying) => DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd").toMillis(),
-    ]);
+    return orderBy(
+      mating.layingsByDate,
+      [(laying) => DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd").toMillis()],
+      ["desc"], // 최근 날짜가 맨 앞에 오도록 내림차순 정렬
+    );
   }, [mating.layingsByDate]);
+
+  const [selectedLayingId, setSelectedLayingId] = useState<number | null>(
+    sortedLayingsByDate[0]?.layingId ?? null,
+  );
+  const layingRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const prevLayingCountRef = useRef<number>(sortedLayingsByDate.length);
+
+  const scrollToLaying = useCallback((layingId: number) => {
+    const element = layingRefs.current.get(layingId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      setSelectedLayingId(layingId);
+    }
+  }, []);
+
+  // 새로운 산란이 추가되면 해당 차수로 자동 포커스
+  useEffect(() => {
+    const currentCount = sortedLayingsByDate.length;
+
+    // 산란이 추가되었을 때 (개수가 증가했을 때)
+    if (currentCount > prevLayingCountRef.current && currentCount > 0) {
+      // 가장 최근 날짜의 laying (첫 번째 요소, 내림차순 정렬이므로)으로 스크롤
+      const latestLaying = sortedLayingsByDate[0];
+      if (latestLaying) {
+        // 약간의 지연을 주어 DOM이 렌더링된 후 스크롤
+        setTimeout(() => {
+          scrollToLaying(latestLaying.layingId);
+        }, 100);
+      }
+    }
+
+    prevLayingCountRef.current = currentCount;
+  }, [sortedLayingsByDate, scrollToLaying]);
 
   const handleAddLayingClick = () => {
     overlay.open(({ isOpen, close }) => (
@@ -138,8 +174,8 @@ const MatingItem = ({
   );
 
   return (
-    <ScrollArea className="relative flex h-[calc(100vh-400px)] w-full flex-col">
-      <div className="mb-5 flex flex-col justify-center gap-1">
+    <div className="relative flex h-[calc(100vh-300px)] w-full flex-col">
+      <div className="mb-2 flex flex-col justify-center gap-1">
         <div className="flex items-center gap-2">
           <div className="font-semibold text-gray-700 dark:text-gray-200">
             {mating.matingDate
@@ -158,48 +194,90 @@ const MatingItem = ({
             </div>
           )}
         </div>
-        <button
-          type="button"
-          onClick={handleAddLayingClick}
-          className="flex w-fit items-center gap-1 rounded-lg bg-blue-50 px-2 py-0.5 text-[14px] text-blue-600"
-        >
-          <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-600">
-            +
-          </div>
-          <span className={"font-medium text-blue-600"}>산란 정보 추가</span>
-        </button>
+        <div className="sticky top-0 z-20 flex items-center gap-2 overflow-x-auto bg-white pb-2">
+          <button
+            type="button"
+            onClick={handleAddLayingClick}
+            className="flex w-fit shrink-0 items-center gap-1 rounded-lg bg-blue-50 px-2 py-0.5 text-[14px] text-blue-600"
+          >
+            <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-600">
+              +
+            </div>
+            <span className={"font-medium text-blue-600"}>산란 정보 추가</span>
+          </button>
+          {sortedLayingsByDate && sortedLayingsByDate.length > 0 && (
+            <div className="flex gap-1">
+              {sortedLayingsByDate.map((layingData) => (
+                <button
+                  key={layingData.layingId}
+                  type="button"
+                  onClick={() => scrollToLaying(layingData.layingId)}
+                  className={cn(
+                    "shrink-0 rounded-lg px-2 py-0.5 text-[14px] font-medium transition-colors",
+                    selectedLayingId === layingData.layingId
+                      ? "bg-blue-500 font-[700] text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                  )}
+                >
+                  {layingData.layings[0]?.clutch}차
+                  {/* {DateTime.fromFormat(layingData.layingDate, "yyyy-MM-dd").toFormat("M/d")} */}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {sortedLayingsByDate &&
-        sortedLayingsByDate.length > 0 &&
-        sortedLayingsByDate.map((layingData) => (
-          <div key={layingData.layingId} className="mb-7">
-            <div className="sticky top-0 z-10 flex text-[15px] font-semibold text-gray-700">
-              <span className="mr-1 text-blue-500">{layingData.layings[0]?.clutch}차</span>
-
-              <CalendarSelect
-                type="edit"
-                triggerTextClassName="text-gray-600 text-sm"
-                disabledDates={layingDates}
-                triggerText={DateTime.fromFormat(layingData.layingDate, "yyyy-MM-dd").toFormat(
-                  "M월 d일",
-                )}
-                confirmButtonText="산란 날짜 수정"
-                onConfirm={(newLayingDate) =>
-                  handleUpdateLayingDate(layingData.layingId, newLayingDate)
-                }
-                disabled={getDisabledDates(layingData.layingDate)}
-              />
-            </div>
-            <LayingItem
+      <ScrollArea className="relative flex h-[calc(100vh-400px)] w-full flex-col">
+        {sortedLayingsByDate &&
+          sortedLayingsByDate.length > 0 &&
+          sortedLayingsByDate.map((layingData) => (
+            <div
               key={layingData.layingId}
-              layingData={layingData}
-              father={father}
-              mother={mother}
-            />
-          </div>
-        ))}
-    </ScrollArea>
+              ref={(el) => {
+                if (el) {
+                  layingRefs.current.set(layingData.layingId, el);
+                } else {
+                  layingRefs.current.delete(layingData.layingId);
+                }
+              }}
+              className="mb-7"
+            >
+              <div className="sticky top-0 z-10 flex text-[15px] font-semibold text-gray-700">
+                <span className="mr-1 text-blue-500">{layingData.layings[0]?.clutch}차</span>
+
+                <CalendarSelect
+                  type="edit"
+                  triggerTextClassName="text-gray-600 text-sm"
+                  disabledDates={layingDates}
+                  triggerText={DateTime.fromFormat(layingData.layingDate, "yyyy-MM-dd").toFormat(
+                    "M월 d일",
+                  )}
+                  confirmButtonText="산란 날짜 수정"
+                  onConfirm={(newLayingDate) =>
+                    handleUpdateLayingDate(layingData.layingId, newLayingDate)
+                  }
+                  disabled={getDisabledDates(layingData.layingDate)}
+                />
+              </div>
+              <div
+                className={cn(
+                  selectedLayingId === layingData.layingId &&
+                    "rounded-xl border-[1.5px] border-blue-200 shadow-md",
+                )}
+              >
+                <LayingItem
+                  key={layingData.layingId}
+                  layingData={layingData}
+                  father={father}
+                  mother={mother}
+                />
+              </div>
+            </div>
+          ))}
+        <div className="h-30" />
+      </ScrollArea>
+    </div>
   );
 };
 

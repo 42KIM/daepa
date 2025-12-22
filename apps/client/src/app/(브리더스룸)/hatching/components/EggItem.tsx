@@ -36,7 +36,7 @@ const EggItem = ({
     <div
       key={pet.petId}
       className={cn(
-        "flex w-full items-center justify-between p-1 pr-2 text-[14px] hover:rounded-xl hover:border-[1.5px] hover:border-blue-200 hover:shadow-md",
+        "flex w-full items-center justify-between p-1 pl-0 text-[14px] hover:rounded-xl hover:bg-gray-100",
         isHatched && "cursor-pointer",
       )}
       onClick={() => {
