@@ -175,7 +175,7 @@ const MatingItem = ({
 
   return (
     <div className="relative flex h-[calc(100vh-300px)] w-full flex-col">
-      <div className="mb-2 flex flex-col justify-center gap-1">
+      <div className="flex flex-col justify-center gap-1">
         <div className="flex items-center gap-2">
           <div className="font-semibold text-gray-700 dark:text-gray-200">
             {mating.matingDate
@@ -243,7 +243,7 @@ const MatingItem = ({
               }}
               className="mb-7"
             >
-              <div className="sticky top-0 z-10 flex text-[15px] font-semibold text-gray-700">
+              <div className="sticky top-0 mb-1 flex bg-white text-[15px] font-semibold text-gray-700">
                 <span className="mr-1 text-blue-500">{layingData.layings[0]?.clutch}차</span>
 
                 <CalendarSelect
