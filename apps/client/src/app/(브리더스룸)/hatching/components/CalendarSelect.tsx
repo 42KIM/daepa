@@ -33,22 +33,30 @@ const CalendarSelect = ({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <button
+        <div
+          role="button"
+          tabIndex={0}
           data-field-name="matingDate"
           className={cn(
-            "flex w-fit items-center justify-center gap-1 rounded-lg px-1 text-[14px] font-semibold text-blue-500 hover:bg-blue-50",
+            "flex w-fit items-center justify-center gap-1 rounded-lg px-1 text-[14px] font-semibold text-blue-500 hover:bg-blue-50 cursor-pointer",
           )}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.currentTarget.click();
+            }
+          }}
         >
           {type === "create" && (
             <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[12px] text-blue-600">
               <Plus className="h-2 w-2" />
             </div>
           )}
-          <div className={cn("flex cursor-pointer items-center gap-1", triggerTextClassName)}>
+          <div className={cn("flex items-center gap-1", triggerTextClassName)}>
             {triggerText}
           </div>
           {type === "edit" && <Pencil className="h-3 w-3 text-blue-600" />}
-        </button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-fit p-0" align="start">
         <Calendar
