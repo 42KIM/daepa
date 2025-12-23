@@ -19,7 +19,7 @@ const ParentCard = ({ parent }: { parent?: PetSummaryLayingDto }) => {
   return (
     <div className="flex h-full flex-1 flex-col items-center gap-2">
       <div className="relative w-full">
-        <PetThumbnail imageUrl="" alt={parent.name} bgColor="bg-gray-200/90" />
+        <PetThumbnail imageUrl="" alt={parent.name} />
         {parent.isDeleted && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/30">
             <Ban className="h-5 w-5 text-red-600" />
