@@ -64,7 +64,7 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
   // 가장 최근 메이팅 정보 (1차)
   const latestMating = pair.matingsByDate?.[0];
   const latestMatingDate = latestMating?.matingDate;
-  const latestMatingIndex = 1;
+  const latestMatingIndex = pair.matingsByDate?.length ?? 1;
 
   // 가장 최근 메이팅(시즌) 내에서 가장 최근 산란 정보 찾기
   const latestLaying = useMemo(() => {
