@@ -21,7 +21,7 @@ const SignInPage = () => {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-b from-blue-200 to-white dark:bg-black">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-b from-[#e5cf94] to-white dark:bg-black">
       <div className="w-[90vw] max-w-md">
         {/* 메인 카드 */}
         <div className="mb-5 text-center text-3xl font-bold text-gray-800/90 dark:text-white">
