@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import AppleLoginButton from "./AppleLoginButton";
 import { providerIconMap } from "../constants";
@@ -22,23 +21,19 @@ const SignInPage = () => {
   }, [router]);
 
   return (
-    <div className="m-2 flex min-h-screen w-full items-center justify-center dark:bg-black">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-b from-blue-200 to-white dark:bg-black">
+      <div className="w-[90vw] max-w-md">
         {/* 메인 카드 */}
-        <Card className="rounded-3xl border-gray-100 bg-gray-50 shadow-xl backdrop-blur-sm dark:border dark:border-gray-700 dark:bg-gray-800/80">
-          <div className="pb-10 text-center">
-            <CardTitle className="pb-2 text-2xl font-bold text-gray-900 dark:text-white">
-              브리더스 룸
-            </CardTitle>
-            <CardDescription className="text-gray-900 dark:text-gray-300">
-              반려동물 브리더를 위한 전문 플랫폼입니다.
-            </CardDescription>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              서비스를 이용하기 위해 로그인해주세요.
-            </div>
+        <div className="mb-5 text-center text-3xl font-bold text-gray-800/90 dark:text-white">
+          브리더스룸 로그인
+        </div>
+
+        <div className="rounded-3xl bg-gradient-to-b from-white to-gray-50 p-5 backdrop-blur-sm dark:border dark:border-gray-700 dark:bg-gray-800/80">
+          <div className="flex h-full w-full items-center justify-center py-5">
+            <Image src="/assets/lizard.png" alt="lizard" width={200} height={200} />
           </div>
 
-          <CardContent>
+          <div>
             <AppleLoginButton />
             <a
               className="mb-2 flex h-[46px] w-full items-center justify-center gap-3 rounded-[12px] bg-[#F2F2F2]"
@@ -65,14 +60,12 @@ const SignInPage = () => {
               />
               <span className="font-semibold dark:text-black">카카오로 시작하기</span>
             </a>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* 추가 안내 */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            문제가 있으시면 고객센터로 문의해주세요
-          </p>
+        <div className="mt-6 text-center text-sm font-[500] text-gray-500 dark:text-gray-400">
+          문제가 있으시면 고객센터로 문의해주세요
         </div>
       </div>
     </div>
