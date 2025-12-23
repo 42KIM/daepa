@@ -6,10 +6,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { UpdatePetDtoEggStatus } from "@repo/api-client";
 
 interface SelectProps {
   value: string;
-  handleValueChange: (value: any) => void;
+  handleValueChange: (value: UpdatePetDtoEggStatus) => void;
   selectItems: Record<string, string>;
   triggerClassName?: string;
 }
