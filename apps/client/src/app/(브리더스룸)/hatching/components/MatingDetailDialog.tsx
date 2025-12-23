@@ -126,7 +126,7 @@ const MatingDetailDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className={cn("p-15 flex w-full flex-col rounded-3xl sm:max-w-[860px]", isMobile && "p-6")}
+        className={cn("p-13 flex w-full flex-col rounded-3xl sm:max-w-[860px]", isMobile && "p-4")}
       >
         <DialogTitle
           className={cn("flex items-center gap-1 text-[28px]", isMobile && "pt-3 text-[18px]")}
@@ -178,8 +178,11 @@ const MatingDetailDialog = ({
                 }}
                 className="flex flex-1 flex-col gap-4"
               >
-                <div ref={scrollContainerRef} className="cursor-grab select-none overflow-x-auto">
-                  <TabsList className="w-full">
+                <div
+                  ref={scrollContainerRef}
+                  className="cursor-grab select-none overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                >
+                  <TabsList className="inline-flex w-fit overflow-visible">
                     {isEditable && (
                       <TabsTrigger key="mating-add" value="add">
                         <CalendarSelect

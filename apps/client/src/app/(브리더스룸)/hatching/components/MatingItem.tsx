@@ -203,7 +203,7 @@ const MatingItem = ({
             <div className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-600">
               +
             </div>
-            <span className={"font-medium text-blue-600"}>산란 정보 추가</span>
+            <span className={"font-medium text-blue-600"}>산란 추가</span>
           </button>
           {sortedLayingsByDate && sortedLayingsByDate.length > 0 && (
             <div className="flex gap-1">
@@ -228,7 +228,7 @@ const MatingItem = ({
         </div>
       </div>
 
-      <ScrollArea className="relative flex h-[calc(100vh-400px)] w-full flex-col">
+      <ScrollArea className="relative flex h-[calc(100vh-350px)] w-full flex-col px-2">
         {sortedLayingsByDate &&
           sortedLayingsByDate.length > 0 &&
           sortedLayingsByDate.map((layingData) => (
