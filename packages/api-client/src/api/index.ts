@@ -31,6 +31,7 @@ import type {
   UpdateAdoptionDto,
   UpdateLayingDto,
   UpdateMatingDto,
+  UpdatePairDto,
   UpdateParentRequestDto,
   UpdatePetDto,
   UpdateUserNotificationDto,
@@ -459,6 +460,15 @@ export const pairControllerGetPairDetail = (pairId: string) => {
   return useCustomInstance<PairDetailDto>({ url: `/api/v1/pairs/${pairId}`, method: "GET" });
 };
 
+export const pairControllerUpdatePair = (pairId: number, updatePairDto: UpdatePairDto) => {
+  return useCustomInstance<CommonResponseDto>({
+    url: `/api/v1/pairs/${pairId}`,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    data: updatePairDto,
+  });
+};
+
 /**
  * 펫 ID를 기반으로 해당 펫의 대표 이미지를 조회합니다. 이미지가 없는 경우 null을 반환합니다.
  * @summary 펫 대표이미지(썸네일) 조회
@@ -631,6 +641,9 @@ export type PairControllerGetPairListResult = NonNullable<
 >;
 export type PairControllerGetPairDetailResult = NonNullable<
   Awaited<ReturnType<typeof pairControllerGetPairDetail>>
+>;
+export type PairControllerUpdatePairResult = NonNullable<
+  Awaited<ReturnType<typeof pairControllerUpdatePair>>
 >;
 export type PetImageControllerFindThumbnailResult = NonNullable<
   Awaited<ReturnType<typeof petImageControllerFindThumbnail>>
@@ -3555,6 +3568,8 @@ export const getBrMatingControllerFindAllResponseMock = (
         undefined,
       ]),
     })),
+    desc: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+    pairId: faker.number.int({ min: undefined, max: undefined }),
   })),
   meta: {
     page: faker.number.int({ min: undefined, max: undefined }),
@@ -3796,6 +3811,14 @@ export const getPairControllerGetPairDetailResponseMock = (
     })),
     undefined,
   ]),
+  ...overrideResponse,
+});
+
+export const getPairControllerUpdatePairResponseMock = (
+  overrideResponse: Partial<CommonResponseDto> = {},
+): CommonResponseDto => ({
+  success: faker.datatype.boolean(),
+  message: faker.string.alpha(20),
   ...overrideResponse,
 });
 
@@ -4886,6 +4909,29 @@ export const getPairControllerGetPairDetailMockHandler = (
   });
 };
 
+export const getPairControllerUpdatePairMockHandler = (
+  overrideResponse?:
+    | CommonResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<CommonResponseDto> | CommonResponseDto),
+) => {
+  return http.patch("*/api/v1/pairs/:pairId", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPairControllerUpdatePairResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getPetImageControllerFindThumbnailMockHandler = (
   overrideResponse?:
     | PetImageItem
@@ -5002,6 +5048,7 @@ export const getProjectDaepaAPIMock = () => [
   getLayingControllerDeleteMockHandler(),
   getPairControllerGetPairListMockHandler(),
   getPairControllerGetPairDetailMockHandler(),
+  getPairControllerUpdatePairMockHandler(),
   getPetImageControllerFindThumbnailMockHandler(),
   getPetImageControllerFindOneMockHandler(),
   getPetImageControllerSavePetImagesMockHandler(),

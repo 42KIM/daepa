@@ -26,6 +26,9 @@ import Loading from "@/components/common/Loading";
 import { cn } from "@/lib/utils";
 import { RefreshCcw } from "lucide-react";
 import Link from "next/link";
+import SearchInput from "../../components/SearchInput";
+import { useIsMobile } from "@/hooks/useMobile";
+import { useSearchKeywordStore } from "../../store/searchKeyword";
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -52,6 +55,9 @@ export const DataTable = ({
 }: DataTableProps<PetDto>) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { sorting, rowSelection, setSorting, setRowSelection } = useTableStore();
+  const { setSearchKeyword } = useSearchKeywordStore();
+
+  const isMobile = useIsMobile();
 
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -91,105 +97,111 @@ export const DataTable = ({
   }, []);
 
   return (
-    <div className="relative w-full">
-      <div className="w-full">
+    <div className="w-full">
+      <div className="px-2">
         {hasFilter && <Filters />}
+        {isMobile && (
+          <SearchInput
+            placeholder="펫 이름으로 검색하세요"
+            onKeyDown={(value) => setSearchKeyword(value)}
+          />
+        )}
+      </div>
 
-        <div className="mb-2 flex justify-between">
+      <div className="mb-2 flex justify-between">
+        <button
+          type="button"
+          aria-label="검색 결과 새로고침"
+          aria-busy={isRefreshing}
+          disabled={isRefreshing}
+          onClick={async () => {
+            if (isRefreshing) return;
+            setIsRefreshing(true);
+            try {
+              await refetch();
+            } finally {
+              timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
+            }
+          }}
+          className="flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+        >
+          검색된 펫・{totalCount}마리
+          <RefreshCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+        </button>
+
+        <Link href="/pet/deleted">
           <button
             type="button"
-            aria-label="검색 결과 새로고침"
-            aria-busy={isRefreshing}
-            disabled={isRefreshing}
-            onClick={async () => {
-              if (isRefreshing) return;
-              setIsRefreshing(true);
-              try {
-                await refetch();
-              } finally {
-                timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
-              }
-            }}
-            className="flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+            className="h-[32px] cursor-pointer rounded-lg px-3 text-sm text-red-600 underline hover:bg-red-100"
           >
-            검색된 펫・{totalCount}마리
-            <RefreshCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+            삭제된 펫 보기
           </button>
+        </Link>
+      </div>
 
-          <Link href="/pet/deleted">
-            <button
-              type="button"
-              className="h-[32px] cursor-pointer rounded-lg px-3 text-sm text-red-600 underline hover:bg-red-100"
-            >
-              삭제된 펫 보기
-            </button>
-          </Link>
-        </div>
-
-        <div className="rounded-md">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead className="font-[400] text-gray-600" key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                <>
-                  {table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      className={cn(
-                        "cursor-pointer",
-                        "isPublic" in row.original && row.original.isPublic
-                          ? "bg-blue-100 hover:bg-blue-200 dark:bg-gray-800 dark:hover:bg-blue-800/20"
-                          : "opacity-80 hover:opacity-100 dark:opacity-40 dark:hover:opacity-100",
-                      )}
-                      onClick={(e) => handleRowClick({ e, id: row.original.petId })}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                  {/* 무한 스크롤 로더 */}
-                  {hasMore && (
-                    <TableRow ref={loaderRefAction}>
-                      <TableCell colSpan={columns.length} className="h-20 text-center">
-                        {isFetchingMore ? (
-                          <div className="flex items-center justify-center">
-                            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
-                          </div>
-                        ) : (
-                          <Loading />
-                        )}
+      <div className="rounded-md">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead className="font-[400] text-gray-600" key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              <>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={cn(
+                      "cursor-pointer",
+                      "isPublic" in row.original && row.original.isPublic
+                        ? "bg-blue-100 hover:bg-blue-200 dark:bg-gray-800 dark:hover:bg-blue-800/20"
+                        : "opacity-80 hover:opacity-100 dark:opacity-40 dark:hover:opacity-100",
+                    )}
+                    onClick={(e) => handleRowClick({ e, id: row.original.petId })}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
-                    </TableRow>
-                  )}
-                </>
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    개체가 없습니다.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                    ))}
+                  </TableRow>
+                ))}
+                {/* 무한 스크롤 로더 */}
+                {hasMore && (
+                  <TableRow ref={loaderRefAction}>
+                    <TableCell colSpan={columns.length} className="h-20 text-center">
+                      {isFetchingMore ? (
+                        <div className="flex items-center justify-center">
+                          <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
+                        </div>
+                      ) : (
+                        <Loading />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  개체가 없습니다.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

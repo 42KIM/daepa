@@ -6,7 +6,7 @@ import {
   GROWTH_KOREAN_INFO,
   GENDER_KOREAN_INFO,
 } from "../../constants";
-import SelectFilter from "../../components/SingleSelect";
+import SelectFilter from "../../components/selector/SingleSelect";
 import AdoptionMultiSelectFilter from "./AdoptionMultiSelectFilter";
 import { useAdoptionFilterStore } from "../../store/adoptionFilter";
 import AdoptionPriceRangeFilter from "./AdoptionPriceRangeFilter";
@@ -41,7 +41,7 @@ export function AdoptionFilters() {
     ));
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-2">
+    <div className="mb-4 flex flex-wrap items-center gap-2 px-2">
       <SelectFilter
         showTitle
         type="species"

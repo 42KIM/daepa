@@ -1,46 +1,39 @@
-import NameDuplicateCheckInput from "@/app/(브리더스룸)/components/NameDuplicateCheckInput";
 import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  PetDtoSpecies,
   petControllerFindPetByPetId,
   petControllerUpdate,
   UpdatePetDto,
   PetDtoType,
+  PetDto,
 } from "@repo/api-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  FOOD_KOREAN_INFO,
-  MORPH_LIST_BY_SPECIES,
-  TRAIT_LIST_BY_SPECIES,
-} from "@/app/(브리더스룸)/constants";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, getChangedFields } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNameStore } from "@/app/(브리더스룸)/store/name";
 import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
-import FormMultiSelect from "@/app/(브리더스룸)/components/FormMultiSelect";
-import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarInput";
-import { format } from "date-fns";
-import NumberField from "@/app/(브리더스룸)/components/Form/NumberField";
-import FormItem from "./FormItem";
 import Loading from "@/components/common/Loading";
-import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
-import { PetDto } from "@repo/api-client";
-import { getChangedFields } from "@/lib/utils";
 import { AxiosError } from "axios";
 import { useIsMyPet } from "@/hooks/useIsMyPet";
 import { useBreedingInfoStore } from "../../store/breedingInfo";
 
+import { PublicToggle } from "./펫정보/PublicToggle";
+import { PetBasicInfo } from "./펫정보/PetBasicInfo";
+import { PetDetailInfo } from "./펫정보/PetDetailInfo";
+import { EggInfo } from "./펫정보/EggInfo";
+
 const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) => {
   const { formData, errors, setFormData } = usePetStore();
   const { duplicateCheckStatus } = useNameStore();
+  const { setBreedingInfo } = useBreedingInfoStore();
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { setBreedingInfo } = useBreedingInfoStore();
   const isViewingMyPet = useIsMyPet(ownerId);
 
+  // 펫 데이터 조회
   const { data: pet, refetch } = useQuery({
     queryKey: [petControllerFindPetByPetId.name, petId],
     queryFn: () => petControllerFindPetByPetId(petId),
@@ -49,11 +42,12 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
 
   const isEgg = useMemo(() => pet?.type === PetDtoType.EGG, [pet?.type]);
 
+  // 펫 업데이트 mutation
   const { mutateAsync: mutateUpdatePet } = useMutation({
     mutationFn: (updateData: UpdatePetDto) => petControllerUpdate(pet?.petId ?? "", updateData),
   });
 
-  // 변경된 필드 추출을 위한 설정
+  // 변경된 필드 추출
   const getChangedFieldsForPet = useCallback(
     (original: PetDto, current: typeof formData): UpdatePetDto => {
       return getChangedFields(
@@ -73,20 +67,21 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
             "eggStatus",
           ],
           arrayFields: ["morphs", "traits", "foods"],
-          convertUndefinedToNull: true, // undefined를 null로 변환하여 서버에서 업데이트되도록 함
+          convertUndefinedToNull: true,
         },
       );
     },
     [],
   );
 
+  // 저장 핸들러
   const handleSave = useCallback(async () => {
     if (!pet) return;
 
     try {
       setIsProcessing(true);
-      if (!pet.petId) return;
 
+      // 이름 중복 체크
       if (pet.name !== formData.name && duplicateCheckStatus !== DUPLICATE_CHECK_STATUS.AVAILABLE) {
         toast.error("이름 중복확인을 완료해주세요.");
         return;
@@ -95,7 +90,7 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
       // 변경된 필드만 추출
       const changedFields = getChangedFieldsForPet(pet, formData);
 
-      // 변경사항이 없으면 API 호출하지 않음
+      // 변경사항이 없으면 종료
       if (Object.keys(changedFields).length === 0) {
         toast.info("변경된 사항이 없습니다.");
         setIsEditMode(false);
@@ -118,264 +113,84 @@ const BreedingInfo = ({ petId, ownerId }: { petId: string; ownerId: string }) =>
     }
   }, [formData, mutateUpdatePet, pet, duplicateCheckStatus, refetch, getChangedFieldsForPet]);
 
-  useEffect(() => {
-    if (pet && !isEditMode) {
+  // 취소 핸들러
+  const handleCancel = useCallback(() => {
+    if (pet) {
       setFormData(pet);
     }
-  }, [pet, setFormData, isEditMode]);
+    setIsEditMode(false);
+  }, [pet, setFormData]);
 
+  // 필드 업데이트 헬퍼
+  const updateField = useCallback(
+    (field: string, value: any) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [setFormData],
+  );
+
+  // 펫 데이터 및 브리딩 정보 초기화 (통합된 useEffect)
   useEffect(() => {
-    if (pet?.petId) {
-      setBreedingInfo({
-        petId: pet.petId,
-        isPublic: pet?.isPublic,
-      });
+    if (!pet) return;
+
+    // 폼 데이터 초기화 (편집 모드가 아닐 때만)
+    if (!isEditMode) {
+      setFormData(pet);
     }
-  }, [pet?.petId, pet?.isPublic, setBreedingInfo]);
+
+    // 브리딩 정보 업데이트
+    setBreedingInfo({
+      petId: pet.petId,
+      isPublic: pet?.isPublic,
+    });
+  }, [pet, setFormData, setBreedingInfo, isEditMode]);
 
   if (!pet || Object.keys(formData).length === 0) return null;
 
   return (
-    <div className="shadow-xs flex h-fit flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">펫정보</div>
 
-      <FormItem
-        label="공개 여부"
-        content={
-          <div className="flex h-[32px] items-center gap-1 rounded-lg bg-gray-100 p-1">
-            <button
-              onClick={() =>
-                setFormData((prev) => ({
-                  ...prev,
-                  isPublic: true,
-                }))
-              }
-              className={cn(
-                "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                formData.isPublic ? "bg-white shadow-sm" : "text-gray-600",
-                !isEditMode && "cursor-not-allowed",
-              )}
-              disabled={!isEditMode}
-            >
-              공개
-            </button>
-            <button
-              onClick={() =>
-                setFormData((prev) => ({
-                  ...prev,
-                  isPublic: false,
-                }))
-              }
-              className={cn(
-                "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                !formData.isPublic ? "bg-white shadow-sm" : "text-gray-600",
-                !isEditMode && "cursor-not-allowed",
-              )}
-              disabled={!isEditMode}
-            >
-              비공개
-            </button>
-          </div>
-        }
-      />
-      <FormItem
-        label="개체 이름"
-        content={
-          <NameDuplicateCheckInput
-            errorMessage={errors.name || ""}
-            disabled={!isEditMode}
-            value={String(formData.name || "")}
-            placeholder="미정"
-            onChange={(e) => {
-              setFormData({ ...formData, name: e.target.value });
-            }}
-          />
-        }
+      {/* 공개 여부 */}
+      <PublicToggle
+        isPublic={!!formData.isPublic}
+        isEditMode={isEditMode}
+        onChange={(isPublic) => updateField("isPublic", isPublic)}
       />
 
+      {/* 기본 정보 */}
+      <PetBasicInfo
+        formData={formData}
+        errors={errors}
+        isEditMode={isEditMode}
+        isEgg={isEgg}
+        onNameChange={(name) => updateField("name", name)}
+        onHatchingDateChange={(date) => updateField("hatchingDate", date)}
+      />
+
+      {/* 상세 정보 (일반 펫인 경우) */}
       {!isEgg && (
-        <FormItem
-          label="생년월일"
-          content={
-            <CalendarInput
-              editable={isEditMode}
-              placeholder="-"
-              value={formData.hatchingDate}
-              onSelect={(date) => {
-                if (!date) return;
-                setFormData({ ...formData, hatchingDate: format(date, "yyyy-MM-dd") });
-              }}
-            />
-          }
-        />
-      )}
-      <FormItem
-        label="종"
-        content={
-          <SingleSelect
-            disabled
-            type="species"
-            initialItem={formData.species}
-            onSelect={(item) => {
-              // 종 수정 시 모프와 형질 초기화
-              setFormData({
-                ...formData,
-                species: item,
-                morphs: undefined,
-                traits: undefined,
-              });
-            }}
-          />
-        }
-      />
-
-      {!isEgg && (
-        <>
-          <FormItem
-            label="성별"
-            content={
-              <SingleSelect
-                disabled={!isEditMode}
-                type="sex"
-                initialItem={formData.sex}
-                onSelect={(item) => {
-                  setFormData({ ...formData, sex: item });
-                }}
-              />
-            }
-          />
-          <FormItem
-            label="크기"
-            content={
-              <SingleSelect
-                disabled={!isEditMode}
-                type="growth"
-                initialItem={formData.growth}
-                onSelect={(item) => {
-                  setFormData({ ...formData, growth: item });
-                }}
-              />
-            }
-          />
-
-          <FormItem
-            label="몸무게"
-            content={
-              <NumberField
-                disabled={!isEditMode}
-                field={{ name: "weight", type: "number", unit: "g" }}
-                value={String(formData.weight ?? "")}
-                setValue={(value) => {
-                  setFormData({ ...formData, weight: value.value });
-                }}
-                placeholder="몸무게"
-                inputClassName={cn(
-                  "h-[32px] w-full rounded-md border border-gray-200 p-2 placeholder:font-[500]",
-                  !isEditMode && "border-none",
-                )}
-              />
-            }
-          />
-          <FormItem
-            label="모프"
-            content={
-              <FormMultiSelect
-                disabled={!isEditMode}
-                title="모프"
-                displayMap={MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies]}
-                initialItems={formData.morphs}
-                onSelect={(items) => {
-                  setFormData({ ...formData, morphs: items });
-                }}
-              />
-            }
-          />
-
-          <FormItem
-            label="형질"
-            content={
-              <FormMultiSelect
-                disabled={!isEditMode}
-                title="형질"
-                displayMap={TRAIT_LIST_BY_SPECIES[formData.species as PetDtoSpecies]}
-                initialItems={formData.traits}
-                onSelect={(items) => {
-                  setFormData({ ...formData, traits: items });
-                }}
-              />
-            }
-          />
-
-          <FormItem
-            label="먹이"
-            content={
-              <FormMultiSelect
-                disabled={!isEditMode}
-                title="먹이"
-                displayMap={FOOD_KOREAN_INFO}
-                initialItems={formData.foods}
-                onSelect={(items) => {
-                  setFormData({ ...formData, foods: items });
-                }}
-              />
-            }
-          />
-        </>
+        <PetDetailInfo formData={formData} isEditMode={isEditMode} onFieldChange={updateField} />
       )}
 
-      {isEgg && (
-        <>
-          <FormItem
-            label="알 상태"
-            content={
-              <SingleSelect
-                disabled={!isEditMode}
-                type="eggStatus"
-                initialItem={formData.eggStatus}
-                onSelect={(item) => {
-                  setFormData({ ...formData, eggStatus: item });
-                }}
-              />
-            }
-          />
+      {/* 알 정보 (알인 경우) */}
+      {isEgg && <EggInfo formData={formData} isEditMode={isEditMode} onFieldChange={updateField} />}
 
-          <FormItem
-            label="해칭 온도"
-            content={
-              <NumberField
-                disabled={!isEditMode}
-                field={{ name: "temperature", type: "number", unit: "°C" }}
-                value={String(formData.temperature ?? "")}
-                setValue={(value) => {
-                  setFormData({ ...formData, temperature: value.value });
-                }}
-                inputClassName={cn(
-                  "h-[32px] w-full rounded-md border border-gray-200 p-2 placeholder:font-[500]",
-                  !isEditMode && "border-none",
-                )}
-              />
-            }
-          />
-        </>
-      )}
-
+      {/* 액션 버튼 */}
       {isViewingMyPet && (
-        <div className="mt-2 flex w-full flex-1 gap-2">
+        <div className="mt-2 flex w-full flex-1 items-end gap-2">
           {isEditMode && (
             <Button
               disabled={isProcessing}
               className="h-10 flex-1 cursor-pointer rounded-lg font-bold"
-              onClick={() => {
-                setFormData(pet);
-                setIsEditMode(false);
-              }}
+              onClick={handleCancel}
             >
               취소
             </Button>
           )}
           <Button
             className={cn(
-              "flex-2 h-10 cursor-pointer rounded-lg font-bold",
+              "h-10 flex-[2] cursor-pointer rounded-lg font-bold",
               isEditMode && "bg-red-600 hover:bg-red-600/90",
               isProcessing && "bg-gray-300",
             )}

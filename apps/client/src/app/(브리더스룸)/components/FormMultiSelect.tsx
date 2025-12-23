@@ -8,7 +8,7 @@ interface FormMultiSelectProps {
   title: string;
   displayMap: Record<string, string>;
   disabled?: boolean;
-  initialItems: string[];
+  initialItems?: string[];
   onSelect: (items?: string[]) => void;
 }
 

@@ -28,6 +28,8 @@ interface UseRegisterFormProps {
   setStep: (step: number) => void;
   setFormData: (data: BaseFormData | ((prev: BaseFormData) => BaseFormData)) => void;
   handleSubmit: (data: BaseFormData) => void;
+  nameFieldRef?: React.RefObject<HTMLDivElement | null>;
+  setShouldShake?: (value: boolean) => void;
 }
 
 export const useRegisterForm = ({
@@ -38,6 +40,8 @@ export const useRegisterForm = ({
   setStep,
   setFormData,
   handleSubmit,
+  nameFieldRef,
+  setShouldShake,
 }: UseRegisterFormProps) => {
   const router = useRouter();
   const { funnel } = useParams();
@@ -69,6 +73,19 @@ export const useRegisterForm = ({
         // 펫 생성 전 닉네임 중복 검증
         if (duplicateCheckStatus !== DUPLICATE_CHECK_STATUS.AVAILABLE) {
           toast.error("닉네임 중복확인을 완료해주세요.");
+
+          // 닉네임 영역으로 스크롤
+          if (nameFieldRef?.current) {
+            nameFieldRef.current.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+          // 이름 박스 흔들림 트리거
+          if (setShouldShake) {
+            setShouldShake(true);
+            window.setTimeout(() => setShouldShake(false), 1200);
+          }
           return;
         }
         handleSubmit(newFormData);
@@ -94,6 +111,8 @@ export const useRegisterForm = ({
       setErrors,
       formStep,
       duplicateCheckStatus,
+      setShouldShake,
+      nameFieldRef,
     ],
   );
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PET_SEX, PET_SPECIES, PET_TYPE } from 'src/pet/pet.constants';
 import { DataSource, Repository } from 'typeorm';
 import { PairEntity } from './pair.entity';
@@ -6,7 +6,7 @@ import { PetEntity } from 'src/pet/pet.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { compact, isNil, omitBy, uniq } from 'es-toolkit';
 import { plainToInstance } from 'class-transformer';
-import { PairDetailDto, PairDto } from './pair.dto';
+import { PairDetailDto, PairDto, UpdatePairDto } from './pair.dto';
 import { MatingEntity } from 'src/mating/mating.entity';
 import { LayingEntity } from 'src/laying/laying.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -263,6 +263,32 @@ export class PairService {
       ...pairInfos,
       matings: matingsWithPets,
     };
+  }
+
+  async updatePair(
+    userId: string,
+    pairId: number,
+    updatePairDto: UpdatePairDto,
+  ) {
+    // 페어 존재 여부 및 소유권 확인
+    const pair = await this.pairRepository.findOne({
+      where: {
+        id: pairId,
+        ownerId: userId,
+      },
+    });
+
+    if (!pair) {
+      throw new BadRequestException('페어 정보를 찾을 수 없습니다.');
+    }
+
+    // desc 업데이트
+    await this.pairRepository.update(
+      { id: pairId },
+      {
+        desc: updatePairDto.desc,
+      },
+    );
   }
 
   private transformRawDataToNested(

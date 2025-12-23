@@ -8,10 +8,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { generateQRCode } from "@/lib/utils";
+import { cn, generateQRCode } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-const QRCode = ({ petId }: { petId: string }) => {
+const QRCode = ({ petId, isScrolled }: { petId: string; isScrolled: boolean }) => {
   const [qrOpen, setQrOpen] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
 
@@ -27,8 +27,8 @@ const QRCode = ({ petId }: { petId: string }) => {
     <div className="ml-auto">
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
         <DialogTrigger asChild>
-          <Button size="sm" variant="outline">
-            QR 코드
+          <Button size="sm" variant="outline" className={cn(isScrolled ? "text-xs" : "text-sm")}>
+            QR
           </Button>
         </DialogTrigger>
 

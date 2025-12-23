@@ -6,6 +6,9 @@ import { Send } from "lucide-react";
 import { useState } from "react";
 import PetThumbnail from "../../PetThumbnail";
 import { useQuery } from "@tanstack/react-query";
+import FloatingButton from "../../FloatingButton";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface LinkStepProps {
   selectedPet: PetParentDtoWithMessage;
@@ -16,6 +19,7 @@ interface LinkStepProps {
 const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
   const [message, setMessage] = useState<string | null>(null);
   const { user } = useUserStore();
+  const isMobile = useIsMobile();
 
   const { data: thumbnail } = useQuery({
     queryKey: [petImageControllerFindThumbnail.name, selectedPet.petId],
@@ -31,29 +35,39 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
   };
 
   return (
-    <div className="px-4">
+    <div className="pb-20">
       {selectedPet && (
         <div className="space-y-6">
           {/* 상단 정보 영역 */}
-          <div className="flex gap-6">
-            <div className="relative aspect-square w-72 overflow-hidden rounded-xl">
+          <div className={cn("gap-6", !isMobile && "flex")}>
+            <div
+              className={cn(
+                "relative mb-2 aspect-square overflow-hidden rounded-xl",
+                !isMobile && "w-60",
+              )}
+            >
               <PetThumbnail imageUrl={thumbnail?.url} alt={selectedPet.name} />
             </div>
 
             <div className="flex-1">
-              <div className="mb-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <h3 className="text-2xl font-bold">{selectedPet.name}</h3>
+              <div className="mb-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-bold">{selectedPet.name}</span>
                   <Badge variant="outline" className="bg-blue-50 text-black">
                     {selectedPet.sex?.toString() === PetDtoSex.MALE ? "수컷" : "암컷"}
                   </Badge>
                 </div>
-                <p className="text-gray-600">소유자: {selectedPet.owner?.name}</p>
+                <p className="text-[14px] font-[500] text-gray-800">
+                  소유자:{" "}
+                  <span className="decoration-1px font-[700] text-blue-500 underline decoration-gray-400">
+                    {selectedPet.owner?.name}
+                  </span>
+                </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-1">
                 <div>
-                  <h4 className="mb-1.5 text-sm font-medium text-gray-500">모프</h4>
+                  <h4 className="mb-1.5 text-[12px] font-medium text-gray-500">모프</h4>
                   <div className="flex flex-wrap gap-1">
                     {selectedPet.morphs?.map((morph) => (
                       <Badge key={morph} className="bg-blue-800 text-white">
@@ -64,7 +78,7 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
                 </div>
 
                 <div>
-                  <h4 className="mb-1.5 text-sm font-medium text-gray-500">특성</h4>
+                  <h4 className="mb-1.5 text-[12px] font-medium text-gray-500">특성</h4>
                   <div className="flex flex-wrap gap-1">
                     {selectedPet.traits?.map((trait) => (
                       <Badge
@@ -88,53 +102,48 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
             <div className="space-y-2 rounded-xl">
               <div>
                 <div className="flex items-center gap-1">
-                  <h4 className="font-medium">부모 개체 연결 요청</h4>
+                  <h4 className="text-[14px] font-[600]">부모 개체 연결 요청</h4>
                   <Send className="h-3 w-3" />
                 </div>
                 <p className="text-xs text-gray-500">
-                  {selectedPet.owner?.name}님에게 부모 개체 연결을 요청합니다.
+                  <span className="decoration-1px font-[700] text-blue-500 underline decoration-gray-400">
+                    {selectedPet.owner?.name}
+                  </span>{" "}
+                  님에게 부모 개체 연결을 요청합니다.
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <textarea
                   className="w-full rounded-lg bg-gray-100 p-3 text-sm focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:placeholder:text-gray-500"
                   rows={3}
                   value={message ?? defaultMessage(selectedPet)}
                   onChange={(e) => setMessage(e.target.value)}
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs font-[700] text-blue-500">
                   * 요청이 수락되면 해당 개체가 부모로 등록됩니다.
                 </p>
               </div>
 
-              <div className="flex gap-2 bg-white dark:bg-[#18181B]">
-                <button
-                  onClick={onClose}
-                  className="flex-1 rounded-xl border border-gray-200 py-3 font-medium hover:bg-gray-50"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={() =>
-                    onSelect({
-                      ...selectedPet,
-                      message: message ?? defaultMessage(selectedPet),
-                    })
-                  }
-                  className="flex-1 rounded-xl bg-blue-500 py-3 font-medium text-white hover:bg-blue-600"
-                >
-                  연결 요청하기
-                </button>
-              </div>
+              <FloatingButton
+                leftButton={{
+                  title: "취소",
+                  onClick: onClose,
+                }}
+                rightButton={{
+                  title: "연결 요청하기",
+                  onClick: () =>
+                    onSelect({ ...selectedPet, message: message ?? defaultMessage(selectedPet) }),
+                }}
+              />
             </div>
           ) : (
-            <button
-              onClick={() => onSelect(selectedPet)}
-              className="flex w-full items-center justify-center rounded-xl bg-blue-500 py-3 font-medium text-white hover:bg-blue-600"
-            >
-              연결
-            </button>
+            <FloatingButton
+              rightButton={{
+                title: "연결",
+                onClick: () => onSelect(selectedPet),
+              }}
+            />
           )}
         </div>
       )}

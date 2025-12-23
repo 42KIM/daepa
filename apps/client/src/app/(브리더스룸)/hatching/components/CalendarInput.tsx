@@ -38,6 +38,7 @@ const CalendarInput = ({
         if (!editable) return;
         setIsOpen(open);
       }}
+      modal={true}
     >
       <PopoverTrigger
         asChild
@@ -47,7 +48,7 @@ const CalendarInput = ({
           !editable && "cursor-not-allowed",
         )}
       >
-        <div aria-disabled={!editable}>
+        <button type="button" disabled={!editable}>
           {!value && placeholder}
           {value && isValid(new Date(value)) && `${format(new Date(value), formatString)}`}
           {editable && (
@@ -55,7 +56,7 @@ const CalendarInput = ({
               className={cn("h-4 w-4 text-gray-600", value ? "text-blue-600" : "text-gray-600")}
             />
           )}
-        </div>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar

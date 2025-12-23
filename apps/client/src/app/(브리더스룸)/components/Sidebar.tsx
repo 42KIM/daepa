@@ -2,20 +2,12 @@ import { ChevronsLeft, Clock7, Mail, Settings } from "lucide-react";
 import { useState } from "react";
 import SidebarPanel from "./SidebarPanel";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { userNotificationControllerGetUnreadCount } from "@repo/api-client";
 
 type SIDEBAR_TYPE = "알림" | "최근 본" | "설정";
 
-const Sidebar = () => {
+const Sidebar = ({ unreadCount }: { unreadCount: number }) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [type, setType] = useState<SIDEBAR_TYPE>("알림");
-
-  const { data: unreadCount = 0 } = useQuery({
-    queryKey: [userNotificationControllerGetUnreadCount.name],
-    queryFn: () => userNotificationControllerGetUnreadCount(),
-    select: (response) => response.data.count,
-  });
 
   const handleClickSidebarItem = (selectedType: SIDEBAR_TYPE) => {
     setType(selectedType);

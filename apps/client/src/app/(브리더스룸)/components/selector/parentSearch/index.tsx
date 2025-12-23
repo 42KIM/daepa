@@ -16,6 +16,7 @@ import { useInView } from "react-intersection-observer";
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface ParentSearchProps {
   sex?: PetDtoSex;
@@ -98,10 +99,10 @@ const ParentSearchSelector = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] rounded-3xl sm:max-w-[720px]">
+      <DialogContent className="max-h-[90vh] overflow-hidden rounded-3xl sm:max-w-[720px]">
         <DialogTitle className="sr-only">부모 개체 선택</DialogTitle>
 
-        <div className="flex h-full flex-col">
+        <div className={cn("flex flex-col", step === 2 && "max-h-[calc(90vh-3rem)]")}>
           <Header
             step={step}
             searchType={petListType}
@@ -111,7 +112,7 @@ const ParentSearchSelector = ({
             setSearchType={setPetListType}
             allowMyPetOnly={allowMyPetOnly}
           />
-          <div ref={contentRef} className="relative flex-1">
+          <div ref={contentRef} className="relative min-h-0 flex-1 overflow-y-auto">
             {step === 1 ? (
               <SelectStep
                 pets={data as PetParentDtoWithMessage[]}

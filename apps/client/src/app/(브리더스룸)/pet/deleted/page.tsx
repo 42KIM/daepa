@@ -53,7 +53,7 @@ export default function DeletedPetsPage() {
   const isEmpty = items && items.length === 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-2">
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <h1 className="text-[16px] text-gray-800">삭제된 펫 목록</h1>
