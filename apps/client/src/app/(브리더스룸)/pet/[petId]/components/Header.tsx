@@ -1,4 +1,3 @@
-import { Dog } from "lucide-react";
 import QRCode from "./QR코드";
 import Image from "next/image";
 import { buildR2TransformedUrl, cn } from "@/lib/utils";
