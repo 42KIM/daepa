@@ -68,6 +68,7 @@ const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: Lay
     try {
       await deleteEgg(eggId);
       await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      toast.success("삭제되었습니다.");
       onClose();
     } catch (error) {
       if (error instanceof AxiosError) {
