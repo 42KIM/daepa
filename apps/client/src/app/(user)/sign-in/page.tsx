@@ -30,7 +30,7 @@ const SignInPage = () => {
 
         <div className="rounded-3xl bg-gradient-to-b from-white to-gray-50 p-5 backdrop-blur-sm dark:border dark:border-gray-700 dark:bg-gray-800/80">
           <div className="flex h-full w-full items-center justify-center py-5">
-            <Image src="/assets/lizard.png" alt="lizard" width={200} height={200} />
+            <Image src="/assets/lizard.png" alt="브리더스룸 로그인 로고" width={200} height={200} />
           </div>
 
           <div>
