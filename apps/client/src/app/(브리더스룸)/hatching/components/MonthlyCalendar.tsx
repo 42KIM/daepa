@@ -111,11 +111,11 @@ const MonthlyCalendar = memo(() => {
     }
   }, []);
 
-  const tabs = {
-    all: "전체",
-    [PetDtoType.EGG]: "알",
-    [PetDtoType.PET]: "해칭 완료",
-  };
+  const tabs: Array<{ key: "all" | PetDtoType; label: string }> = [
+    { key: "all", label: "전체" },
+    { key: PetDtoType.EGG, label: "알" },
+    { key: PetDtoType.PET, label: "해칭 완료" },
+  ];
 
   return (
     <div className="flex">
@@ -153,7 +153,7 @@ const MonthlyCalendar = memo(() => {
 
         <div>
           <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
-            {Object.keys(tabs).map((key) => {
+            {tabs.map(({ key, label }) => {
               return (
                 <button
                   key={key}
@@ -163,7 +163,7 @@ const MonthlyCalendar = memo(() => {
                     tab === key ? "bg-white shadow-sm" : "text-gray-600",
                   )}
                 >
-                  {tabs[key]}
+                  {label}
                 </button>
               );
             })}
