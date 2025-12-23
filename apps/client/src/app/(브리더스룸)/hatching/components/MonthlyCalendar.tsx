@@ -13,6 +13,7 @@ import { Calendar } from "./Calendar";
 import { format, getWeekOfMonth } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
+import { DateTime } from "luxon";
 
 const MonthlyCalendar = memo(() => {
   const isMobile = useIsMobile();
@@ -187,9 +188,12 @@ const MonthlyCalendar = memo(() => {
                         return pets.filter((pet) => pet.type === PetDtoType.EGG).length > 0;
                     })
                     .map(([date, pets]) => {
-                      const isSelected =
-                        new Date(selectedDate ?? "").toLocaleDateString() ===
-                        new Date(date).toLocaleDateString();
+                      const isSelected = selectedDate
+                        ? DateTime.fromJSDate(selectedDate).hasSame(
+                            DateTime.fromFormat(date, "yyyy-MM-dd"),
+                            "day",
+                          )
+                        : false;
 
                       return (
                         <HatchingPetCard
