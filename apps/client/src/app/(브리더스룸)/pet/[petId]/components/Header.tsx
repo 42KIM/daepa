@@ -55,21 +55,19 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
         <div
           className={cn(
             "relative flex items-center justify-center rounded-2xl transition-all",
-            isScrolled ? "h-12 w-12" : "h-18 w-18",
+            isScrolled ? "h-14 w-14" : "h-18 w-18",
           )}
         >
-          <div className="h-18 w-18 relative flex items-center justify-center rounded-2xl bg-white">
-            {photos[0]?.url ? (
-              <Image
-                src={buildR2TransformedUrl(photos[0]?.url)}
-                alt={pet.petId}
-                fill
-                className="rounded-2xl object-cover"
-              />
-            ) : (
-              <Image src="/assets/lizard.png" alt="펫 상세 헤더 기본 이미지" fill />
-            )}
-          </div>
+          {photos[0]?.url ? (
+            <Image
+              src={buildR2TransformedUrl(photos[0]?.url)}
+              alt={pet.petId}
+              fill
+              className="rounded-2xl object-cover"
+            />
+          ) : (
+            <Image src="/assets/lizard.png" alt="펫 상세 헤더 기본 이미지" fill />
+          )}
         </div>
         <div className="flex flex-1 flex-col">
           <div className="flex items-center gap-2">
