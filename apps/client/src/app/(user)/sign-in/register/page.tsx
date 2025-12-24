@@ -5,17 +5,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Check, Info, User } from "lucide-react";
-import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
-import { userControllerCreateInitUserInfo, userControllerVerifyName } from "@repo/api-client";
+import { userControllerCreateInitUserInfo } from "@repo/api-client";
 import { AxiosError } from "axios";
 import { DUPLICATE_CHECK_STATUS } from "@/app/(브리더스룸)/constants";
+import Image from "next/image";
+import NameInput from "@/app/(브리더스룸)/components/NameInput";
+import { useNameStore } from "@/app/(브리더스룸)/store/name";
+import { useIsMobile } from "@/hooks/useMobile";
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_MIN_LENGTH = 2;
@@ -42,16 +42,11 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterPage = () => {
   const router = useRouter();
-  const [duplicateCheckStatus, setDuplicateCheckStatus] = useState<
-    (typeof DUPLICATE_CHECK_STATUS)[keyof typeof DUPLICATE_CHECK_STATUS]
-  >(DUPLICATE_CHECK_STATUS.NONE);
+  const isMobile = useIsMobile();
+  const { duplicateCheckStatus } = useNameStore();
 
   const { mutateAsync: mutateRegister, isPending: isRegisterPending } = useMutation({
     mutationFn: userControllerCreateInitUserInfo,
-  });
-
-  const { mutateAsync: mutateVerifyName, isPending: isVerifyPending } = useMutation({
-    mutationFn: userControllerVerifyName,
   });
 
   const {
@@ -70,49 +65,6 @@ const RegisterPage = () => {
 
   const nickname = watch("nickname");
   const isSeller = watch("isSeller");
-
-  // 닉네임이 변경되면 중복확인 상태 초기화
-  useEffect(() => {
-    setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
-  }, [nickname]);
-
-  // 중복확인 함수
-  const handleDuplicateCheck = async () => {
-    if (!nickname || errors.nickname) {
-      toast.error("올바른 닉네임을 입력해주세요.");
-      return;
-    }
-
-    setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.CHECKING);
-
-    try {
-      const response = await mutateVerifyName({ name: nickname });
-
-      if (response.data.success) {
-        setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.AVAILABLE);
-        toast.success("사용 가능한 닉네임입니다.");
-      }
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 409) {
-          setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.DUPLICATE);
-          toast.error("이미 사용중인 닉네임입니다.");
-        } else if (error.response?.status === 400) {
-          // 서버 유효성 검증 에러 (예: DELETED_ 접두사)
-          setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
-          const message = error.response?.data?.message;
-          const errorMessage = Array.isArray(message) ? message[0] : message;
-          toast.error(errorMessage || "유효하지 않은 닉네임입니다.");
-        } else {
-          setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
-          toast.error("중복확인 중 오류가 발생했습니다. 다시 시도해주세요.");
-        }
-      } else {
-        setDuplicateCheckStatus(DUPLICATE_CHECK_STATUS.NONE);
-        toast.error("중복확인 중 오류가 발생했습니다. 다시 시도해주세요.");
-      }
-    }
-  };
 
   const onSubmit = async (data: RegisterFormData) => {
     // 중복확인이 완료되지 않았거나 중복인 경우 제출 방지
@@ -152,27 +104,32 @@ const RegisterPage = () => {
     }
   };
 
-  // 중복확인 버튼 비활성화 조건
-  const isDuplicateCheckDisabled = !nickname || !!errors.nickname || isVerifyPending;
+  const inputClassName = cn(
+    `text-[15px] w-full h-9 pr-1 px-3 text-left focus:border-gray-400 focus:border-[1.8px] border-[1.2px] border rounded-md border-input focus:outline-none focus:ring-0 text-gray-400 dark:text-gray-400
+    transition-all duration-300 ease-in-out placeholder:text-gray-400 flex items-center `,
+    errors.nickname?.message && "border-red-500 focus:border-red-500",
+  );
 
   return (
-    <div className="m-2 flex min-h-screen w-full items-center justify-center bg-[#FAFAFA]">
-      <div className="w-full max-w-md">
-        {/* 메인 카드 */}
-        <Card className="rounded-3xl border-gray-100 bg-white/80 shadow-xl backdrop-blur-sm dark:bg-gray-800/80">
-          <CardHeader className="pb-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-              <User className="h-8 w-8 text-blue-400 dark:text-blue-400" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-              회원정보 설정
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              서비스 이용을 위해 필요한 정보를 설정해주세요
-            </CardDescription>
-          </CardHeader>
+    <div className="flex min-h-screen w-full items-center justify-center bg-transparent bg-gradient-to-b from-[#e5cf94] to-white dark:bg-black">
+      <div className="my-5 w-[90vw] max-w-md">
+        <div className="mb-5 text-center text-3xl font-bold text-gray-800/90 dark:text-white">
+          회원정보 설정
+          <div className="text-[14px] font-[500] text-gray-600 dark:text-gray-400">
+            서비스 이용을 위해 필요한 정보를 설정해주세요
+          </div>
+        </div>
 
-          <CardContent>
+        <div className="rounded-3xl bg-gradient-to-b from-white to-gray-50 p-5 backdrop-blur-sm dark:border dark:border-gray-700 dark:bg-gray-800/80">
+          <div
+            className={cn(
+              "flex h-full w-full items-center justify-center py-5",
+              isMobile && "py-2",
+            )}
+          >
+            <Image src="/assets/lizard.png" alt="회원정보 설정 로고" width={100} height={100} />
+          </div>
+          <div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* 닉네임 입력 */}
               <div className="space-y-2">
@@ -182,73 +139,18 @@ const RegisterPage = () => {
                 >
                   닉네임/업체명
                 </label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      id="nickname"
-                      type="text"
-                      placeholder="닉네임/업체명을 입력해주세요"
-                      className={cn("h-12 pr-16")}
-                      maxLength={NICKNAME_MAX_LENGTH}
-                      {...register("nickname")}
-                      onChange={(e) => {
-                        if (e.target.value.length > NICKNAME_MAX_LENGTH) {
-                          e.target.value = e.target.value.slice(0, NICKNAME_MAX_LENGTH);
-                        }
-                        register("nickname").onChange(e);
-                      }}
-                    />
-                    {nickname && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                        {nickname.length}/{NICKNAME_MAX_LENGTH}
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={handleDuplicateCheck}
-                    disabled={isDuplicateCheckDisabled}
-                    className="h-12 bg-blue-600 px-4 text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500"
-                  >
-                    {isVerifyPending ? (
-                      <div className="flex items-center gap-1">
-                        <div className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent"></div>
-                        확인중
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">중복확인</div>
-                    )}
-                  </Button>
-                </div>
-
-                {errors.nickname && (
-                  <div className="flex items-center gap-1 text-sm text-red-500">
-                    <Info className="h-4 w-4" />
-                    {errors.nickname.message}
-                  </div>
-                )}
-
-                {/* 중복확인 결과 표시 */}
-                {duplicateCheckStatus === DUPLICATE_CHECK_STATUS.AVAILABLE && (
-                  <div className="flex items-center gap-1 text-sm text-green-600">
-                    <Check className="h-4 w-4" />
-                    사용 가능한 닉네임/업체명입니다
-                  </div>
-                )}
-
-                {duplicateCheckStatus === DUPLICATE_CHECK_STATUS.DUPLICATE && (
-                  <div className="flex items-center gap-1 text-sm text-red-500">
-                    <Info className="h-4 w-4" />
-                    이미 사용중인 닉네임/업체명입니다
-                  </div>
-                )}
-
-                {duplicateCheckStatus === DUPLICATE_CHECK_STATUS.CHECKING && (
-                  <div className="flex items-center gap-1 text-sm text-blue-500">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-                    중복확인 중...
-                  </div>
-                )}
+                <NameInput
+                  id="nickname"
+                  type="text"
+                  placeholder="닉네임/업체명을 입력해주세요"
+                  className={cn(inputClassName, "text-black dark:text-white")}
+                  value={nickname || ""}
+                  {...register("nickname")}
+                  onChange={(e) => {
+                    register("nickname").onChange(e);
+                  }}
+                  errorMessage={errors.nickname?.message || ""}
+                />
               </div>
 
               {/* 사업자 여부 선택 */}
@@ -261,10 +163,10 @@ const RegisterPage = () => {
                     type="button"
                     onClick={() => setValue("isSeller", false)}
                     className={cn(
-                      "flex h-12 items-center justify-center rounded-lg border-[1.4px] text-sm transition-all duration-200",
+                      "flex h-10 items-center justify-center rounded-lg text-sm transition-all duration-200",
                       isSeller === false
-                        ? "border-blue-500 bg-blue-50 font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                        : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500",
+                        ? "bg-black font-semibold text-white dark:bg-blue-900/30 dark:text-blue-400"
+                        : "bg-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500",
                     )}
                   >
                     일반 사용자
@@ -273,10 +175,10 @@ const RegisterPage = () => {
                     type="button"
                     onClick={() => setValue("isSeller", true)}
                     className={cn(
-                      "flex h-12 items-center justify-center rounded-lg border-[1.4px] text-sm transition-all duration-200",
+                      "flex h-10 items-center justify-center rounded-lg text-sm transition-all duration-200",
                       isSeller === true
-                        ? "border-blue-500 bg-blue-50 font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                        : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500",
+                        ? "bg-black font-semibold text-white dark:bg-blue-900/30 dark:text-blue-400"
+                        : "bg-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500",
                     )}
                   >
                     사업자
@@ -291,7 +193,7 @@ const RegisterPage = () => {
               </div>
 
               {/* 닉네임 규칙 안내 */}
-              <div className="space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50">
+              <div className="space-y-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700/50">
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   닉네임/업체명 규칙
                 </h4>
@@ -311,7 +213,7 @@ const RegisterPage = () => {
                   isRegisterPending ||
                   duplicateCheckStatus !== DUPLICATE_CHECK_STATUS.AVAILABLE
                 }
-                className="h-12 w-full rounded-xl bg-blue-600 text-base font-bold transition-all duration-200 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500"
+                className="h-12 w-full rounded-xl bg-black text-base font-bold transition-all duration-200 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500"
               >
                 {isRegisterPending ? (
                   <div className="flex items-center gap-2">
@@ -323,8 +225,8 @@ const RegisterPage = () => {
                 )}
               </Button>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* 추가 안내 */}
         <div className="mt-6 text-center">
