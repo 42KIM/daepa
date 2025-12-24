@@ -5,12 +5,12 @@ import {
   UpdateParentRequestDtoStatus,
 } from "@repo/api-client";
 import { ParentLinkDetailJson } from "@repo/api-client";
-import { buildR2TransformedUrl, castDetailJson, cn } from "@/lib/utils";
+import { castDetailJson, cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import Image from "next/image";
 import { NOTIFICATION_MESSAGE, STATUS_MAP } from "../../constants";
 import { ChevronDown } from "lucide-react";
+import PetThumbnail from "../../components/PetThumbnail";
 
 interface NotificationHeaderProps {
   item: UserNotificationDto;
@@ -24,15 +24,12 @@ const NotificationHeader = ({ item, isOpen }: NotificationHeaderProps) => {
     <div className="flex w-full items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <div className="flex flex-col gap-2">
-          <div className="h-15 w-15 relative rounded-full bg-gray-100">
-            {detailData?.childPet?.photos?.[0]?.url && (
-              <Image
-                src={buildR2TransformedUrl(detailData?.childPet?.photos[0]?.url)}
-                alt={detailData?.childPet?.id}
-                fill
-                className="rounded-full object-cover"
-              />
-            )}
+          <div className="h-15 w-15 relative">
+            <PetThumbnail
+              imageUrl={detailData?.childPet?.photos?.[0]?.url}
+              alt="알림 페이지 자식 펫 썸네일"
+              className="rounded-full"
+            />
           </div>
         </div>
         <div className="text-left text-sm">
