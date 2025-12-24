@@ -15,14 +15,15 @@ interface DropdownMenuIconProps {
     label: string;
     onClick: (e: React.MouseEvent) => void;
   }[];
+  triggerIcon?: React.ReactNode;
 }
-const DropdownMenuIcon = ({ selectedId, menuItems }: DropdownMenuIconProps) => {
+const DropdownMenuIcon = ({ selectedId, menuItems, triggerIcon }: DropdownMenuIconProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="ml-1 h-8 w-8 rounded-lg p-1.5 hover:bg-gray-100">
+        <Button variant="ghost" className="w-4 rounded-lg hover:bg-gray-100">
           <span className="sr-only">Open menu</span>
-          <MoreVertical className="h-4 w-4" />
+          {triggerIcon || <MoreVertical />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

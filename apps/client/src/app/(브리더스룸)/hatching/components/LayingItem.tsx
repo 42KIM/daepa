@@ -125,6 +125,7 @@ const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: Lay
         <EggItem
           key={pet.petId}
           pet={pet}
+          layingDate={layingDate}
           handleHatching={(e) => handleHatching(e, pet.petId, pet.clutch, pet.clutchOrder)}
           handleDeleteEggClick={(e) => handleDeleteEggClick(e, pet.petId)}
           handleEditEggClick={(e) => handleEditEggClick(e, pet)}

@@ -1,5 +1,5 @@
 import { PetSummaryLayingDto, UpdatePetDtoEggStatus } from "@repo/api-client";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, CheckCircle2, XCircle, CircleOff, CircleAlert } from "lucide-react";
 import DropdownMenuIcon from "./DropdownMenuIcon";
 import { DateTime } from "luxon";
 import { memo } from "react";
@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 
 interface EggItemProps {
   pet: PetSummaryLayingDto;
+  layingDate: string;
   handleHatching: (e: React.MouseEvent) => void;
   handleDeleteEggClick: (e: React.MouseEvent) => void;
   handleEditEggClick: (e: React.MouseEvent) => void;
@@ -19,6 +20,7 @@ interface EggItemProps {
 
 const EggItem = ({
   pet,
+  layingDate,
   handleHatching,
   handleDeleteEggClick,
   handleEditEggClick,
@@ -27,6 +29,29 @@ const EggItem = ({
   const router = useRouter();
   const isMobile = useIsMobile();
   const isHatched = !!pet.hatchingDate;
+
+  const getStatusIcon = () => {
+    switch (pet.eggStatus) {
+      case UpdatePetDtoEggStatus.FERTILIZED:
+        return <CheckCircle2 className="h-4 w-4 text-yellow-600" />;
+      case UpdatePetDtoEggStatus.UNFERTILIZED:
+        return <XCircle className="h-4 w-4 text-orange-600" />;
+      case UpdatePetDtoEggStatus.DEAD:
+        return <CircleOff className="h-4 w-4 text-red-600" />;
+      default:
+        return <CircleAlert className="h-4 w-4 text-gray-900" />;
+    }
+  };
+
+  const getExpectedDate = (temperature = 25) => {
+    // 온도 기반 해칭일 계산 (기본 25°C)
+    const incubationDay = 60 - (temperature - 25) * 10;
+    const expectedDate = DateTime.fromFormat(layingDate, "yyyy-MM-dd").plus({
+      days: incubationDay,
+    });
+
+    return expectedDate.setLocale("ko").toFormat("M월 d일(ccc)");
+  };
 
   return (
     <div
@@ -64,30 +89,79 @@ const EggItem = ({
               </span>
             )}
           </div>
+          <div className="font-[500] text-red-600">
+            <span className="text-xs font-[400]">예상 : </span>
+            {getExpectedDate(pet.temperature)}
+          </div>
         </div>
       </div>
 
       {!isHatched ? (
         <div className="flex">
-          <Select
-            value={pet.eggStatus}
-            handleValueChange={handleUpdate}
-            selectItems={{ FERTILIZED: "유정란", UNFERTILIZED: "무정란", DEAD: "중지" }}
-            triggerClassName={
-              pet.eggStatus === "FERTILIZED" ? "bg-yellow-100 text-yellow-700 border-none " : ""
-            }
-          />
+          {!isMobile ? (
+            <>
+              <Select
+                value={pet.eggStatus}
+                handleValueChange={handleUpdate}
+                selectItems={{ FERTILIZED: "유정란", UNFERTILIZED: "무정란", DEAD: "중지" }}
+                triggerClassName={
+                  pet.eggStatus === "FERTILIZED" ? "bg-yellow-100 text-yellow-700 border-none " : ""
+                }
+              />
 
-          <button
-            type="button"
-            className="ml-1 rounded-lg bg-blue-100/60 px-2 text-xs font-[600] text-blue-500 hover:bg-blue-200/60"
-            onClick={handleHatching}
-          >
-            해칭 완료
-          </button>
+              <button
+                type="button"
+                className="ml-1 rounded-lg bg-blue-100/60 px-2 text-xs font-[600] text-blue-500 hover:bg-blue-200/60"
+                onClick={handleHatching}
+              >
+                해칭 완료
+              </button>
+            </>
+          ) : (
+            <>
+              {/* 상태 변경 드롭다운 */}
+              <DropdownMenuIcon
+                selectedId={`${pet.petId}-status`}
+                triggerIcon={getStatusIcon()}
+                menuItems={[
+                  {
+                    icon: <CheckCircle2 className="h-4 w-4 text-yellow-600" />,
+                    label: "유정란",
+                    onClick: (e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleUpdate(UpdatePetDtoEggStatus.FERTILIZED);
+                    },
+                  },
+                  {
+                    icon: <XCircle className="h-4 w-4 text-orange-600" />,
+                    label: "무정란",
+                    onClick: (e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleUpdate(UpdatePetDtoEggStatus.UNFERTILIZED);
+                    },
+                  },
+                  {
+                    icon: <CircleOff className="h-4 w-4 text-red-600" />,
+                    label: "중지",
+                    onClick: (e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleUpdate(UpdatePetDtoEggStatus.DEAD);
+                    },
+                  },
+                ]}
+              />
+            </>
+          )}
+
+          {/* 수정/삭제 드롭다운 */}
           <DropdownMenuIcon
             selectedId={pet.petId}
             menuItems={[
+              {
+                icon: <Edit className="h-4 w-4 text-blue-600" />,
+                label: "해칭 완료",
+                onClick: handleHatching,
+              },
               {
                 icon: <Edit className="h-4 w-4 text-blue-600" />,
                 label: "수정",
