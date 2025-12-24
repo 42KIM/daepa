@@ -1,14 +1,24 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CalendarSelect from "./CalendarSelect";
-import { useCallback, useMemo, useState, useEffect, useRef } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { MatingByDateDto, MatingByParentsDto } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import { compact } from "es-toolkit";
 import MatingItem from "./MatingItem";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/useMobile";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DateTime } from "luxon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Trash2, Pencil } from "lucide-react";
+import { overlay } from "overlay-kit";
+import EditMatingModal from "./EditMatingModal";
+import DeleteMatingModal from "./DeleteMatingModal";
 
 interface MatingDetailDialogProps {
   isOpen: boolean;
@@ -38,88 +48,52 @@ const MatingDetailDialog = ({
   );
 
   const [selectedMatingId, setSelectedMatingId] = useState<number | null>(null);
-  const prevMatingCountRef = useRef<number>(0);
-  const isInitialOpenRef = useRef<boolean>(true);
 
-  // 클릭 & 드래그 스크롤을 위한 상태
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef({ x: 0, scrollLeft: 0, moved: false });
-
-  // Dialog 오픈/클로즈 상태 감지
+  // Dialog 오픈 시 가장 최근 메이팅 선택
   useEffect(() => {
-    if (isOpen && isInitialOpenRef.current) {
-      // Dialog 최초 오픈 시 가장 최근 메이팅 선택
-      if (matingGroup?.matingsByDate?.[0]) {
-        setSelectedMatingId(matingGroup.matingsByDate[0].id);
-      }
-      isInitialOpenRef.current = false;
-    } else if (!isOpen) {
-      // Dialog 닫혔을 때 다시 초기화
-      isInitialOpenRef.current = true;
+    if (isOpen && matingGroup?.matingsByDate?.[0]) {
+      setSelectedMatingId(matingGroup.matingsByDate[0].id);
     }
   }, [isOpen, matingGroup?.matingsByDate]);
 
-  // 메이팅 개수 변화 감지 (새 메이팅 추가 시)
-  useEffect(() => {
-    const currentMatingCount = matingGroup?.matingsByDate?.length ?? 0;
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedMatingId) return;
 
-    // 메이팅이 추가되었을 때 (개수가 증가했을 때)
-    if (currentMatingCount > prevMatingCountRef.current && matingGroup?.matingsByDate?.[0]) {
-      // 새로 추가된 메이팅 선택 (배열의 첫 번째 항목)
-      setSelectedMatingId(matingGroup.matingsByDate[0].id);
-    }
+    const selectedMating = matingGroup?.matingsByDate.find((m) => m.id === selectedMatingId);
+    if (!selectedMating) return;
 
-    prevMatingCountRef.current = currentMatingCount;
-  }, [matingGroup?.matingsByDate, matingGroup]);
+    overlay.open(({ isOpen, close }) => (
+      <EditMatingModal
+        isOpen={isOpen}
+        onClose={close}
+        matingId={selectedMating.id}
+        currentData={{
+          fatherId: matingGroup?.father?.petId,
+          motherId: matingGroup?.mother?.petId,
+          matingDate: selectedMating.matingDate ?? "",
+        }}
+        matingDates={matingDates}
+      />
+    ));
+  };
 
-  // PC에서 클릭 & 드래그 스크롤 구현
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedMatingId) return;
 
-    const handleMouseDown = (e: MouseEvent) => {
-      dragStartRef.current = {
-        x: e.pageX,
-        scrollLeft: container.scrollLeft,
-        moved: false,
-      };
-      setIsDragging(true);
-      container.style.cursor = "grabbing";
-      container.style.userSelect = "none";
-    };
+    const selectedMating = matingGroup?.matingsByDate.find((m) => m.id === selectedMatingId);
+    if (!selectedMating) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-
-      const x = e.pageX;
-      const walk = dragStartRef.current.x - x;
-
-      if (Math.abs(walk) > 3) {
-        dragStartRef.current.moved = true;
-      }
-
-      container.scrollLeft = dragStartRef.current.scrollLeft + walk;
-    };
-
-    const handleMouseUpOrLeave = () => {
-      setIsDragging(false);
-      container.style.cursor = "grab";
-      container.style.userSelect = "";
-    };
-
-    container.addEventListener("mousedown", handleMouseDown);
-    container.addEventListener("mousemove", handleMouseMove);
-    container.addEventListener("mouseup", handleMouseUpOrLeave);
-    container.addEventListener("mouseleave", handleMouseUpOrLeave);
-
-    return () => {
-      container.removeEventListener("mousedown", handleMouseDown);
-      container.removeEventListener("mousemove", handleMouseMove);
-      container.removeEventListener("mouseup", handleMouseUpOrLeave);
-      container.removeEventListener("mouseleave", handleMouseUpOrLeave);
-    };
-  }, [isDragging]);
+    overlay.open(({ isOpen, close }) => (
+      <DeleteMatingModal
+        isOpen={isOpen}
+        onClose={close}
+        matingId={selectedMating.id}
+        matingDate={selectedMating.matingDate}
+      />
+    ));
+  };
 
   if (!matingGroup) return null;
 
@@ -169,53 +143,101 @@ const MatingDetailDialog = ({
         <div className={cn("flex flex-col gap-2", isMobile && "px-0")}>
           {matingGroup.matingsByDate && matingGroup.matingsByDate.length > 0 ? (
             <div className="flex flex-col gap-4">
-              <Tabs
-                value={String(selectedMatingId)}
-                onValueChange={(v) => {
-                  if (v === "add") return;
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  {/* 메이팅 날짜 선택 Select */}
+                  <Select
+                    value={String(selectedMatingId)}
+                    onValueChange={(v) => setSelectedMatingId(Number(v))}
+                  >
+                    <SelectTrigger className="rounded-none border-0 border-b-[1.5px] border-b-gray-300 p-0 text-[18px] font-[600]">
+                      {selectedMatingId ? (
+                        <div className="flex items-center gap-1 pl-1">
+                          {(() => {
+                            const selectedIndex = matingGroup.matingsByDate.findIndex(
+                              (m) => m.id === selectedMatingId,
+                            );
+                            const season = matingGroup.matingsByDate.length - selectedIndex;
+                            const selectedMating = matingGroup.matingsByDate[selectedIndex];
 
-                  setSelectedMatingId(Number(v));
-                }}
-                className="flex flex-1 flex-col gap-4"
-              >
-                <div
-                  ref={scrollContainerRef}
-                  className="cursor-grab select-none overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                >
-                  <TabsList className="inline-flex w-fit overflow-visible">
-                    {isEditable && (
-                      <TabsTrigger key="mating-add" value="add">
-                        <CalendarSelect
-                          triggerText="메이팅 추가"
-                          confirmButtonText="메이팅 추가"
-                          disabledDates={matingDates}
-                          onConfirm={(matingDate) => onConfirmAdd(matingDate)}
-                        />
-                      </TabsTrigger>
-                    )}
+                            return (
+                              <>
+                                <span className="rounded-lg bg-gray-100 p-1 px-2 text-[12px] text-gray-700">
+                                  {season}시즌
+                                </span>
+                                {selectedMating?.matingDate
+                                  ? DateTime.fromFormat(
+                                      selectedMating.matingDate,
+                                      "yyyy-MM-dd",
+                                    ).toFormat("M월 d일")
+                                  : ""}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      ) : (
+                        <SelectValue placeholder="메이팅 날짜 선택" />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      {matingGroup.matingsByDate.map((mating) => (
+                        <SelectItem
+                          key={mating.id}
+                          value={String(mating.id)}
+                          className="rounded-xl text-[16px]"
+                        >
+                          {mating.matingDate
+                            ? DateTime.fromFormat(mating.matingDate, "yyyy-MM-dd").toFormat(
+                                "M월 d일",
+                              )
+                            : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                    {matingGroup.matingsByDate.map((mating) => (
-                      <TabsTrigger value={String(mating.id)} key={mating.id}>
-                        {mating.matingDate
-                          ? DateTime.fromFormat(mating.matingDate, "yyyy-MM-dd").toFormat("M월 d일")
-                          : ""}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+                  {/* 수정/삭제 버튼 */}
+                  {isEditable && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100"
+                        aria-label="교배 정보 수정"
+                        onClick={handleEditClick}
+                      >
+                        <Pencil className="h-4 w-4 text-blue-500" />
+                      </button>
+                      <button
+                        type="button"
+                        className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100"
+                        aria-label="교배 정보 삭제"
+                        onClick={handleDeleteClick}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {matingGroup.matingsByDate.map((mating) => (
-                  <TabsContent key={mating.id} value={String(mating.id)}>
-                    <MatingItem
-                      isEditable={isEditable}
-                      mating={mating}
-                      father={matingGroup.father}
-                      mother={matingGroup.mother}
-                      matingDates={matingDates}
-                    />
-                  </TabsContent>
-                ))}
-              </Tabs>
+                {/* 메이팅 추가 */}
+                {isEditable && (
+                  <CalendarSelect
+                    triggerText="메이팅 추가"
+                    confirmButtonText="메이팅 추가"
+                    disabledDates={matingDates}
+                    onConfirm={(matingDate) => onConfirmAdd(matingDate)}
+                  />
+                )}
+              </div>
+
+              {/* 선택된 메이팅 아이템 */}
+              {selectedMatingId && (
+                <MatingItem
+                  mating={matingGroup.matingsByDate.find((m) => m.id === selectedMatingId)!}
+                  father={matingGroup.father}
+                  mother={matingGroup.mother}
+                />
+              )}
             </div>
           ) : (
             <div className="text-sm text-gray-500">메이팅이 없습니다.</div>

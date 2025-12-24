@@ -80,11 +80,11 @@ const EggItem = ({
               {pet?.name ?? `${pet.clutch ?? "@"}차-${pet.clutchOrder ?? "@"}`}
             </div>
             {pet.temperature && (
-              <span className="text-[12px] font-[500] text-green-700">| {pet.temperature}℃</span>
+              <span className="text-[12px] font-[500] text-gray-600">| {pet.temperature}℃</span>
             )}
 
             {pet.sex && (
-              <span className="text-[12px] font-[500] text-blue-600">
+              <span className="text-[12px] font-[500] text-gray-600">
                 | {GENDER_KOREAN_INFO[pet.sex]}
               </span>
             )}
