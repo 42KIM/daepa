@@ -8,6 +8,7 @@ import { useSearchKeywordStore } from "../store/searchKeyword";
 import UserButton from "./UserButton";
 import { useIsMobile } from "@/hooks/useMobile";
 import SearchInput from "./SearchInput";
+import Image from "next/image";
 
 const Menubar = ({ unreadCount }: { unreadCount: number }) => {
   const pathname = usePathname();
@@ -26,7 +27,7 @@ const Menubar = ({ unreadCount }: { unreadCount: number }) => {
       <div className="flex items-center">
         {!isMobile && (
           <Link href="/pet" className="mr-10 font-bold">
-            브리더스룸
+            <Image src="/assets/logo.png" alt="브리더스룸 로고" width={100} height={40} />
           </Link>
         )}
         {SIDEBAR_ITEMS.map((item) => (

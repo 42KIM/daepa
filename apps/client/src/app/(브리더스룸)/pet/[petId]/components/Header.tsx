@@ -1,4 +1,3 @@
-import { Dog } from "lucide-react";
 import QRCode from "./QR코드";
 import Image from "next/image";
 import { buildR2TransformedUrl, cn } from "@/lib/utils";
@@ -56,7 +55,7 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
         <div
           className={cn(
             "relative flex items-center justify-center rounded-2xl transition-all",
-            isScrolled ? "h-12 w-12" : "h-18 w-18",
+            isScrolled ? "h-14 w-14" : "h-18 w-18",
           )}
         >
           {photos[0]?.url ? (
@@ -67,9 +66,7 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
               className="rounded-2xl object-cover"
             />
           ) : (
-            <Dog
-              className={cn("text-gray-500 transition-all", isScrolled ? "h-8 w-8" : "h-12 w-12")}
-            />
+            <Image src="/assets/lizard.png" alt="펫 상세 헤더 기본 이미지" fill />
           )}
         </div>
         <div className="flex flex-1 flex-col">
