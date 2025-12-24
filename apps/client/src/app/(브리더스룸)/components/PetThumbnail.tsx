@@ -1,11 +1,24 @@
 "use client";
 
-import { buildR2TransformedUrl } from "@/lib/utils";
+import { buildR2TransformedUrl, cn } from "@/lib/utils";
 import Image from "next/image";
 
-const PetThumbnail = ({ imageUrl, alt = "" }: { imageUrl?: string; alt?: string }) => {
+const PetThumbnail = ({
+  imageUrl,
+  alt = "",
+  className,
+}: {
+  imageUrl?: string;
+  alt?: string;
+  className?: string;
+}) => {
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100 text-center text-gray-400 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700">
+    <div
+      className={cn(
+        "relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100 text-center text-gray-400 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700",
+        className,
+      )}
+    >
       {imageUrl ? (
         <Image
           src={buildR2TransformedUrl(imageUrl)}
