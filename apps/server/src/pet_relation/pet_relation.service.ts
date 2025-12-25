@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { PetRelationEntity } from './pet_relation.entity';
 import { PARENT_ROLE } from '../parent_request/parent_request.constants';
+import {
+  RawSiblingQueryResult,
+  GetSiblingsWithDetailsDataDto,
+  SiblingPetDetailDto,
+} from './pet_relation.dto';
 
 @Injectable()
 export class PetRelationService {
@@ -100,15 +105,25 @@ export class PetRelationService {
       });
 
       if (existing) {
-        // UPDATE: 해당 role의 부모 ID를 NULL로 설정
-        const updateData: Partial<PetRelationEntity> = {};
-        if (role === PARENT_ROLE.FATHER) {
-          updateData.fatherId = null;
-        } else if (role === PARENT_ROLE.MOTHER) {
-          updateData.motherId = null;
-        }
+        // 제거할 부모 결정
+        const newFatherId =
+          role === PARENT_ROLE.FATHER ? null : existing.fatherId;
+        const newMotherId =
+          role === PARENT_ROLE.MOTHER ? null : existing.motherId;
 
-        await em.update(PetRelationEntity, { petId }, updateData);
+        // 양쪽 부모가 모두 NULL이 되면 레코드 삭제
+        if (!newFatherId && !newMotherId) {
+          await em.delete(PetRelationEntity, { petId });
+        } else {
+          // 한쪽 부모만 NULL이면 UPDATE
+          const updateData: Partial<PetRelationEntity> = {};
+          if (role === PARENT_ROLE.FATHER) {
+            updateData.fatherId = null;
+          } else if (role === PARENT_ROLE.MOTHER) {
+            updateData.motherId = null;
+          }
+          await em.update(PetRelationEntity, { petId }, updateData);
+        }
       }
       // 레코드가 없으면 아무 작업도 하지 않음
     };
@@ -124,23 +139,145 @@ export class PetRelationService {
   }
 
   /**
-   * 같은 부모를 가진 모든 자식 펫 ID 조회
-   * @param fatherId - 부 펫 ID
-   * @param motherId - 모 펫 ID
+   * 특정 펫의 형제 펫들을 모든 관련 정보와 함께 조회
+   * @param petId - 대상 펫 ID
    * @param manager - 선택적 EntityManager
+   * @returns 부모 정보와 형제 펫들의 상세 정보
    */
-  async getSiblingPetIds(
-    fatherId: string,
-    motherId: string,
+  async getSiblingsWithDetails(
+    petId: string,
     manager?: EntityManager,
-  ): Promise<string[]> {
+  ): Promise<GetSiblingsWithDetailsDataDto> {
     const run = async (em: EntityManager) => {
-      const relations = await em.find(PetRelationEntity, {
-        where: { fatherId, motherId },
-        select: ['petId'],
+      // Step 1: 대상 펫의 부모 정보 조회
+      const targetRelation = await em.findOne(PetRelationEntity, {
+        where: { petId },
       });
 
-      return relations.map((r) => r.petId);
+      if (!targetRelation?.fatherId && !targetRelation?.motherId) {
+        return {
+          fatherId: null,
+          motherId: null,
+          siblings: [],
+        };
+      }
+
+      const { fatherId, motherId } = targetRelation;
+
+      // Step 2: 모든 형제 펫 정보를 한 번에 조회 (JOIN 사용)
+      const queryBuilder = em
+        .createQueryBuilder(PetRelationEntity, 'pr')
+        .innerJoin('pets', 'p', 'p.pet_id = pr.pet_id')
+        .leftJoin('pet_details', 'pd', 'pd.pet_id = pr.pet_id')
+        .leftJoin('users', 'u', 'u.user_id = p.owner_id')
+        .leftJoin('layings', 'l', 'l.id = p.laying_id')
+        .leftJoin('matings', 'm', 'm.id = l.mating_id')
+        .select([
+          // pet_relations
+          'pr.pet_id as petId',
+          // pets
+          'p.name as name',
+          'p.species as species',
+          'p.hatching_date as hatchingDate',
+          'p.laying_id as layingId',
+          'p.type as type',
+          'p.owner_id as ownerId',
+          'p.is_public as isPublic',
+          'p.is_deleted as isDeleted',
+          // pet_details
+          'pd.sex as sex',
+          'pd.morphs as morphs',
+          'pd.traits as traits',
+          'pd.weight as weight',
+          'pd.growth as growth',
+          // users (owner)
+          'u.user_id as owner_userId',
+          'u.name as owner_name',
+          'u.role as owner_role',
+          'u.is_biz as owner_isBiz',
+          'u.status as owner_status',
+          // layings
+          'l.id as laying_id',
+          'l.mating_id as laying_matingId',
+          'l.laying_date as laying_layingDate',
+          'l.clutch as laying_clutch',
+          // matings
+          'm.id as mating_id',
+          'm.pair_id as mating_pairId',
+          'm.mating_date as mating_matingDate',
+        ])
+        .andWhere('p.is_deleted = :isDeleted', { isDeleted: false });
+
+      if (!fatherId && !motherId) {
+        return {
+          fatherId: null,
+          motherId: null,
+          siblings: [],
+        };
+      }
+
+      // fatherId 조건 (null 처리)
+      if (fatherId) {
+        queryBuilder.andWhere('pr.father_id = :fatherId', { fatherId });
+      } else {
+        queryBuilder.andWhere('pr.father_id IS NULL');
+      }
+
+      // motherId 조건 (null 처리)
+      if (motherId) {
+        queryBuilder.andWhere('pr.mother_id = :motherId', { motherId });
+      } else {
+        queryBuilder.andWhere('pr.mother_id IS NULL');
+      }
+
+      // TODO: 비공개 펫인 경우(내펫인 경우와 남의펫인 경우 구분해서) 마스킹 필요
+
+      const rawSiblings: RawSiblingQueryResult[] =
+        await queryBuilder.getRawMany();
+
+      // Step 3: 데이터 변환
+      const siblings = rawSiblings.map((raw) => ({
+        petId: raw.petId,
+        type: raw.type,
+        name: raw.name ?? undefined,
+        species: raw.species,
+        hatchingDate: raw.hatchingDate ?? undefined,
+        isPublic: raw.isPublic,
+        isDeleted: raw.isDeleted,
+        owner: {
+          userId: raw.owner_userId ?? undefined,
+          name: raw.owner_name ?? undefined,
+          role: raw.owner_role ?? undefined,
+          isBiz: raw.owner_isBiz ?? undefined,
+          status: raw.owner_status ?? undefined,
+        },
+        sex: raw.sex ?? undefined,
+        morphs: raw.morphs ?? undefined,
+        traits: raw.traits ?? undefined,
+        weight: raw.weight ?? undefined,
+        growth: raw.growth ?? undefined,
+        laying: raw.laying_id
+          ? {
+              id: raw.laying_id,
+              matingId: raw.laying_matingId,
+              layingDate: raw.laying_layingDate,
+              clutch: raw.laying_clutch,
+            }
+          : undefined,
+        mating: raw.mating_id
+          ? {
+              id: raw.mating_id,
+              pairId: raw.mating_pairId,
+              matingDate: raw.mating_matingDate,
+            }
+          : undefined,
+      })) as SiblingPetDetailDto[];
+
+      return {
+        fatherId,
+        motherId,
+        siblings,
+      };
     };
 
     if (manager) {
