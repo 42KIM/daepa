@@ -178,7 +178,10 @@ export class PetController {
     @Param('petId') petId: string,
     @JwtUser() token: JwtUserPayload,
   ): Promise<GetSiblingsWithDetailsResponseDto> {
-    const data = await this.petRelationService.getSiblingsWithDetails(petId);
+    const data = await this.petRelationService.getSiblingsWithDetails(
+      petId,
+      token.userId,
+    );
     return {
       success: true,
       message: '펫 형제 정보 조회 성공',

@@ -1,15 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
   IsArray,
   IsDate,
   IsNumber,
   IsObject,
   IsOptional,
-  IsString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CommonResponseDto } from 'src/common/response.dto';
-import { PetSummaryDto } from 'src/pet/pet.dto';
+import {
+  PetSummaryDto,
+  PetParentDto,
+  PetHiddenStatusDto,
+} from 'src/pet/pet.dto';
 
 /**
  * Raw query result interface for getSiblingsWithDetails (내부 변환용)
@@ -146,24 +149,31 @@ export class SiblingPetDetailDto extends PetSummaryDto {
 /**
  * 형제 펫 조회 응답 데이터
  */
+@ApiExtraModels(PetParentDto, PetHiddenStatusDto)
 export class GetSiblingsWithDetailsDataDto {
   @ApiProperty({
-    description: '아빠 펫 ID',
-    example: 'XXXXXXXX',
+    description: '아빠 펫 정보 (비공개인 경우 hiddenStatus만 포함)',
     required: false,
+    oneOf: [
+      { $ref: getSchemaPath(PetParentDto) },
+      { $ref: getSchemaPath(PetHiddenStatusDto) },
+    ],
   })
   @IsOptional()
-  @IsString()
-  fatherId: string | null;
+  @IsObject()
+  father?: PetParentDto | PetHiddenStatusDto;
 
   @ApiProperty({
-    description: '엄마 펫 ID',
-    example: 'XXXXXXXX',
+    description: '엄마 펫 정보 (비공개인 경우 hiddenStatus만 포함)',
     required: false,
+    oneOf: [
+      { $ref: getSchemaPath(PetParentDto) },
+      { $ref: getSchemaPath(PetHiddenStatusDto) },
+    ],
   })
   @IsOptional()
-  @IsString()
-  motherId: string | null;
+  @IsObject()
+  mother?: PetParentDto | PetHiddenStatusDto;
 
   @ApiProperty({
     description: '형제 펫 목록',

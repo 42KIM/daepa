@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { PetRelationEntity } from './pet_relation.entity';
 import { PARENT_ROLE } from '../parent_request/parent_request.constants';
@@ -7,10 +12,17 @@ import {
   GetSiblingsWithDetailsDataDto,
   SiblingPetDetailDto,
 } from './pet_relation.dto';
+import { ParentRequestService } from '../parent_request/parent_request.service';
+import { PetEntity } from '../pet/pet.entity';
+import { replaceParentPublicSafe } from '../common/utils/pet-parent.helper';
 
 @Injectable()
 export class PetRelationService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    @Inject(forwardRef(() => ParentRequestService))
+    private readonly parentRequestService: ParentRequestService,
+  ) {}
 
   /**
    * 펫의 부모 관계 정보를 업데이트합니다 (Upsert)
@@ -141,28 +153,36 @@ export class PetRelationService {
   /**
    * 특정 펫의 형제 펫들을 모든 관련 정보와 함께 조회
    * @param petId - 대상 펫 ID
+   * @param userId - 요청 사용자 ID
    * @param manager - 선택적 EntityManager
    * @returns 부모 정보와 형제 펫들의 상세 정보
    */
   async getSiblingsWithDetails(
     petId: string,
+    userId: string,
     manager?: EntityManager,
   ): Promise<GetSiblingsWithDetailsDataDto> {
     const run = async (em: EntityManager) => {
       // Step 1: 대상 펫의 부모 정보 조회
-      const targetRelation = await em.findOne(PetRelationEntity, {
-        where: { petId },
-      });
+      const { father: rawFather, mother: rawMother } =
+        await this.parentRequestService.getParentsWithRequestStatus(petId, em);
 
-      if (!targetRelation?.fatherId && !targetRelation?.motherId) {
+      // pet 조회로 ownerId 획득
+      const pet = await em.findOne(PetEntity, { where: { petId } });
+      if (!pet) {
+        throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
+
+      const father = replaceParentPublicSafe(rawFather, pet.ownerId, userId);
+      const mother = replaceParentPublicSafe(rawMother, pet.ownerId, userId);
+
+      if (!father && !mother) {
         return {
-          fatherId: null,
-          motherId: null,
+          father: father ?? undefined,
+          mother: mother ?? undefined,
           siblings: [],
         };
       }
-
-      const { fatherId, motherId } = targetRelation;
 
       // Step 2: 모든 형제 펫 정보를 한 번에 조회 (JOIN 사용)
       const queryBuilder = em
@@ -208,24 +228,20 @@ export class PetRelationService {
         ])
         .andWhere('p.is_deleted = :isDeleted', { isDeleted: false });
 
-      if (!fatherId && !motherId) {
-        return {
-          fatherId: null,
-          motherId: null,
-          siblings: [],
-        };
-      }
-
       // fatherId 조건 (null 처리)
-      if (fatherId) {
-        queryBuilder.andWhere('pr.father_id = :fatherId', { fatherId });
+      if (father && !('hiddenStatus' in father) && father.petId) {
+        queryBuilder.andWhere('pr.father_id = :fatherId', {
+          fatherId: father.petId,
+        });
       } else {
         queryBuilder.andWhere('pr.father_id IS NULL');
       }
 
       // motherId 조건 (null 처리)
-      if (motherId) {
-        queryBuilder.andWhere('pr.mother_id = :motherId', { motherId });
+      if (mother && !('hiddenStatus' in mother) && mother.petId) {
+        queryBuilder.andWhere('pr.mother_id = :motherId', {
+          motherId: mother.petId,
+        });
       } else {
         queryBuilder.andWhere('pr.mother_id IS NULL');
       }
@@ -274,8 +290,8 @@ export class PetRelationService {
       })) as SiblingPetDetailDto[];
 
       return {
-        fatherId,
-        motherId,
+        father: father ?? undefined,
+        mother: mother ?? undefined,
         siblings,
       };
     };
