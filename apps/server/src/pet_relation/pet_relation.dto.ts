@@ -149,7 +149,7 @@ export class SiblingPetDetailDto extends PetSummaryDto {
 /**
  * 형제 펫 조회 응답 데이터
  */
-@ApiExtraModels(PetParentDto, PetHiddenStatusDto)
+@ApiExtraModels(PetParentDto, PetHiddenStatusDto, SiblingPetDetailDto)
 export class GetSiblingsWithDetailsDataDto {
   @ApiProperty({
     description: '아빠 펫 정보 (비공개인 경우 hiddenStatus만 포함)',
@@ -176,11 +176,17 @@ export class GetSiblingsWithDetailsDataDto {
   mother?: PetParentDto | PetHiddenStatusDto;
 
   @ApiProperty({
-    description: '형제 펫 목록',
-    type: [SiblingPetDetailDto],
+    description: '형제 펫 목록 (비공개인 경우 hiddenStatus만 포함)',
+    type: 'array',
+    items: {
+      oneOf: [
+        { $ref: getSchemaPath(SiblingPetDetailDto) },
+        { $ref: getSchemaPath(PetHiddenStatusDto) },
+      ],
+    },
   })
   @IsArray()
-  siblings: SiblingPetDetailDto[];
+  siblings: (SiblingPetDetailDto | PetHiddenStatusDto)[];
 }
 
 /**

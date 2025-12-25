@@ -12,9 +12,13 @@ import {
   GetSiblingsWithDetailsDataDto,
   SiblingPetDetailDto,
 } from './pet_relation.dto';
+import { PetHiddenStatusDto } from '../pet/pet.dto';
 import { ParentRequestService } from '../parent_request/parent_request.service';
 import { PetEntity } from '../pet/pet.entity';
-import { replaceParentPublicSafe } from '../common/utils/pet-parent.helper';
+import {
+  replaceParentPublicSafe,
+  replaceSiblingPublicSafe,
+} from '../common/utils/pet-parent.helper';
 
 @Injectable()
 export class PetRelationService {
@@ -246,48 +250,50 @@ export class PetRelationService {
         queryBuilder.andWhere('pr.mother_id IS NULL');
       }
 
-      // TODO: 비공개 펫인 경우(내펫인 경우와 남의펫인 경우 구분해서) 마스킹 필요
-
       const rawSiblings: RawSiblingQueryResult[] =
         await queryBuilder.getRawMany();
 
-      // Step 3: 데이터 변환
-      const siblings = rawSiblings.map((raw) => ({
-        petId: raw.petId,
-        type: raw.type,
-        name: raw.name ?? undefined,
-        species: raw.species,
-        hatchingDate: raw.hatchingDate ?? undefined,
-        isPublic: raw.isPublic,
-        isDeleted: raw.isDeleted,
-        owner: {
-          userId: raw.owner_userId ?? undefined,
-          name: raw.owner_name ?? undefined,
-          role: raw.owner_role ?? undefined,
-          isBiz: raw.owner_isBiz ?? undefined,
-          status: raw.owner_status ?? undefined,
-        },
-        sex: raw.sex ?? undefined,
-        morphs: raw.morphs ?? undefined,
-        traits: raw.traits ?? undefined,
-        weight: raw.weight ?? undefined,
-        growth: raw.growth ?? undefined,
-        laying: raw.laying_id
-          ? {
-              id: raw.laying_id,
-              matingId: raw.laying_matingId,
-              layingDate: raw.laying_layingDate,
-              clutch: raw.laying_clutch,
-            }
-          : undefined,
-        mating: raw.mating_id
-          ? {
-              id: raw.mating_id,
-              pairId: raw.mating_pairId,
-              matingDate: raw.mating_matingDate,
-            }
-          : undefined,
-      })) as SiblingPetDetailDto[];
+      // Step 3: 데이터 변환 및 비공개 펫 마스킹
+      const siblings = rawSiblings.map((raw) => {
+        const sibling = {
+          petId: raw.petId,
+          type: raw.type,
+          name: raw.name ?? undefined,
+          species: raw.species,
+          hatchingDate: raw.hatchingDate ?? undefined,
+          isPublic: raw.isPublic,
+          isDeleted: raw.isDeleted,
+          owner: {
+            userId: raw.owner_userId ?? undefined,
+            name: raw.owner_name ?? undefined,
+            role: raw.owner_role ?? undefined,
+            isBiz: raw.owner_isBiz ?? undefined,
+            status: raw.owner_status ?? undefined,
+          },
+          sex: raw.sex ?? undefined,
+          morphs: raw.morphs ?? undefined,
+          traits: raw.traits ?? undefined,
+          weight: raw.weight ?? undefined,
+          growth: raw.growth ?? undefined,
+          laying: raw.laying_id
+            ? {
+                id: raw.laying_id,
+                matingId: raw.laying_matingId,
+                layingDate: raw.laying_layingDate,
+                clutch: raw.laying_clutch,
+              }
+            : null,
+          mating: raw.mating_id
+            ? {
+                id: raw.mating_id,
+                pairId: raw.mating_pairId,
+                matingDate: raw.mating_matingDate,
+              }
+            : null,
+        } as SiblingPetDetailDto;
+
+        return replaceSiblingPublicSafe(sibling, userId);
+      });
 
       return {
         father: father ?? undefined,
