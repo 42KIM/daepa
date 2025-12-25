@@ -12,7 +12,6 @@ import {
   GetSiblingsWithDetailsDataDto,
   SiblingPetDetailDto,
 } from './pet_relation.dto';
-import { PetHiddenStatusDto } from '../pet/pet.dto';
 import { ParentRequestService } from '../parent_request/parent_request.service';
 import { PetEntity } from '../pet/pet.entity';
 import {
