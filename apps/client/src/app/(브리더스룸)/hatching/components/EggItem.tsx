@@ -1,4 +1,8 @@
-import { PetSummaryLayingDto, UpdatePetDtoEggStatus } from "@repo/api-client";
+import {
+  PetSummaryLayingDto,
+  PetSummaryLayingDtoEggStatus,
+  UpdatePetDtoEggStatus,
+} from "@repo/api-client";
 import { Edit, Trash2, CheckCircle2, XCircle, CircleOff, CircleAlert } from "lucide-react";
 import DropdownMenuIcon from "./DropdownMenuIcon";
 import { DateTime } from "luxon";
@@ -89,34 +93,26 @@ const EggItem = ({
               </span>
             )}
           </div>
-          <div className="font-[500] text-red-600">
-            <span className="text-xs font-[400]">예상 : </span>
-            {getExpectedDate(pet.temperature)}
-          </div>
+          {!isHatched && pet.eggStatus === PetSummaryLayingDtoEggStatus.FERTILIZED && (
+            <div className="text-xs font-[500] text-blue-600">
+              <span className="font-[400]">예상 해칭일: </span>
+              {getExpectedDate(pet.temperature)}
+            </div>
+          )}
         </div>
       </div>
 
       {!isHatched ? (
         <div className="flex">
           {!isMobile ? (
-            <>
-              <Select
-                value={pet.eggStatus}
-                handleValueChange={handleUpdate}
-                selectItems={{ FERTILIZED: "유정란", UNFERTILIZED: "무정란", DEAD: "중지" }}
-                triggerClassName={
-                  pet.eggStatus === "FERTILIZED" ? "bg-yellow-100 text-yellow-700 border-none " : ""
-                }
-              />
-
-              <button
-                type="button"
-                className="ml-1 rounded-lg bg-blue-100/60 px-2 text-xs font-[600] text-blue-500 hover:bg-blue-200/60"
-                onClick={handleHatching}
-              >
-                해칭 완료
-              </button>
-            </>
+            <Select
+              value={pet.eggStatus}
+              handleValueChange={handleUpdate}
+              selectItems={{ FERTILIZED: "유정란", UNFERTILIZED: "무정란", DEAD: "중지" }}
+              triggerClassName={
+                pet.eggStatus === "FERTILIZED" ? "bg-yellow-100 text-yellow-700 border-none " : ""
+              }
+            />
           ) : (
             <>
               {/* 상태 변경 드롭다운 */}
