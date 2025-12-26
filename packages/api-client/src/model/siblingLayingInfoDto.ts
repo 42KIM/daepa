@@ -5,17 +5,14 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { SiblingLayingInfoDtoMatingId } from "./siblingLayingInfoDtoMatingId";
-import type { SiblingLayingInfoDtoLayingDate } from "./siblingLayingInfoDtoLayingDate";
-import type { SiblingLayingInfoDtoClutch } from "./siblingLayingInfoDtoClutch";
 
 export interface SiblingLayingInfoDto {
   /** 산란 ID */
   id: number;
   /** 메이팅 ID */
-  matingId?: SiblingLayingInfoDtoMatingId;
+  matingId?: number;
   /** 산란 날짜 */
-  layingDate?: SiblingLayingInfoDtoLayingDate;
+  layingDate?: string;
   /** 차수(클러치) */
-  clutch?: SiblingLayingInfoDtoClutch;
+  clutch?: number;
 }

@@ -5,14 +5,12 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
-import type { SiblingMatingInfoDtoPairId } from "./siblingMatingInfoDtoPairId";
-import type { SiblingMatingInfoDtoMatingDate } from "./siblingMatingInfoDtoMatingDate";
 
 export interface SiblingMatingInfoDto {
   /** 메이팅 ID */
   id: number;
   /** 펫 쌍 ID */
-  pairId?: SiblingMatingInfoDtoPairId;
+  pairId?: number;
   /** 메이팅 날짜 */
-  matingDate?: SiblingMatingInfoDtoMatingDate;
+  matingDate?: string;
 }

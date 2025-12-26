@@ -70,7 +70,7 @@ export class SiblingLayingInfoDto {
   })
   @IsNumber()
   @IsOptional()
-  matingId: number | null;
+  matingId?: number;
 
   @ApiProperty({
     description: '산란 날짜',
@@ -79,7 +79,7 @@ export class SiblingLayingInfoDto {
   })
   @IsDate()
   @IsOptional()
-  layingDate: Date | null;
+  layingDate?: Date;
 
   @ApiProperty({
     description: '차수(클러치)',
@@ -88,7 +88,7 @@ export class SiblingLayingInfoDto {
   })
   @IsNumber()
   @IsOptional()
-  clutch: number | null;
+  clutch?: number;
 }
 
 /**
@@ -109,7 +109,7 @@ export class SiblingMatingInfoDto {
   })
   @IsNumber()
   @IsOptional()
-  pairId: number | null;
+  pairId?: number;
 
   @ApiProperty({
     description: '메이팅 날짜',
@@ -118,7 +118,7 @@ export class SiblingMatingInfoDto {
   })
   @IsDate()
   @IsOptional()
-  matingDate: Date | null;
+  matingDate?: Date;
 }
 
 /**
