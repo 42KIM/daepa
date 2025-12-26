@@ -51,6 +51,7 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
   );
   const layingRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const prevLayingCountRef = useRef<number>(sortedLayingsByDate.length);
+  const prevMatingIdRef = useRef<number>(mating.id);
 
   const scrollToLaying = useCallback((layingId: number) => {
     const element = layingRefs.current.get(layingId);
@@ -78,6 +79,24 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
 
     prevLayingCountRef.current = currentCount;
   }, [sortedLayingsByDate, scrollToLaying]);
+
+  // 시즌이 변경되면 첫 번째 차수로 자동 포커스
+  useEffect(() => {
+    // mating.id가 변경되었을 때 (시즌 변경)
+    if (
+      prevMatingIdRef.current !== mating.id &&
+      sortedLayingsByDate.length > 0 &&
+      sortedLayingsByDate[0]
+    ) {
+      const firstLaying = sortedLayingsByDate[0];
+      // 약간의 지연을 주어 DOM이 렌더링된 후 스크롤
+      setTimeout(() => {
+        scrollToLaying(firstLaying.layingId);
+      }, 100);
+    }
+
+    prevMatingIdRef.current = mating.id;
+  }, [mating.id, scrollToLaying, sortedLayingsByDate]);
 
   const handleAddLayingClick = () => {
     overlay.open(({ isOpen, close }) => (
@@ -142,7 +161,7 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
             onClick={handleAddLayingClick}
             className="flex w-fit shrink-0 items-center gap-1 rounded-lg bg-blue-100 px-2 py-0.5 text-[14px] text-blue-600"
           >
-            +
+            {sortedLayingsByDate.length === 0 && "산란 추가 "}+
           </button>
           {sortedLayingsByDate && sortedLayingsByDate.length > 0 && (
             <div className="flex gap-1">
