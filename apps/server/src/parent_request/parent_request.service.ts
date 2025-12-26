@@ -10,7 +10,6 @@ import { EntityManager, DataSource, In } from 'typeorm';
 import { ParentRequestEntity } from './parent_request.entity';
 import {
   CreateParentDto,
-  CreateParentRequestDto,
   UnlinkParentDto,
   UpdateParentRequestDto,
 } from './parent_request.dto';
@@ -28,6 +27,7 @@ import { UserNotificationEntity } from 'src/user_notification/user_notification.
 import { CreateUserNotificationDto } from 'src/user_notification/user_notification.dto';
 import { PairEntity } from 'src/pair/pair.entity';
 import { plainToInstance } from 'class-transformer';
+import { PetRelationService } from '../pet_relation/pet_relation.service';
 
 interface ParentRawData {
   pr_status: PARENT_STATUS;
@@ -52,6 +52,7 @@ interface ParentRawData {
 export class ParentRequestService {
   constructor(
     private readonly userNotificationService: UserNotificationService,
+    private readonly petRelationService: PetRelationService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -159,6 +160,16 @@ export class ParentRequestService {
         message,
         status: isParentMyPet ? PARENT_STATUS.APPROVED : PARENT_STATUS.PENDING,
       });
+
+      // isParentMyPet인 경우는 연동상태가 즉시 확정이기 때문에 pet_relation에 펫-부모 정보를 업데이트한다.
+      if (isParentMyPet) {
+        await this.petRelationService.upsertParentRelation(
+          childPetId,
+          role,
+          parentId,
+          entityManager,
+        );
+      }
 
       // 내 펫이 아닌 경우 요청 알림 전송
       if (!isParentMyPet) {
@@ -299,6 +310,15 @@ export class ParentRequestService {
         }
       }
 
+      // APPROVED 상태였던 부모 관계를 해제하는 경우 pet_relations 업데이트
+      if (parentRequest.status === PARENT_STATUS.APPROVED) {
+        await this.petRelationService.removeParentRelation(
+          petId,
+          role,
+          entityManager,
+        );
+      }
+
       await entityManager.update(
         ParentRequestEntity,
         { id: parentRequest.id },
@@ -368,6 +388,16 @@ export class ParentRequestService {
         updateParentRequestDto,
       );
 
+      // updateParentRequestDto.status가 approved인 경우는 펫-부모 정보를 업데이트한다.
+      if (updateParentRequestDto.status === PARENT_STATUS.APPROVED) {
+        await this.petRelationService.upsertParentRelation(
+          parentRequest.childPetId,
+          parentRequest.role,
+          parentRequest.parentPetId,
+          entityManager,
+        );
+      }
+
       // 상대방에게 답장 알림 전송
       const createNotification: CreateUserNotificationDto = {
         receiverId: existingNotification.senderId,
@@ -411,140 +441,6 @@ export class ParentRequestService {
         { id: existingNotification.id },
         { detailJson: updateExistingNotification },
       );
-    });
-  }
-
-  private async createParentRequest(
-    entityManager: EntityManager,
-    createParentRequestDto: CreateParentRequestDto,
-  ): Promise<ParentRequestEntity> {
-    const parentPetExists = await entityManager.existsBy(PetEntity, {
-      petId: createParentRequestDto.parentPetId,
-    });
-
-    if (!parentPetExists) {
-      throw new NotFoundException('부모 펫을 찾을 수 없습니다.');
-    }
-
-    // 기존 요청이 있는지 확인 (중복 방지)
-    const existingRequest = await entityManager.existsBy(ParentRequestEntity, {
-      childPetId: createParentRequestDto.childPetId,
-      parentPetId: createParentRequestDto.parentPetId,
-      status: PARENT_STATUS.PENDING,
-    });
-
-    if (existingRequest) {
-      throw new ConflictException('이미 존재하는 부모 연동 요청입니다.');
-    }
-
-    const parentRequest = entityManager.create(ParentRequestEntity, {
-      childPetId: createParentRequestDto.childPetId,
-      parentPetId: createParentRequestDto.parentPetId,
-      role: createParentRequestDto.role,
-      status: createParentRequestDto.status ?? PARENT_STATUS.PENDING,
-      message: createParentRequestDto.message,
-    });
-
-    return await entityManager.save(ParentRequestEntity, parentRequest);
-  }
-
-  async findActiveRequestByChildAndParent(
-    entityManager: EntityManager,
-    childPetId: string,
-    parentPetId: string,
-  ): Promise<ParentRequestEntity | null> {
-    return await entityManager.findOne(ParentRequestEntity, {
-      where: {
-        childPetId,
-        parentPetId,
-        status: In([PARENT_STATUS.PENDING, PARENT_STATUS.APPROVED]),
-      },
-      select: ['id', 'childPetId', 'parentPetId', 'role', 'status', 'message'],
-    });
-  }
-
-  async findPendingRequestByChildAndParent(
-    entityManager: EntityManager,
-    childPetId: string,
-    parentPetId: string,
-  ): Promise<ParentRequestEntity | null> {
-    return await entityManager.findOne(ParentRequestEntity, {
-      where: {
-        childPetId,
-        parentPetId,
-        status: PARENT_STATUS.PENDING,
-      },
-      select: ['id', 'childPetId', 'parentPetId', 'role', 'status', 'message'],
-    });
-  }
-
-  async findPendingRequestByChildAndRole(
-    childPetId: string,
-  ): Promise<ParentRequestEntity | null> {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      return await entityManager.findOne(ParentRequestEntity, {
-        where: {
-          childPetId,
-          status: PARENT_STATUS.PENDING,
-        },
-        select: [
-          'id',
-          'childPetId',
-          'parentPetId',
-          'role',
-          'status',
-          'message',
-        ],
-      });
-    });
-  }
-
-  async deleteParentRequest(
-    childPetId: string,
-    parentPetId: string,
-  ): Promise<void> {
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      const parentRequest = await entityManager.findOne(ParentRequestEntity, {
-        where: {
-          childPetId,
-          parentPetId,
-        },
-        select: ['id'],
-      });
-
-      if (parentRequest) {
-        await entityManager.update(
-          ParentRequestEntity,
-          { id: parentRequest.id },
-          { status: PARENT_STATUS.DELETED },
-        );
-      }
-    });
-  }
-
-  async deleteAllParentRequestsByPet(
-    petId: string,
-    manager?: EntityManager,
-  ): Promise<void> {
-    const run = async (em: EntityManager) => {
-      await em
-        .createQueryBuilder()
-        .update(ParentRequestEntity)
-        .set({ status: PARENT_STATUS.DELETED })
-        .where('status != :deletedStatus', {
-          deletedStatus: PARENT_STATUS.DELETED,
-        })
-        .andWhere('(childPetId = :petId OR parentPetId = :petId)', { petId })
-        .execute();
-    };
-
-    if (manager) {
-      await run(manager);
-      return;
-    }
-
-    return this.dataSource.transaction(async (entityManager: EntityManager) => {
-      await run(entityManager);
     });
   }
 

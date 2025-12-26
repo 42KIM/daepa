@@ -3,7 +3,6 @@
 import { petControllerFindPetByPetId } from "@repo/api-client";
 import { RefObject, use, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Ban } from "lucide-react";
 
 import BreedingInfo from "./components/펫정보";
 import Header from "./components/Header";
@@ -12,6 +11,7 @@ import Images from "./components/이미지";
 import PedigreeInfo from "./components/혈통정보";
 import Loading from "@/components/common/Loading";
 import { isAxiosError } from "axios";
+import Image from "next/image";
 
 interface PetDetailPageProps {
   params: Promise<{
@@ -147,7 +147,8 @@ function PetDetailPage({ params }: PetDetailPageProps) {
   if (isError && isAxiosError(error)) {
     const status = error?.response?.status;
     return (
-      <div className="flex h-full flex-1 flex-col items-center justify-center gap-2">
+      <div className="flex h-[calc(100vh-52px)] flex-1 flex-col items-center justify-center gap-2">
+        <Image src="/assets/lizard.png" alt="Error" width={150} height={150} />
         <p className="text-lg font-semibold text-gray-700">
           {status === 404 ? "펫을 찾을 수 없습니다" : "펫 정보를 불러오는 중 오류가 발생했습니다"}
         </p>
@@ -163,20 +164,20 @@ function PetDetailPage({ params }: PetDetailPageProps) {
   // 삭제된 펫인 경우 처리
   if (pet.isDeleted) {
     return (
-      <div className="mt-10 flex flex-1 items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Ban className="h-12 w-12 text-red-600" />
+      <div className="flex h-[calc(100vh-52px)] flex-1 items-center justify-center">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <Image src="/assets/lizard.png" alt="Error" width={150} height={150} />
 
-          <div className="space-y-1">
+          <div>
             <h1 className="text-[16px] font-[500] text-gray-900">삭제된 펫입니다</h1>
-            <p className="text-[14px] font-[500] text-gray-500">
+            <p className="text-[14px] text-gray-500">
               <span className="font-semibold">{pet.name}</span>은(는) 삭제되어 더 이상 조회할 수
               없습니다.
             </p>
           </div>
 
           {pet.deletedAt && (
-            <div className="text-xs text-red-400">
+            <div className="text-xs font-[600] text-red-400">
               삭제 일시:{" "}
               {new Date(pet.deletedAt).toLocaleDateString("ko-KR", {
                 year: "numeric",

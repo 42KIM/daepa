@@ -49,7 +49,7 @@ const MatingDetailDialog = ({
 
   const [selectedMatingId, setSelectedMatingId] = useState<number | null>(null);
 
-  // Dialog 오픈 시 가장 최근 메이팅 선택
+  // Dialog 오픈/클로즈 상태 감지
   useEffect(() => {
     if (isOpen && matingGroup?.matingsByDate?.[0]) {
       setSelectedMatingId(matingGroup.matingsByDate[0].id);

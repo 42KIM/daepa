@@ -76,7 +76,7 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
               <Link href={`/pet/${pet.petId}`} key={pet.petId} className="w-full">
                 <div
                   className={cn(
-                    "flex w-full flex-1 items-center justify-between p-2 text-[14px] hover:rounded-xl hover:bg-gray-100",
+                    "flex w-full flex-1 items-center p-2 text-[14px] hover:rounded-xl hover:bg-gray-100",
                   )}
                 >
                   <div className="flex">
