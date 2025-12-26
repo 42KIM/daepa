@@ -176,7 +176,10 @@ export class PetService {
     });
   }
 
-  async findPetByPetId(petId: string): Promise<PetSingleDto> {
+  async findPetByPetId(
+    petId: string,
+    currentUserId: string | null = null,
+  ): Promise<PetSingleDto> {
     return this.dataSource.transaction(async (entityManager: EntityManager) => {
       const pet = await entityManager.findOne(PetEntity, {
         where: { petId },
@@ -184,6 +187,15 @@ export class PetService {
 
       if (!pet) {
         throw new NotFoundException('펫을 찾을 수 없습니다.');
+      }
+
+      // 비공개 펫인 경우 소유자만 접근 가능
+      if (!pet.isPublic) {
+        // 인증되지 않았거나 소유자가 아닌 경우
+        if (!currentUserId || pet.ownerId !== currentUserId) {
+          // 404를 반환하여 펫의 존재 여부를 숨김 (보안)
+          throw new NotFoundException('펫을 찾을 수 없습니다.');
+        }
       }
 
       let petDetail: PetDetailEntity | null = null;

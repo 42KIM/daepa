@@ -24,6 +24,13 @@ export const JwtUser = createParamDecorator(
   },
 );
 
+export const OptionalJwtUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest<{ user?: JwtUserPayload }>();
+    return request.user ?? null;
+  },
+);
+
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
@@ -62,5 +69,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     return user;
+  }
+}
+
+@Injectable()
+export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
+  handleRequest<TUser = JwtUserPayload>(err: any, user: TUser) {
+    // 인증 실패해도 에러를 던지지 않고 null 반환
+    // 이를 통해 공개 펫은 누구나 볼 수 있고, 비공개 펫은 소유자만 볼 수 있게 함
+    return user || null;
   }
 }
