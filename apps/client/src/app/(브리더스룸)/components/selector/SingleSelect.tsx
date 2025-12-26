@@ -22,7 +22,7 @@ const SingleSelect = ({
   onSelect,
   disabled = false,
   showTitle = false,
-  saveASAP = true,
+  saveASAP = false,
 }: SingleSelectProps) => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);

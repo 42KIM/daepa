@@ -24,15 +24,14 @@ const DeleteMatingModal = ({ isOpen, onClose, matingId, matingDate }: DeleteMati
       const { data } = await deleteMating();
 
       toast.success(data.message ?? "메이팅 정보가 삭제되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      onClose();
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(error.response?.data?.message ?? "메이팅 삭제에 실패했습니다.");
       } else {
         toast.error("메이팅 삭제에 실패했습니다.");
       }
-    } finally {
-      onClose();
     }
   };
 

@@ -1234,9 +1234,18 @@ export const getPetControllerGetSiblingsByPetIdResponseSiblingPetDetailDtoMock =
       {
         ...{
           id: faker.number.int({ min: undefined, max: undefined }),
-          matingId: faker.helpers.arrayElement([{}, undefined]),
-          layingDate: faker.helpers.arrayElement([{}, undefined]),
-          clutch: faker.helpers.arrayElement([{}, undefined]),
+          matingId: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          layingDate: faker.helpers.arrayElement([
+            `${faker.date.past().toISOString().split(".")[0]}Z`,
+            undefined,
+          ]),
+          clutch: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
         },
       },
       undefined,
@@ -1245,8 +1254,14 @@ export const getPetControllerGetSiblingsByPetIdResponseSiblingPetDetailDtoMock =
       {
         ...{
           id: faker.number.int({ min: undefined, max: undefined }),
-          pairId: faker.helpers.arrayElement([{}, undefined]),
-          matingDate: faker.helpers.arrayElement([{}, undefined]),
+          pairId: faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            undefined,
+          ]),
+          matingDate: faker.helpers.arrayElement([
+            `${faker.date.past().toISOString().split(".")[0]}Z`,
+            undefined,
+          ]),
         },
       },
       undefined,

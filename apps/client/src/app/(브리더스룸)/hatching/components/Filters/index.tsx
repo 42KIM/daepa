@@ -50,6 +50,7 @@ const Filters = () => {
       <SingleSelect
         showTitle
         type="species"
+        saveASAP
         initialItem={species}
         onSelect={(item) => {
           const changed = species !== item;

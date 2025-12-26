@@ -56,6 +56,7 @@ export function Filters({ showPublicFilter = true }: FiltersProps) {
         showTitle
         type="species"
         initialItem={searchFilters.species}
+        saveASAP
         onSelect={(item) => {
           if (item === searchFilters.species) return;
 

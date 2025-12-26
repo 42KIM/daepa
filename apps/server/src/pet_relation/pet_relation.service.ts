@@ -176,13 +176,10 @@ export class PetRelationService {
         throw new NotFoundException('펫을 찾을 수 없습니다.');
       }
 
-      const father = replaceParentPublicSafe(rawFather, pet.ownerId, userId);
-      const mother = replaceParentPublicSafe(rawMother, pet.ownerId, userId);
-
-      if (!father && !mother) {
+      if (!rawFather && !rawMother) {
         return {
-          father: father ?? undefined,
-          mother: mother ?? undefined,
+          father: undefined,
+          mother: undefined,
           siblings: [],
         };
       }
@@ -232,18 +229,18 @@ export class PetRelationService {
         .andWhere('p.is_deleted = :isDeleted', { isDeleted: false });
 
       // fatherId 조건 (null 처리)
-      if (father && !('hiddenStatus' in father) && father.petId) {
+      if (rawFather) {
         queryBuilder.andWhere('pr.father_id = :fatherId', {
-          fatherId: father.petId,
+          fatherId: rawFather.petId,
         });
       } else {
         queryBuilder.andWhere('pr.father_id IS NULL');
       }
 
       // motherId 조건 (null 처리)
-      if (mother && !('hiddenStatus' in mother) && mother.petId) {
+      if (rawMother) {
         queryBuilder.andWhere('pr.mother_id = :motherId', {
-          motherId: mother.petId,
+          motherId: rawMother.petId,
         });
       } else {
         queryBuilder.andWhere('pr.mother_id IS NULL');
@@ -253,6 +250,8 @@ export class PetRelationService {
         await queryBuilder.getRawMany();
 
       // Step 3: 데이터 변환 및 비공개 펫 마스킹
+      const father = replaceParentPublicSafe(rawFather, pet.ownerId, userId);
+      const mother = replaceParentPublicSafe(rawMother, pet.ownerId, userId);
       const siblings = rawSiblings.map((raw) => {
         const sibling = {
           petId: raw.petId,
