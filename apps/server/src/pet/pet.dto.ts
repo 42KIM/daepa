@@ -47,6 +47,13 @@ import { LayingDto } from 'src/laying/laying.dto';
 
 export class PetHiddenStatusDto {
   @ApiProperty({
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @IsString()
+  petId: string;
+
+  @ApiProperty({
     description: '숨김 처리된 원인',
     example: PET_HIDDEN_STATUS.SECRET,
     enum: PET_HIDDEN_STATUS,

@@ -8,6 +8,8 @@
 import type { PetHiddenStatusDtoHiddenStatus } from "./petHiddenStatusDtoHiddenStatus";
 
 export interface PetHiddenStatusDto {
+  /** 펫 아이디 */
+  petId: string;
   /** 숨김 처리된 원인 */
   hiddenStatus: PetHiddenStatusDtoHiddenStatus;
 }

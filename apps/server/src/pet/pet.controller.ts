@@ -32,10 +32,15 @@ import { CommonResponseDto } from 'src/common/response.dto';
 import { JwtUser } from 'src/auth/auth.decorator';
 import { JwtUserPayload } from 'src/auth/strategies/jwt.strategy';
 import { PageDto, PageMetaDto } from 'src/common/page.dto';
+import { PetRelationService } from 'src/pet_relation/pet_relation.service';
+import { GetSiblingsWithDetailsResponseDto } from 'src/pet_relation/pet_relation.dto';
 
 @Controller('/v1/pet')
 export class PetController {
-  constructor(private readonly petService: PetService) {}
+  constructor(
+    private readonly petService: PetService,
+    private readonly petRelationService: PetRelationService,
+  ) {}
 
   @Get()
   @ApiExtraModels(PetDto, PageMetaDto)
@@ -150,6 +155,36 @@ export class PetController {
     return {
       success: true,
       message: '펫 정보 조회 성공',
+      data,
+    };
+  }
+
+  @Get('/siblings/:petId')
+  @ApiParam({
+    name: 'petId',
+    description: '펫 아이디',
+    example: 'XXXXXXXX',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '펫 형제 정보 조회 성공',
+    type: GetSiblingsWithDetailsResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: '펫 형제 정보를 찾을 수 없습니다.',
+  })
+  async getSiblingsByPetId(
+    @Param('petId') petId: string,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<GetSiblingsWithDetailsResponseDto> {
+    const data = await this.petRelationService.getSiblingsWithDetails(
+      petId,
+      token.userId,
+    );
+    return {
+      success: true,
+      message: '펫 형제 정보 조회 성공',
       data,
     };
   }
