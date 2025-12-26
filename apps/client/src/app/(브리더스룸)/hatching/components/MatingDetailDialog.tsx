@@ -231,13 +231,20 @@ const MatingDetailDialog = ({
               </div>
 
               {/* 선택된 메이팅 아이템 */}
-              {selectedMatingId && (
-                <MatingItem
-                  mating={matingGroup.matingsByDate.find((m) => m.id === selectedMatingId)!}
-                  father={matingGroup.father}
-                  mother={matingGroup.mother}
-                />
-              )}
+              {(() => {
+                const selectedMating = matingGroup.matingsByDate.find(
+                  (m) => m.id === selectedMatingId,
+                );
+                if (!selectedMating) return null;
+
+                return (
+                  <MatingItem
+                    mating={selectedMating}
+                    father={matingGroup.father}
+                    mother={matingGroup.mother}
+                  />
+                );
+              })()}
             </div>
           ) : (
             <div className="text-sm text-gray-500">메이팅이 없습니다.</div>

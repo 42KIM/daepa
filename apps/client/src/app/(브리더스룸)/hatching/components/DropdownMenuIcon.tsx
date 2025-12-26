@@ -21,7 +21,7 @@ const DropdownMenuIcon = ({ selectedId, menuItems, triggerIcon }: DropdownMenuIc
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-4 rounded-lg hover:bg-gray-100">
+        <Button variant="ghost" className="w-8 rounded-lg hover:bg-gray-100">
           <span className="sr-only">Open menu</span>
           {triggerIcon || <MoreVertical />}
         </Button>
