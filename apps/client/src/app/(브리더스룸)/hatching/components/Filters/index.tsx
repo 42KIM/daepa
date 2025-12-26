@@ -5,7 +5,7 @@ import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../../components/selector/parentSearch";
 import FilterItem from "./FilterItem";
 // import { format } from "date-fns";
-import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
+import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSelect";
 
 const Filters = () => {
   const {
@@ -40,6 +40,7 @@ const Filters = () => {
         sex={sex}
         onExit={unmount}
         onlySelect
+        allowMyPetOnly
         species={species ?? undefined}
       />
     ));

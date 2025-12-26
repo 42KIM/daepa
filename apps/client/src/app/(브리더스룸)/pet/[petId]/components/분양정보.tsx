@@ -11,7 +11,7 @@ import {
 } from "@repo/api-client";
 import { AxiosError } from "axios";
 import FormItem from "./FormItem";
-import SingleSelect from "@/app/(브리더스룸)/components/SingleSelect";
+import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
@@ -303,7 +303,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
   }, [adoptionData.status]);
 
   return (
-    <div className="shadow-xs flex min-h-[480px] min-w-[300px] flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">분양정보</div>
 
       {!showAdoptionInfo && (
@@ -518,7 +518,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
           <Button
             disabled={isProcessing}
             className={cn(
-              "flex-2 h-10 cursor-pointer rounded-lg font-bold",
+              "h-10 flex-[2] cursor-pointer rounded-lg font-bold",
               isEditMode && "bg-red-600 hover:bg-red-600/90",
               isProcessing && "bg-gray-300",
             )}

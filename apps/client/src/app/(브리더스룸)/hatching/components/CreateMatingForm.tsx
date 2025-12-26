@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import {
@@ -17,11 +16,9 @@ import { format } from "date-fns";
 import CalendarInput from "./CalendarInput";
 import ParentLink from "../../pet/components/ParentLink";
 import { PetParentDtoWithMessage } from "../../pet/store/parentLink";
-import { cn } from "@/lib/utils";
-import { SPECIES_KOREAN_INFO } from "../../constants";
-import { useSelect } from "../../register/hooks/useSelect";
 import { overlay } from "overlay-kit";
 import Dialog from "../../components/Form/Dialog";
+import SingleSelect from "../../components/selector/SingleSelect";
 
 const getInitialFormData = () => ({
   father: undefined,
@@ -36,7 +33,6 @@ interface CreateMatingFormProps {
 
 const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
   const queryClient = useQueryClient();
-  const { handleSelect } = useSelect();
   const [formData, setFormData] = useState<{
     species: PetDtoSpecies;
     father?: PetParentDto;
@@ -85,7 +81,8 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
       });
 
       toast.success("메이팅이 추가되었습니다.");
-      queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      onClose();
       setFormData(getInitialFormData());
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -93,8 +90,6 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
       } else {
         toast.error("메이팅 추가에 실패했습니다.");
       }
-    } finally {
-      onClose();
     }
   };
 
@@ -143,97 +138,90 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
     }
   };
 
-  const handleSpeciesSelect = () => {
-    handleSelect({
+  const handleSpeciesSelect = (item: string) => {
+    if (item === formData.species) return;
+
+    handleNext({
       type: "species",
-      value: formData.species,
-      handleNext,
+      value: item,
     });
   };
 
   return (
-    <Card className="mt-2 w-full border-2 border-blue-200 bg-blue-50/50 dark:bg-gray-800 dark:text-gray-200">
-      <CardHeader>
-        <CardTitle className="text-lg">새 메이팅 추가</CardTitle>
-        <CardDescription className="text-sm text-blue-700 dark:text-blue-400">
-          나의 개체만 선택할 수 있습니다.
-        </CardDescription>
-      </CardHeader>
-      <div className="px-6">
-        <div className="grid gap-6">
-          <div className="space-y-1">
-            <Label className="text-base font-semibold">종</Label>
+    <div className="w-full">
+      <div className="grid gap-4">
+        {/* 종 선택 */}
+        <div className="space-y-1">
+          <Label className="text-[14px] font-semibold">종</Label>
 
-            <div
-              className={cn(
-                "flex h-9 w-full cursor-pointer items-center border-b-[1.2px] border-b-gray-200 pr-1 text-left text-[16px] text-gray-400 transition-all duration-300 ease-in-out placeholder:text-gray-400 focus:border-b-[1.8px] focus:border-[#1A56B3] focus:outline-none focus:ring-0 dark:text-gray-400",
-                `${formData.species && "cursor-pointer text-black"}`,
-              )}
-              onClick={handleSpeciesSelect}
-            >
-              {formData.species
-                ? (SPECIES_KOREAN_INFO[formData.species] ?? "종을 선택하세요")
-                : "종을 선택하세요"}
+          <SingleSelect
+            showTitle
+            type="species"
+            initialItem={formData.species}
+            onSelect={handleSpeciesSelect}
+          />
+        </div>
+
+        {/* 메이팅 날짜 선택 */}
+        <div className="space-y-1">
+          <Label className="text-[14px] font-semibold">메이팅 날짜</Label>
+          <CalendarInput
+            placeholder="메이팅 날짜를 선택하세요"
+            value={formData.matingDate}
+            onSelect={(date) => {
+              if (!date) return;
+              setFormData((prev) => ({
+                ...prev,
+                matingDate: format(date, "yyyy-MM-dd"),
+              }));
+            }}
+          />
+        </div>
+
+        {/* 부모 선택 */}
+        <div>
+          <Label className="text-[14px] font-semibold">
+            부모 개체 선택
+            <span className="text-sm text-green-600 dark:text-blue-400">
+              * 나의 펫만 선택 가능합니다.
+            </span>
+          </Label>
+
+          <div className="grid max-w-lg grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <ParentLink
+                allowMyPetOnly={true}
+                label="부"
+                species={formData.species}
+                data={formData.father}
+                onSelect={(item) => handleParentSelect(UnlinkParentDtoRole.FATHER, item)}
+                onUnlink={handleFatherUnlink}
+              />
             </div>
-          </div>
-
-          {/* 부모 선택 */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">부모 개체 선택</Label>
-            <div className="grid max-w-lg grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm text-gray-600">부 개체</Label>
-                <ParentLink
-                  allowMyPetOnly={true}
-                  label="부"
-                  species={formData.species}
-                  data={formData.father}
-                  onSelect={(item) => handleParentSelect(UnlinkParentDtoRole.FATHER, item)}
-                  onUnlink={handleFatherUnlink}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm text-gray-600">모 개체</Label>
-                <ParentLink
-                  allowMyPetOnly={true}
-                  label="모"
-                  species={formData.species}
-                  data={formData.mother}
-                  onSelect={(item) => handleParentSelect(UnlinkParentDtoRole.MOTHER, item)}
-                  onUnlink={handleMotherUnlink}
-                />
-              </div>
+            <div className="space-y-1">
+              <ParentLink
+                allowMyPetOnly={true}
+                label="모"
+                species={formData.species}
+                data={formData.mother}
+                onSelect={(item) => handleParentSelect(UnlinkParentDtoRole.MOTHER, item)}
+                onUnlink={handleMotherUnlink}
+              />
             </div>
-          </div>
-
-          {/* 메이팅 날짜 선택 */}
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">메이팅 날짜</Label>
-            <CalendarInput
-              placeholder="메이팅 날짜를 선택하세요"
-              value={formData.matingDate}
-              onSelect={(date) => {
-                if (!date) return;
-                setFormData((prev) => ({
-                  ...prev,
-                  matingDate: format(date, "yyyy-MM-dd"),
-                }));
-              }}
-            />
-          </div>
-
-          {/* 버튼 */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
-              취소
-            </Button>
-            <Button disabled={isPending} onClick={handleSubmit}>
-              {isPending ? "추가 중..." : "메이팅 추가"}
-            </Button>
           </div>
         </div>
+
+        {/* 버튼 */}
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>
+            취소
+          </Button>
+          <Button disabled={isPending} onClick={handleSubmit}>
+            {isPending ? "추가 중..." : "메이팅 추가"}
+          </Button>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

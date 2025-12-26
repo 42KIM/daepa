@@ -66,7 +66,7 @@ const Dashboard = memo(() => {
   }, [yearData, isHatchedOnly]);
 
   return (
-    <Card>
+    <Card className="mx-2">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-2">

@@ -10,6 +10,7 @@ import { PetDtoSpecies } from "@repo/api-client";
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Cookie, Info } from "lucide-react";
+import Image from "next/image";
 
 interface RecentlyViewedPet {
   petId: string;
@@ -78,8 +79,8 @@ const RecentlyViewedList = () => {
                 key={item.petId}
                 href={`/pet/${item.petId}`}
                 className={cn(
-                  "group flex items-center gap-3 rounded-2xl p-3 hover:bg-gray-200 dark:hover:bg-neutral-800",
-                  item.petId === petId && "bg-gray-200 dark:bg-neutral-800",
+                  "group flex items-center gap-3 rounded-xl p-2 hover:bg-gray-50 hover:shadow-lg dark:hover:bg-neutral-800",
+                  item.petId === petId && "bg-gray-50 shadow-lg dark:bg-neutral-800",
                 )}
               >
                 {item.photoUrl ? (
@@ -87,7 +88,9 @@ const RecentlyViewedList = () => {
                     <PetThumbnail imageUrl={item.photoUrl} alt={item.name} />
                   </div>
                 ) : (
-                  <div className="bg-foreground/10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl" />
+                  <div className="relative h-10 w-10 rounded-xl bg-white">
+                    <Image src="/assets/lizard.png" alt="최근본 기본 펫 이미지" fill />
+                  </div>
                 )}
                 <div className="flex flex-1 justify-between gap-2 overflow-hidden">
                   <div className="flex items-center justify-between gap-2">

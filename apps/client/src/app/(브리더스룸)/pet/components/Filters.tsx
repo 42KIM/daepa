@@ -6,9 +6,9 @@ import {
   MORPH_LIST_BY_SPECIES,
   SALE_STATUS_KOREAN_INFO,
 } from "../../constants";
-import SelectFilter from "../../components/SingleSelect";
+import SelectFilter from "../../components/selector/SingleSelect";
 import { cn } from "@/lib/utils";
-import MultiSelectFilter from "../../components/MultiSelectFilter";
+import MultiSelectFilter from "../../components/selector/MultiSelect";
 import { useFilterStore } from "../../store/filter";
 
 interface FiltersProps {

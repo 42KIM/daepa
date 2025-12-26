@@ -10,6 +10,7 @@ interface BottomSheetProps {
   secondButtonText?: string;
   onSecondButtonClick?: () => void;
   onClick?: () => void;
+  buttonDisabled?: boolean;
 }
 
 export default function BottomSheet({
@@ -20,6 +21,7 @@ export default function BottomSheet({
   secondButtonText = "",
   onSecondButtonClick = () => {},
   onClick = () => {},
+  buttonDisabled = false,
 }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -71,8 +73,9 @@ export default function BottomSheet({
             )}
             <button
               type="button"
-              className="flex-[2] rounded-2xl bg-[#247DFE] py-3 font-bold text-white"
+              className="flex-[2] rounded-xl bg-[#247DFE] py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
               onClick={onClick}
+              disabled={buttonDisabled}
             >
               {buttonText}
             </button>

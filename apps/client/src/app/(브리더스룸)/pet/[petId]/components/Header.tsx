@@ -1,16 +1,36 @@
-import { Dog } from "lucide-react";
 import QRCode from "./QR코드";
 import Image from "next/image";
 import { buildR2TransformedUrl, cn } from "@/lib/utils";
 import { PetAdoptionDtoStatus, PetDto, petImageControllerFindOne } from "@repo/api-client";
-import { SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
+import { SPECIES_KOREAN_ALIAS_INFO } from "@/app/(브리더스룸)/constants";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { DeletePetDialog } from "./DeletePetDialog";
 import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
 import { useBreedingInfoStore } from "../../store/breedingInfo";
+import { useEffect, useState } from "react";
 
-const Header = ({ pet }: { pet: PetDto }) => {
+type TabType = "breeding" | "adoption" | "images" | "pedigree";
+
+interface HeaderProps {
+  pet: PetDto;
+  tabs: { id: TabType; label: string; ref: React.RefObject<HTMLDivElement | null> }[];
+  activeTab: TabType;
+  onTabClick: (tabId: TabType, ref: React.RefObject<HTMLDivElement | null>) => void;
+}
+
+const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const { data: photos = [] } = useQuery({
     queryKey: [petImageControllerFindOne.name, pet.petId],
     queryFn: () => petImageControllerFindOne(pet.petId),
@@ -25,69 +45,135 @@ const Header = ({ pet }: { pet: PetDto }) => {
   if (!pet) return null;
 
   return (
-    <div className="flex items-center gap-2 pb-3">
-      <div className="h-18 w-18 relative flex items-center justify-center rounded-2xl bg-yellow-200">
-        {photos[0]?.url ? (
-          <Image
-            src={buildR2TransformedUrl(photos[0]?.url)}
-            alt={pet.petId}
-            fill
-            className="rounded-2xl object-cover"
-          />
-        ) : (
-          <Dog className="h-12 w-12 text-gray-500" />
-        )}
-      </div>
-      <div className="flex flex-1 flex-col">
-        <div className="flex items-center gap-2">
-          {pet.name ? (
-            <div className="text-[16px] font-bold">{pet.name}</div>
-          ) : (
-            <div className="flex items-center gap-1 text-[16px] font-bold">
-              {pet.father && "petId" in pet.father && "name" in pet.father ? (
-                <Link href={`/pet/${pet.father?.petId}`} className="text-blue-600 hover:underline">
-                  {pet.father?.name}
-                </Link>
-              ) : (
-                "-"
-              )}
-              x
-              {pet.mother && "petId" in pet.mother && "name" in pet.mother ? (
-                <Link href={`/pet/${pet.mother?.petId}`} className="text-blue-600 hover:underline">
-                  {pet.mother?.name}
-                </Link>
-              ) : (
-                "-"
-              )}
-            </div>
+    <div
+      className={cn(
+        "sticky top-0 z-10 flex flex-col gap-2 bg-gray-100 px-2 transition-all transition-shadow duration-200",
+        isScrolled ? "pt-2 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]" : "",
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            "relative flex items-center justify-center rounded-2xl transition-all",
+            isScrolled ? "h-14 w-14" : "h-18 w-18",
           )}
-          <div className="text-sm text-gray-500">{SPECIES_KOREAN_INFO[pet.species]}</div>
+        >
+          {photos[0]?.url ? (
+            <Image
+              src={buildR2TransformedUrl(photos[0]?.url)}
+              alt={pet.petId}
+              fill
+              className="rounded-2xl object-cover"
+            />
+          ) : (
+            <Image src="/assets/lizard.png" alt="펫 상세 헤더 기본 이미지" fill />
+          )}
         </div>
+        <div className="flex flex-1 flex-col">
+          <div className="flex items-center gap-2">
+            {pet.name ? (
+              <div
+                className={cn(
+                  "flex font-bold transition-all max-[480px]:text-[14px]",
+                  isScrolled ? "text-[14px]" : "text-[16px]",
+                )}
+              >
+                {pet.name}
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "flex items-center gap-1 font-bold transition-all",
+                  isScrolled ? "text-[14px]" : "text-[16px]",
+                )}
+              >
+                {pet.father && "petId" in pet.father && "name" in pet.father ? (
+                  <Link
+                    href={`/pet/${pet.father?.petId}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {pet.father?.name}
+                  </Link>
+                ) : (
+                  "-"
+                )}
+                x
+                {pet.mother && "petId" in pet.mother && "name" in pet.mother ? (
+                  <Link
+                    href={`/pet/${pet.mother?.petId}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {pet.mother?.name}
+                  </Link>
+                ) : (
+                  "-"
+                )}
+              </div>
+            )}
+            <div
+              className={cn(
+                "flex-1 text-gray-500 transition-all max-[480px]:text-xs",
+                isScrolled ? "text-xs" : "text-sm",
+              )}
+            >
+              {SPECIES_KOREAN_ALIAS_INFO[pet.species]}
+            </div>
+          </div>
 
-        <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
+            <div
+              className={cn(
+                "flex w-fit items-center justify-center rounded-md px-2 font-semibold text-white transition-all max-[480px]:h-[22px] max-[480px]:text-xs",
+                isScrolled ? "h-[22px] text-xs" : "h-[26px] text-sm",
+                breedingData?.isPublic ? "bg-neutral-800" : "bg-yellow-500 text-neutral-700",
+              )}
+            >
+              {breedingData?.isPublic ? "공개" : "비공개"}
+            </div>
+            {adoptionData?.status === PetAdoptionDtoStatus.NFS && (
+              <div
+                className={cn(
+                  "flex w-fit items-center justify-center rounded-md bg-pink-500 px-2 font-semibold text-white transition-all max-[480px]:h-[22px] max-[480px]:text-xs",
+                  isScrolled ? "h-[22px] text-xs" : "h-[26px] text-sm",
+                )}
+              >
+                NFS
+              </div>
+            )}
+          </div>
+
           <div
             className={cn(
-              "flex h-[26px] w-fit items-center justify-center rounded-md px-2 text-sm font-semibold text-white",
-              breedingData?.isPublic ? "bg-neutral-800" : "bg-yellow-500 text-neutral-700",
+              "font-semibold text-gray-800 transition-all max-[480px]:text-[16px]",
+              isScrolled ? "text-[16px]" : "text-[18px]",
             )}
           >
-            {breedingData?.isPublic ? "공개" : "비공개"}
+            {adoptionData?.price && `${adoptionData.price.toLocaleString()}원`}
           </div>
-          {adoptionData?.status === PetAdoptionDtoStatus.NFS && (
-            <div className="flex h-[26px] w-fit items-center justify-center rounded-md bg-pink-500 px-2 text-sm font-semibold text-white">
-              NFS
-            </div>
-          )}
         </div>
 
-        <div className="text-[18px] font-semibold text-gray-800">
-          {adoptionData?.price && `${adoptionData.price.toLocaleString()}원`}
+        <div className="flex items-center gap-2">
+          <DeletePetDialog petId={pet.petId} petName={pet.name} />
+          <QRCode petId={pet.petId} isScrolled={isScrolled} />
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <DeletePetDialog petId={pet.petId} petName={pet.name} />
-        <QRCode petId={pet.petId} />
+      {/* Tab Navigation - Only visible on screens 580px or smaller */}
+      <div className="hidden overflow-x-auto border-b border-gray-200 max-[580px]:flex">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabClick(tab.id, tab.ref)}
+            className={cn(
+              "whitespace-nowrap px-4 py-2 text-sm transition-colors",
+              activeTab === tab.id
+                ? "border-b-2 border-neutral-800 font-[600]"
+                : "text-neutral-600 hover:bg-gray-200",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
     </div>
   );

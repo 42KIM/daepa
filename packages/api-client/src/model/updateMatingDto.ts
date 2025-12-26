@@ -13,4 +13,6 @@ export interface UpdateMatingDto {
   motherId?: string;
   /** 메이팅 날짜 */
   matingDate: string;
+  /** 해칭 메모 */
+  desc?: string;
 }

@@ -33,6 +33,7 @@ interface MatingsWithPair {
     id: number;
     fatherId: string;
     motherId: string;
+    desc?: string;
   };
 }
 
@@ -50,6 +51,7 @@ interface MatingRelationsCombined {
     id: number;
     fatherId: string;
     motherId: string;
+    desc?: string;
   };
   layings?: LayingLite[];
   parents?: PetSummaryLayingDto[];
@@ -86,6 +88,7 @@ export class MatingService {
         'pairs.fatherId',
         'pairs.motherId',
         'pairs.ownerId',
+        'pairs.desc',
       ])
       .where('pairs.ownerId = :userId', { userId });
 
@@ -143,6 +146,7 @@ export class MatingService {
           id: mating.pair.id,
           fatherId: mating.pair.fatherId,
           motherId: mating.pair.motherId,
+          desc: mating.pair.desc ?? undefined,
         },
       }),
     );
@@ -479,7 +483,7 @@ export class MatingService {
     });
 
     return Object.values(groupedByParents).map((matingByParents) => {
-      const { parents } = matingByParents[0];
+      const { parents, pair } = matingByParents[0];
       const father = parents?.find((parent) => parent.sex === PET_SEX.MALE);
       const mother = parents?.find((parent) => parent.sex === PET_SEX.FEMALE);
 
@@ -511,6 +515,8 @@ export class MatingService {
         father,
         mother,
         matingsByDate,
+        desc: pair?.desc,
+        pairId: pair.id,
       };
     });
   }

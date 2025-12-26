@@ -26,7 +26,7 @@ export class MatingBaseDto {
     description: '펫 쌍 ID',
     example: 'PAIR_XXXXXXXX',
   })
-  @IsString()
+  @IsNumber()
   pairId: number;
 
   @ApiProperty({
@@ -91,7 +91,16 @@ export class UpdateMatingDto extends PickType(MatingBaseDto, [
   'fatherId',
   'motherId',
   'matingDate',
-]) {}
+]) {
+  @ApiProperty({
+    description: '해칭 메모',
+    example: '메이팅 메모입니다.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  desc?: string;
+}
 
 class MatingByDateDto {
   @ApiProperty({
@@ -139,6 +148,22 @@ export class MatingByParentsDto {
     isArray: true,
   })
   matingsByDate: MatingByDateDto[];
+
+  @ApiProperty({
+    description: '페어 메모',
+    example: '이 페어에 대한 메모입니다.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  desc?: string;
+
+  @ApiProperty({
+    description: '펫 쌍 ID',
+    example: 'PAIR_XXXXXXXX',
+  })
+  @IsString()
+  pairId: number;
 }
 
 export class MatingDetailResponseDto extends CommonResponseDto {

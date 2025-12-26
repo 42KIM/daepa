@@ -54,6 +54,15 @@ export class PairBaseDto {
   motherId: string;
 
   @ApiProperty({
+    description: '해칭 메모',
+    example: '메이팅 메모입니다.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  desc?: string;
+
+  @ApiProperty({
     description: '생성일',
   })
   @IsDate()
@@ -210,3 +219,5 @@ export class PairDetailDto {
 }
 
 export class PairFilterDto extends PickType(PairBaseDto, ['species']) {}
+
+export class UpdatePairDto extends PickType(PairBaseDto, ['desc']) {}

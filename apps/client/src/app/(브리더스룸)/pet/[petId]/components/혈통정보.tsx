@@ -100,7 +100,7 @@ const PedigreeInfo = ({
   );
 
   return (
-    <div className="shadow-xs flex h-fit w-full max-w-[650px] flex-col gap-2 rounded-2xl bg-white p-3">
+    <div className="shadow-xs flex flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
       <div className="text-[14px] font-[600] text-gray-600">혈통정보</div>
 
       <div className="flex items-center gap-1 text-[12px] text-gray-500">
@@ -108,7 +108,7 @@ const PedigreeInfo = ({
         이미지 혹은 이름을 클릭하면 상세 페이지로 이동합니다.
       </div>
 
-      <div className="flex gap-3 max-[650px]:flex-col">
+      <div className="flex gap-3 max-[400px]:flex-col">
         <ParentLink
           species={species}
           label="부"

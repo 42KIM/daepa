@@ -124,113 +124,106 @@ const AdoptionTable = () => {
 
   return (
     <div className="relative w-full">
-      <div className="w-full">
-        {/* 헤더 영역 */}
-        <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
-          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">
-            <Plus className="h-3 w-3" />
-          </div>
-          <div
-            onClick={handleCreateAdoption}
-            className="flex cursor-pointer items-center gap-1 px-2 py-1 text-[14px] font-[500] text-blue-600"
-          >
-            분양 정보 추가하기
-          </div>
-        </div>
+      {/* 헤더 영역 */}
 
-        <button
-          type="button"
-          aria-label="검색 결과 새로고침"
-          aria-busy={isRefreshing}
-          disabled={isRefreshing}
-          onClick={async () => {
-            if (isRefreshing) return;
-            setIsRefreshing(true);
-            try {
-              await refetch();
-            } finally {
-              timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
-            }
-          }}
-          className="flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+      <div className={cn("flex w-fit items-center rounded-lg px-2 py-1 hover:bg-gray-100")}>
+        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[14px] font-[500] text-blue-600">
+          <Plus className="h-3 w-3" />
+        </div>
+        <div
+          onClick={handleCreateAdoption}
+          className="flex cursor-pointer items-center gap-1 px-2 py-1 text-[14px] font-[500] text-blue-600"
         >
-          분양 정보 ・{data?.length ?? "?"}개
-          <RefreshCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
-        </button>
-
-        <AdoptionFilters />
-
-        <div className="rounded-md">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead className="font-[400] text-gray-600" key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                <>
-                  {table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      className={cn(
-                        "cursor-pointer",
-                        "bg-purple-50 hover:bg-purple-100 dark:bg-gray-800 dark:hover:bg-purple-800/20",
-                      )}
-                      onClick={() => {
-                        overlay.open(({ isOpen, close }) => (
-                          <AdoptionDetailModal
-                            isOpen={isOpen}
-                            onClose={close}
-                            petId={row.original.petId}
-                            onUpdate={refetch}
-                          />
-                        ));
-                      }}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                  {/* 무한 스크롤 로더 */}
-                  {hasNextPage && (
-                    <TableRow ref={ref}>
-                      <TableCell colSpan={columns.length} className="h-20 text-center">
-                        {isFetchingNextPage ? (
-                          <div className="flex items-center justify-center">
-                            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500" />
-                          </div>
-                        ) : (
-                          <Loading />
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </>
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    분양 정보가 없습니다.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          분양 정보 추가하기
         </div>
+      </div>
+
+      <button
+        type="button"
+        aria-label="검색 결과 새로고침"
+        aria-busy={isRefreshing}
+        disabled={isRefreshing}
+        onClick={async () => {
+          if (isRefreshing) return;
+          setIsRefreshing(true);
+          try {
+            await refetch();
+          } finally {
+            timeoutRef.current = setTimeout(() => setIsRefreshing(false), 500);
+          }
+        }}
+        className="flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+      >
+        분양 정보 ・{data?.length ?? "?"}개
+        <RefreshCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+      </button>
+
+      <AdoptionFilters />
+
+      <div className="rounded-md">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead className="font-[400] text-gray-600" key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              <>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={cn(
+                      "cursor-pointer",
+                      "bg-purple-50 hover:bg-purple-100 dark:bg-gray-800 dark:hover:bg-purple-800/20",
+                    )}
+                    onClick={() => {
+                      overlay.open(({ isOpen, close }) => (
+                        <AdoptionDetailModal
+                          isOpen={isOpen}
+                          onClose={close}
+                          petId={row.original.petId}
+                          onUpdate={refetch}
+                        />
+                      ));
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+                {/* 무한 스크롤 로더 */}
+                {hasNextPage && (
+                  <TableRow ref={ref}>
+                    <TableCell colSpan={columns.length} className="h-20 text-center">
+                      {isFetchingNextPage && <Loading />}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  분양 정보가 없습니다.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

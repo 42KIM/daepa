@@ -42,19 +42,25 @@ const MonthlyCalendar = memo(() => {
 
     return Object.entries(monthlyData).reduce(
       (acc, [date, pets]) => {
-        const hatched = pets.filter((pet) => pet.type === PetDtoType.PET).length;
-        const egg = pets.filter((pet) => pet.type === PetDtoType.EGG).length;
+        // 현재 탭에 맞는 펫만 필터링
+        const filteredPets =
+          tab === "all"
+            ? pets
+            : pets.filter((pet) => pet.type === tab);
+
+        const hatched = filteredPets.filter((pet) => pet.type === PetDtoType.PET).length;
+        const egg = filteredPets.filter((pet) => pet.type === PetDtoType.EGG).length;
 
         acc[date] = {
           hatched,
           egg,
-          total: pets.length,
+          total: filteredPets.length,
         };
         return acc;
       },
       {} as Record<string, { hatched: number; egg: number; total: number }>,
     );
-  }, [monthlyData]);
+  }, [monthlyData, tab]);
 
   const visibleData = useMemo(() => (monthlyData ?? {}) as Record<string, PetDto[]>, [monthlyData]);
   const sortedEntries = useMemo(() => {
@@ -84,86 +90,84 @@ const MonthlyCalendar = memo(() => {
   }, [sortedEntries]);
 
   return (
-    <div>
-      <div className="flex gap-4 max-[700px]:flex-col">
-        <Calendar
-          mode="single"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
-          onSelect={(date) => {
-            if (!date) return;
-            setSelectedDate(date);
-          }}
-          eggCounts={petCounts}
-        />
+    <div className="flex gap-4 px-2 max-[700px]:flex-col">
+      <Calendar
+        mode="single"
+        selected={selectedDate ? new Date(selectedDate) : undefined}
+        onSelect={(date) => {
+          if (!date) return;
+          setSelectedDate(date);
+        }}
+        eggCounts={petCounts}
+      />
 
-        <div>
-          <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
-            <button
-              onClick={() => setTab("all")}
-              className={cn(
-                "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
-                tab === "all" ? "bg-white shadow-sm" : "text-gray-600",
-              )}
-            >
-              전체
-            </button>
-            <button
-              onClick={() => setTab(PetDtoType.EGG)}
-              className={cn(
-                "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
-                tab === PetDtoType.EGG ? "bg-white shadow-sm" : "text-gray-600",
-              )}
-            >
-              알
-            </button>
-            <button
-              onClick={() => setTab(PetDtoType.PET)}
-              className={cn(
-                "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
-                tab === PetDtoType.PET ? "bg-white shadow-sm" : "text-gray-600",
-              )}
-            >
-              해칭 완료
-            </button>
-          </div>
-
-          <ScrollArea className="relative flex h-[calc(100vh-150px)] w-full gap-2 p-2">
-            {monthlyIsPending || todayIsFetching ? (
-              <Loading />
-            ) : (
-              weeklyGroups.map((group) => (
-                <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
-                  <div className="sticky top-0 z-10 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
-                    {group.label}
-                  </div>
-                  {group.items
-                    .filter(([, pets]) => {
-                      if (tab === "all") return pets.length > 0;
-                      if (tab === PetDtoType.PET)
-                        return pets.filter((pet) => pet.type === PetDtoType.PET).length > 0;
-                      if (tab === PetDtoType.EGG)
-                        return pets.filter((pet) => pet.type === PetDtoType.EGG).length > 0;
-                    })
-                    .map(([date, pets]) => {
-                      const isSelected =
-                        new Date(selectedDate ?? "").toLocaleDateString() ===
-                        new Date(date).toLocaleDateString();
-
-                      return (
-                        <HatchingPetCard
-                          key={date}
-                          isSelected={isSelected}
-                          date={date}
-                          pets={pets}
-                          tab={tab}
-                        />
-                      );
-                    })}
-                </div>
-              ))
+      <div>
+        <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
+          <button
+            onClick={() => setTab("all")}
+            className={cn(
+              "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
+              tab === "all" ? "bg-white shadow-sm" : "text-gray-600",
             )}
-          </ScrollArea>
+          >
+            전체
+          </button>
+          <button
+            onClick={() => setTab(PetDtoType.EGG)}
+            className={cn(
+              "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
+              tab === PetDtoType.EGG ? "bg-white shadow-sm" : "text-gray-600",
+            )}
+          >
+            알
+          </button>
+          <button
+            onClick={() => setTab(PetDtoType.PET)}
+            className={cn(
+              "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
+              tab === PetDtoType.PET ? "bg-white shadow-sm" : "text-gray-600",
+            )}
+          >
+            해칭 완료
+          </button>
         </div>
+
+        <ScrollArea className="relative flex h-[calc(100vh-150px)] w-full gap-2 p-2">
+          {monthlyIsPending || todayIsFetching ? (
+            <Loading />
+          ) : (
+            weeklyGroups.map((group) => (
+              <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
+                <div className="sticky top-0 z-10 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
+                  {group.label}
+                </div>
+                {group.items
+                  .filter(([, pets]) => {
+                    if (tab === "all") return pets.length > 0;
+                    if (tab === PetDtoType.PET)
+                      return pets.filter((pet) => pet.type === PetDtoType.PET).length > 0;
+                    if (tab === PetDtoType.EGG)
+                      return pets.filter((pet) => pet.type === PetDtoType.EGG).length > 0;
+                  })
+                  .map(([date, pets]) => {
+                    const isSelected =
+                      new Date(selectedDate ?? "").toLocaleDateString() ===
+                      new Date(date).toLocaleDateString();
+
+                    return (
+                      <HatchingPetCard
+                        key={date}
+                        isSelected={isSelected}
+                        date={date}
+                        pets={pets}
+                        tab={tab}
+                      />
+                    );
+                  })}
+              </div>
+            ))
+          )}
+        </ScrollArea>
       </div>
     </div>
   );

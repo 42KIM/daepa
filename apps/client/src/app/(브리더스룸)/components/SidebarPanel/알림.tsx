@@ -6,7 +6,7 @@ import { userNotificationControllerFindAll } from "@repo/api-client";
 import { useInView } from "react-intersection-observer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Loading from "@/components/common/Loading";
-import NotiItem from "../../noti/components/NotiItem";
+import NotificationItem from "../../notifications/components/NotificationItem";
 
 const NotificationList = () => {
   const { ref, inView } = useInView();
@@ -39,9 +39,9 @@ const NotificationList = () => {
   return (
     <ScrollArea className="flex h-full flex-1 pb-[60px]">
       {data && data.length > 0 ? (
-        <div className="flex flex-col">
+        <div className="flex w-full flex-col gap-1 px-1">
           {data.map((item) => (
-            <NotiItem key={item.id} item={item} />
+            <NotificationItem key={item.id} item={item} expandedContentClassName="bg-gray-200" />
           ))}
         </div>
       ) : (
