@@ -176,7 +176,7 @@ const MonthlyCalendar = memo(() => {
             {monthlyIsPending || todayIsFetching ? (
               <Loading />
             ) : (
-              [...weeklyGroups, ...weeklyGroups].map((group) => (
+              weeklyGroups.map((group) => (
                 <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
                   <div className="sticky top-0 z-10 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
                     {group.label}
