@@ -41,10 +41,6 @@ const MatingDetailDialog = ({
   const prevMatingCountRef = useRef<number>(0);
   const isInitialOpenRef = useRef<boolean>(true);
 
-  // 클릭 & 드래그 스크롤을 위한 상태
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef({ x: 0, scrollLeft: 0, moved: false });
 
   // Dialog 오픈/클로즈 상태 감지
   useEffect(() => {
@@ -73,53 +69,6 @@ const MatingDetailDialog = ({
     prevMatingCountRef.current = currentMatingCount;
   }, [matingGroup?.matingsByDate, matingGroup]);
 
-  // PC에서 클릭 & 드래그 스크롤 구현
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      dragStartRef.current = {
-        x: e.pageX,
-        scrollLeft: container.scrollLeft,
-        moved: false,
-      };
-      setIsDragging(true);
-      container.style.cursor = "grabbing";
-      container.style.userSelect = "none";
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-
-      const x = e.pageX;
-      const walk = dragStartRef.current.x - x;
-
-      if (Math.abs(walk) > 3) {
-        dragStartRef.current.moved = true;
-      }
-
-      container.scrollLeft = dragStartRef.current.scrollLeft + walk;
-    };
-
-    const handleMouseUpOrLeave = () => {
-      setIsDragging(false);
-      container.style.cursor = "grab";
-      container.style.userSelect = "";
-    };
-
-    container.addEventListener("mousedown", handleMouseDown);
-    container.addEventListener("mousemove", handleMouseMove);
-    container.addEventListener("mouseup", handleMouseUpOrLeave);
-    container.addEventListener("mouseleave", handleMouseUpOrLeave);
-
-    return () => {
-      container.removeEventListener("mousedown", handleMouseDown);
-      container.removeEventListener("mousemove", handleMouseMove);
-      container.removeEventListener("mouseup", handleMouseUpOrLeave);
-      container.removeEventListener("mouseleave", handleMouseUpOrLeave);
-    };
-  }, [isDragging]);
 
   if (!matingGroup) return null;
 
@@ -178,10 +127,7 @@ const MatingDetailDialog = ({
                 }}
                 className="flex flex-1 flex-col gap-4"
               >
-                <div
-                  ref={scrollContainerRef}
-                  className="cursor-grab select-none overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                >
+                <div className="overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <TabsList className="inline-flex w-fit overflow-visible">
                     {isEditable && (
                       <TabsTrigger key="mating-add" value="add">

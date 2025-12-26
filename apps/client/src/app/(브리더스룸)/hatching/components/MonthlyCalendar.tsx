@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,10 +12,15 @@ import HatchingPetCard from "./HatchingPetCard";
 import { Calendar } from "./Calendar";
 import { format, getWeekOfMonth } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
+import { DateTime } from "luxon";
 
 const MonthlyCalendar = memo(() => {
+  const isMobile = useIsMobile();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const groupRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const [tab, setTab] = useState<"all" | PetDtoType>("all");
 
@@ -43,10 +48,7 @@ const MonthlyCalendar = memo(() => {
     return Object.entries(monthlyData).reduce(
       (acc, [date, pets]) => {
         // 현재 탭에 맞는 펫만 필터링
-        const filteredPets =
-          tab === "all"
-            ? pets
-            : pets.filter((pet) => pet.type === tab);
+        const filteredPets = tab === "all" ? pets : pets.filter((pet) => pet.type === tab);
 
         const hatched = filteredPets.filter((pet) => pet.type === PetDtoType.PET).length;
         const egg = filteredPets.filter((pet) => pet.type === PetDtoType.EGG).length;
@@ -89,85 +91,127 @@ const MonthlyCalendar = memo(() => {
     return groups;
   }, [sortedEntries]);
 
+  // 스크롤 이벤트 감지
+  useEffect(() => {
+    const scrollArea = scrollAreaRef.current;
+    if (!scrollArea) return;
+
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const scrollTop = target.scrollTop;
+      setIsScrolled(scrollTop > 50);
+    };
+
+    // ScrollArea의 실제 스크롤 가능한 요소 찾기
+    const scrollableElement = scrollArea.querySelector("[data-radix-scroll-area-viewport]");
+    if (scrollableElement) {
+      scrollableElement.addEventListener("scroll", handleScroll);
+      return () => {
+        scrollableElement.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, []);
+
+  const tabs: Array<{ key: "all" | PetDtoType; label: string }> = [
+    { key: "all", label: "전체" },
+    { key: PetDtoType.EGG, label: "알" },
+    { key: PetDtoType.PET, label: "해칭 완료" },
+  ];
+
   return (
-    <div className="flex gap-4 px-2 max-[700px]:flex-col">
-      <Calendar
-        mode="single"
-        selected={selectedDate ? new Date(selectedDate) : undefined}
-        onSelect={(date) => {
-          if (!date) return;
-          setSelectedDate(date);
-        }}
-        eggCounts={petCounts}
-      />
+    <div className={"flex"}>
+      {!isMobile && (
+        <Calendar
+          mode="single"
+          selected={selectedDate ? new Date(selectedDate) : undefined}
+          onSelect={(date) => {
+            if (!date) return;
+            setSelectedDate(date);
+          }}
+          eggCounts={petCounts}
+        />
+      )}
 
-      <div>
-        <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
-          <button
-            onClick={() => setTab("all")}
+      <div className={cn("flex gap-4 px-2", isMobile ? "w-full flex-col" : "flex-1")}>
+        {isMobile && (
+          <div
             className={cn(
-              "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
-              tab === "all" ? "bg-white shadow-sm" : "text-gray-600",
+              "shrink-0 transition-all duration-300",
+              isScrolled && "sticky top-0 z-20 h-fit w-full origin-top-left scale-75 bg-white",
             )}
           >
-            전체
-          </button>
-          <button
-            onClick={() => setTab(PetDtoType.EGG)}
-            className={cn(
-              "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
-              tab === PetDtoType.EGG ? "bg-white shadow-sm" : "text-gray-600",
-            )}
-          >
-            알
-          </button>
-          <button
-            onClick={() => setTab(PetDtoType.PET)}
-            className={cn(
-              "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
-              tab === PetDtoType.PET ? "bg-white shadow-sm" : "text-gray-600",
-            )}
-          >
-            해칭 완료
-          </button>
-        </div>
+            <Calendar
+              mode="single"
+              selected={selectedDate ? new Date(selectedDate) : undefined}
+              onSelect={(date) => {
+                if (!date) return;
+                setSelectedDate(date);
+              }}
+              eggCounts={petCounts}
+            />
+          </div>
+        )}
 
-        <ScrollArea className="relative flex h-[calc(100vh-150px)] w-full gap-2 p-2">
-          {monthlyIsPending || todayIsFetching ? (
-            <Loading />
-          ) : (
-            weeklyGroups.map((group) => (
-              <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
-                <div className="sticky top-0 z-10 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
-                  {group.label}
+        <div>
+          <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
+            {tabs.map(({ key, label }) => {
+              return (
+                <button
+                  key={key}
+                  onClick={() => setTab(key)}
+                  className={cn(
+                    "cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-gray-800",
+                    tab === key ? "bg-white shadow-sm" : "text-gray-600",
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <ScrollArea
+            ref={scrollAreaRef}
+            className={cn("relative", isMobile ? "h-[calc(100vh-320px)]" : "h-[calc(100vh-200px)]")}
+          >
+            {monthlyIsPending || todayIsFetching ? (
+              <Loading />
+            ) : (
+              weeklyGroups.map((group) => (
+                <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
+                  <div className="sticky top-0 z-10 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
+                    {group.label}
+                  </div>
+                  {group.items
+                    .filter(([, pets]) => {
+                      if (tab === "all") return pets.length > 0;
+                      if (tab === PetDtoType.PET)
+                        return pets.filter((pet) => pet.type === PetDtoType.PET).length > 0;
+                      if (tab === PetDtoType.EGG)
+                        return pets.filter((pet) => pet.type === PetDtoType.EGG).length > 0;
+                    })
+                    .map(([date, pets]) => {
+                      const isSelected = selectedDate
+                        ? DateTime.fromJSDate(selectedDate).hasSame(
+                            DateTime.fromFormat(date, "yyyy-MM-dd"),
+                            "day",
+                          )
+                        : false;
+
+                      return (
+                        <HatchingPetCard
+                          key={date}
+                          isSelected={isSelected}
+                          date={date}
+                          pets={pets}
+                          tab={tab}
+                        />
+                      );
+                    })}
                 </div>
-                {group.items
-                  .filter(([, pets]) => {
-                    if (tab === "all") return pets.length > 0;
-                    if (tab === PetDtoType.PET)
-                      return pets.filter((pet) => pet.type === PetDtoType.PET).length > 0;
-                    if (tab === PetDtoType.EGG)
-                      return pets.filter((pet) => pet.type === PetDtoType.EGG).length > 0;
-                  })
-                  .map(([date, pets]) => {
-                    const isSelected =
-                      new Date(selectedDate ?? "").toLocaleDateString() ===
-                      new Date(date).toLocaleDateString();
-
-                    return (
-                      <HatchingPetCard
-                        key={date}
-                        isSelected={isSelected}
-                        date={date}
-                        pets={pets}
-                        tab={tab}
-                      />
-                    );
-                  })}
-              </div>
-            ))
-          )}
-        </ScrollArea>
+              ))
+            )}
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
