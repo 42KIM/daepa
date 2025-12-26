@@ -51,6 +51,7 @@ import { PairEntity } from 'src/pair/pair.entity';
 import { DateTime } from 'luxon';
 import { AdoptionService } from 'src/adoption/adoption.service';
 import { replaceParentPublicSafe } from '../common/utils/pet-parent.helper';
+import { LayingEntity } from 'src/laying/laying.entity';
 
 @Injectable()
 export class PetService {
@@ -609,6 +610,22 @@ export class PetService {
             { petId },
             { isDeleted: true },
           );
+        }
+
+        // layingId가 있는 경우, 해당 laying에 남은 펫이 없으면 laying 삭제
+        if (existingPet.layingId) {
+          const remainingPets = await entityManager.count(PetEntity, {
+            where: {
+              layingId: existingPet.layingId,
+              isDeleted: false,
+            },
+          });
+
+          if (remainingPets === 0) {
+            await entityManager.delete(LayingEntity, {
+              id: existingPet.layingId,
+            });
+          }
         }
 
         return { petId };
