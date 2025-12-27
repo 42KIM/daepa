@@ -26,7 +26,7 @@ const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
           >
             {
               <PetThumbnail
-                petId={detailData?.parentPet?.id}
+                petId={detailData.childPet.id}
                 alt={detailData.childPet.name}
                 maxSize={isMobile ? 220 : 128}
               />
