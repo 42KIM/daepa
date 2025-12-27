@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
+import { cn } from "@/lib/utils";
 
 type PetData = SiblingPetDetailDto | PetHiddenStatusDto;
 
@@ -39,7 +40,7 @@ export default function SiblingPetCard({ pet }: SiblingPetCardProps) {
 
   if (isHiddenPet(pet)) {
     return (
-      <div className="flex w-[120px] flex-1 shrink-0 flex-col items-center gap-2 rounded-xl bg-gray-50 p-2">
+      <div className="flex w-[160px] shrink-0 flex-col items-center gap-2 rounded-xl bg-gray-50 p-2">
         <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-gray-200">
           {pet.hiddenStatus === PetHiddenStatusDtoHiddenStatus.DELETED ? (
             <EyeOff className="h-8 w-8 text-gray-400" />
@@ -56,13 +57,17 @@ export default function SiblingPetCard({ pet }: SiblingPetCardProps) {
 
   const sexLabel = getSexLabel(pet.sex);
   const isMyPet = pet.owner.userId === user?.userId;
+  const isDeleted = pet.isDeleted;
 
   return (
     <Link
       href={`/pet/${pet.petId}`}
-      className="flex w-[120px] flex-1 shrink-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm transition-shadow hover:shadow-md"
+      className={cn(
+        "flex w-[160px] shrink-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm transition-shadow hover:shadow-md",
+        isDeleted && "cursor-not-allowed bg-red-100/50",
+      )}
     >
-      <div className="relative aspect-square w-full rounded-xl bg-gray-100">
+      <div className={cn("relative aspect-square w-full rounded-xl bg-gray-100")}>
         {pet.petId ? (
           <Image
             src="/assets/lizard.png"
@@ -82,6 +87,12 @@ export default function SiblingPetCard({ pet }: SiblingPetCardProps) {
             {isMyPet ? "My Pet" : pet.owner.name}
           </span>
         </div>
+
+        {isDeleted ? (
+          <div className="absolute bottom-1 right-1 flex flex-col items-center justify-center gap-2 rounded-md bg-red-600 px-1 py-0.5 text-[10px] font-bold text-white">
+            삭제됨
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-0.5 px-1">

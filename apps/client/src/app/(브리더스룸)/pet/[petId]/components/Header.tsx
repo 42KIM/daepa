@@ -154,7 +154,7 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
         </div>
 
         <Link
-          href={`/pet/${pet.petId}/family`}
+          href={`/pet/${pet.petId}/relation`}
           className={cn(
             "flex items-center gap-0.5 rounded-lg bg-blue-100 px-2 font-[700] text-white transition-colors hover:bg-blue-200",
             isScrolled ? "h-8 text-xs" : "h-8 text-sm",

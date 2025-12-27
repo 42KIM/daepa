@@ -4,7 +4,9 @@ import { petControllerGetSiblingsByPetId, SiblingPetDetailDto } from "@repo/api-
 import { useQuery } from "@tanstack/react-query";
 import { use, useMemo } from "react";
 import SiblingPetCard from "./components/SiblingPetCard";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import HorizontalScrollSection from "./components/HorizontalScrollSection";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface PetDetailPageProps {
   params: Promise<{
@@ -18,6 +20,7 @@ function isVisiblePet(pet: unknown): pet is SiblingPetDetailDto {
 
 function SiblingsPage({ params }: PetDetailPageProps) {
   const { petId } = use(params);
+  const isMobile = useIsMobile();
 
   const { data: siblingsData, isLoading } = useQuery({
     queryKey: [petControllerGetSiblingsByPetId.name, petId],
@@ -75,12 +78,12 @@ function SiblingsPage({ params }: PetDetailPageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className={cn("flex flex-col gap-6 p-4", isMobile && "p-2")}>
       {/* 1. 부모 프로필 */}
       {(siblingsData.father || siblingsData.mother) && (
         <section>
           <h2 className="mb-3 text-[16px] font-bold text-gray-900">부모</h2>
-          <div className="flex gap-3">
+          <HorizontalScrollSection>
             {siblingsData.father && (
               <div className="flex flex-col gap-1">
                 <span className="text-[12px] font-medium text-blue-600">부</span>
@@ -93,10 +96,10 @@ function SiblingsPage({ params }: PetDetailPageProps) {
                 <SiblingPetCard pet={siblingsData.mother} />
               </div>
             )}
-          </div>
+          </HorizontalScrollSection>
         </section>
       )}
-      <div className="flex gap-6">
+      <div className="flex gap-4">
         {/* 2. 내 프로필 */}
         {myProfile && (
           <section>
@@ -107,16 +110,13 @@ function SiblingsPage({ params }: PetDetailPageProps) {
 
         {/* 3. 클러치 메이트 */}
         {sameClutchSiblings.length > 0 && (
-          <section className="min-w-0 flex-1 overflow-hidden">
+          <section className="min-w-0 overflow-hidden">
             <h2 className="mb-3 text-[16px] font-bold text-gray-900">클러치 메이트</h2>
-            <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex gap-3 pb-3">
-                {sameClutchSiblings.map((sibling) => (
-                  <SiblingPetCard key={sibling.petId} pet={sibling} />
-                ))}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            <HorizontalScrollSection>
+              {sameClutchSiblings.map((sibling) => (
+                <SiblingPetCard key={sibling.petId} pet={sibling} />
+              ))}
+            </HorizontalScrollSection>
           </section>
         )}
       </div>
@@ -125,14 +125,11 @@ function SiblingsPage({ params }: PetDetailPageProps) {
       {otherClutchSiblings.length > 0 && (
         <section>
           <h2 className="mb-3 text-[16px] font-bold text-gray-900">부모가 같은 펫</h2>
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex gap-3 pb-3">
-              {otherClutchSiblings.map((sibling) => (
-                <SiblingPetCard key={sibling.petId} pet={sibling} />
-              ))}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          <HorizontalScrollSection>
+            {otherClutchSiblings.map((sibling) => (
+              <SiblingPetCard key={sibling.petId} pet={sibling} />
+            ))}
+          </HorizontalScrollSection>
         </section>
       )}
 
