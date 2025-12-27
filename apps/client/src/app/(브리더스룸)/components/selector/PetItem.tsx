@@ -28,7 +28,7 @@ const PetItem = ({
     >
       <div className="flex w-full flex-col items-center gap-1">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-          <PetThumbnail petId={item.petId} alt={item.name} />
+          <PetThumbnail petId={item.petId} alt={item.name} width={90} height={90} />
         </div>
         <div className="flex w-full flex-col items-center gap-1">
           <div className="relative">

@@ -5,23 +5,18 @@ import { petImageControllerFindThumbnail } from "@repo/api-client";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 
-// 썸네일 크기 정의
-const THUMBNAIL_SIZES = {
-  small: {
-    containerClass: "w-10 h-10",
-    transform: "width=80,height=80,format=webp",
-  },
-  medium: {
-    containerClass: "w-16 h-16",
-    transform: "width=128,height=128,format=webp",
-  },
-  large: {
-    containerClass: "w-24 h-24",
-    transform: "width=192,height=192,format=webp",
-  },
+// 썸네일 크기 정의 (레티나 2x 대응)
+const THUMBNAIL_TRANSFORMS = {
+  sm: "width=320,height=320,format=webp", // 160px 이하 표시용
+  lg: "width=800,height=800,format=webp", // 400px 이하 표시용
 } as const;
 
-type ThumbnailSize = keyof typeof THUMBNAIL_SIZES;
+/** 표시 크기에 따라 적절한 transform 선택 */
+const getTransform = (width: number, height: number) => {
+  const maxSize = Math.max(width, height);
+  // 레티나 2x 기준: 160px 이하면 sm(320px), 초과면 lg(800px)
+  return maxSize <= 160 ? THUMBNAIL_TRANSFORMS.sm : THUMBNAIL_TRANSFORMS.lg;
+};
 
 /** 썸네일 캐시 무효화를 위한 queryKey */
 export const getPetThumbnailQueryKey = (petId: string) => [
@@ -31,7 +26,10 @@ export const getPetThumbnailQueryKey = (petId: string) => [
 
 interface PetThumbnailProps {
   petId?: string;
-  size?: ThumbnailSize;
+  /** 표시할 너비 (px) */
+  width: number;
+  /** 표시할 높이 (px) */
+  height: number;
   alt?: string;
   className?: string;
   /** 쿼리 비활성화 */
@@ -42,12 +40,11 @@ interface PetThumbnailProps {
  * 펫 썸네일 컴포넌트
  *
  * - petId를 받아 썸네일 이미지를 조회하여 표시
+ * - width, height에 따라 최적의 이미지 크기 자동 선택 (sm: 320px, lg: 800px)
  * - React Query를 통한 캐싱 전략 적용 (이미지 변경 전까지 캐시 유지)
- * - small, medium, large 크기 지원
  *
  * @example
- * // 기본 사용
- * <PetThumbnail petId="abc123" size="medium" />
+ * <PetThumbnail petId="abc123" width={72} height={72} />
  *
  * @example
  * // 이미지 변경 시 캐시 무효화
@@ -56,7 +53,8 @@ interface PetThumbnailProps {
  */
 const PetThumbnail = ({
   petId,
-  size = "medium",
+  width,
+  height,
   alt = "",
   className = "",
   enabled = true,
@@ -72,14 +70,15 @@ const PetThumbnail = ({
     gcTime: Infinity,
   });
 
-  const sizeConfig = THUMBNAIL_SIZES[size];
+  const transform = getTransform(width, height);
   const imageUrl = thumbnail?.url
-    ? buildR2TransformedUrl(thumbnail.url, sizeConfig.transform)
+    ? buildR2TransformedUrl(thumbnail.url, transform)
     : null;
 
   return (
     <div
-      className={`relative overflow-hidden rounded-lg bg-gray-100 ${sizeConfig.containerClass} ${className}`}
+      style={{ width, height }}
+      className={`relative overflow-hidden rounded-lg bg-gray-100 ${className}`}
     >
       {isLoading ? (
         <div className="absolute inset-0 animate-pulse bg-gray-200" />
@@ -88,7 +87,7 @@ const PetThumbnail = ({
           src={imageUrl}
           alt={alt}
           fill
-          sizes={sizeConfig.containerClass}
+          sizes={`${Math.max(width, height)}px`}
           className="object-cover"
         />
       ) : (

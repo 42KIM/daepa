@@ -11,7 +11,6 @@ import {
   GetParentsByPetIdResponseDtoDataMother,
   PetDtoSpecies,
   PetHiddenStatusDtoHiddenStatus,
-  petImageControllerFindThumbnail,
   PetParentDto,
   PetParentDtoStatus,
 } from "@repo/api-client";
@@ -20,8 +19,7 @@ import ParentStatusBadge from "../../components/ParentStatusBadge";
 import { usePathname } from "next/navigation";
 import { PetParentDtoWithMessage } from "../store/parentLink";
 import { useUserStore } from "../../store/user";
-import { useCallback, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
 import PetThumbnail from "@/components/common/PetThumbnail";
 
 interface ParentLinkProps {
@@ -46,22 +44,6 @@ const ParentLink = ({
   const { user } = useUserStore();
   const pathname = usePathname();
   const isClickDisabled = pathname.includes("register") || pathname.includes("hatching");
-
-  const parentPetId = useMemo(() => (data && "petId" in data ? data.petId : undefined), [data]);
-
-  const { data: thumbnail } = useQuery({
-    queryKey: [petImageControllerFindThumbnail.name, parentPetId],
-    queryFn: async () => {
-      if (!parentPetId) {
-        return {
-          data: undefined,
-        };
-      }
-      return petImageControllerFindThumbnail(parentPetId);
-    },
-    select: (response) => response.data,
-    enabled: !!parentPetId,
-  });
 
   const deleteParent = useCallback(
     (data: PetParentDto) => {
@@ -207,7 +189,7 @@ const ParentLink = ({
           )}
         >
           <div className="relative w-full">
-            <PetThumbnail petId={parent.petId} />
+            <PetThumbnail petId={parent.petId} width={220} height={220} />
             {isMyPet ? (
               <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1">
                 <span className="text-[11px] font-semibold text-blue-600">My Pet</span>

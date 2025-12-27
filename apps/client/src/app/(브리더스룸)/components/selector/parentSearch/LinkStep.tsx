@@ -38,7 +38,12 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
                 !isMobile && "w-60",
               )}
             >
-              <PetThumbnail petId={selectedPet.petId} alt={selectedPet.name} />
+              <PetThumbnail
+                petId={selectedPet.petId}
+                alt={selectedPet.name}
+                width={240}
+                height={240}
+              />
             </div>
 
             <div className="flex-1">
