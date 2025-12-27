@@ -35,7 +35,7 @@ interface PetThumbnailProps {
    * - 실제 렌더링 크기는 부모 요소 또는 className으로 결정
    * @default 160
    */
-  maxSize?: number;
+  maxSize: number;
   alt?: string;
   /** 추가 스타일 클래스 (크기 조절 가능) */
   className?: string;
@@ -72,7 +72,7 @@ interface PetThumbnailProps {
  */
 const PetThumbnail = ({
   petId,
-  maxSize = 160,
+  maxSize,
   alt = "",
   className = "",
   enabled = true,
@@ -98,13 +98,7 @@ const PetThumbnail = ({
       {isLoading ? (
         <Loading />
       ) : imageUrl ? (
-        <Image
-          src={imageUrl}
-          alt={alt}
-          fill
-          sizes={`${maxSize}px`}
-          className="object-contain"
-        />
+        <Image src={imageUrl} alt={alt} fill sizes={`${maxSize}px`} className="object-contain" />
       ) : (
         <div className="flex h-full w-full items-center justify-center opacity-50">
           <Image
