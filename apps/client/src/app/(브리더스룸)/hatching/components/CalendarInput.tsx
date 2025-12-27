@@ -50,14 +50,7 @@ const CalendarInput = ({
         <button type="button" disabled={!editable}>
           {!value && placeholder}
           {value && isValid(new Date(value)) && `${format(new Date(value), formatString)}`}
-          {editable && (
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 text-gray-600",
-                value || editable ? "text-blue-600" : "text-gray-600",
-              )}
-            />
-          )}
+          {editable && <ChevronDown className="h-4 w-4 text-blue-600" />}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
