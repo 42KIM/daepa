@@ -75,7 +75,7 @@ const FormMultiSelect = ({
           selectedItems && selectedItems.length > 0
             ? "bg-blue-100 text-blue-600"
             : "bg-gray-100 text-gray-800",
-          disabled && "cursor-not-allowed",
+          disabled && "cursor-not-allowed bg-white text-black",
         )}
         onClick={() => {
           if (disabled) return;

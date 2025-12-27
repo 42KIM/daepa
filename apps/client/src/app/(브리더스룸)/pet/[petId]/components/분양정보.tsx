@@ -27,7 +27,6 @@ import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Loading from "@/components/common/Loading";
 import { useRouter } from "next/navigation";
-import { ADOPTION_METHOD_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import { useIsMyPet } from "@/hooks/useIsMyPet";
 
 interface AdoptionInfoProps {
@@ -319,9 +318,12 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
             label="분양 상태"
             content={
               <SingleSelect
+                saveASAP
                 disabled={!isEditMode}
                 type="adoptionStatus"
-                initialItem={!isEditMode && isNil(adoption) ? undefined : adoptionData.status}
+                initialItem={
+                  !isEditMode && isNil(adoption) ? undefined : (adoptionData.status ?? "NONE")
+                }
                 onSelect={(item) => {
                   setFormData((prev) => {
                     const nextStatus = item as PetAdoptionDtoStatus;
@@ -351,7 +353,13 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
               <NumberField
                 disabled={!isEditMode}
                 value={
-                  isNotNil(adoptionData.price) ? String(adoptionData.price) : isEditMode ? "" : "-"
+                  isNotNil(adoptionData.price)
+                    ? isEditMode
+                      ? String(adoptionData.price)
+                      : adoptionData.price.toLocaleString()
+                    : isEditMode
+                      ? ""
+                      : "-"
                 }
                 setValue={(value) => {
                   setFormData((prev) => ({
@@ -363,7 +371,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   }));
                 }}
                 inputClassName={cn(
-                  " h-[32px]  w-full rounded-md border border-gray-200  placeholder:font-[500] pl-2",
+                  " h-[32px] font-[600] w-full rounded-md border border-gray-200  placeholder:font-[500] pl-2",
                   !isEditMode && "border-none",
                 )}
                 field={{ name: "adoption.price", unit: "원", type: "number" }}
@@ -377,7 +385,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
             content={
               !isEditMode || isAdoptionReservedOrSold ? (
                 <CalendarInput
-                  placeholder="-"
+                  placeholder="분양 날짜"
                   editable={isEditMode && isAdoptionReservedOrSold}
                   value={adoptionData.adoptionDate}
                   onSelect={(date) => {
@@ -405,9 +413,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   <div
                     className={cn(
                       "flex h-[32px] w-fit items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
-                      adoptionData.buyer?.userId
-                        ? "bg-blue-100 text-blue-600"
-                        : "bg-gray-100 text-gray-800",
+                      adoptionData.buyer?.userId ? "bg-blue-100 text-blue-600" : "",
                     )}
                   >
                     {isNil(adoptionData.buyer?.userId) ? (
@@ -422,7 +428,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   (adoptionData.status === PetAdoptionDtoStatus.ON_RESERVATION ||
                   adoptionData.status === PetAdoptionDtoStatus.SOLD ? (
                     <Button
-                      className="ml-1 h-8 cursor-pointer rounded-lg px-2 text-[12px] text-white"
+                      className="h-8 cursor-pointer rounded-lg px-2 text-[12px] font-[600] text-white"
                       onClick={handleSelectBuyer}
                     >
                       {isNil(adoptionData.buyer?.userId) ? "입양자 선택" : "변경"}
@@ -439,32 +445,23 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
           <FormItem
             label="거래 방식"
             content={
-              <div className="flex h-[32px] items-center gap-1 rounded-lg bg-gray-100 p-1">
-                {Object.values(PetAdoptionDtoMethod).map((method) => (
-                  <button
-                    key={method}
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        adoption: {
-                          ...(prev.adoption ?? {}),
-                          method: prev.adoption?.method === method ? undefined : method,
-                        },
-                      }))
-                    }
-                    className={cn(
-                      "h-full cursor-pointer rounded-md px-2 text-sm font-semibold text-gray-800",
-                      adoptionData.method === method
-                        ? "bg-blue-100 text-blue-600 shadow-sm"
-                        : "text-gray-600",
-                      !isEditMode && "cursor-not-allowed",
-                    )}
-                    disabled={!isEditMode}
-                  >
-                    {ADOPTION_METHOD_KOREAN_INFO[method]}
-                  </button>
-                ))}
-              </div>
+              <SingleSelect
+                saveASAP
+                disabled={!isEditMode}
+                type="adoptionMethod"
+                initialItem={
+                  !isEditMode && isNil(adoption) ? undefined : (adoptionData.method ?? "NONE")
+                }
+                onSelect={(item) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    adoption: {
+                      ...(prev.adoption ?? {}),
+                      method: item as PetAdoptionDtoMethod,
+                    },
+                  }));
+                }}
+              />
             }
           />
 

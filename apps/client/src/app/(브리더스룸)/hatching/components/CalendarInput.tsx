@@ -44,18 +44,13 @@ const CalendarInput = ({
         asChild
         className={cn(
           "flex min-h-[32px] w-fit cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-[14px] font-[500]",
-          value ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-800",
-          !editable && "cursor-not-allowed",
+          editable ? "bg-blue-100 text-blue-600" : "cursor-not-allowed",
         )}
       >
         <button type="button" disabled={!editable}>
           {!value && placeholder}
           {value && isValid(new Date(value)) && `${format(new Date(value), formatString)}`}
-          {editable && (
-            <ChevronDown
-              className={cn("h-4 w-4 text-gray-600", value ? "text-blue-600" : "text-gray-600")}
-            />
-          )}
+          {editable && <ChevronDown className="h-4 w-4 text-blue-600" />}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

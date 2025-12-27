@@ -49,6 +49,7 @@ const Filters = () => {
     <div className="mb-4 mt-2 flex flex-wrap items-center gap-2">
       <SingleSelect
         showTitle
+        showSelectAll
         type="species"
         saveASAP
         initialItem={species}
