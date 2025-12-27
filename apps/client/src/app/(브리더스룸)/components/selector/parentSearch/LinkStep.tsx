@@ -1,14 +1,13 @@
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
 import { Badge } from "@/components/ui/badge";
-import { PetDtoSex, petImageControllerFindThumbnail } from "@repo/api-client";
+import { PetDtoSex } from "@repo/api-client";
 import { Send } from "lucide-react";
 import { useState } from "react";
-import PetThumbnail from "../../PetThumbnail";
-import { useQuery } from "@tanstack/react-query";
 import FloatingButton from "../../FloatingButton";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
+import PetThumbnail from "@/components/common/PetThumbnail";
 
 interface LinkStepProps {
   selectedPet: PetParentDtoWithMessage;
@@ -20,13 +19,6 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
   const [message, setMessage] = useState<string | null>(null);
   const { user } = useUserStore();
   const isMobile = useIsMobile();
-
-  const { data: thumbnail } = useQuery({
-    queryKey: [petImageControllerFindThumbnail.name, selectedPet.petId],
-    queryFn: async () => petImageControllerFindThumbnail(selectedPet.petId),
-    select: (response) => response.data,
-    enabled: !!selectedPet.petId,
-  });
 
   const defaultMessage = (pet: PetParentDtoWithMessage) => {
     return `안녕하세요, ${pet.owner?.name}님.\n${pet.name}를 ${
@@ -46,7 +38,7 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
                 !isMobile && "w-60",
               )}
             >
-              <PetThumbnail imageUrl={thumbnail?.url} alt={selectedPet.name} />
+              <PetThumbnail petId={selectedPet.petId} alt={selectedPet.name} />
             </div>
 
             <div className="flex-1">

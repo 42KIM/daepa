@@ -20,9 +20,9 @@ import ParentStatusBadge from "../../components/ParentStatusBadge";
 import { usePathname } from "next/navigation";
 import { PetParentDtoWithMessage } from "../store/parentLink";
 import { useUserStore } from "../../store/user";
-import PetThumbnail from "../../components/PetThumbnail";
 import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import PetThumbnail from "@/components/common/PetThumbnail";
 
 interface ParentLinkProps {
   species: PetDtoSpecies;
@@ -207,7 +207,7 @@ const ParentLink = ({
           )}
         >
           <div className="relative w-full">
-            <PetThumbnail imageUrl={thumbnail?.url} />
+            <PetThumbnail petId={parent.petId} />
             {isMyPet ? (
               <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1">
                 <span className="text-[11px] font-semibold text-blue-600">My Pet</span>
