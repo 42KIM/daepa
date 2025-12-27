@@ -67,6 +67,7 @@ export default function HorizontalScrollSection({
           {!isMobile && (
             <button
               type="button"
+              aria-label="왼쪽으로 스크롤"
               onClick={() => scroll("left")}
               className="absolute -left-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-gray-50 hover:shadow-lg"
             >
@@ -92,6 +93,7 @@ export default function HorizontalScrollSection({
           {!isMobile && (
             <button
               type="button"
+              aria-label="오른쪽으로 스크롤"
               onClick={() => scroll("right")}
               className="absolute -right-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-gray-50 hover:shadow-lg"
             >
