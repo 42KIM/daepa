@@ -39,6 +39,8 @@ interface PetThumbnailProps {
   alt?: string;
   /** 추가 스타일 클래스 (크기 조절 가능) */
   className?: string;
+  /** 원형으로 표시 @default false */
+  rounded?: boolean;
   /** 쿼리 비활성화 */
   enabled?: boolean;
 }
@@ -58,12 +60,16 @@ interface PetThumbnailProps {
  * @example
  * // 기본 사용 (sm 이미지)
  * <div className="w-[72px]">
- *   <PetThumbnail petId="abc123" />
+ *   <PetThumbnail petId="abc123" maxSize={72} />
  * </div>
  *
  * @example
  * // 큰 이미지 사용 (lg 이미지)
  * <PetThumbnail petId="abc123" maxSize={200} className="w-40 h-40" />
+ *
+ * @example
+ * // 원형 썸네일
+ * <PetThumbnail petId="abc123" maxSize={72} rounded className="w-16" />
  *
  * @example
  * // 이미지 변경 시 캐시 무효화
@@ -73,8 +79,9 @@ interface PetThumbnailProps {
 const PetThumbnail = ({
   petId,
   maxSize,
-  alt = "",
+  alt = "pet_thumbnail",
   className = "",
+  rounded = false,
   enabled = true,
 }: PetThumbnailProps) => {
   const { data: thumbnail, isLoading } = useQuery({
@@ -93,7 +100,7 @@ const PetThumbnail = ({
 
   return (
     <div
-      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 ${className}`}
+      className={`relative aspect-square w-full overflow-hidden bg-gray-100 ${rounded ? "rounded-full" : "rounded-lg"} ${className}`}
     >
       {isLoading ? (
         <Loading />

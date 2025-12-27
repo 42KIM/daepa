@@ -3,12 +3,15 @@ import Link from "next/link";
 import { ArrowRight, Info } from "lucide-react";
 import TooltipText from "../../components/TooltipText";
 import PetThumbnail from "@/components/common/PetThumbnail";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface PetLinkCardProps {
   detailData?: ParentLinkDetailJson | null;
 }
 
 const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
+  const isMobile = useIsMobile();
+
   if (!detailData) return null;
 
   if (!detailData.childPet?.id && !detailData.parentPet?.id) return null;
@@ -25,7 +28,7 @@ const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
               <PetThumbnail
                 petId={detailData?.parentPet?.id}
                 alt={detailData.childPet.name}
-                maxSize={128}
+                maxSize={isMobile ? 220 : 128}
               />
             }
             <TooltipText text={detailData.childPet.name ?? ""} />

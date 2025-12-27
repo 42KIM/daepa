@@ -85,7 +85,7 @@ const RecentlyViewedList = () => {
               >
                 {item.photoUrl ? (
                   <div className="h-10 w-10 flex-shrink-0">
-                    <PetThumbnail petId={item.petId} alt={item.name} />
+                    <PetThumbnail petId={item.petId} alt={item.name} maxSize={40} />
                   </div>
                 ) : (
                   <div className="relative h-10 w-10 rounded-xl bg-white">
