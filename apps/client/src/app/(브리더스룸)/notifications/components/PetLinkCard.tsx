@@ -21,7 +21,13 @@ const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
             href={`/pet/${detailData.childPet.id}`}
             className="group flex flex-1 flex-col items-center gap-2 transition-all dark:hover:bg-gray-800"
           >
-            {<PetThumbnail petId={detailData?.parentPet?.id} alt={detailData.childPet.name} />}
+            {
+              <PetThumbnail
+                petId={detailData?.parentPet?.id}
+                alt={detailData.childPet.name}
+                maxSize={128}
+              />
+            }
             <TooltipText text={detailData.childPet.name ?? ""} />
           </Link>
         )}
@@ -35,7 +41,11 @@ const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
             href={`/pet/${detailData.parentPet.id}`}
             className="group flex flex-1 flex-col items-center gap-2 transition-all dark:hover:bg-gray-800"
           >
-            <PetThumbnail petId={detailData?.parentPet?.id} alt={detailData.parentPet.name} />
+            <PetThumbnail
+              petId={detailData?.parentPet?.id}
+              alt={detailData.parentPet.name}
+              maxSize={28}
+            />
             <TooltipText text={detailData.parentPet.name ?? ""} />
           </Link>
         )}

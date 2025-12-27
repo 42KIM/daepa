@@ -4,17 +4,20 @@ import { buildR2TransformedUrl } from "@/lib/utils";
 import { petImageControllerFindThumbnail } from "@repo/api-client";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
+import Loading from "./Loading";
 
-// 썸네일 크기 정의 (레티나 2x 대응)
+/**
+ * CDN 캐싱 효율을 위한 썸네일 크기 (레티나 2x 대응)
+ * - sm: 160px 이하 표시용 (320px 이미지)
+ * - lg: 400px 이하 표시용 (800px 이미지)
+ */
 const THUMBNAIL_TRANSFORMS = {
-  sm: "width=320,height=320,format=webp", // 160px 이하 표시용
-  lg: "width=800,height=800,format=webp", // 400px 이하 표시용
+  sm: "width=320,height=320,format=webp",
+  lg: "width=800,height=800,format=webp",
 } as const;
 
-/** 표시 크기에 따라 적절한 transform 선택 */
-const getTransform = (width: number, height: number) => {
-  const maxSize = Math.max(width, height);
-  // 레티나 2x 기준: 160px 이하면 sm(320px), 초과면 lg(800px)
+/** maxSize 기준으로 적절한 transform 선택 */
+const getTransform = (maxSize: number) => {
   return maxSize <= 160 ? THUMBNAIL_TRANSFORMS.sm : THUMBNAIL_TRANSFORMS.lg;
 };
 
@@ -26,11 +29,15 @@ export const getPetThumbnailQueryKey = (petId: string) => [
 
 interface PetThumbnailProps {
   petId?: string;
-  /** 표시할 너비 (px) */
-  width: number;
-  /** 표시할 높이 (px) */
-  height: number;
+  /**
+   * 이 컴포넌트가 표시될 최대 크기 (px)
+   * - CDN 캐싱을 위한 이미지 크기 선택에 사용됨 (sm: ~160px, lg: ~400px)
+   * - 실제 렌더링 크기는 부모 요소 또는 className으로 결정
+   * @default 160
+   */
+  maxSize?: number;
   alt?: string;
+  /** 추가 스타일 클래스 (크기 조절 가능) */
   className?: string;
   /** 쿼리 비활성화 */
   enabled?: boolean;
@@ -39,12 +46,24 @@ interface PetThumbnailProps {
 /**
  * 펫 썸네일 컴포넌트
  *
- * - petId를 받아 썸네일 이미지를 조회하여 표시
- * - width, height에 따라 최적의 이미지 크기 자동 선택 (sm: 320px, lg: 800px)
- * - React Query를 통한 캐싱 전략 적용 (이미지 변경 전까지 캐시 유지)
+ * CDN 캐싱 효율을 위해 2단계 이미지 크기(sm/lg)를 사용합니다.
+ * maxSize를 기준으로 적절한 크기가 자동 선택됩니다.
+ *
+ * - 160px 이하: sm (320px 이미지, 레티나 2x)
+ * - 160px 초과: lg (800px 이미지, 레티나 2x)
+ *
+ * 실제 렌더링 크기는 부모 요소 크기 또는 className으로 조절합니다.
+ * 기본적으로 정사각형(aspect-square)으로 부모 너비에 맞춰집니다.
  *
  * @example
- * <PetThumbnail petId="abc123" width={72} height={72} />
+ * // 기본 사용 (sm 이미지)
+ * <div className="w-[72px]">
+ *   <PetThumbnail petId="abc123" />
+ * </div>
+ *
+ * @example
+ * // 큰 이미지 사용 (lg 이미지)
+ * <PetThumbnail petId="abc123" maxSize={200} className="w-40 h-40" />
  *
  * @example
  * // 이미지 변경 시 캐시 무효화
@@ -53,8 +72,7 @@ interface PetThumbnailProps {
  */
 const PetThumbnail = ({
   petId,
-  width,
-  height,
+  maxSize = 160,
   alt = "",
   className = "",
   enabled = true,
@@ -70,25 +88,22 @@ const PetThumbnail = ({
     gcTime: Infinity,
   });
 
-  const transform = getTransform(width, height);
-  const imageUrl = thumbnail?.url
-    ? buildR2TransformedUrl(thumbnail.url, transform)
-    : null;
+  const transform = getTransform(maxSize);
+  const imageUrl = thumbnail?.url ? buildR2TransformedUrl(thumbnail.url, transform) : null;
 
   return (
     <div
-      style={{ width, height }}
-      className={`relative overflow-hidden rounded-lg bg-gray-100 ${className}`}
+      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 ${className}`}
     >
       {isLoading ? (
-        <div className="absolute inset-0 animate-pulse bg-gray-200" />
+        <Loading />
       ) : imageUrl ? (
         <Image
           src={imageUrl}
           alt={alt}
           fill
-          sizes={`${Math.max(width, height)}px`}
-          className="object-cover"
+          sizes={`${maxSize}px`}
+          className="object-contain"
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center opacity-50">

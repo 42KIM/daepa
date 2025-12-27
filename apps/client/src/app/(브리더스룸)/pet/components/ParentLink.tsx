@@ -189,7 +189,7 @@ const ParentLink = ({
           )}
         >
           <div className="relative w-full">
-            <PetThumbnail petId={parent.petId} width={220} height={220} />
+            <PetThumbnail petId={parent.petId} maxSize={220} />
             {isMyPet ? (
               <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1">
                 <span className="text-[11px] font-semibold text-blue-600">My Pet</span>
