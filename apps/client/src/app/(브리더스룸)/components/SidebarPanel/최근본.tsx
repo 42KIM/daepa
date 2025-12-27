@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from "next/link";
-import PetThumbnail from "../../components/PetThumbnail";
 
 import { SPECIES_KOREAN_INFO } from "../../constants";
 import { PetDtoSpecies } from "@repo/api-client";
@@ -11,6 +10,7 @@ import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Cookie, Info } from "lucide-react";
 import Image from "next/image";
+import PetThumbnail from "@/components/common/PetThumbnail";
 
 interface RecentlyViewedPet {
   petId: string;
@@ -85,7 +85,7 @@ const RecentlyViewedList = () => {
               >
                 {item.photoUrl ? (
                   <div className="h-10 w-10 flex-shrink-0">
-                    <PetThumbnail imageUrl={item.photoUrl} alt={item.name} />
+                    <PetThumbnail petId={item.petId} alt={item.name} maxSize={40} />
                   </div>
                 ) : (
                   <div className="relative h-10 w-10 rounded-xl bg-white">

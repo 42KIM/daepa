@@ -1,8 +1,8 @@
 import { useIsMobile } from "@/hooks/useMobile";
 import { PetSummaryLayingDto } from "@repo/api-client";
-import PetThumbnail from "../../components/PetThumbnail";
 import { Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PetThumbnail from "@/components/common/PetThumbnail";
 
 const ParentCard = ({ parent }: { parent?: PetSummaryLayingDto }) => {
   const isMobile = useIsMobile();
@@ -19,7 +19,7 @@ const ParentCard = ({ parent }: { parent?: PetSummaryLayingDto }) => {
   return (
     <div className="flex h-full flex-1 flex-col items-center gap-2">
       <div className="relative w-full">
-        <PetThumbnail imageUrl="" alt={parent.name} />
+        <PetThumbnail petId={parent.petId} alt={parent.name} maxSize={180} />
         {parent.isDeleted && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/30">
             <Ban className="h-5 w-5 text-red-600" />

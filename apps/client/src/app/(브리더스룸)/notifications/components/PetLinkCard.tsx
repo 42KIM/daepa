@@ -1,14 +1,17 @@
 import { ParentLinkDetailJson } from "@repo/api-client";
 import Link from "next/link";
 import { ArrowRight, Info } from "lucide-react";
-import PetThumbnail from "../../components/PetThumbnail";
 import TooltipText from "../../components/TooltipText";
+import PetThumbnail from "@/components/common/PetThumbnail";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface PetLinkCardProps {
   detailData?: ParentLinkDetailJson | null;
 }
 
 const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
+  const isMobile = useIsMobile();
+
   if (!detailData) return null;
 
   if (!detailData.childPet?.id && !detailData.parentPet?.id) return null;
@@ -21,10 +24,13 @@ const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
             href={`/pet/${detailData.childPet.id}`}
             className="group flex flex-1 flex-col items-center gap-2 transition-all dark:hover:bg-gray-800"
           >
-            <PetThumbnail
-              imageUrl={detailData.childPet.photos?.[0]?.url}
-              alt={detailData.childPet.name}
-            />
+            {
+              <PetThumbnail
+                petId={detailData.childPet.id}
+                alt={detailData.childPet.name}
+                maxSize={isMobile ? 220 : 128}
+              />
+            }
             <TooltipText text={detailData.childPet.name ?? ""} />
           </Link>
         )}
@@ -39,8 +45,9 @@ const PetLinkCard = ({ detailData }: PetLinkCardProps) => {
             className="group flex flex-1 flex-col items-center gap-2 transition-all dark:hover:bg-gray-800"
           >
             <PetThumbnail
-              imageUrl={detailData.parentPet.photos?.[0]?.url}
+              petId={detailData?.parentPet?.id}
               alt={detailData.parentPet.name}
+              maxSize={28}
             />
             <TooltipText text={detailData.parentPet.name ?? ""} />
           </Link>

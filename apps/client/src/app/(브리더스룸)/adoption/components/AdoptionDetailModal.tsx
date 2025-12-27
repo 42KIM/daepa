@@ -12,6 +12,7 @@ import EditAdoptionForm from "./EditAdoptionForm";
 import AdoptionReceipt from "../../pet/[petId]/(펫카드)/components/AdoptionReceipt";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import PetThumbnail from "@/components/common/PetThumbnail";
 
 interface AdoptionDetailModalProps {
   isOpen: boolean;
@@ -50,39 +51,46 @@ const PetInfoCard = ({
         isDeleted ? "cursor-not-allowed" : "hover:shadow-md",
       )}
     >
-      <div className="mb-2 flex items-center gap-2 font-semibold">
-        {isDeleted ? (
-          <div>
-            <span className="cursor-not-allowed line-through decoration-red-500">{name}</span>
-            <span className="text-[12px] font-normal text-red-500">[삭제됨]</span>
-          </div>
-        ) : (
-          name
-        )}
-
-        <div className="text-muted-foreground text-sm font-normal">
-          / {(SPECIES_KOREAN_INFO as Record<string, string>)[species] || "미분류"}
+      <div className={"flex items-center gap-2.5"}>
+        <div className={"w-16"}>
+          <PetThumbnail petId={petId} maxSize={70} />
         </div>
-        {sex && (
-          <p className="text-sm font-normal text-blue-500">
-            / {(GENDER_KOREAN_INFO as Record<string, string>)[sex]}
-          </p>
-        )}
-      </div>
-      <div className="flex flex-col gap-2 text-sm text-gray-600">
-        {morphs && morphs.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {morphs.map((morph) => (
-              <Badge key={morph}>{morph}</Badge>
-            ))}
+        <div>
+          <div className="mb-2 flex items-center gap-2 font-semibold">
+            {isDeleted ? (
+              <div>
+                <span className="cursor-not-allowed line-through decoration-red-500">{name}</span>
+                <span className="text-[12px] font-normal text-red-500">[삭제됨]</span>
+              </div>
+            ) : (
+              name
+            )}
+
+            <div className="text-muted-foreground text-sm font-normal">
+              / {(SPECIES_KOREAN_INFO as Record<string, string>)[species] || "미분류"}
+            </div>
+            {sex && (
+              <p className="text-sm font-normal text-blue-500">
+                / {(GENDER_KOREAN_INFO as Record<string, string>)[sex]}
+              </p>
+            )}
           </div>
-        )}
-        {traits && traits.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {traits.map((trait: string) => `#${trait}`).join(" ")}
+          <div className="flex flex-col gap-2 text-sm text-gray-600">
+            {morphs && morphs.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {morphs.map((morph) => (
+                  <Badge key={morph}>{morph}</Badge>
+                ))}
+              </div>
+            )}
+            {traits && traits.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {traits.map((trait: string) => `#${trait}`).join(" ")}
+              </div>
+            )}
+            {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
           </div>
-        )}
-        {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
+        </div>
       </div>
     </Card>
   );
