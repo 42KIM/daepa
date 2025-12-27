@@ -24,7 +24,7 @@ import { PageOptionsDto } from 'src/common/page.dto';
 
 export class AdoptionBaseDto {
   @ApiProperty({
-    description: '분양 ID',
+    description: '분양정보 ID',
     example: 'XXXXXXXX',
   })
   @IsString()
