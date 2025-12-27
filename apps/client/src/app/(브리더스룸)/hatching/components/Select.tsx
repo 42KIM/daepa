@@ -13,9 +13,16 @@ interface SelectProps {
   handleValueChange: (value: UpdatePetDtoEggStatus) => void;
   selectItems: Record<string, string>;
   triggerClassName?: string;
+  iconClassName?: string;
 }
 
-const Select = ({ value, handleValueChange, selectItems = {}, triggerClassName }: SelectProps) => {
+const Select = ({
+  value,
+  handleValueChange,
+  selectItems = {},
+  triggerClassName,
+  iconClassName,
+}: SelectProps) => {
   return (
     <div className="flex items-center gap-1" data-stop-link="true">
       <ShadSelect value={value} onValueChange={handleValueChange}>
@@ -25,6 +32,7 @@ const Select = ({ value, handleValueChange, selectItems = {}, triggerClassName }
             "flex cursor-pointer items-center gap-0.5 rounded-lg border border-gray-300/60 pr-2 text-[12px] font-[500] text-gray-800",
             triggerClassName,
           )}
+          iconClassName={iconClassName}
         >
           <SelectValue placeholder="알 상태" />
         </SelectTrigger>
