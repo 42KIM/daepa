@@ -9,6 +9,7 @@ import { DeletePetDialog } from "./DeletePetDialog";
 import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
 import { useBreedingInfoStore } from "../../store/breedingInfo";
 import { useEffect, useState } from "react";
+import TooltipText from "@/app/(브리더스룸)/components/TooltipText";
 
 type TabType = "breeding" | "adoption" | "images" | "pedigree";
 
@@ -152,9 +153,23 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <DeletePetDialog petId={pet.petId} petName={pet.name} />
+        <Link
+          href={`/pet/${pet.petId}/family`}
+          className={cn(
+            "flex items-center gap-0.5 rounded-lg bg-blue-100 px-2 font-[700] text-white transition-colors hover:bg-blue-200",
+            isScrolled ? "h-8 text-xs" : "h-8 text-sm",
+          )}
+        >
+          <TooltipText
+            text="펫 관계도"
+            title="펫 관계도"
+            className="text-blue-600"
+            content="혈통 관계가 있는 펫들을 확인합니다."
+          />
+        </Link>
+        <div className="flex items-center gap-1">
           <QRCode petId={pet.petId} isScrolled={isScrolled} />
+          <DeletePetDialog petId={pet.petId} petName={pet.name} />
         </div>
       </div>
 

@@ -43,6 +43,7 @@ export function AdoptionFilters() {
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2 px-2">
       <SelectFilter
+        showSelectAll
         showTitle
         type="species"
         saveASAP

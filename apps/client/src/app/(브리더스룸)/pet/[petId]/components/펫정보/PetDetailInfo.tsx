@@ -31,6 +31,7 @@ export const PetDetailInfo = ({ formData, isEditMode, onFieldChange }: PetDetail
         label="성별"
         content={
           <SingleSelect
+            saveASAP
             disabled={!isEditMode}
             type="sex"
             initialItem={formData.sex}
@@ -43,6 +44,7 @@ export const PetDetailInfo = ({ formData, isEditMode, onFieldChange }: PetDetail
         label="크기"
         content={
           <SingleSelect
+            saveASAP
             disabled={!isEditMode}
             type="growth"
             initialItem={formData.growth}
@@ -59,9 +61,9 @@ export const PetDetailInfo = ({ formData, isEditMode, onFieldChange }: PetDetail
             field={{ name: "weight", type: "number", unit: "g" }}
             value={String(formData.weight ?? "")}
             setValue={(value) => onFieldChange("weight", value.value)}
-            placeholder="몸무게"
+            placeholder={isEditMode ? "" : "-"}
             inputClassName={cn(
-              "h-[32px] w-full rounded-md border border-gray-200 p-2 placeholder:font-[500]",
+              "h-[32px] w-full rounded-md border font-[500] border-gray-200 p-2 placeholder:font-[500]",
               !isEditMode && "border-none",
             )}
           />
