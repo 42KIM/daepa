@@ -32,7 +32,7 @@ export class AdoptionBaseDto {
 
   @ApiProperty({
     description: '펫 ID',
-    example: 'PET_XXXXXXXX',
+    example: 'XXXXXXXX',
   })
   @IsString()
   petId: string;
