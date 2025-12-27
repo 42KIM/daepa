@@ -469,7 +469,14 @@ export const ADOPTION_METHOD_KOREAN_INFO: Record<PetAdoptionDtoMethod, string> =
 };
 
 export const SELECTOR_CONFIGS: Record<
-  "species" | "growth" | "sex" | "foods" | "eggStatus" | "traits" | "adoptionStatus",
+  | "species"
+  | "growth"
+  | "sex"
+  | "foods"
+  | "eggStatus"
+  | "traits"
+  | "adoptionStatus"
+  | "adoptionMethod",
   { title: string; selectList: { key: string; value: string }[] }
 > = {
   species: {
@@ -646,6 +653,31 @@ export const SELECTOR_CONFIGS: Record<
       {
         key: "SOLD",
         value: "분양 완료",
+      },
+    ],
+  },
+  adoptionMethod: {
+    title: "거래 방식",
+    selectList: [
+      {
+        key: "NONE",
+        value: "미정",
+      },
+      {
+        key: "PICKUP",
+        value: "직접 거래",
+      },
+      {
+        key: "DELIVERY",
+        value: "배송",
+      },
+      {
+        key: "WHOLESALE",
+        value: "도매",
+      },
+      {
+        key: "EXPORT",
+        value: "수출",
       },
     ],
   },

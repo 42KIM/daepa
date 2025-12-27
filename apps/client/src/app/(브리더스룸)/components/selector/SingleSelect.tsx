@@ -13,6 +13,7 @@ interface SingleSelectProps {
   onSelect?: (item: any) => void;
   disabled?: boolean;
   showTitle?: boolean;
+  showSelectAll?: boolean; // 전체 선택 항목 표시
   saveASAP?: boolean; // 즉시 반영
 }
 
@@ -22,6 +23,7 @@ const SingleSelect = ({
   onSelect,
   disabled = false,
   showTitle = false,
+  showSelectAll = false,
   saveASAP = false,
 }: SingleSelectProps) => {
   const isMobile = useIsMobile();
@@ -89,7 +91,7 @@ const SingleSelect = ({
         className={cn(
           "flex h-[32px] w-fit cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
           initialItem ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-800",
-          disabled && "cursor-not-allowed",
+          disabled && "cursor-not-allowed bg-white text-black",
         )}
         onClick={() => {
           if (disabled) return;
@@ -137,7 +139,7 @@ const SingleSelect = ({
         >
           <div className="mb-2 font-[500]">{SELECTOR_CONFIGS[type].title}</div>
           <div className="mb-2">
-            {saveASAP && (
+            {showSelectAll && (
               <SelectItem
                 item={{
                   key: null,

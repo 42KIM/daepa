@@ -1,4 +1,10 @@
-import { PetSummaryLayingDto, UpdatePetDtoEggStatus } from "@repo/api-client";
+"use client";
+
+import {
+  PetSummaryLayingDto,
+  PetSummaryLayingDtoEggStatus,
+  UpdatePetDtoEggStatus,
+} from "@repo/api-client";
 import { Edit, Trash2 } from "lucide-react";
 import DropdownMenuIcon from "./DropdownMenuIcon";
 import { DateTime } from "luxon";
@@ -11,6 +17,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 
 interface EggItemProps {
   pet: PetSummaryLayingDto;
+  layingDate: string;
   handleHatching: (e: React.MouseEvent) => void;
   handleDeleteEggClick: (e: React.MouseEvent) => void;
   handleEditEggClick: (e: React.MouseEvent) => void;
@@ -19,6 +26,7 @@ interface EggItemProps {
 
 const EggItem = ({
   pet,
+  layingDate,
   handleHatching,
   handleDeleteEggClick,
   handleEditEggClick,
@@ -27,6 +35,16 @@ const EggItem = ({
   const router = useRouter();
   const isMobile = useIsMobile();
   const isHatched = !!pet.hatchingDate;
+
+  const getExpectedDate = (temperature = 25) => {
+    // 온도 기반 해칭일 계산 (기본 25°C)
+    const incubationDay = 60 - (temperature - 25) * 10;
+    const expectedDate = DateTime.fromFormat(layingDate, "yyyy-MM-dd").plus({
+      days: incubationDay,
+    });
+
+    return expectedDate.setLocale("ko").toFormat("M월 d일(ccc)");
+  };
 
   return (
     <div
@@ -55,15 +73,21 @@ const EggItem = ({
               {pet?.name ?? `${pet.clutch ?? "@"}차-${pet.clutchOrder ?? "@"}`}
             </div>
             {pet.temperature && (
-              <span className="text-[12px] font-[500] text-green-700">| {pet.temperature}℃</span>
+              <span className="text-[12px] font-[500] text-gray-600">| {pet.temperature}℃</span>
             )}
 
             {pet.sex && (
-              <span className="text-[12px] font-[500] text-blue-600">
+              <span className="text-[12px] font-[500] text-gray-600">
                 | {GENDER_KOREAN_INFO[pet.sex]}
               </span>
             )}
           </div>
+          {!isHatched && pet.eggStatus === PetSummaryLayingDtoEggStatus.FERTILIZED && (
+            <div className="text-xs font-[500] text-blue-600">
+              <span className="font-[400]">예상 해칭일: </span>
+              {getExpectedDate(pet.temperature)}
+            </div>
+          )}
         </div>
       </div>
 
@@ -74,20 +98,22 @@ const EggItem = ({
             handleValueChange={handleUpdate}
             selectItems={{ FERTILIZED: "유정란", UNFERTILIZED: "무정란", DEAD: "중지" }}
             triggerClassName={
-              pet.eggStatus === "FERTILIZED" ? "bg-yellow-100 text-yellow-700 border-none " : ""
+              pet.eggStatus === "FERTILIZED"
+                ? "bg-yellow-700/80 text-yellow-100 border-none font-[600]"
+                : "font-[600] text-gray-700"
             }
+            iconClassName={pet.eggStatus === "FERTILIZED" ? "text-white" : "text-black"}
           />
 
-          <button
-            type="button"
-            className="ml-1 rounded-lg bg-blue-100/60 px-2 text-xs font-[600] text-blue-500 hover:bg-blue-200/60"
-            onClick={handleHatching}
-          >
-            해칭 완료
-          </button>
+          {/* 수정/삭제 드롭다운 */}
           <DropdownMenuIcon
             selectedId={pet.petId}
             menuItems={[
+              {
+                icon: <Edit className="h-4 w-4 text-blue-600" />,
+                label: "해칭 완료",
+                onClick: handleHatching,
+              },
               {
                 icon: <Edit className="h-4 w-4 text-blue-600" />,
                 label: "수정",
