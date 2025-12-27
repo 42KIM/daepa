@@ -29,19 +29,23 @@ export default function HorizontalScrollSection({
   };
 
   useEffect(() => {
-    checkScroll();
     const el = scrollRef.current;
-    if (el) {
-      el.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-    }
+    if (!el) return;
+
+    checkScroll();
+    el.addEventListener("scroll", checkScroll);
+    window.addEventListener("resize", checkScroll);
+
+    // ResizeObserver로 컨텐츠 크기 변화 감지
+    const resizeObserver = new ResizeObserver(checkScroll);
+    resizeObserver.observe(el);
+
     return () => {
-      if (el) {
-        el.removeEventListener("scroll", checkScroll);
-      }
+      el.removeEventListener("scroll", checkScroll);
       window.removeEventListener("resize", checkScroll);
+      resizeObserver.disconnect();
     };
-  }, [children]);
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     const el = scrollRef.current;

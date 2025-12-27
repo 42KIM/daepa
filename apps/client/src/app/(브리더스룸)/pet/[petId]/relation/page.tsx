@@ -7,6 +7,8 @@ import SiblingPetCard from "./components/SiblingPetCard";
 import HorizontalScrollSection from "./components/HorizontalScrollSection";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
+import Image from "next/image";
+import Loading from "@/components/common/Loading";
 
 interface PetDetailPageProps {
   params: Promise<{
@@ -22,7 +24,11 @@ function SiblingsPage({ params }: PetDetailPageProps) {
   const { petId } = use(params);
   const isMobile = useIsMobile();
 
-  const { data: siblingsData, isLoading } = useQuery({
+  const {
+    data: siblingsData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: [petControllerGetSiblingsByPetId.name, petId],
     queryFn: () => petControllerGetSiblingsByPetId(petId),
     select: (response) => response.data.data,
@@ -63,8 +69,20 @@ function SiblingsPage({ params }: PetDetailPageProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-gray-500">로딩 중...</div>
+      <div className="flex h-[calc(100vh-52px)]">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-[calc(100vh-52px)] flex-1 flex-col items-center justify-center gap-1">
+        <Image src="/assets/lizard.png" alt="관계도 에러 펫" width={150} height={150} />
+        <p className="text-lg font-semibold text-gray-700">
+          펫 정보를 불러오는 중 오류가 발생했습니다
+        </p>
+        <p className="text-sm text-gray-500">잠시 후 다시 시도해주세요 </p>
       </div>
     );
   }
@@ -123,7 +141,7 @@ function SiblingsPage({ params }: PetDetailPageProps) {
 
       {/* 4. 부모가 같은 펫 */}
       {otherClutchSiblings.length > 0 && (
-        <section>
+        <section className="min-w-0 overflow-hidden">
           <h2 className="mb-3 text-[16px] font-bold text-gray-900">부모가 같은 펫</h2>
           <HorizontalScrollSection>
             {otherClutchSiblings.map((sibling) => (
