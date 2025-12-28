@@ -205,15 +205,6 @@ function PetDetailPage({ params }: PetDetailPageProps) {
           <BreedingInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
         </div>
 
-        {/* 분양 정보 */}
-        <div
-          ref={adoptionRef}
-          data-section="adoption"
-          className="flex min-h-[480px] min-w-[300px] flex-1 max-[580px]:order-3"
-        >
-          <AdoptionInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
-        </div>
-
         {/* 사진 */}
         <div
           ref={imagesRef}
@@ -230,6 +221,15 @@ function PetDetailPage({ params }: PetDetailPageProps) {
           className="min-w-[416px]:min-w-[400px] flex min-w-[300px] flex-1 max-[1500px]:max-w-[820px] max-[580px]:order-4"
         >
           <PedigreeInfo species={pet.species} petId={petId} userId={pet.owner.userId ?? ""} />
+        </div>
+
+        {/* 분양 정보 */}
+        <div
+          ref={adoptionRef}
+          data-section="adoption"
+          className="flex min-h-[480px] min-w-[300px] flex-1 max-[580px]:order-3"
+        >
+          <AdoptionInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
         </div>
       </div>
     </div>
