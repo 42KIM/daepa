@@ -1,15 +1,14 @@
 import QRCode from "./QR코드";
-import Image from "next/image";
-import { buildR2TransformedUrl, cn } from "@/lib/utils";
-import { PetAdoptionDtoStatus, PetDto, petImageControllerFindOne } from "@repo/api-client";
+import { cn } from "@/lib/utils";
+import { PetAdoptionDtoStatus, PetDto } from "@repo/api-client";
 import { SPECIES_KOREAN_ALIAS_INFO } from "@/app/(브리더스룸)/constants";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { DeletePetDialog } from "./DeletePetDialog";
 import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
 import { useBreedingInfoStore } from "../../store/breedingInfo";
 import { useEffect, useState } from "react";
 import TooltipText from "@/app/(브리더스룸)/components/TooltipText";
+import PetThumbnail from "@/components/common/PetThumbnail";
 
 type TabType = "breeding" | "adoption" | "images" | "pedigree";
 
@@ -32,12 +31,6 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const { data: photos = [] } = useQuery({
-    queryKey: [petImageControllerFindOne.name, pet.petId],
-    queryFn: () => petImageControllerFindOne(pet.petId),
-    select: (response) => response.data,
-  });
-
   const { breedingInfo } = useBreedingInfoStore();
   const breedingData = breedingInfo?.petId === pet?.petId ? breedingInfo : null;
   const { adoption } = useAdoptionStore();
@@ -59,16 +52,7 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
             isScrolled ? "h-14 w-14" : "h-18 w-18",
           )}
         >
-          {photos[0]?.url ? (
-            <Image
-              src={buildR2TransformedUrl(photos[0]?.url)}
-              alt={pet.petId}
-              fill
-              className="rounded-2xl object-cover"
-            />
-          ) : (
-            <Image src="/assets/lizard.png" alt="펫 상세 헤더 기본 이미지" fill />
-          )}
+          <PetThumbnail petId={pet.petId} maxSize={72} />
         </div>
         <div className="flex flex-1 flex-col">
           <div className="flex items-center gap-2">
