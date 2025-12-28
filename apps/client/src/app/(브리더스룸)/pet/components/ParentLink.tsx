@@ -10,6 +10,7 @@ import {
   GetParentsByPetIdResponseDtoDataFather,
   GetParentsByPetIdResponseDtoDataMother,
   PetDtoSpecies,
+  PetHiddenStatusDto,
   PetHiddenStatusDtoHiddenStatus,
   PetParentDto,
   PetParentDtoStatus,
@@ -46,8 +47,8 @@ const ParentLink = ({
   const isClickDisabled = pathname.includes("register") || pathname.includes("hatching");
 
   const deleteParent = useCallback(
-    (data: PetParentDto) => {
-      if (!data?.petId) return;
+    (parentPetId?: string) => {
+      if (!parentPetId) return;
 
       onUnlink?.();
     },
@@ -55,12 +56,26 @@ const ParentLink = ({
   );
 
   const handleUnlink = useCallback(
-    (e: React.MouseEvent, data: PetParentDto) => {
+    (e: React.MouseEvent, data: PetParentDto | PetHiddenStatusDto) => {
       e.stopPropagation();
 
       if (isClickDisabled) {
-        deleteParent(data);
+        deleteParent(data?.petId);
         return;
+      }
+
+      let title = "";
+      let description = "";
+      if ("hiddenStatus" in data) {
+        title = "부모 연동 해제";
+        description =
+          "부모 연동을 해제하시겠습니까? \n 타인의 펫인 경우, 해제 시 연동 절차를 다시 진행해야 합니다.";
+      } else {
+        title = data?.status === PetParentDtoStatus.APPROVED ? "부모 연동 해제" : "부모 요청 취소";
+        description =
+          data?.status === PetParentDtoStatus.APPROVED
+            ? "부모 연동을 해제하시겠습니까? \n 타인의 펫인 경우, 해제 시 연동 절차를 다시 진행해야 합니다."
+            : "부모 연동 요청을 취소하시겠습니까? \n 부모 개체 주인에게 취소 알림이 발송됩니다.";
       }
 
       overlay.open(({ isOpen, close, unmount }) => (
@@ -68,15 +83,11 @@ const ParentLink = ({
           isOpen={isOpen}
           onCloseAction={close}
           onConfirmAction={() => {
-            deleteParent(data);
+            deleteParent(data?.petId);
             close();
           }}
-          title={data?.status === PetParentDtoStatus.APPROVED ? "부모 연동 해제" : "부모 요청 취소"}
-          description={
-            data?.status === PetParentDtoStatus.APPROVED
-              ? "부모 연동을 해제하시겠습니까? \n 타인의 펫인 경우, 해제 시 연동 절차를 다시 진행해야 합니다."
-              : "부모 연동 요청을 취소하시겠습니까? \n 부모 개체 주인에게 취소 알림이 발송됩니다."
-          }
+          title={title}
+          description={description}
           onExit={unmount}
         />
       ));
@@ -141,10 +152,20 @@ const ParentLink = ({
           {label}
         </dt>
         <div className="flex flex-col items-center gap-2">
-          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-200/50 dark:bg-gray-700/50">
+          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-yellow-50/50 dark:bg-gray-700/50">
+            {editable && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-2 z-10 h-6 w-6 rounded-full bg-black/50 p-0 hover:bg-black/70"
+                onClick={(e) => handleUnlink(e, data)}
+              >
+                <X className="h-4 w-4 text-white" />
+              </Button>
+            )}
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-              <Lock className="h-6 w-6 text-gray-400 dark:text-gray-500" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <Lock className="h-6 w-6 text-yellow-500 dark:text-gray-500" />
+              <span className="text-xs font-medium text-yellow-500 dark:text-gray-400">
                 비공개 개체입니다.
               </span>
             </div>
