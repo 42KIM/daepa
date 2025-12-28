@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { isNil, range, remove } from "es-toolkit";
 import { ACCEPT_IMAGE_FORMATS } from "../../constants";
 import { tokenStorage } from "@/lib/tokenStorage";
+import { IMAGE_TRANSFORMS } from "@/app/constants";
 
 type PhotoItem = {
   fileName: string;
@@ -260,7 +261,7 @@ export default function DndImagePicker({
         <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
           <div className="relative aspect-[4/3] w-full">
             <Image
-              src={buildR2TransformedUrl(images[selectedIndex].url)}
+              src={buildR2TransformedUrl(images[selectedIndex].url, IMAGE_TRANSFORMS.lg)}
               alt={`preview_${images[selectedIndex].fileName}`}
               fill
               className="object-contain"
