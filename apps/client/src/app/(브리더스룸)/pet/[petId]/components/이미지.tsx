@@ -111,7 +111,7 @@ const Images = ({ pet }: { pet: PetDto }) => {
 
   return (
     <div className="shadow-xs flex flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
-      <div className="text-[14px] font-[600] text-gray-600">이미</div>
+      <div className="text-[14px] font-[600] text-gray-600">이미지</div>
 
       {!isEditMode && photos.length === 0 && (
         <div className="flex h-full flex-col items-center justify-center">
