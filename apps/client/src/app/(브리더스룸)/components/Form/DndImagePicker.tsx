@@ -263,7 +263,7 @@ export default function DndImagePicker({
               src={buildR2TransformedUrl(images[selectedIndex].url)}
               alt={`preview_${images[selectedIndex].fileName}`}
               fill
-              className="object-cover"
+              className="object-contain"
               draggable={false}
               priority={false}
             />
@@ -342,7 +342,7 @@ function SortableThumb({
             src={buildR2TransformedUrl(src)}
             alt={`image_${id}`}
             fill
-            className="cursor-pointer object-cover"
+            className="cursor-pointer object-contain"
             // 이미지 드래그 방지
             draggable={false}
           />
