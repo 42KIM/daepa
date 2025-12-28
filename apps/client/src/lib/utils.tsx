@@ -9,6 +9,7 @@ import {
   UserNotificationDtoType,
 } from "@repo/api-client";
 import { isEqual, isPlainObject, isUndefined, pick, uniq } from "es-toolkit";
+import { IMAGE_TRANSFORMS } from "@/app/constants";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -75,7 +76,7 @@ export const getNumberToDate = (dateNumber: number) => {
 const CLOUDFLARE_R2_URL_BASE = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_IMAGE_BASE_URL;
 export const buildR2TransformedUrl = (
   raw: string | undefined,
-  transform: string = "width=460,height=700,format=webp",
+  transform: string = IMAGE_TRANSFORMS.sm,
 ) => {
   if (!raw) return "";
 

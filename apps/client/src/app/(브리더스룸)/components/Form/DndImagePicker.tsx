@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { isNil, range, remove } from "es-toolkit";
 import { ACCEPT_IMAGE_FORMATS } from "../../constants";
 import { tokenStorage } from "@/lib/tokenStorage";
+import { IMAGE_TRANSFORMS } from "@/app/constants";
 
 type PhotoItem = {
   fileName: string;
@@ -260,10 +261,10 @@ export default function DndImagePicker({
         <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
           <div className="relative aspect-[4/3] w-full">
             <Image
-              src={buildR2TransformedUrl(images[selectedIndex].url)}
+              src={buildR2TransformedUrl(images[selectedIndex].url, IMAGE_TRANSFORMS.lg)}
               alt={`preview_${images[selectedIndex].fileName}`}
               fill
-              className="object-cover"
+              className="object-contain"
               draggable={false}
               priority={false}
             />
@@ -342,7 +343,7 @@ function SortableThumb({
             src={buildR2TransformedUrl(src)}
             alt={`image_${id}`}
             fill
-            className="cursor-pointer object-cover"
+            className="cursor-pointer object-contain"
             // 이미지 드래그 방지
             draggable={false}
           />

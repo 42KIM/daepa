@@ -5,20 +5,11 @@ import { petImageControllerFindThumbnail } from "@repo/api-client";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Loading from "./Loading";
-
-/**
- * CDN 캐싱 효율을 위한 썸네일 크기 (레티나 2x 대응)
- * - sm: 160px 이하 표시용 (320px 이미지)
- * - lg: 400px 이하 표시용 (800px 이미지)
- */
-const THUMBNAIL_TRANSFORMS = {
-  sm: "width=320,height=320,format=webp",
-  lg: "width=800,height=800,format=webp",
-} as const;
+import { IMAGE_TRANSFORMS } from "@/app/constants";
 
 /** maxSize 기준으로 적절한 transform 선택 */
 const getTransform = (maxSize: number) => {
-  return maxSize <= 160 ? THUMBNAIL_TRANSFORMS.sm : THUMBNAIL_TRANSFORMS.lg;
+  return maxSize <= 160 ? IMAGE_TRANSFORMS.sm : IMAGE_TRANSFORMS.lg;
 };
 
 /** 썸네일 캐시 무효화를 위한 queryKey */
