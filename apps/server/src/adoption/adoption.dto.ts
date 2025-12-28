@@ -532,7 +532,7 @@ export class AdoptionFilterDto extends PageOptionsDto {
 
   @ApiProperty({
     description: '부 개체 ID',
-    example: 'PET_XXXXXXXX',
+    example: 'XXXXXXXX',
     required: false,
   })
   @IsOptional()
@@ -541,7 +541,7 @@ export class AdoptionFilterDto extends PageOptionsDto {
 
   @ApiProperty({
     description: '모 개체 ID',
-    example: 'PET_XXXXXXXX',
+    example: 'XXXXXXXX',
     required: false,
   })
   @IsOptional()
