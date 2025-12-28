@@ -195,12 +195,12 @@ function PetDetailPage({ params }: PetDetailPageProps) {
     <div className="flex flex-1 flex-col gap-3 pb-5">
       <Header pet={pet} tabs={tabs} activeTab={activeTab} onTabClick={handleTabClick} />
 
-      <div className="flex flex-wrap gap-3 px-2 max-[960px]:flex-wrap">
+      <div className="flex flex-wrap gap-3 px-2">
         {/* 펫정보 (개체 이름, 종, 성별, 크기, 모프, 형질, 먹이) */}
         <div
           ref={breedingRef}
           data-section="breeding"
-          className="flex flex-1 max-[1500px]:min-w-[337px] max-[580px]:order-2 max-[380px]:min-w-[200px] min-[380px]:min-w-[300px]"
+          className="flex min-w-[300px] max-w-[440px] flex-1 max-[580px]:order-2 max-[580px]:max-w-none"
         >
           <BreedingInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
         </div>
@@ -209,7 +209,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
         <div
           ref={imagesRef}
           data-section="images"
-          className="min-w-[356px]:min-w-[340px] flex min-h-[480px] min-w-[300px] flex-1 max-[580px]:order-1"
+          className="flex min-h-[480px] min-w-[300px] max-w-[440px] flex-1 max-[580px]:order-1 max-[580px]:max-w-none"
         >
           <Images pet={pet} />
         </div>
@@ -218,7 +218,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
         <div
           ref={pedigreeRef}
           data-section="pedigree"
-          className="min-w-[416px]:min-w-[400px] flex min-w-[300px] flex-1 max-[1500px]:max-w-[820px] max-[580px]:order-4"
+          className="flex min-w-[300px] max-w-[440px] flex-1 max-[580px]:order-4 max-[580px]:max-w-none"
         >
           <PedigreeInfo species={pet.species} petId={petId} userId={pet.owner.userId ?? ""} />
         </div>
@@ -227,7 +227,7 @@ function PetDetailPage({ params }: PetDetailPageProps) {
         <div
           ref={adoptionRef}
           data-section="adoption"
-          className="flex min-h-[480px] min-w-[300px] flex-1 max-[580px]:order-3"
+          className="flex min-h-[480px] min-w-[300px] max-w-[440px] flex-1 max-[580px]:order-3 max-[580px]:max-w-none"
         >
           <AdoptionInfo petId={petId} ownerId={pet.owner.userId ?? ""} />
         </div>
