@@ -28,14 +28,7 @@ export class StatisticsController {
     @Query() query: ParentStatisticsQueryDto,
     @JwtUser() token: JwtUserPayload,
   ): Promise<ParentStatisticsDto> {
-    return this.statisticsService.getPairStatistics(
-      token.userId,
-      query.species,
-      query.fatherId,
-      query.motherId,
-      query.year,
-      query.month,
-    );
+    return this.statisticsService.getPairStatistics(token.userId, query);
   }
 
   @Get('adoptions')

@@ -26,6 +26,7 @@ import {
   AdoptionSexItemDto,
   AdoptionDayOfWeekItemDto,
   CustomerAnalysisDto,
+  ParentStatisticsQueryDto,
 } from './statistics.dto';
 
 interface PetWithDetails {
@@ -59,12 +60,10 @@ export class StatisticsService {
    */
   async getPairStatistics(
     userId: string,
-    species?: string,
-    fatherId?: string,
-    motherId?: string,
-    year?: number,
-    month?: number,
+    query: ParentStatisticsQueryDto,
   ): Promise<ParentStatisticsDto> {
+    const { species, fatherId, motherId, year, month } = query;
+
     if (!species && !fatherId && !motherId) {
       return this.buildEmptyParentStatistics(fatherId, motherId, year, month);
     }
