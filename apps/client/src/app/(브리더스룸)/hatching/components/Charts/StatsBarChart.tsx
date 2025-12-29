@@ -1,5 +1,6 @@
 import { ChartContainer } from "@/components/ui/chart";
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { formatPrice } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, LabelList } from "recharts";
 
 export interface BarChartDataItem {
@@ -18,16 +19,9 @@ interface StatsBarChartProps {
   mode?: "count" | "revenue";
 }
 
-const formatRevenue = (value: number): string => {
-  if (value >= 10000) {
-    return `${Math.round(value / 10000)}만`;
-  }
-  return value.toLocaleString();
-};
-
 const StatsBarChart = ({
   data,
-  itemHeight = 30,
+  itemHeight = 25,
   minHeight = 150,
   mode = "count",
 }: StatsBarChartProps) => {
@@ -69,9 +63,9 @@ const StatsBarChart = ({
               const countText = ` (${payload.count}마리)`;
               const avgText =
                 payload.averagePrice !== undefined
-                  ? ` | 평균 ${formatRevenue(payload.averagePrice)}원`
+                  ? ` | 평균 ${formatPrice(payload.averagePrice)}`
                   : "";
-              return [payload.name, ` ${formatRevenue(value as number)}원${countText}${avgText}`];
+              return [payload.name, ` ${formatPrice(value as number)}원${countText}${avgText}`];
             }
             const priceText =
               payload.averagePrice !== undefined
@@ -90,7 +84,7 @@ const StatsBarChart = ({
             className="fill-foreground"
             fontSize={12}
             fontWeight={600}
-            formatter={(value: number) => (mode === "revenue" ? formatRevenue(value) : value)}
+            formatter={(value: number) => (mode === "revenue" ? formatPrice(value) : value)}
           />
         </Bar>
       </BarChart>

@@ -793,4 +793,5 @@ export const ADOPTION_STATISTICS_COLORS = {
   delivery: "#165dfc",
   wholesale: "#2b7fff",
   export: "#9cb9e5ff",
+  averagePrice: "#10b981",
 };

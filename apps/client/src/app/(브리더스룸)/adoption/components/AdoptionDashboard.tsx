@@ -17,6 +17,8 @@ import {
   CustomSelectOption,
   getMorphOrTraitColor,
   AdoptionMonthlyChart,
+  DayOfWeekChart,
+  CustomerAnalysisCard,
 } from "./Charts";
 import Loading from "@/components/common/Loading";
 import Image from "next/image";
@@ -281,6 +283,33 @@ const AdoptionDashboard = memo(() => {
 
           {/* 차트 그리드 */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {/* 요일별 분양 통계 */}
+            {statistics.dayOfWeekStats && statistics.dayOfWeekStats.some((d) => d.count > 0) && (
+              <ChartCard
+                title="요일별 분양 통계"
+                footer={
+                  <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-700">
+                    {["일", "월", "화", "수", "목", "금", "토"].map((day, index) => {
+                      const dayData = statistics.dayOfWeekStats?.find((d) => d.dayOfWeek === index);
+                      if (!dayData || dayData.count === 0) return null;
+                      return (
+                        <span key={day} className="font-[500]">
+                          {day}: <span className="font-bold">{dayData.count}마리</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                }
+              >
+                <DayOfWeekChart data={statistics.dayOfWeekStats} />
+              </ChartCard>
+            )}
+
+            {/* 고객 분석 */}
+            {statistics.customerAnalysis && (
+              <CustomerAnalysisCard data={statistics.customerAnalysis} />
+            )}
+
             {/* 성별 통계 파이 차트 (분양가 기준) */}
             {sexChartData.length > 0 && (
               <ChartCard

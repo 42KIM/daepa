@@ -1,5 +1,6 @@
 import { ADOPTION_STATISTICS_COLORS } from "@/app/(브리더스룸)/constants";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { formatPrice } from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -14,6 +15,7 @@ interface AdoptionMonthlyItem {
   month: number;
   count: number;
   revenue: number;
+  averagePrice: number;
 }
 
 interface AdoptionMonthlyChartProps {
@@ -50,6 +52,7 @@ const AdoptionMonthlyChart = ({ data }: AdoptionMonthlyChartProps) => {
     name: MONTH_NAMES[item.month - 1],
     분양수: item.count,
     수익: item.revenue,
+    평균분양가: item.averagePrice,
   }));
 
   return (
@@ -57,6 +60,7 @@ const AdoptionMonthlyChart = ({ data }: AdoptionMonthlyChartProps) => {
       config={{
         분양수: { label: "분양 수", color: ADOPTION_STATISTICS_COLORS.count },
         수익: { label: "수익", color: ADOPTION_STATISTICS_COLORS.revenue },
+        평균분양가: { label: "평균 분양가", color: ADOPTION_STATISTICS_COLORS.averagePrice },
       }}
       className="h-[300px] w-full pt-4"
     >
@@ -87,10 +91,9 @@ const AdoptionMonthlyChart = ({ data }: AdoptionMonthlyChartProps) => {
           <ChartTooltip
             content={<ChartTooltipContent />}
             formatter={(value, name) => {
-              if (name === "수익") {
-                return [name, ` ${(value as number).toLocaleString()}원`];
-              }
-              return [name, ` ${value}마리`];
+              if (name === "분양수") return [name, " ", ` ${value}마리`];
+
+              return [name, " ", formatPrice(value as number)];
             }}
           />
           <Legend />
@@ -110,6 +113,16 @@ const AdoptionMonthlyChart = ({ data }: AdoptionMonthlyChartProps) => {
             stroke={ADOPTION_STATISTICS_COLORS.revenue}
             strokeWidth={2}
             dot={{ fill: ADOPTION_STATISTICS_COLORS.revenue, strokeWidth: 2, r: 0 }}
+            activeDot={{ r: 4 }}
+          />
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="평균분양가"
+            stroke={ADOPTION_STATISTICS_COLORS.averagePrice}
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={{ fill: ADOPTION_STATISTICS_COLORS.averagePrice, strokeWidth: 2, r: 0 }}
             activeDot={{ r: 4 }}
           />
         </LineChart>
