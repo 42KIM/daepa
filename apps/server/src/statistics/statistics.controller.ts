@@ -7,6 +7,8 @@ import { StatisticsService } from './statistics.service';
 import {
   ParentStatisticsDto,
   ParentStatisticsQueryDto,
+  AdoptionStatisticsDto,
+  AdoptionStatisticsQueryDto,
 } from './statistics.dto';
 
 @Controller('v1/statistics')
@@ -31,6 +33,25 @@ export class StatisticsController {
       query.species,
       query.fatherId,
       query.motherId,
+      query.year,
+      query.month,
+    );
+  }
+
+  @Get('adoptions')
+  @ApiOperation({ summary: '분양 통계 조회' })
+  @ApiResponse({
+    status: 200,
+    description: '분양 통계 조회 성공',
+    type: AdoptionStatisticsDto,
+  })
+  async getAdoptionStatistics(
+    @Query() query: AdoptionStatisticsQueryDto,
+    @JwtUser() token: JwtUserPayload,
+  ): Promise<AdoptionStatisticsDto> {
+    return this.statisticsService.getAdoptionStatistics(
+      token.userId,
+      query.species,
       query.year,
       query.month,
     );

@@ -7,8 +7,9 @@ import { LayingEntity } from 'src/laying/laying.entity';
 import { PetEntity } from 'src/pet/pet.entity';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
+import { AdoptionEntity } from 'src/adoption/adoption.entity';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
-import { PET_SEX } from 'src/pet/pet.constants';
+import { ADOPTION_SALE_STATUS, PET_SEX } from 'src/pet/pet.constants';
 import {
   ParentStatisticsDto,
   StatisticsPeriodType,
@@ -18,6 +19,11 @@ import {
   DistributionItemDto,
   StatisticsPeriodDto,
   MonthlyStatisticsItemDto,
+  AdoptionStatisticsDto,
+  AdoptionRevenueDto,
+  AdoptionMonthlyItemDto,
+  AdoptionDistributionItemDto,
+  AdoptionSexItemDto,
 } from './statistics.dto';
 
 interface PetWithDetails {
@@ -509,5 +515,313 @@ export class StatisticsService {
       start: new Date(year, 0, 1),
       end: new Date(year, 11, 31),
     };
+  }
+
+  // ============================================
+  // 분양 통계
+  // ============================================
+
+  /**
+   * 분양 통계 조회
+   */
+  async getAdoptionStatistics(
+    userId: string,
+    species?: string,
+    year?: number,
+    month?: number,
+  ): Promise<AdoptionStatisticsDto> {
+    // 1) 분양 완료된 데이터 조회
+    let query = this.dataSource
+      .createQueryBuilder(AdoptionEntity, 'adoption')
+      .leftJoinAndMapOne(
+        'adoption.pet',
+        PetEntity,
+        'pet',
+        'pet.petId = adoption.petId',
+      )
+      .leftJoinAndMapOne(
+        'adoption.petDetail',
+        PetDetailEntity,
+        'petDetail',
+        'petDetail.petId = adoption.petId',
+      )
+      .where('adoption.sellerId = :userId', { userId })
+      .andWhere('adoption.status = :status', {
+        status: ADOPTION_SALE_STATUS.SOLD,
+      })
+      .andWhere('adoption.isDeleted = false')
+      .select([
+        'adoption.adoptionId',
+        'adoption.price',
+        'adoption.adoptionDate',
+        'adoption.method',
+        'pet.species',
+        'petDetail.sex',
+        'petDetail.morphs',
+        'petDetail.traits',
+      ]);
+
+    if (species) {
+      query = query.andWhere('pet.species = :species', { species });
+    }
+
+    if (year) {
+      const dateRange = this.getYearMonthDateRange(year, month);
+      query = query.andWhere('adoption.adoptionDate BETWEEN :start AND :end', {
+        start: dateRange.start,
+        end: dateRange.end,
+      });
+    }
+
+    const adoptions = await query.getMany();
+
+    if (adoptions.length === 0) {
+      return this.buildEmptyAdoptionStatistics(year, month);
+    }
+
+    // 2) 통계 계산
+    return this.buildAdoptionStatistics(adoptions, year, month);
+  }
+
+  /**
+   * 분양 통계 데이터 생성
+   */
+  private buildAdoptionStatistics(
+    adoptions: AdoptionEntity[],
+    year?: number,
+    month?: number,
+  ): AdoptionStatisticsDto {
+    const period = this.buildPeriod(year, month);
+    const totalCount = adoptions.length;
+
+    // 수익 통계
+    const prices = adoptions
+      .map((a) => a.price)
+      .filter((p): p is number => p !== null && p !== undefined);
+    const revenue = this.buildRevenueStatistics(prices);
+
+    // 성별 통계
+    const sex = this.buildAdoptionSexStatistics(adoptions);
+
+    // 모프/형질 분포
+    const morphs = this.buildAdoptionDistribution(
+      adoptions,
+      (a) => a.petDetail?.morphs ?? null,
+    );
+    const traits = this.buildAdoptionDistribution(
+      adoptions,
+      (a) => a.petDetail?.traits ?? null,
+    );
+
+    // 분양 방식 분포
+    const methods = this.buildMethodDistribution(adoptions);
+
+    // 월별 통계 (연도만 선택된 경우)
+    const monthlyStats =
+      year && !month
+        ? this.buildAdoptionMonthlyStatistics(adoptions)
+        : undefined;
+
+    return plainToInstance(AdoptionStatisticsDto, {
+      period,
+      totalCount,
+      revenue,
+      sex,
+      morphs,
+      traits,
+      methods,
+      monthlyStats,
+    });
+  }
+
+  /**
+   * 빈 분양 통계 데이터 생성
+   */
+  private buildEmptyAdoptionStatistics(
+    year?: number,
+    month?: number,
+  ): AdoptionStatisticsDto {
+    return plainToInstance(AdoptionStatisticsDto, {
+      period: this.buildPeriod(year, month),
+      totalCount: 0,
+      revenue: plainToInstance(AdoptionRevenueDto, {
+        totalRevenue: 0,
+        averagePrice: 0,
+        minPrice: 0,
+        maxPrice: 0,
+      }),
+      sex: [],
+      morphs: [],
+      traits: [],
+      methods: [],
+    });
+  }
+
+  /**
+   * 수익 통계 생성
+   */
+  private buildRevenueStatistics(prices: number[]): AdoptionRevenueDto {
+    if (prices.length === 0) {
+      return plainToInstance(AdoptionRevenueDto, {
+        totalRevenue: 0,
+        averagePrice: 0,
+        minPrice: 0,
+        maxPrice: 0,
+      });
+    }
+
+    const totalRevenue = prices.reduce((sum, p) => sum + p, 0);
+    const averagePrice = Math.round(totalRevenue / prices.length);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    return plainToInstance(AdoptionRevenueDto, {
+      totalRevenue,
+      averagePrice,
+      minPrice,
+      maxPrice,
+    });
+  }
+
+  /**
+   * 분양 성별 통계 생성
+   */
+  private buildAdoptionSexStatistics(
+    adoptions: AdoptionEntity[],
+  ): AdoptionSexItemDto[] {
+    const sexConfig = [
+      {
+        key: 'male',
+        filter: (a: AdoptionEntity) => a.petDetail?.sex === PET_SEX.MALE,
+      },
+      {
+        key: 'female',
+        filter: (a: AdoptionEntity) => a.petDetail?.sex === PET_SEX.FEMALE,
+      },
+      {
+        key: 'unknown',
+        filter: (a: AdoptionEntity) =>
+          !a.petDetail?.sex || a.petDetail?.sex === PET_SEX.NON,
+      },
+    ];
+
+    const total = adoptions.length;
+
+    return sexConfig
+      .map(({ key, filter }) => {
+        const filtered = adoptions.filter(filter);
+        const count = filtered.length;
+        const revenue = filtered.reduce((sum, a) => sum + (a.price ?? 0), 0);
+
+        return plainToInstance(AdoptionSexItemDto, {
+          key,
+          count,
+          rate: this.calculateRate(count, total),
+          revenue,
+          averagePrice: count > 0 ? Math.round(revenue / count) : 0,
+        });
+      })
+      .filter((item) => item.count > 0);
+  }
+
+  /**
+   * 분양 분포 통계 생성
+   */
+  private buildAdoptionDistribution(
+    adoptions: AdoptionEntity[],
+    getItems: (adoption: AdoptionEntity) => string[] | null,
+  ): AdoptionDistributionItemDto[] {
+    const statsMap = new Map<string, { count: number; revenue: number }>();
+    let total = 0;
+
+    for (const adoption of adoptions) {
+      const items = getItems(adoption);
+      if (items && items.length > 0) {
+        const pricePerItem = (adoption.price ?? 0) / items.length;
+        for (const item of items) {
+          const current = statsMap.get(item) || { count: 0, revenue: 0 };
+          current.count++;
+          current.revenue += pricePerItem;
+          statsMap.set(item, current);
+          total++;
+        }
+      }
+    }
+
+    return Array.from(statsMap.entries())
+      .map(([key, stats]) =>
+        plainToInstance(AdoptionDistributionItemDto, {
+          key,
+          count: stats.count,
+          percentage: this.calculateRate(stats.count, total),
+          totalRevenue: Math.round(stats.revenue),
+          averagePrice:
+            stats.count > 0 ? Math.round(stats.revenue / stats.count) : 0,
+        }),
+      )
+      .sort((a, b) => b.count - a.count);
+  }
+
+  /**
+   * 분양 방식 분포 생성
+   */
+  private buildMethodDistribution(
+    adoptions: AdoptionEntity[],
+  ): AdoptionDistributionItemDto[] {
+    const statsMap = new Map<string, { count: number; revenue: number }>();
+    const total = adoptions.length;
+
+    for (const adoption of adoptions) {
+      const label = adoption.method ?? 'NONE';
+      const current = statsMap.get(label) || { count: 0, revenue: 0 };
+      current.count++;
+      current.revenue += adoption.price ?? 0;
+      statsMap.set(label, current);
+    }
+
+    return Array.from(statsMap.entries())
+      .map(([key, stats]) =>
+        plainToInstance(AdoptionDistributionItemDto, {
+          key,
+          count: stats.count,
+          percentage: this.calculateRate(stats.count, total),
+          totalRevenue: stats.revenue,
+          averagePrice:
+            stats.count > 0 ? Math.round(stats.revenue / stats.count) : 0,
+        }),
+      )
+      .sort((a, b) => b.count - a.count);
+  }
+
+  /**
+   * 분양 월별 통계 생성
+   */
+  private buildAdoptionMonthlyStatistics(
+    adoptions: AdoptionEntity[],
+  ): AdoptionMonthlyItemDto[] {
+    const monthlyData = new Map<number, { count: number; revenue: number }>();
+
+    // 1-12월 초기화
+    for (let m = 1; m <= 12; m++) {
+      monthlyData.set(m, { count: 0, revenue: 0 });
+    }
+
+    // 월별 데이터 집계
+    for (const adoption of adoptions) {
+      if (adoption.adoptionDate) {
+        const month = new Date(adoption.adoptionDate).getMonth() + 1;
+        const data = monthlyData.get(month)!;
+        data.count++;
+        data.revenue += adoption.price ?? 0;
+      }
+    }
+
+    return Array.from(monthlyData.entries()).map(([month, data]) =>
+      plainToInstance(AdoptionMonthlyItemDto, {
+        month,
+        count: data.count,
+        revenue: data.revenue,
+      }),
+    );
   }
 }

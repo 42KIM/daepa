@@ -27,6 +27,7 @@ import type {
   PetControllerFindAllParams,
   PetControllerGetDeletedPetsParams,
   SaveFilesDto,
+  StatisticsControllerGetAdoptionStatisticsParams,
   StatisticsControllerGetPairStatisticsParams,
   UnlinkParentDto,
   UpdateAdoptionDto,
@@ -49,6 +50,7 @@ import { HttpResponse, delay, http } from "msw";
 
 import type {
   AdoptionDetailResponseDto,
+  AdoptionStatisticsDto,
   BrAdoptionControllerGetAllAdoptions200,
   BrMatingControllerFindAll200,
   BrPetControllerFindAll200,
@@ -525,6 +527,19 @@ export const statisticsControllerGetPairStatistics = (
   });
 };
 
+/**
+ * @summary 분양 통계 조회
+ */
+export const statisticsControllerGetAdoptionStatistics = (
+  params?: StatisticsControllerGetAdoptionStatisticsParams,
+) => {
+  return useCustomInstance<AdoptionStatisticsDto>({
+    url: `/api/v1/statistics/adoptions`,
+    method: "GET",
+    params,
+  });
+};
+
 export type PetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindAll>>
 >;
@@ -683,6 +698,9 @@ export type PetImageControllerSavePetImagesResult = NonNullable<
 >;
 export type StatisticsControllerGetPairStatisticsResult = NonNullable<
   Awaited<ReturnType<typeof statisticsControllerGetPairStatistics>>
+>;
+export type StatisticsControllerGetAdoptionStatisticsResult = NonNullable<
+  Awaited<ReturnType<typeof statisticsControllerGetAdoptionStatistics>>
 >;
 
 export const getPetControllerFindAllResponsePetParentDtoMock = (
@@ -4180,6 +4198,77 @@ export const getStatisticsControllerGetPairStatisticsResponseMock = (
   ...overrideResponse,
 });
 
+export const getStatisticsControllerGetAdoptionStatisticsResponseMock = (
+  overrideResponse: Partial<AdoptionStatisticsDto> = {},
+): AdoptionStatisticsDto => ({
+  period: {
+    ...{
+      type: faker.helpers.arrayElement(["ALL", "SEASON", "YEAR_MONTH"] as const),
+      season: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+      year: faker.helpers.arrayElement([
+        faker.number.int({ min: undefined, max: undefined }),
+        undefined,
+      ]),
+      month: faker.helpers.arrayElement([
+        faker.number.int({ min: undefined, max: undefined }),
+        undefined,
+      ]),
+    },
+  },
+  totalCount: faker.number.int({ min: undefined, max: undefined }),
+  revenue: {
+    ...{
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+      minPrice: faker.number.int({ min: undefined, max: undefined }),
+      maxPrice: faker.number.int({ min: undefined, max: undefined }),
+    },
+  },
+  sex: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    key: faker.string.alpha(20),
+    count: faker.number.int({ min: undefined, max: undefined }),
+    rate: faker.number.int({ min: undefined, max: undefined }),
+    revenue: faker.number.int({ min: undefined, max: undefined }),
+    averagePrice: faker.number.int({ min: undefined, max: undefined }),
+  })),
+  morphs: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  traits: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  methods: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  monthlyStats: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      month: faker.number.int({ min: undefined, max: undefined }),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      revenue: faker.number.int({ min: undefined, max: undefined }),
+    })),
+    undefined,
+  ]),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -5378,6 +5467,29 @@ export const getStatisticsControllerGetPairStatisticsMockHandler = (
     );
   });
 };
+
+export const getStatisticsControllerGetAdoptionStatisticsMockHandler = (
+  overrideResponse?:
+    | AdoptionStatisticsDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<AdoptionStatisticsDto> | AdoptionStatisticsDto),
+) => {
+  return http.get("*/api/v1/statistics/adoptions", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getStatisticsControllerGetAdoptionStatisticsResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -5432,4 +5544,5 @@ export const getProjectDaepaAPIMock = () => [
   getPetImageControllerFindOneMockHandler(),
   getPetImageControllerSavePetImagesMockHandler(),
   getStatisticsControllerGetPairStatisticsMockHandler(),
+  getStatisticsControllerGetAdoptionStatisticsMockHandler(),
 ];

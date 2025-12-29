@@ -352,3 +352,157 @@ export class ParentStatisticsQueryDto extends OmitType(
   StatisticsQueryBaseDto,
   [],
 ) {}
+
+// ============================================
+// Adoption Statistics DTOs
+// ============================================
+
+export class AdoptionDistributionItemDto {
+  @ApiProperty({ description: '항목명', example: 'Lilly White' })
+  @IsString()
+  key: string;
+
+  @ApiProperty({ description: '개수', example: 10 })
+  @IsNumber()
+  count: number;
+
+  @ApiProperty({ description: '비율 (%)', example: 25.0 })
+  @IsNumber()
+  percentage: number;
+
+  @ApiProperty({ description: '총 수익', example: 2500000 })
+  @IsNumber()
+  totalRevenue: number;
+
+  @ApiProperty({ description: '평균 분양가', example: 250000 })
+  @IsNumber()
+  averagePrice: number;
+}
+
+export class AdoptionSexItemDto {
+  @ApiProperty({ description: '성별 키 (male, female, unknown)', example: 'male' })
+  @IsString()
+  key: string;
+
+  @ApiProperty({ description: '개수', example: 15 })
+  @IsNumber()
+  count: number;
+
+  @ApiProperty({ description: '비율 (%)', example: 42.9 })
+  @IsNumber()
+  rate: number;
+
+  @ApiProperty({ description: '총 수익', example: 3000000 })
+  @IsNumber()
+  revenue: number;
+
+  @ApiProperty({ description: '평균 분양가', example: 200000 })
+  @IsNumber()
+  averagePrice: number;
+}
+
+export class AdoptionRevenueDto {
+  @ApiProperty({ description: '총 수익', example: 5000000 })
+  @IsNumber()
+  totalRevenue: number;
+
+  @ApiProperty({ description: '평균 분양가', example: 250000 })
+  @IsNumber()
+  averagePrice: number;
+
+  @ApiProperty({ description: '최저 분양가', example: 100000 })
+  @IsNumber()
+  minPrice: number;
+
+  @ApiProperty({ description: '최고 분양가', example: 500000 })
+  @IsNumber()
+  maxPrice: number;
+}
+
+export class AdoptionMonthlyItemDto {
+  @ApiProperty({ description: '월 (1-12)', example: 1 })
+  @IsNumber()
+  month: number;
+
+  @ApiProperty({ description: '분양 수', example: 5 })
+  @IsNumber()
+  count: number;
+
+  @ApiProperty({ description: '수익', example: 1500000 })
+  @IsNumber()
+  revenue: number;
+}
+
+export class AdoptionStatisticsDto {
+  @ApiProperty({
+    description: '기간 정보',
+    type: StatisticsPeriodDto,
+  })
+  @IsObject()
+  @Type(() => StatisticsPeriodDto)
+  period: StatisticsPeriodDto;
+
+  @ApiProperty({ description: '총 분양 수', example: 20 })
+  @IsNumber()
+  totalCount: number;
+
+  @ApiProperty({
+    description: '수익 통계',
+    type: AdoptionRevenueDto,
+  })
+  @IsObject()
+  @Type(() => AdoptionRevenueDto)
+  revenue: AdoptionRevenueDto;
+
+  @ApiProperty({
+    description: '성별 통계',
+    type: [AdoptionSexItemDto],
+  })
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => AdoptionSexItemDto)
+  sex: AdoptionSexItemDto[];
+
+  @ApiProperty({
+    description: '모프 분포',
+    type: [AdoptionDistributionItemDto],
+  })
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => AdoptionDistributionItemDto)
+  morphs: AdoptionDistributionItemDto[];
+
+  @ApiProperty({
+    description: '형질 분포',
+    type: [AdoptionDistributionItemDto],
+  })
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => AdoptionDistributionItemDto)
+  traits: AdoptionDistributionItemDto[];
+
+  @ApiProperty({
+    description: '분양 방식 분포',
+    type: [AdoptionDistributionItemDto],
+  })
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => AdoptionDistributionItemDto)
+  methods: AdoptionDistributionItemDto[];
+
+  @ApiProperty({
+    description: '월별 통계 (연도만 선택된 경우)',
+    type: [AdoptionMonthlyItemDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => AdoptionMonthlyItemDto)
+  monthlyStats?: AdoptionMonthlyItemDto[];
+}
+
+export class AdoptionStatisticsQueryDto extends PickType(
+  StatisticsQueryBaseDto,
+  ['year', 'month', 'species'],
+) {}
