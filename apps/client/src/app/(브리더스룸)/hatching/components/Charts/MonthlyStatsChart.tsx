@@ -41,9 +41,9 @@ const MonthlyStatsChart = ({ data }: MonthlyStatsChartProps) => {
     name: MONTH_NAMES[item.month - 1],
     유정란: item.fertilized,
     무정란: item.unfertilized,
-    중지: item.dead,
+    중지란: item.dead,
     미정: item.pending,
-    부화: item.hatched,
+    해칭: item.hatched,
   }));
 
   return (
@@ -51,9 +51,9 @@ const MonthlyStatsChart = ({ data }: MonthlyStatsChartProps) => {
       config={{
         유정란: { label: "유정란", color: STATISTICS_COLORS.fertilized },
         무정란: { label: "무정란", color: STATISTICS_COLORS.unfertilized },
-        중지: { label: "중지", color: STATISTICS_COLORS.dead },
+        중지: { label: "중지란", color: STATISTICS_COLORS.dead },
         미정: { label: "미정", color: STATISTICS_COLORS.pending },
-        부화: { label: "부화", color: STATISTICS_COLORS.hatched },
+        해칭: { label: "해칭", color: STATISTICS_COLORS.hatched },
       }}
       className="h-[440px] w-full"
     >
@@ -78,14 +78,14 @@ const MonthlyStatsChart = ({ data }: MonthlyStatsChartProps) => {
           <Legend />
           <Bar dataKey="유정란" stackId="eggs" fill={STATISTICS_COLORS.fertilized} />
           <Bar dataKey="무정란" stackId="eggs" fill={STATISTICS_COLORS.unfertilized} />
-          <Bar dataKey="중지" stackId="eggs" fill={STATISTICS_COLORS.dead} />
+          <Bar dataKey="중지란" stackId="eggs" fill={STATISTICS_COLORS.dead} />
           <Bar
             dataKey="미정"
             stackId="eggs"
             fill={STATISTICS_COLORS.pending}
             radius={[0, 6, 6, 0]}
           />
-          <Bar dataKey="부화" fill={STATISTICS_COLORS.hatched} radius={[0, 6, 6, 0]} />
+          <Bar dataKey="해칭" fill={STATISTICS_COLORS.hatched} radius={[0, 6, 6, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </ChartContainer>
