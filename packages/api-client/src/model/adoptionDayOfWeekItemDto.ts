@@ -6,13 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface AdoptionMonthlyItemDto {
+export interface AdoptionDayOfWeekItemDto {
   /** 분양 수 */
   count: number;
   /** 수익 */
   revenue: number;
   /** 평균 분양가 */
   averagePrice: number;
-  /** 월 (1-12) */
-  month: number;
+  /** 요일 (0=일, 1=월, ..., 6=토) */
+  dayOfWeek: number;
 }

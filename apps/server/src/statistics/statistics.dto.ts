@@ -357,19 +357,8 @@ export class ParentStatisticsQueryDto extends OmitType(
 // Adoption Statistics DTOs
 // ============================================
 
-export class AdoptionDistributionItemDto {
-  @ApiProperty({ description: '항목명', example: 'Lilly White' })
-  @IsString()
-  key: string;
-
-  @ApiProperty({ description: '개수', example: 10 })
-  @IsNumber()
-  count: number;
-
-  @ApiProperty({ description: '비율 (%)', example: 25.0 })
-  @IsNumber()
-  percentage: number;
-
+/** 분양 분포 항목 DTO (DistributionItemDto 확장) */
+export class AdoptionDistributionItemDto extends DistributionItemDto {
   @ApiProperty({ description: '총 수익', example: 2500000 })
   @IsNumber()
   totalRevenue: number;
@@ -379,8 +368,12 @@ export class AdoptionDistributionItemDto {
   averagePrice: number;
 }
 
+/** 분양 성별 항목 DTO */
 export class AdoptionSexItemDto {
-  @ApiProperty({ description: '성별 키 (male, female, unknown)', example: 'male' })
+  @ApiProperty({
+    description: '성별 키 (male, female, unknown)',
+    example: 'male',
+  })
   @IsString()
   key: string;
 
@@ -401,6 +394,7 @@ export class AdoptionSexItemDto {
   averagePrice: number;
 }
 
+/** 분양 수익 통계 DTO */
 export class AdoptionRevenueDto {
   @ApiProperty({ description: '총 수익', example: 5000000 })
   @IsNumber()
@@ -419,11 +413,8 @@ export class AdoptionRevenueDto {
   maxPrice: number;
 }
 
-export class AdoptionMonthlyItemDto {
-  @ApiProperty({ description: '월 (1-12)', example: 1 })
-  @IsNumber()
-  month: number;
-
+/** 수익 관련 기본 DTO (count, revenue, averagePrice) */
+class AdoptionRevenueBaseDto {
   @ApiProperty({ description: '분양 수', example: 5 })
   @IsNumber()
   count: number;
@@ -431,8 +422,62 @@ export class AdoptionMonthlyItemDto {
   @ApiProperty({ description: '수익', example: 1500000 })
   @IsNumber()
   revenue: number;
+
+  @ApiProperty({ description: '평균 분양가', example: 300000 })
+  @IsNumber()
+  averagePrice: number;
 }
 
+/** 월별 분양 통계 DTO */
+export class AdoptionMonthlyItemDto extends AdoptionRevenueBaseDto {
+  @ApiProperty({ description: '월 (1-12)', example: 1 })
+  @IsNumber()
+  month: number;
+}
+
+/** 요일별 분양 통계 DTO */
+export class AdoptionDayOfWeekItemDto extends AdoptionRevenueBaseDto {
+  @ApiProperty({ description: '요일 (0=일, 1=월, ..., 6=토)', example: 1 })
+  @IsNumber()
+  dayOfWeek: number;
+}
+
+/** 고객 분석 통계 DTO */
+export class CustomerAnalysisDto {
+  @ApiProperty({ description: '총 고객 수 (구매자)', example: 50 })
+  @IsNumber()
+  totalCustomers: number;
+
+  @ApiProperty({ description: '재구매 고객 수 (2회 이상 구매)', example: 15 })
+  @IsNumber()
+  repeatCustomers: number;
+
+  @ApiProperty({ description: '재구매율 (%)', example: 30.0 })
+  @IsNumber()
+  repeatRate: number;
+
+  @ApiProperty({ description: '단골 고객 수 (3회 이상 구매)', example: 5 })
+  @IsNumber()
+  loyalCustomers: number;
+
+  @ApiProperty({ description: '고객당 평균 구매 횟수', example: 1.5 })
+  @IsNumber()
+  averagePurchaseCount: number;
+
+  @ApiProperty({ description: '고객당 평균 구매 금액', example: 500000 })
+  @IsNumber()
+  averageCustomerSpending: number;
+}
+
+/** 분양 통계 응답 DTO */
+@ApiExtraModels(
+  AdoptionDistributionItemDto,
+  AdoptionSexItemDto,
+  AdoptionRevenueDto,
+  AdoptionMonthlyItemDto,
+  AdoptionDayOfWeekItemDto,
+  CustomerAnalysisDto,
+)
 export class AdoptionStatisticsDto {
   @ApiProperty({
     description: '기간 정보',
@@ -500,6 +545,27 @@ export class AdoptionStatisticsDto {
   @IsObject({ each: true })
   @Type(() => AdoptionMonthlyItemDto)
   monthlyStats?: AdoptionMonthlyItemDto[];
+
+  @ApiProperty({
+    description: '요일별 통계',
+    type: [AdoptionDayOfWeekItemDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => AdoptionDayOfWeekItemDto)
+  dayOfWeekStats?: AdoptionDayOfWeekItemDto[];
+
+  @ApiProperty({
+    description: '고객 분석',
+    type: CustomerAnalysisDto,
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  @Type(() => CustomerAnalysisDto)
+  customerAnalysis?: CustomerAnalysisDto;
 }
 
 export class AdoptionStatisticsQueryDto extends PickType(

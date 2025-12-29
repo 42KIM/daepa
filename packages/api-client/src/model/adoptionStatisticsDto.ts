@@ -10,6 +10,8 @@ import type { AdoptionRevenueDto } from "./adoptionRevenueDto";
 import type { AdoptionSexItemDto } from "./adoptionSexItemDto";
 import type { AdoptionDistributionItemDto } from "./adoptionDistributionItemDto";
 import type { AdoptionMonthlyItemDto } from "./adoptionMonthlyItemDto";
+import type { AdoptionDayOfWeekItemDto } from "./adoptionDayOfWeekItemDto";
+import type { CustomerAnalysisDto } from "./customerAnalysisDto";
 
 export interface AdoptionStatisticsDto {
   /** 기간 정보 */
@@ -28,4 +30,8 @@ export interface AdoptionStatisticsDto {
   methods: AdoptionDistributionItemDto[];
   /** 월별 통계 (연도만 선택된 경우) */
   monthlyStats?: AdoptionMonthlyItemDto[];
+  /** 요일별 통계 */
+  dayOfWeekStats?: AdoptionDayOfWeekItemDto[];
+  /** 고객 분석 */
+  customerAnalysis?: CustomerAnalysisDto;
 }

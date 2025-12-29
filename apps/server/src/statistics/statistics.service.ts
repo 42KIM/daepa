@@ -24,6 +24,8 @@ import {
   AdoptionMonthlyItemDto,
   AdoptionDistributionItemDto,
   AdoptionSexItemDto,
+  AdoptionDayOfWeekItemDto,
+  CustomerAnalysisDto,
 } from './statistics.dto';
 
 interface PetWithDetails {
@@ -555,6 +557,7 @@ export class StatisticsService {
         'adoption.price',
         'adoption.adoptionDate',
         'adoption.method',
+        'adoption.buyerId',
         'pet.species',
         'petDetail.sex',
         'petDetail.morphs',
@@ -622,6 +625,12 @@ export class StatisticsService {
         ? this.buildAdoptionMonthlyStatistics(adoptions)
         : undefined;
 
+    // 요일별 통계
+    const dayOfWeekStats = this.buildDayOfWeekStatistics(adoptions);
+
+    // 고객 분석
+    const customerAnalysis = this.buildCustomerAnalysis(adoptions);
+
     return plainToInstance(AdoptionStatisticsDto, {
       period,
       totalCount,
@@ -631,6 +640,8 @@ export class StatisticsService {
       traits,
       methods,
       monthlyStats,
+      dayOfWeekStats,
+      customerAnalysis,
     });
   }
 
@@ -821,7 +832,120 @@ export class StatisticsService {
         month,
         count: data.count,
         revenue: data.revenue,
+        averagePrice:
+          data.count > 0 ? Math.round(data.revenue / data.count) : 0,
       }),
     );
+  }
+
+  /**
+   * 요일별 분양 통계 생성
+   */
+  private buildDayOfWeekStatistics(
+    adoptions: AdoptionEntity[],
+  ): AdoptionDayOfWeekItemDto[] {
+    const dayOfWeekData = new Map<number, { count: number; revenue: number }>();
+
+    // 0-6 (일-토) 초기화
+    for (let d = 0; d <= 6; d++) {
+      dayOfWeekData.set(d, { count: 0, revenue: 0 });
+    }
+
+    // 요일별 데이터 집계
+    for (const adoption of adoptions) {
+      if (adoption.adoptionDate) {
+        const dayOfWeek = new Date(adoption.adoptionDate).getDay();
+        const data = dayOfWeekData.get(dayOfWeek)!;
+        data.count++;
+        data.revenue += adoption.price ?? 0;
+      }
+    }
+
+    return Array.from(dayOfWeekData.entries()).map(([dayOfWeek, data]) =>
+      plainToInstance(AdoptionDayOfWeekItemDto, {
+        dayOfWeek,
+        count: data.count,
+        revenue: data.revenue,
+        averagePrice:
+          data.count > 0 ? Math.round(data.revenue / data.count) : 0,
+      }),
+    );
+  }
+
+  /**
+   * 고객 분석 통계 생성
+   */
+  private buildCustomerAnalysis(
+    adoptions: AdoptionEntity[],
+  ): CustomerAnalysisDto {
+    // buyerId별 구매 횟수와 총 금액 집계
+    const customerStats = new Map<
+      string,
+      { purchaseCount: number; totalSpending: number }
+    >();
+
+    for (const adoption of adoptions) {
+      const buyerId = adoption.buyerId;
+      console.log(
+        '🚀 ~ StatisticsService ~ buildCustomerAnalysis ~ buyerId:',
+        buyerId,
+      );
+      if (buyerId) {
+        const current = customerStats.get(buyerId) || {
+          purchaseCount: 0,
+          totalSpending: 0,
+        };
+        current.purchaseCount++;
+        current.totalSpending += adoption.price ?? 0;
+        customerStats.set(buyerId, current);
+      }
+    }
+
+    const totalCustomers = customerStats.size;
+
+    if (totalCustomers === 0) {
+      return plainToInstance(CustomerAnalysisDto, {
+        totalCustomers: 0,
+        repeatCustomers: 0,
+        repeatRate: 0,
+        loyalCustomers: 0,
+        averagePurchaseCount: 0,
+        averageCustomerSpending: 0,
+      });
+    }
+
+    // 재구매 고객 (2회 이상 구매)
+    const repeatCustomers = Array.from(customerStats.values()).filter(
+      (c) => c.purchaseCount >= 2,
+    ).length;
+
+    // 단골 고객 (3회 이상 구매)
+    const loyalCustomers = Array.from(customerStats.values()).filter(
+      (c) => c.purchaseCount >= 3,
+    ).length;
+
+    // 고객당 평균 구매 횟수
+    const totalPurchases = Array.from(customerStats.values()).reduce(
+      (sum, c) => sum + c.purchaseCount,
+      0,
+    );
+    const averagePurchaseCount =
+      Math.round((totalPurchases / totalCustomers) * 10) / 10;
+
+    // 고객당 평균 구매 금액
+    const totalSpending = Array.from(customerStats.values()).reduce(
+      (sum, c) => sum + c.totalSpending,
+      0,
+    );
+    const averageCustomerSpending = Math.round(totalSpending / totalCustomers);
+
+    return plainToInstance(CustomerAnalysisDto, {
+      totalCustomers,
+      repeatCustomers,
+      repeatRate: this.calculateRate(repeatCustomers, totalCustomers),
+      loyalCustomers,
+      averagePurchaseCount,
+      averageCustomerSpending,
+    });
   }
 }
