@@ -8,7 +8,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "generate": "pnpm --filter @repo/api-client generate",
-    "generate:prod": "pnpm --filter @repo/api-client generate:prod"
+    "generate:prod": "pnpm --filter @repo/api-client generate:prod",
+    "server-script": "pnpm --filter server script"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
