@@ -773,3 +773,14 @@ export const DUPLICATE_CHECK_STATUS = {
   AVAILABLE: "available",
   DUPLICATE: "duplicate",
 };
+
+export const STATISTICS_COLORS = {
+  fertilized: "#f59e0b", // 따뜻한 앰버 (생명력)
+  unfertilized: "#6b7280", // 중성 그레이
+  hatched: "#10b981", // 에메랄드 그린 (성공)
+  dead: "#ef4444", // 레드 (사망)
+  pending: "#8b5cf6", // 바이올렛
+  male: "#3182f6", // 블루 (더 선명)
+  female: "#f14452", // 핑크 (더 선명)
+  unknown: "#8b95a1", // 중성 그레이
+};
