@@ -139,7 +139,7 @@ export class StatisticsService {
         'petDetail.petId = pet.petId',
       )
       .where('pet.layingId IN (:...layingIds)', { layingIds })
-      .andWhere('pet.isDeleted = false')
+      .andWhere('pet.isDeleted = false') // 정책) 해칭완료된 이후 삭제된 펫은 통계에 미포함 시킨다.
       .select([
         'pet.petId',
         'pet.layingId',
@@ -325,9 +325,7 @@ export class StatisticsService {
     const total = pets.length;
 
     const fertilized = pets.filter(
-      (p) =>
-        p.eggDetail?.status === EGG_STATUS.FERTILIZED ||
-        p.eggDetail?.status === EGG_STATUS.HATCHED,
+      (p) => p.eggDetail?.status === EGG_STATUS.FERTILIZED,
     ).length;
 
     const unfertilized = pets.filter(
