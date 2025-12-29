@@ -462,8 +462,8 @@ export const FOOD_KOREAN_INFO: Record<string, string> = {
 };
 
 export const ADOPTION_METHOD_KOREAN_INFO: Record<PetAdoptionDtoMethod, string> = {
-  PICKUP: "직접 거래",
-  DELIVERY: "배송",
+  PICKUP: "직거래",
+  DELIVERY: "택배",
   WHOLESALE: "도매",
   EXPORT: "수출",
 };
@@ -665,11 +665,11 @@ export const SELECTOR_CONFIGS: Record<
       },
       {
         key: "PICKUP",
-        value: "직접 거래",
+        value: "직거래",
       },
       {
         key: "DELIVERY",
-        value: "배송",
+        value: "택배",
       },
       {
         key: "WHOLESALE",
@@ -782,5 +782,15 @@ export const STATISTICS_COLORS = {
   pending: "#8b5cf6", // 바이올렛
   male: "#3182f6", // 블루 (더 선명)
   female: "#f14452", // 핑크 (더 선명)
-  unknown: "#8b95a1", // 중성 그레이
+  unknown: "#94a3b8", // 중성 그레이
+};
+
+export const ADOPTION_STATISTICS_COLORS = {
+  none: "#94a3b8",
+  revenue: "#ef4444",
+  count: "#193cb9",
+  pickup: "#1447e6",
+  delivery: "#165dfc",
+  wholesale: "#2b7fff",
+  export: "#9cb9e5ff",
 };

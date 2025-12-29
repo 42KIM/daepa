@@ -1,225 +1,409 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { memo, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { AdoptionDto, AdoptionDtoStatus } from "@repo/api-client";
-import { STATS_CARDS } from "../constants";
-import AdoptionCalendar from "./AdoptionCalendar";
-import MonthlyChart from "./MonthlyChart";
-import StatusItem from "./StatusItem";
-import StatCard from "./StatCard";
+  statisticsControllerGetAdoptionStatistics,
+  StatisticsControllerGetPairStatisticsSpecies,
+} from "@repo/api-client";
+import { ChartConfig } from "@/components/ui/chart";
+import SingleSelect from "../../components/selector/SingleSelect";
+import {
+  StatCard,
+  ChartCard,
+  StatsPieChart,
+  StatsBarChart,
+  CustomSelect,
+  CustomSelectOption,
+  getMorphOrTraitColor,
+  AdoptionMonthlyChart,
+} from "./Charts";
+import Loading from "@/components/common/Loading";
+import Image from "next/image";
+import { STATISTICS_COLORS, ADOPTION_STATISTICS_COLORS } from "../../constants";
+import { cn, formatPrice } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
 
-interface AdoptionDashboardProps {
-  data?: AdoptionDto[];
-}
+// 연도 옵션 생성 (최근 5년)
+const generateYearOptions = (): CustomSelectOption[] => {
+  const currentYear = new Date().getFullYear();
+  const options: CustomSelectOption[] = [{ key: "all", value: "전체" }];
 
-const AdoptionDashboard = ({ data = [] }: AdoptionDashboardProps) => {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(new Date().getMonth() + 1);
+  for (let i = 0; i < 5; i++) {
+    const year = currentYear - i;
+    options.push({ key: String(year), value: `${year}년` });
+  }
 
-  // 통계 카드와 분포용 데이터 (선택된 월이 있으면 해당 월, 없으면 해당 연도 전체)
-  const statsData = useMemo(() => {
-    return data.filter((adoption) => {
-      if (adoption.status === AdoptionDtoStatus.NFS) return false;
-      if (!adoption.adoptionDate) return true;
+  return options;
+};
 
-      const date = new Date(adoption.adoptionDate);
-      const yearMatch = date.getFullYear() === selectedYear;
+// 월 옵션 생성 (1-12월)
+const MONTH_OPTIONS: CustomSelectOption[] = [
+  { key: "all", value: "전체" },
+  { key: "1", value: "1월" },
+  { key: "2", value: "2월" },
+  { key: "3", value: "3월" },
+  { key: "4", value: "4월" },
+  { key: "5", value: "5월" },
+  { key: "6", value: "6월" },
+  { key: "7", value: "7월" },
+  { key: "8", value: "8월" },
+  { key: "9", value: "9월" },
+  { key: "10", value: "10월" },
+  { key: "11", value: "11월" },
+  { key: "12", value: "12월" },
+];
 
-      if (selectedMonth === null) {
-        // 월이 선택되지 않았으면 해당 연도의 모든 월 데이터
-        return yearMatch;
-      } else {
-        // 월이 선택되었으면 해당 월의 데이터만
-        return yearMatch && date.getMonth() === selectedMonth - 1;
-      }
-    });
-  }, [data, selectedYear, selectedMonth]);
+// 성별 한글 변환
+const SEX_LABELS: Record<string, string> = {
+  male: "수컷",
+  female: "암컷",
+  unknown: "미확인",
+};
 
-  // 통계 카드용 데이터
-  const stats = useMemo(() => {
-    const totalAdoptions = statsData.length;
-    const totalRevenue = statsData
-      .filter((adoption) => adoption.status === AdoptionDtoStatus.SOLD)
-      .reduce((sum, adoption) => sum + (adoption.price || 0), 0);
-    const soldCount = statsData.filter(
-      (adoption) => adoption.status === AdoptionDtoStatus.SOLD,
-    ).length;
-    const onSaleCount = statsData.filter(
-      (adoption) => adoption.status === AdoptionDtoStatus.ON_SALE,
-    ).length;
-    const onReservationCount = statsData.filter(
-      (adoption) => adoption.status === AdoptionDtoStatus.ON_RESERVATION,
-    ).length;
-    const nfsCount = statsData.filter(
-      (adoption) => adoption.status === AdoptionDtoStatus.NFS,
-    ).length;
+// 성별 색상
+const getSexColor = (sex: string): string => {
+  const colorMap: Record<string, string> = {
+    male: STATISTICS_COLORS.male,
+    female: STATISTICS_COLORS.female,
+    unknown: STATISTICS_COLORS.unknown,
+  };
+  return colorMap[sex] || "#94a3b8";
+};
 
-    return {
-      totalAdoptions,
-      totalRevenue,
-      soldCount,
-      onSaleCount,
-      onReservationCount,
-      nfsCount,
-    };
-  }, [statsData]);
+// 분양 방식 한글 변환
+const METHOD_LABELS: Record<string, string> = {
+  NONE: "미정",
+  PICKUP: "직거래",
+  DELIVERY: "택배",
+  WHOLESALE: "도매",
+  EXPORT: "수출",
+};
 
-  const chartData = useMemo(() => {
-    // 기존 월별 데이터 로직 유지
-    const monthlyData = Array(12)
-      .fill(0)
-      .map(() => ({
-        sold: 0,
-        onSale: 0,
-        onReservation: 0,
-      }));
+// 분양 방식 색상
+const getMethodColor = (method: string): string => {
+  const colorMap: Record<string, string> = {
+    NONE: ADOPTION_STATISTICS_COLORS.none,
+    PICKUP: ADOPTION_STATISTICS_COLORS.pickup,
+    DELIVERY: ADOPTION_STATISTICS_COLORS.delivery,
+    WHOLESALE: ADOPTION_STATISTICS_COLORS.wholesale,
+    EXPORT: ADOPTION_STATISTICS_COLORS.export,
+  };
+  return colorMap[method] || "#94a3b8";
+};
 
-    data.forEach((adoption) => {
-      // adoptionDate가 null이면 차트에서 제외
-      if (!adoption.adoptionDate) return;
+const AdoptionDashboard = memo(() => {
+  const isMobile = useIsMobile();
+  const [species, setSpecies] = useState<StatisticsControllerGetPairStatisticsSpecies>(
+    StatisticsControllerGetPairStatisticsSpecies.CR,
+  );
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
 
-      const date = new Date(adoption.adoptionDate);
-      if (date.getFullYear() === selectedYear) {
-        const month = date.getMonth();
-        switch (adoption.status) {
-          case AdoptionDtoStatus.SOLD:
-            monthlyData[month]!.sold++;
-            break;
-          case AdoptionDtoStatus.ON_SALE:
-            monthlyData[month]!.onSale++;
-            break;
-          case AdoptionDtoStatus.ON_RESERVATION:
-            monthlyData[month]!.onReservation++;
-            break;
-        }
-      }
-    });
+  const yearOptions = useMemo(() => generateYearOptions(), []);
 
-    return monthlyData.map((monthData, index) => ({
-      month: `${index + 1}월`,
-      ...monthData,
-      total: monthData.sold + monthData.onSale + monthData.onReservation,
+  // 연도 변경 시 월 선택 초기화
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    if (year === "all") {
+      setSelectedMonth("all");
+    }
+  };
+
+  // 종이 선택되었는지 확인
+  const canQueryStatistics = !!species;
+
+  // 통계 조회
+  const { data: statistics, isLoading: isStatsLoading } = useQuery({
+    queryKey: [
+      statisticsControllerGetAdoptionStatistics.name,
+      species,
+      selectedYear,
+      selectedMonth,
+    ],
+    queryFn: () =>
+      statisticsControllerGetAdoptionStatistics({
+        species: species ?? undefined,
+        year: selectedYear !== "all" ? Number(selectedYear) : undefined,
+        month: selectedMonth !== "all" ? Number(selectedMonth) : undefined,
+      }),
+    select: (data) => data.data,
+    enabled: canQueryStatistics,
+  });
+
+  // 종 변경 핸들러
+  const handleSpeciesChange = (item: StatisticsControllerGetPairStatisticsSpecies) => {
+    setSpecies(item);
+  };
+
+  // 성별 통계 차트 데이터 (분양가 기준)
+  const sexChartData = useMemo(() => {
+    if (!statistics?.sex) return [];
+    return statistics.sex.map((item) => ({
+      name: SEX_LABELS[item.key] || item.key,
+      value: item.revenue,
+      fill: getSexColor(item.key),
     }));
-  }, [data, selectedYear]);
+  }, [statistics]);
+
+  // 분양 방식 분포 차트 데이터 (분양가 기준)
+  const methodChartData = useMemo(() => {
+    if (!statistics?.methods) return [];
+    return statistics.methods
+      .map((method) => ({
+        name: METHOD_LABELS[method.key] || method.key,
+        value: method.totalRevenue,
+        fill: getMethodColor(method.key),
+      }))
+      .filter((item) => item.value > 0);
+  }, [statistics]);
+
+  // 모프 분포 차트 데이터 (분양가 기준)
+  const morphChartData = useMemo(() => {
+    if (!statistics?.morphs) return [];
+    const totalRevenue = statistics.morphs.reduce((sum, m) => sum + m.totalRevenue, 0);
+    return statistics.morphs
+      .map((morph, index) => ({
+        name: morph.key,
+        count: morph.count,
+        percentage: totalRevenue > 0 ? (morph.totalRevenue / totalRevenue) * 100 : 0,
+        fill: getMorphOrTraitColor(morph.key, index),
+        averagePrice: morph.averagePrice,
+        totalRevenue: morph.totalRevenue,
+      }))
+      .sort((a, b) => b.totalRevenue - a.totalRevenue);
+  }, [statistics]);
+
+  // 형질 분포 차트 데이터 (분양가 기준)
+  const traitChartData = useMemo(() => {
+    if (!statistics?.traits) return [];
+    const totalRevenue = statistics.traits.reduce((sum, t) => sum + t.totalRevenue, 0);
+    return statistics.traits
+      .map((trait, index) => ({
+        name: trait.key,
+        count: trait.count,
+        percentage: totalRevenue > 0 ? (trait.totalRevenue / totalRevenue) * 100 : 0,
+        fill: getMorphOrTraitColor(trait.key, index),
+        averagePrice: trait.averagePrice,
+        totalRevenue: trait.totalRevenue,
+      }))
+      .sort((a, b) => b.totalRevenue - a.totalRevenue);
+  }, [statistics]);
+
+  const sexChartConfig: ChartConfig = {
+    male: { label: "수컷", color: STATISTICS_COLORS.male },
+    female: { label: "암컷", color: STATISTICS_COLORS.female },
+    unknown: { label: "미확인", color: STATISTICS_COLORS.unknown },
+  };
+
+  const methodChartConfig: ChartConfig = {
+    none: { label: "미정", color: ADOPTION_STATISTICS_COLORS.none },
+    pickup: { label: "직거래", color: ADOPTION_STATISTICS_COLORS.pickup },
+    delivery: { label: "택배", color: ADOPTION_STATISTICS_COLORS.delivery },
+    wholesale: { label: "도매", color: ADOPTION_STATISTICS_COLORS.wholesale },
+    export: { label: "수출", color: ADOPTION_STATISTICS_COLORS.export },
+  };
 
   return (
-    <div className="space-y-6">
-      {/* 연도/월 선택 */}
-      <Card className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>
-            기간 선택
-            <CardDescription className="mt-1 font-light">
-              조회할 연도와 월을 선택하세요
-            </CardDescription>
-          </CardTitle>
+    <div className="max-w-7xl px-2 pb-10">
+      <div className="flex flex-wrap gap-2">
+        <SingleSelect
+          showTitle
+          type="species"
+          saveASAP
+          initialItem={species}
+          onSelect={handleSpeciesChange}
+        />
 
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(value) => {
-                  setSelectedYear(Number(value));
-                  setSelectedMonth(null); // 연도 변경 시 월 선택 초기화
-                }}
-              >
-                <SelectTrigger className="bg-gray-50 dark:bg-gray-700">
-                  <SelectValue placeholder="연도 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}년
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <Select
-                value={selectedMonth?.toString() || "all"}
-                onValueChange={(value) => setSelectedMonth(value === "all" ? null : Number(value))}
-              >
-                <SelectTrigger className="bg-gray-50 dark:bg-gray-700">
-                  <SelectValue placeholder="전체 월" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체 월</SelectItem>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <SelectItem key={month} value={month.toString()}>
-                      {month}월
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* 통계 카드들 */}
-      <div className="grid grid-cols-4 gap-4">
-        {STATS_CARDS.map((card) => (
-          <StatCard
-            key={card.key}
-            title={
-              card.key === "totalRevenue" ? (selectedMonth ? "월 매출" : "연 매출") : card.title
-            }
-            value={card.formatter(stats[card.key as keyof typeof stats] as number)}
-            icon={card.icon}
-            bgColor={card.bgColor}
-          />
-        ))}
+        <CustomSelect
+          title="연도"
+          options={yearOptions}
+          selectedKey={selectedYear}
+          onChange={handleYearChange}
+          defaultOptionKey="all"
+          disabled={!species}
+        />
+        <CustomSelect
+          title="월"
+          options={MONTH_OPTIONS}
+          selectedKey={selectedMonth}
+          onChange={setSelectedMonth}
+          defaultOptionKey="all"
+          disabled={selectedYear === "all"}
+        />
       </div>
 
-      {/* 상태별 분포 */}
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>분양 상태별 분포</CardTitle>
-            <CardDescription>
-              {selectedYear}년 {selectedMonth ? `${selectedMonth}월` : "전체"} 분양 상태별 통계
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <StatusItem status="sold" count={stats.soldCount} />
-              <StatusItem status="onSale" count={stats.onSaleCount} />
-              <StatusItem status="onReservation" count={stats.onReservationCount} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex items-center justify-center">
-          <AdoptionCalendar data={data} selectedYear={selectedYear} selectedMonth={selectedMonth} />
+      {!species ? (
+        <div className="text-muted-foreground flex h-40 flex-col items-center justify-center text-sm">
+          <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={100} height={100} />
+          종을 선택해주세요.
         </div>
-      </div>
-
-      {/* 연도별 차트 (기존과 동일) */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>분양 대시보드</CardTitle>
-              <CardDescription>{selectedYear}</CardDescription>
-            </div>
+      ) : isStatsLoading ? (
+        <Loading />
+      ) : statistics && statistics.totalCount > 0 ? (
+        <div>
+          {/* 메타 정보 */}
+          <div
+            className={cn(
+              "my-4 grid grid-cols-2 rounded-2xl p-4 sm:grid-cols-4",
+              isMobile && "px-0",
+            )}
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(182, 210, 247, .25), rgba(245, 223, 255, .25))",
+            }}
+          >
+            <StatCard label="총 분양" value={statistics.totalCount} />
+            <StatCard
+              label="총 수익"
+              value={formatPrice(statistics.revenue.totalRevenue)}
+              valueClassName="text-[#10b981]"
+            />
+            <StatCard
+              label="평균 분양가"
+              value={formatPrice(statistics.revenue.averagePrice)}
+              valueClassName="text-[#3b82f6]"
+            />
+            <StatCard
+              label="분양가 범위"
+              value={`${formatPrice(statistics.revenue.minPrice)} ~ ${formatPrice(statistics.revenue.maxPrice)}`}
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          <MonthlyChart data={chartData} />
-        </CardContent>
-      </Card>
+
+          {/* 월별 통계 차트 (연도만 선택된 경우) */}
+          {selectedYear !== "all" && selectedMonth === "all" && statistics.monthlyStats && (
+            <div className="mb-6">
+              <ChartCard title={`${selectedYear}년 월별 분양 통계`}>
+                <AdoptionMonthlyChart data={statistics.monthlyStats} />
+              </ChartCard>
+            </div>
+          )}
+
+          {/* 차트 그리드 */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {/* 성별 통계 파이 차트 (분양가 기준) */}
+            {sexChartData.length > 0 && (
+              <ChartCard
+                title="성별 분포 (분양가 기준)"
+                footer={
+                  <div className="flex flex-col flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-gray-700">
+                    <div>
+                      {statistics.sex.map((item) => (
+                        <div key={item.key}>
+                          <span
+                            className="ml-0.5 mr-2 inline-block h-3 w-3"
+                            style={{ backgroundColor: getSexColor(item.key) }}
+                          />
+                          <span className="font-bold">{formatPrice(item.revenue)}</span>{" "}
+                          <span className="font-[500] text-gray-500">({item.count}마리)</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 font-[500] text-gray-500">
+                      평균:{" "}
+                      {statistics.sex.map((item, index) => (
+                        <span key={item.key}>
+                          {SEX_LABELS[item.key] || item.key}{" "}
+                          <span className="font-[600] text-[#1b64da]">
+                            {formatPrice(item.averagePrice)}
+                          </span>
+                          {index < statistics.sex.length - 1 ? " | " : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <StatsPieChart data={sexChartData} config={sexChartConfig} />
+              </ChartCard>
+            )}
+
+            {/* 분양 방식 분포 파이 차트 (분양가 기준) */}
+            {methodChartData.length > 0 && (
+              <ChartCard
+                title="분양 방식 분포 (분양가 기준)"
+                footer={
+                  <div className="flex flex-col flex-wrap items-center text-[13px] text-gray-700">
+                    <div>
+                      {statistics.methods.map((method) => (
+                        <span key={method.key} className="flex items-center gap-1 font-[600]">
+                          <span
+                            className="inline-block h-3 w-3"
+                            style={{ backgroundColor: getMethodColor(method.key) }}
+                          />
+                          {METHOD_LABELS[method.key] || method.key}:{" "}
+                          {formatPrice(method.totalRevenue)}
+                          <span className="font-[500] text-gray-500">({method.count}마리)</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <StatsPieChart data={methodChartData} config={methodChartConfig} />
+              </ChartCard>
+            )}
+
+            {/* 모프 분포 바 차트 (분양가 기준) */}
+            {morphChartData.length > 0 && (
+              <ChartCard
+                title="모프 분포 (분양가 기준)"
+                footer={
+                  <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
+                    {morphChartData.slice(0, 5).map((morph) => (
+                      <span key={morph.name} className="flex items-center gap-1 font-[500]">
+                        <span
+                          className="inline-block h-3 w-3 rounded-full"
+                          style={{ backgroundColor: morph.fill }}
+                        />
+                        {morph.name}:
+                        <span className="font-bold"> {formatPrice(morph.totalRevenue)}</span>
+                        <span className="font-[500] text-gray-500">({morph.count}마리)</span>
+                      </span>
+                    ))}
+                  </div>
+                }
+              >
+                <StatsBarChart data={morphChartData} mode="revenue" />
+              </ChartCard>
+            )}
+
+            {/* 형질 분포 바 차트 (분양가 기준) */}
+            {traitChartData.length > 0 && (
+              <ChartCard
+                title="형질 분포 (분양가 기준)"
+                footer={
+                  <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-700">
+                    {traitChartData.slice(0, 5).map((trait) => (
+                      <span key={trait.name} className="flex items-center gap-1 font-[500]">
+                        <span
+                          className="inline-block h-3 w-3 rounded-full"
+                          style={{ backgroundColor: trait.fill }}
+                        />
+                        {trait.name}:
+                        <span className="font-bold"> {formatPrice(trait.totalRevenue)}</span>
+                        <span className="font-[500] text-gray-500">({trait.count}마리)</span>
+                      </span>
+                    ))}
+                  </div>
+                }
+              >
+                <StatsBarChart data={traitChartData} mode="revenue" />
+              </ChartCard>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="text-muted-foreground mt-6 flex flex-col items-center text-sm">
+          <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={100} height={100} />
+          선택한 기간에 해당하는 분양 데이터가 없습니다.
+        </div>
+      )}
     </div>
   );
-};
+});
+
+AdoptionDashboard.displayName = "AdoptionDashboard";
 
 export default AdoptionDashboard;

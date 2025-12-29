@@ -1,5 +1,6 @@
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { formatPrice } from "@/lib/utils";
 import { PieChart, Pie, Cell } from "recharts";
 
 interface PieChartDataItem {
@@ -41,7 +42,7 @@ const StatsPieChart = ({ data, config, height = "h-[250px] w-full" }: StatsPieCh
                 dominantBaseline="central"
                 style={{ fontSize: 12, fontWeight: 500, fill }}
               >
-                {`${name}: ${value}`}
+                {`${name}: ${formatPrice(value)}`}
               </text>
             );
           }}
