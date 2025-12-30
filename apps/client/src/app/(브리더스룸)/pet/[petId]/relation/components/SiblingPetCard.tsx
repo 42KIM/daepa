@@ -12,22 +12,56 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 
-type PetData = SiblingPetDetailDto | PetHiddenStatusDto;
+/** 기본 펫 정보 인터페이스 */
+interface BasePetInfo {
+  petId: string;
+  name?: string;
+  sex?: string;
+  morphs?: string[];
+  traits?: string[];
+  hatchingDate?: string;
+  isDeleted?: boolean;
+}
+
+/** 소유자 정보가 있는 펫 */
+interface PetWithOwner extends BasePetInfo {
+  owner: { userId: string; name: string };
+}
+
+type PetData = SiblingPetDetailDto | PetHiddenStatusDto | PetWithOwner | BasePetInfo;
+
+type CardVariant = "vertical" | "horizontal";
 
 interface SiblingPetCardProps {
   pet: PetData;
+  /** 카드 레이아웃 (vertical: 기본, horizontal: 가로형) */
+  variant?: CardVariant;
+  /** 분양가 표시 */
+  price?: number;
+  /** 분양일 표시 */
+  adoptionDate?: string;
+  /** 클릭 시 콜백 (Link 대신 사용) */
+  onClick?: () => void;
+  /** 카드 너비 (vertical 모드) */
+  width?: number;
 }
 
 function isHiddenPet(pet: PetData): pet is PetHiddenStatusDto {
   return "hiddenStatus" in pet;
 }
 
-function getSexLabel(sex?: SiblingPetDetailDtoSex) {
+function hasOwner(pet: PetData): pet is PetWithOwner {
+  return "owner" in pet && pet.owner !== undefined;
+}
+
+function getSexLabel(sex?: string) {
   switch (sex) {
+    case "MALE":
     case SiblingPetDetailDtoSex.MALE:
       return "♂";
+    case "FEMALE":
     case SiblingPetDetailDtoSex.FEMALE:
       return "♀";
     default:
@@ -35,13 +69,36 @@ function getSexLabel(sex?: SiblingPetDetailDtoSex) {
   }
 }
 
-export default function SiblingPetCard({ pet }: SiblingPetCardProps) {
+function isMale(sex?: string) {
+  return sex === "MALE" || sex === SiblingPetDetailDtoSex.MALE;
+}
+
+export default function SiblingPetCard({
+  pet,
+  variant = "vertical",
+  price,
+  adoptionDate,
+  onClick,
+  width = 160,
+}: SiblingPetCardProps) {
   const { user } = useUserStore();
 
+  // Hidden pet 처리
   if (isHiddenPet(pet)) {
     return (
-      <div className="flex w-[160px] shrink-0 flex-col items-center gap-2 rounded-xl bg-gray-50 p-2">
-        <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-gray-200">
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-2 rounded-xl bg-gray-50 p-2",
+          variant === "vertical" ? "flex-col" : "w-full",
+        )}
+        style={variant === "vertical" ? { width } : undefined}
+      >
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-xl bg-gray-200",
+            variant === "vertical" ? "aspect-square w-full" : "h-14 w-14",
+          )}
+        >
           {pet.hiddenStatus === PetHiddenStatusDtoHiddenStatus.DELETED ? (
             <EyeOff className="h-8 w-8 text-gray-400" />
           ) : (
@@ -56,79 +113,185 @@ export default function SiblingPetCard({ pet }: SiblingPetCardProps) {
   }
 
   const sexLabel = getSexLabel(pet.sex);
-  const isMyPet = pet.owner.userId === user?.userId;
+  const isMyPet = hasOwner(pet) && pet.owner.userId === user?.userId;
+  const ownerName = hasOwner(pet) ? pet.owner.name : null;
   const isDeleted = pet.isDeleted;
 
-  return (
-    <Link
-      href={`/pet/${pet.petId}`}
-      className={cn(
-        "flex w-[160px] shrink-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm transition-shadow hover:shadow-md",
-        isDeleted && "cursor-not-allowed bg-red-100/50",
-      )}
-    >
-      <div className={cn("relative aspect-square w-full rounded-xl bg-gray-100")}>
-        {pet.petId ? (
+  const cardContent =
+    variant === "vertical" ? (
+      // 세로형 레이아웃 (기존)
+      <div
+        className={cn(
+          "flex shrink-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm transition-shadow hover:shadow-md",
+          isDeleted && "cursor-not-allowed bg-red-100/50",
+        )}
+        style={{ width }}
+      >
+        <div className="relative aspect-square w-full rounded-xl bg-gray-100">
           <Image
             src="/assets/lizard.png"
             alt={pet.name ?? "펫 이미지"}
             fill
             className="object-cover"
           />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <Image src="/assets/lizard.png" alt="기본 이미지" fill className="opacity-50" />
-          </div>
-        )}
 
-        <div className="absolute left-0 top-0 flex items-center gap-1.5 rounded-lg bg-blue-100 px-1.5 py-0.5">
-          <span className="text-[11px] font-semibold text-blue-600">
-            {!isMyPet && <ScanFace className="mr-0.5 inline-block h-3 w-3" />}
-            {isMyPet ? "My Pet" : pet.owner.name}
-          </span>
-        </div>
+          {ownerName && (
+            <div className="absolute left-0 top-0 flex items-center gap-1.5 rounded-lg bg-blue-100 px-1.5 py-0.5">
+              <span className="text-[11px] font-semibold text-blue-600">
+                {!isMyPet && <ScanFace className="mr-0.5 inline-block h-3 w-3" />}
+                {isMyPet ? "My Pet" : ownerName}
+              </span>
+            </div>
+          )}
 
-        {isDeleted ? (
-          <div className="absolute bottom-1 right-1 flex flex-col items-center justify-center gap-2 rounded-md bg-red-600 px-1 py-0.5 text-[10px] font-bold text-white">
-            삭제됨
-          </div>
-        ) : null}
-      </div>
-
-      <div className="flex flex-col gap-0.5 px-1">
-        <div className="flex items-center gap-1">
-          <span className="truncate text-[13px] font-[600] text-gray-600">
-            {pet.name ?? "이름 없음"}
-          </span>
-          {sexLabel && (
-            <span
-              className={`text-[13px] font-bold ${pet.sex === SiblingPetDetailDtoSex.MALE ? "text-blue-600" : "text-red-600"}`}
-            >
-              {sexLabel}
-            </span>
+          {isDeleted && (
+            <div className="absolute bottom-1 right-1 rounded-md bg-red-600 px-1 py-0.5 text-[10px] font-bold text-white">
+              삭제됨
+            </div>
           )}
         </div>
 
-        <div className="text-[14px] font-bold">
-          {pet.morphs && pet.morphs.length > 0 && pet.morphs.join(" ")}
+        <div className="flex flex-col gap-0.5 px-1">
+          <div className="flex items-center gap-1">
+            <span className="truncate text-[13px] font-[600] text-gray-600">
+              {pet.name ?? "이름 없음"}
+            </span>
+            {sexLabel && (
+              <span
+                className={cn(
+                  "text-[13px] font-bold",
+                  isMale(pet.sex) ? "text-blue-600" : "text-red-600",
+                )}
+              >
+                {sexLabel}
+              </span>
+            )}
+          </div>
+
+          {pet.morphs && pet.morphs.length > 0 && (
+            <div className="text-[14px] font-bold">{pet.morphs.join(" ")}</div>
+          )}
+
+          {pet.traits && pet.traits.length > 0 && (
+            <div className="flex flex-wrap gap-0.5">
+              {pet.traits.map((trait) => (
+                <Badge variant="outline" size="sm" key={trait}>
+                  {trait}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {pet.hatchingDate && (
+            <span className="mt-2 text-[11px] font-[600] text-gray-500">
+              {DateTime.fromISO(pet.hatchingDate).toFormat("yy년 M월 d일")}
+            </span>
+          )}
+
+          {price !== undefined && (
+            <span className="mt-1 text-[13px] font-bold text-emerald-600">
+              {formatPrice(price)}
+            </span>
+          )}
+        </div>
+      </div>
+    ) : (
+      // 가로형 레이아웃 (모달용)
+      <div
+        className={cn(
+          "flex w-full items-center gap-3 rounded-xl bg-white p-3 shadow-sm transition-shadow hover:shadow-md",
+          isDeleted && "cursor-not-allowed bg-red-100/50",
+        )}
+      >
+        <div className="relative h-14 w-14 shrink-0 rounded-xl bg-gray-100">
+          <Image
+            src="/assets/lizard.png"
+            alt={pet.name ?? "펫 이미지"}
+            fill
+            className="rounded-xl object-cover"
+          />
+          {isDeleted && (
+            <div className="absolute -right-1 -top-1 rounded-md bg-red-600 px-1 py-0.5 text-[8px] font-bold text-white">
+              삭제됨
+            </div>
+          )}
         </div>
 
-        {pet.traits && pet.traits.length > 0 && (
-          <div className="flex flex-wrap gap-0.5">
-            {pet.traits.map((trait) => (
-              <Badge variant="outline" size="sm" key={trait}>
-                {trait}
-              </Badge>
-            ))}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-[14px] font-semibold text-gray-800">
+              {pet.name ?? "이름 없음"}
+            </span>
+            {sexLabel && (
+              <span
+                className={cn(
+                  "text-[13px] font-bold",
+                  isMale(pet.sex) ? "text-blue-500" : "text-red-500",
+                )}
+              >
+                {sexLabel}
+              </span>
+            )}
+            {ownerName && !isMyPet && (
+              <span className="flex items-center gap-0.5 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-600">
+                <ScanFace className="h-3 w-3" />
+                {ownerName}
+              </span>
+            )}
           </div>
-        )}
 
-        {pet.hatchingDate && (
-          <span className="mt-2 text-[11px] font-[600] text-gray-500">
-            {DateTime.fromISO(pet.hatchingDate).toFormat("yy년 M월 d일")}
-          </span>
-        )}
+          {pet.morphs && pet.morphs.length > 0 && (
+            <div className="mt-0.5 flex flex-wrap gap-1">
+              {pet.morphs.slice(0, 3).map((morph) => (
+                <Badge key={morph} variant="outline" className="text-xs">
+                  {morph}
+                </Badge>
+              ))}
+              {pet.morphs.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{pet.morphs.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {pet.traits && pet.traits.length > 0 && (
+            <div className="mt-0.5 text-[11px] text-gray-500">
+              {pet.traits.map((t) => `#${t}`).join(" ")}
+            </div>
+          )}
+        </div>
+
+        <div className="shrink-0 text-right">
+          {price !== undefined && (
+            <p className="text-[14px] font-bold text-emerald-600">{formatPrice(price)}</p>
+          )}
+          {adoptionDate && (
+            <p className="text-[11px] text-gray-500">
+              {DateTime.fromISO(adoptionDate).toFormat("yy.M.d")}
+            </p>
+          )}
+          {!price && pet.hatchingDate && (
+            <p className="text-[11px] text-gray-500">
+              {DateTime.fromISO(pet.hatchingDate).toFormat("yy.M.d")}
+            </p>
+          )}
+        </div>
       </div>
+    );
+
+  // onClick이 있으면 div로, 없으면 Link로 래핑
+  if (onClick) {
+    return (
+      <div onClick={onClick} className="cursor-pointer">
+        {cardContent}
+      </div>
+    );
+  }
+
+  return (
+    <Link href={`/pet/${pet.petId}`} className={cn(isDeleted && "pointer-events-none")}>
+      {cardContent}
     </Link>
   );
 }

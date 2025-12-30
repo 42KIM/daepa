@@ -22,7 +22,7 @@ interface StatsBarChartProps {
 const StatsBarChart = ({
   data,
   itemHeight = 25,
-  minHeight = 150,
+  minHeight = 200,
   mode = "count",
 }: StatsBarChartProps) => {
   if (data.length === 0) return null;
@@ -41,7 +41,11 @@ const StatsBarChart = ({
       className="w-full"
       style={{ height: calculatedHeight }}
     >
-      <BarChart data={data} layout="vertical" margin={{ right: mode === "revenue" ? 50 : 20 }}>
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 20, right: mode === "revenue" ? 50 : 20 }}
+      >
         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" hide />
         <YAxis
@@ -52,6 +56,7 @@ const StatsBarChart = ({
           width={80}
           tick={{
             fontSize: 12,
+            fontWeight: 500,
           }}
         />
         <ChartTooltip

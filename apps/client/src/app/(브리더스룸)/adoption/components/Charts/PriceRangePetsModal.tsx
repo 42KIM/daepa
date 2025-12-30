@@ -1,0 +1,149 @@
+"use client";
+
+import { useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
+import {
+  brAdoptionControllerGetAllAdoptions,
+  PriceRangeItemDto,
+  BrAdoptionControllerGetAllAdoptionsStatus,
+} from "@repo/api-client";
+import { formatPrice } from "@/lib/utils";
+import Loading from "@/components/common/Loading";
+import { Badge } from "@/components/ui/badge";
+import SiblingPetCard from "@/app/(브리더스룸)/pet/[petId]/relation/components/SiblingPetCard";
+import HorizontalScrollSection from "@/app/(브리더스룸)/pet/[petId]/relation/components/HorizontalScrollSection";
+
+interface PriceRangePetsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  priceRange: PriceRangeItemDto | null;
+  species?: string;
+}
+
+const ITEMS_PER_PAGE = 10;
+
+const PriceRangePetsModal = ({
+  isOpen,
+  onClose,
+  priceRange,
+  species,
+}: PriceRangePetsModalProps) => {
+  const { ref, inView } = useInView();
+
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["priceRangeAdoptions", priceRange?.minPrice, priceRange?.maxPrice, species],
+    queryFn: ({ pageParam = 1 }) =>
+      brAdoptionControllerGetAllAdoptions({
+        page: pageParam,
+        itemPerPage: ITEMS_PER_PAGE,
+        minPrice: priceRange?.minPrice,
+        maxPrice: priceRange?.maxPrice === -1 ? undefined : priceRange?.maxPrice,
+        species: species as never,
+        status: BrAdoptionControllerGetAllAdoptionsStatus.SOLD,
+        order: "DESC",
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.data.meta.hasNextPage) {
+        return lastPage.data.meta.page + 1;
+      }
+      return undefined;
+    },
+    select: (data) => data.pages.flatMap((page) => page.data.data),
+    enabled: isOpen && !!priceRange,
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  if (!priceRange) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-y-auto p-0 py-5">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 px-4">
+            <span>{priceRange.label}</span>
+            <Badge variant="secondary">{priceRange.count}마리</Badge>
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* 가격대 요약 정보 */}
+        <div
+          className="mx-4 grid grid-cols-3 gap-3 rounded-xl bg-gray-50 p-4"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(182, 210, 247, .25), rgba(245, 223, 255, .25))",
+          }}
+        >
+          <div className="text-center">
+            <p className="text-sm text-gray-500">총 수익</p>
+            <p className="text-lg font-bold text-emerald-600">{formatPrice(priceRange.revenue)}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-500">평균 분양가</p>
+            <p className="text-lg font-bold text-blue-600">
+              {formatPrice(priceRange.averagePrice)}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-500">비율</p>
+            <p className="text-lg font-bold text-purple-600">{priceRange.percentage}%</p>
+          </div>
+        </div>
+
+        {/* 분양 목록 */}
+        {isLoading ? (
+          <Loading />
+        ) : data && data.length > 0 ? (
+          <section className="min-w-0 overflow-hidden">
+            <HorizontalScrollSection className="mx-4" gradientColor="from-white">
+              {data.map((adoption) => (
+                <SiblingPetCard
+                  key={adoption.petId}
+                  pet={adoption.pet}
+                  price={adoption.price}
+                  adoptionDate={adoption.adoptionDate}
+                />
+              ))}
+
+              {hasNextPage && (
+                <div ref={ref} className="py-4 text-center">
+                  {isFetchingNextPage && <Loading />}
+                </div>
+              )}
+            </HorizontalScrollSection>
+          </section>
+        ) : (
+          // <ScrollArea className="h-[calc(100vh-400px)]">
+          //   <div className="flex flex-wrap gap-3 p-1">
+          //     {data.map((adoption) => (
+          //       <SiblingPetCard
+          //         key={adoption.petId}
+          //         pet={adoption.pet}
+          //         price={adoption.price}
+          //         adoptionDate={adoption.adoptionDate}
+          //       />
+          //     ))}
+          //   </div>
+
+          //   {/* 무한 스크롤 트리거 */}
+          //   {hasNextPage && (
+          //     <div ref={ref} className="py-4 text-center">
+          //       {isFetchingNextPage && <Loading />}
+          //     </div>
+          //   )}
+          // </ScrollArea>
+          <div className="py-8 text-center text-gray-500">해당 가격대의 분양 기록이 없습니다.</div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default PriceRangePetsModal;

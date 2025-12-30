@@ -5,7 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import {
   statisticsControllerGetAdoptionStatistics,
   StatisticsControllerGetPairStatisticsSpecies,
+  PetParentDto,
+  PetDtoSex,
 } from "@repo/api-client";
+import { overlay } from "overlay-kit";
+import FilterItem from "../../hatching/components/Filters/FilterItem";
+import ParentSearchSelector from "../../components/selector/parentSearch";
 import { ChartConfig } from "@/components/ui/chart";
 import SingleSelect from "../../components/selector/SingleSelect";
 import {
@@ -19,12 +24,17 @@ import {
   AdoptionMonthlyChart,
   DayOfWeekChart,
   CustomerAnalysisCard,
+  PriceRangeChart,
+  PriceRangePetsModal,
 } from "./Charts";
+import { PriceRangeItemDto } from "@repo/api-client";
 import Loading from "@/components/common/Loading";
 import Image from "next/image";
 import { STATISTICS_COLORS, ADOPTION_STATISTICS_COLORS } from "../../constants";
 import { cn, formatPrice } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
+import { AlertCircle } from "lucide-react";
+import SiblingPetCard from "../../pet/[petId]/relation/components/SiblingPetCard";
 
 // 연도 옵션 생성 (최근 5년)
 const generateYearOptions = (): CustomSelectOption[] => {
@@ -99,8 +109,11 @@ const AdoptionDashboard = memo(() => {
   const [species, setSpecies] = useState<StatisticsControllerGetPairStatisticsSpecies>(
     StatisticsControllerGetPairStatisticsSpecies.CR,
   );
+  const [father, setFather] = useState<PetParentDto | undefined>(undefined);
+  const [mother, setMother] = useState<PetParentDto | undefined>(undefined);
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeItemDto | null>(null);
 
   const yearOptions = useMemo(() => generateYearOptions(), []);
 
@@ -120,12 +133,16 @@ const AdoptionDashboard = memo(() => {
     queryKey: [
       statisticsControllerGetAdoptionStatistics.name,
       species,
+      father?.petId,
+      mother?.petId,
       selectedYear,
       selectedMonth,
     ],
     queryFn: () =>
       statisticsControllerGetAdoptionStatistics({
         species: species ?? undefined,
+        fatherId: father?.petId,
+        motherId: mother?.petId,
         year: selectedYear !== "all" ? Number(selectedYear) : undefined,
         month: selectedMonth !== "all" ? Number(selectedMonth) : undefined,
       }),
@@ -133,8 +150,34 @@ const AdoptionDashboard = memo(() => {
     enabled: canQueryStatistics,
   });
 
+  // 부모 선택 셀렉터 열기
+  const openParentSearchSelector = (sex: PetDtoSex) =>
+    overlay.open(({ isOpen, close, unmount }) => (
+      <ParentSearchSelector
+        isOpen={isOpen}
+        onClose={close}
+        onSelect={(item) => {
+          close();
+          if (sex === PetDtoSex.MALE) {
+            setFather(item);
+          } else {
+            setMother(item);
+          }
+        }}
+        sex={sex}
+        onExit={unmount}
+        onlySelect
+        allowMyPetOnly
+        species={species ?? undefined}
+      />
+    ));
+
   // 종 변경 핸들러
   const handleSpeciesChange = (item: StatisticsControllerGetPairStatisticsSpecies) => {
+    if (species !== item) {
+      setFather(undefined);
+      setMother(undefined);
+    }
     setSpecies(item);
   };
 
@@ -217,6 +260,22 @@ const AdoptionDashboard = memo(() => {
           onSelect={handleSpeciesChange}
         />
 
+        {/* 부모 개체 선택 */}
+        <FilterItem
+          value={father?.name}
+          placeholder="부 개체"
+          disabled={!species}
+          onClose={() => setFather(undefined)}
+          onClick={() => openParentSearchSelector(PetDtoSex.MALE)}
+        />
+        <FilterItem
+          value={mother?.name}
+          placeholder="모 개체"
+          disabled={!species}
+          onClose={() => setMother(undefined)}
+          onClick={() => openParentSearchSelector(PetDtoSex.FEMALE)}
+        />
+
         <CustomSelect
           title="연도"
           options={yearOptions}
@@ -234,6 +293,25 @@ const AdoptionDashboard = memo(() => {
           disabled={selectedYear === "all"}
         />
       </div>
+
+      {/* 선택된 부모 개체 표시 */}
+      {(father || mother) && (
+        <div className="my-4 flex flex-wrap justify-center gap-3">
+          {father && (
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold text-blue-600">부</span>
+              <SiblingPetCard pet={father} width={140} />
+            </div>
+          )}
+
+          {mother && (
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold text-pink-500">모 </span>
+              <SiblingPetCard pet={mother} width={140} />
+            </div>
+          )}
+        </div>
+      )}
 
       {!species ? (
         <div className="text-muted-foreground flex h-40 flex-col items-center justify-center text-sm">
@@ -285,22 +363,7 @@ const AdoptionDashboard = memo(() => {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {/* 요일별 분양 통계 */}
             {statistics.dayOfWeekStats && statistics.dayOfWeekStats.some((d) => d.count > 0) && (
-              <ChartCard
-                title="요일별 분양 통계"
-                footer={
-                  <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-700">
-                    {["일", "월", "화", "수", "목", "금", "토"].map((day, index) => {
-                      const dayData = statistics.dayOfWeekStats?.find((d) => d.dayOfWeek === index);
-                      if (!dayData || dayData.count === 0) return null;
-                      return (
-                        <span key={day} className="font-[500]">
-                          {day}: <span className="font-bold">{dayData.count}마리</span>
-                        </span>
-                      );
-                    })}
-                  </div>
-                }
-              >
+              <ChartCard title="요일별 분양 통계">
                 <DayOfWeekChart data={statistics.dayOfWeekStats} />
               </ChartCard>
             )}
@@ -308,6 +371,35 @@ const AdoptionDashboard = memo(() => {
             {/* 고객 분석 */}
             {statistics.customerAnalysis && (
               <CustomerAnalysisCard data={statistics.customerAnalysis} />
+            )}
+
+            {/* 가격대별 분양 통계 */}
+            {statistics.priceRangeStats && statistics.priceRangeStats.length > 0 && (
+              <ChartCard
+                title="가격대별 분양 분포"
+                footer={
+                  <div
+                    className="flex flex-col items-center justify-center rounded-2xl px-2 py-4"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, rgba(182, 210, 247, 0.5), rgba(245, 223, 255, 0.64))",
+                    }}
+                  >
+                    <span className="text-center text-[14px] font-[500] text-gray-900">
+                      막대를 클릭하면 해당 가격대의 분양 목록을 확인할 수 있습니다.
+                    </span>
+                    <div className="mt-1 flex gap-1 text-[13px] text-red-500">
+                      <AlertCircle size={15} />
+                      <span>가격을 등록하지 않은 분양은 제외됩니다.</span>
+                    </div>
+                  </div>
+                }
+              >
+                <PriceRangeChart
+                  data={statistics.priceRangeStats}
+                  onRangeClick={setSelectedPriceRange}
+                />
+              </ChartCard>
             )}
 
             {/* 성별 통계 파이 차트 (분양가 기준) */}
@@ -379,7 +471,7 @@ const AdoptionDashboard = memo(() => {
               <ChartCard
                 title="모프 분포 (분양가 기준)"
                 footer={
-                  <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
+                  <div className="mt-7 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
                     {morphChartData.slice(0, 5).map((morph) => (
                       <span key={morph.name} className="flex items-center gap-1 font-[500]">
                         <span
@@ -403,7 +495,7 @@ const AdoptionDashboard = memo(() => {
               <ChartCard
                 title="형질 분포 (분양가 기준)"
                 footer={
-                  <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-700">
+                  <div className="mt-7 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-700">
                     {traitChartData.slice(0, 5).map((trait) => (
                       <span key={trait.name} className="flex items-center gap-1 font-[500]">
                         <span
@@ -429,6 +521,14 @@ const AdoptionDashboard = memo(() => {
           선택한 기간에 해당하는 분양 데이터가 없습니다.
         </div>
       )}
+
+      {/* 가격대별 분양 목록 모달 */}
+      <PriceRangePetsModal
+        isOpen={!!selectedPriceRange}
+        onClose={() => setSelectedPriceRange(null)}
+        priceRange={selectedPriceRange}
+        species={species}
+      />
     </div>
   );
 });
