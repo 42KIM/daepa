@@ -968,10 +968,11 @@ export class StatisticsService {
       .sort((a, b) => b.totalSpending - a.totalSpending)
       .slice(0, 10);
 
-    // 재구매 고객 목록 (2회 이상 구매, 구매횟수 순)
+    // 재구매 고객 목록 (2회 이상 구매, 구매횟수 순, 최대 10명)
     const repeatCustomerList = allCustomerDetails
       .filter((c) => c.purchaseCount >= 2)
-      .sort((a, b) => b.purchaseCount - a.purchaseCount);
+      .sort((a, b) => b.purchaseCount - a.purchaseCount)
+      .slice(0, 10);
 
     // 단골 고객 목록 (3회 이상 구매, 구매횟수 순)
     const loyalCustomerList = allCustomerDetails
