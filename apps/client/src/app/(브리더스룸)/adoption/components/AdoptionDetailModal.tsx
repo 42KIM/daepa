@@ -7,12 +7,12 @@ import { adoptionControllerGetAdoptionByPetId, PetAdoptionDtoStatus } from "@rep
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "../../constants";
 import { cn, getStatusBadge } from "@/lib/utils";
 import Loading from "@/components/common/Loading";
-import { Card } from "@/components/ui/card";
 import EditAdoptionForm from "./EditAdoptionForm";
 import AdoptionReceipt from "../../pet/[petId]/(펫카드)/components/AdoptionReceipt";
 import Link from "next/link";
 import PetThumbnail from "@/components/common/PetThumbnail";
 import BadgeList from "../../components/BadgeList";
+import { DateTime } from "luxon";
 
 interface AdoptionDetailModalProps {
   isOpen: boolean;
@@ -45,11 +45,14 @@ const PetInfoCard = ({
   onClose,
 }: PetInfoCardProps) => {
   const cardContent = (
-    <Card
+    <div
       className={cn(
-        "bg-muted mb-4 flex gap-0 border-2 p-4",
+        "mb-4 flex gap-0 rounded-2xl p-4",
         isDeleted ? "cursor-not-allowed" : "hover:shadow-md",
       )}
+      style={{
+        background: "linear-gradient(90deg, rgba(182, 210, 247, .25), rgba(245, 223, 255, .25))",
+      }}
     >
       <div className={"flex items-center gap-2.5"}>
         <div className={"w-16"}>
@@ -66,23 +69,27 @@ const PetInfoCard = ({
               name
             )}
 
-            <div className="text-muted-foreground text-sm font-normal">
-              / {(SPECIES_KOREAN_INFO as Record<string, string>)[species] || "미분류"}
+            <div className="text-muted-foreground text-sm">
+              | {(SPECIES_KOREAN_INFO as Record<string, string>)[species] || "미분류"}
             </div>
             {sex && (
-              <p className="text-sm font-normal text-blue-500">
-                / {(GENDER_KOREAN_INFO as Record<string, string>)[sex]}
+              <p className="text-sm text-blue-500">
+                | {(GENDER_KOREAN_INFO as Record<string, string>)[sex]}
               </p>
             )}
           </div>
           <div className="flex flex-col gap-2 text-sm text-gray-600">
             <BadgeList items={morphs} />
             <BadgeList items={traits} variant="outline" badgeClassName="bg-white text-black" />
-            {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
+            {hatchingDate && (
+              <p className="font-[600] text-blue-600">
+                {DateTime.fromFormat(hatchingDate, "yyyy-MM-dd").toFormat("yy.M.d")}
+              </p>
+            )}
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 
   if (isDeleted) {

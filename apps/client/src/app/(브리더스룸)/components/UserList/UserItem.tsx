@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { UserSimpleDto } from "@repo/api-client";
+import { UserProfilePublicDto } from "@repo/api-client";
 import { BadgeCheck } from "lucide-react";
 
 interface UserItemProps {
-  item: UserSimpleDto;
+  item: UserProfilePublicDto;
   isSelected: boolean | undefined;
-  onSelect: (user: UserSimpleDto) => void;
+  onSelect: (user: UserProfilePublicDto) => void;
 }
 
 const UserItem = ({ item, isSelected, onSelect }: UserItemProps) => {

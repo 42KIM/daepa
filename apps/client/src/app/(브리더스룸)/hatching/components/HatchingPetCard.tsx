@@ -15,7 +15,7 @@ import {
   PetHiddenStatusDtoHiddenStatus,
 } from "@repo/api-client";
 
-import { cn } from "@/lib/utils";
+import { cn, getEggDDayText } from "@/lib/utils";
 import { ko } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import TooltipText from "../../components/TooltipText";
@@ -156,14 +156,29 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                   </div>
 
                   <div
-                    className={cn("text-gray-600", pet.type === PetDtoType.PET && "text-blue-700")}
+                    className={cn(
+                      "font-[600] text-gray-600",
+                      pet.type === PetDtoType.PET && "text-blue-700",
+                    )}
                   >
                     {pet.type === PetDtoType.EGG
-                      ? pet.eggDetail?.status
-                        ? EGG_STATUS_KOREAN_INFO[
-                            pet.eggDetail?.status ?? PetDtoEggStatus.UNFERTILIZED
-                          ]
-                        : ""
+                      ? (() => {
+                          const status = pet.eggDetail?.status;
+                          if (!status) return "";
+
+                          // 유정란인 경우 D-day 표시
+                          if (status === PetDtoEggStatus.FERTILIZED && date) {
+                            const dDayText = getEggDDayText(date, pet.temperature ?? 25);
+                            const colorClass = dDayText.startsWith("D-")
+                              ? "text-green-600"
+                              : dDayText.startsWith("D+")
+                                ? "text-red-500"
+                                : "text-blue-600";
+                            return <span className={colorClass}>{dDayText}</span>;
+                          }
+
+                          return EGG_STATUS_KOREAN_INFO[status];
+                        })()
                       : (() => {
                           const d = parseISO(pet.hatchingDate ?? "");
                           return isValid(d) ? format(d, "MM/dd 해칭", { locale: ko }) : "";

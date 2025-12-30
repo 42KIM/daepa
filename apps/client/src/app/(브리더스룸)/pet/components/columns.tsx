@@ -24,7 +24,7 @@ import {
   PetAdoptionDtoStatus,
 } from "@repo/api-client";
 import LinkButton from "../../components/LinkButton";
-import { format, isValid, parseISO } from "date-fns";
+import { DateTime } from "luxon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TooltipText from "../../components/TooltipText";
 
@@ -95,9 +95,8 @@ export const columns: ColumnDef<PetDto>[] = [
                 분양 날짜・
                 {adoptionData?.adoptionDate
                   ? (() => {
-                      const raw = adoptionData.adoptionDate as string | Date;
-                      const d = typeof raw === "string" ? parseISO(raw) : raw;
-                      return isValid(d) ? format(d, "yyyy-MM-dd") : "미정";
+                      const d = DateTime.fromISO(adoptionData.adoptionDate);
+                      return d.isValid ? d.toFormat("yy년 M월 d일") : "미정";
                     })()
                   : "미정"}
               </div>
@@ -163,12 +162,12 @@ export const columns: ColumnDef<PetDto>[] = [
     accessorKey: "hatchingDate",
     header: TABLE_HEADER.hatchingDate,
     cell: ({ row }) => {
-      const hatchingDateRaw = row.getValue("hatchingDate") as Date | string | undefined;
-      const hatchingDate =
-        typeof hatchingDateRaw === "string" ? parseISO(hatchingDateRaw) : hatchingDateRaw;
+      const hatchingDateRaw = row.getValue("hatchingDate") as string | undefined;
+      if (!hatchingDateRaw) return <div className="capitalize">-</div>;
+      const hatchingDate = DateTime.fromISO(hatchingDateRaw);
       return (
         <div className="capitalize">
-          {hatchingDate && isValid(hatchingDate) ? format(hatchingDate, "yyyy-MM-dd") : "-"}
+          {hatchingDate.isValid ? hatchingDate.toFormat("yy.M.d") : "-"}
         </div>
       );
     },

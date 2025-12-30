@@ -1,5 +1,5 @@
 import { MatingByParentsDto, PetDtoEggStatus } from "@repo/api-client";
-import { cn } from "@/lib/utils";
+import { cn, getIncubationDays } from "@/lib/utils";
 import { Egg, Baby, CalendarCheck, CalendarHeart, CircleCheck, StickyNote } from "lucide-react";
 import { DateTime } from "luxon";
 
@@ -81,14 +81,6 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
       layingIndex: latestLayingIndex,
     };
   }, [latestMating?.layingsByDate]);
-
-  // 온도 기반 해칭 기간 계산 (일 단위)
-  // 파충류(크레스티드 게코) 기준: 온도에 따라 부화 기간이 달라짐
-  // 25°C 기준: 약 60일
-  // 1°C 오를 때마다 10일 감소, 1°C 내릴때마다 10일 추가
-  const getIncubationDays = (temperature = 25) => {
-    return 60 - (temperature - 25) * 10;
-  };
 
   // 해칭 임박한 알 찾기: 아직 부화하지 않은 유정란 중 가장 가까운 예상 해칭일
   const today = DateTime.now();
