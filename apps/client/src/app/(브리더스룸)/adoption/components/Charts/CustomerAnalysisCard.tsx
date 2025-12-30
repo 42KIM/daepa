@@ -35,10 +35,9 @@ const CustomerAnalysisCard = ({ data }: CustomerAnalysisCardProps) => {
             </span>
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <AnalysisItem label="총 고객 수" value={`${data.totalCustomers}명`} />
           <AnalysisItem label="재입양 고객" value={`${data.repeatCustomers}명`} />
-          <AnalysisItem label="단골 고객 (3회+)" value={`${data.loyalCustomers}명`} />
           <AnalysisItem label="재입양율" value={`${data.repeatRate}%`} />
         </div>
 
@@ -64,17 +63,6 @@ const CustomerAnalysisCard = ({ data }: CustomerAnalysisCardProps) => {
               customers={data.repeatCustomerList}
               isExpanded={expandedSection === "repeat"}
               onToggle={() => toggleSection("repeat")}
-            />
-          )}
-
-          {/* 단골 고객 */}
-          {data.loyalCustomerList && data.loyalCustomerList.length > 0 && (
-            <CustomerSection
-              title="신규 고객"
-              icon={<Image src="/assets/lizard_face.png" alt="lizard" width={30} height={30} />}
-              customers={data.loyalCustomerList}
-              isExpanded={expandedSection === "loyal"}
-              onToggle={() => toggleSection("loyal")}
             />
           )}
         </div>

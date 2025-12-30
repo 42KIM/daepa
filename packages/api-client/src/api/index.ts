@@ -4282,7 +4282,6 @@ export const getStatisticsControllerGetAdoptionStatisticsResponseMock = (
         totalCustomers: faker.number.int({ min: undefined, max: undefined }),
         repeatCustomers: faker.number.int({ min: undefined, max: undefined }),
         repeatRate: faker.number.int({ min: undefined, max: undefined }),
-        loyalCustomers: faker.number.int({ min: undefined, max: undefined }),
         averagePurchaseCount: faker.number.int({ min: undefined, max: undefined }),
         averageCustomerSpending: faker.number.int({ min: undefined, max: undefined }),
         topCustomers: faker.helpers.arrayElement([
@@ -4297,17 +4296,6 @@ export const getStatisticsControllerGetAdoptionStatisticsResponseMock = (
           undefined,
         ]),
         repeatCustomerList: faker.helpers.arrayElement([
-          Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-            () => ({
-              userId: faker.string.alpha(20),
-              name: faker.string.alpha(20),
-              purchaseCount: faker.number.int({ min: undefined, max: undefined }),
-              totalSpending: faker.number.int({ min: undefined, max: undefined }),
-            }),
-          ),
-          undefined,
-        ]),
-        loyalCustomerList: faker.helpers.arrayElement([
           Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
             () => ({
               userId: faker.string.alpha(20),

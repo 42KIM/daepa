@@ -929,12 +929,10 @@ export class StatisticsService {
         totalCustomers: 0,
         repeatCustomers: 0,
         repeatRate: 0,
-        loyalCustomers: 0,
         averagePurchaseCount: 0,
         averageCustomerSpending: 0,
         topCustomers: [],
         repeatCustomerList: [],
-        loyalCustomerList: [],
       });
     }
 
@@ -974,16 +972,8 @@ export class StatisticsService {
       .sort((a, b) => b.purchaseCount - a.purchaseCount)
       .slice(0, 10);
 
-    // 단골 고객 목록 (3회 이상 구매, 구매횟수 순)
-    const loyalCustomerList = allCustomerDetails
-      .filter((c) => c.purchaseCount >= 3)
-      .sort((a, b) => b.purchaseCount - a.purchaseCount);
-
     // 재구매 고객 수
     const repeatCustomersCount = repeatCustomerList.length;
-
-    // 단골 고객 수
-    const loyalCustomersCount = loyalCustomerList.length;
 
     // 고객당 평균 구매 횟수
     const totalPurchases = Array.from(customerStats.values()).reduce(
@@ -1004,12 +994,10 @@ export class StatisticsService {
       totalCustomers,
       repeatCustomers: repeatCustomersCount,
       repeatRate: this.calculateRate(repeatCustomersCount, totalCustomers),
-      loyalCustomers: loyalCustomersCount,
       averagePurchaseCount,
       averageCustomerSpending,
       topCustomers,
       repeatCustomerList,
-      loyalCustomerList,
     });
   }
 

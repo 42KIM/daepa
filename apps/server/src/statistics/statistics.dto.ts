@@ -502,10 +502,6 @@ export class CustomerAnalysisDto {
   @IsNumber()
   repeatRate: number;
 
-  @ApiProperty({ description: '단골 고객 수 (3회 이상 구매)', example: 5 })
-  @IsNumber()
-  loyalCustomers: number;
-
   @ApiProperty({ description: '고객당 평균 구매 횟수', example: 1.5 })
   @IsNumber()
   averagePurchaseCount: number;
@@ -535,17 +531,6 @@ export class CustomerAnalysisDto {
   @IsObject({ each: true })
   @Type(() => CustomerDetailDto)
   repeatCustomerList?: CustomerDetailDto[];
-
-  @ApiProperty({
-    description: '단골 고객 목록',
-    type: [CustomerDetailDto],
-    required: false,
-  })
-  @IsOptional()
-  @IsArray()
-  @IsObject({ each: true })
-  @Type(() => CustomerDetailDto)
-  loyalCustomerList?: CustomerDetailDto[];
 }
 
 /** 분양 통계 응답 DTO */
