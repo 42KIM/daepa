@@ -1,6 +1,7 @@
 "use client";
 
-import { Search, X, Lock, User, Ban } from "lucide-react";
+import { Search, X, Lock, Ban } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../components/selector/parentSearch";
@@ -22,6 +23,7 @@ import { PetParentDtoWithMessage } from "../store/parentLink";
 import { useUserStore } from "../../store/user";
 import { useCallback } from "react";
 import PetThumbnail from "@/components/common/PetThumbnail";
+import BadgeList from "../../components/BadgeList";
 
 interface ParentLinkProps {
   species: PetDtoSpecies;
@@ -205,44 +207,56 @@ const ParentLink = ({
             else if (!isDeleted) window.location.href = `/pet/${parent.petId}`;
           }}
           className={cn(
-            "flex cursor-pointer flex-col items-center gap-2",
+            "flex cursor-pointer flex-col items-center",
             isDeleted && "cursor-not-allowed opacity-70",
           )}
         >
           <div className="relative w-full">
-            <PetThumbnail petId={parent.petId} maxSize={220} />
             {isMyPet ? (
-              <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1">
-                <span className="text-[11px] font-semibold text-blue-600">My Pet</span>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="rounded-2xl ring-2 ring-green-700/80 ring-offset-2">
+                    <PetThumbnail petId={parent.petId} maxSize={220} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">나의 펫</p>
+                </TooltipContent>
+              </Tooltip>
             ) : (
-              <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1">
-                <User className="h-3 w-3 text-blue-600" />
-                <span className="text-[11px] font-semibold text-blue-600">{parent.owner.name}</span>
-              </div>
+              <>
+                <div className="rounded-2xl">
+                  <PetThumbnail petId={parent.petId} maxSize={220} />
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="text-[12px] font-bold text-gray-500">@ {parent.owner.name}</span>
+                </div>
+              </>
             )}
             {isDeleted && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/70">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/70">
                 <Ban className="h-6 w-6 text-red-600" />
                 <span className="text-sm font-medium text-red-600">삭제된 펫입니다.</span>
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "relative text-[14px] font-bold after:absolute after:bottom-0 after:left-0 after:-z-10 after:h-[15px] after:w-full after:opacity-40",
-                label === "모" ? "after:bg-red-400" : "after:bg-[#247DFE]",
-              )}
-            >
-              {parent.name ?? "-"}
-            </span>
-          </div>
+          <span
+            className={cn(
+              "relative pt-1 text-[14px] font-bold after:absolute after:bottom-0 after:left-0 after:-z-10 after:h-[15px] after:w-full after:opacity-40",
+              label === "모" ? "after:bg-red-400" : "after:bg-[#247DFE]",
+            )}
+          >
+            {parent.name ?? "-"}
+          </span>
 
-          <div className="break-keep text-[14px] font-[500] text-gray-700">
-            {parent.morphs?.join(" | ")}
-            {parent.traits?.join(" | ")}
+          <div className="mt-2">
+            <BadgeList items={parent.morphs} />
+            <BadgeList
+              items={parent.traits}
+              variant="outline"
+              badgeClassName="bg-white text-black"
+            />
           </div>
         </div>
       </div>

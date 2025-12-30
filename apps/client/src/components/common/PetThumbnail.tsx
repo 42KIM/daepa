@@ -91,7 +91,7 @@ const PetThumbnail = ({
 
   return (
     <div
-      className={`relative aspect-square w-full overflow-hidden bg-gray-100 ${rounded ? "rounded-full" : "rounded-lg"} ${className}`}
+      className={`relative aspect-square w-full overflow-hidden bg-gray-100 ${rounded ? "rounded-full" : "rounded-2xl"} ${className}`}
     >
       {isLoading ? (
         <Loading />

@@ -119,7 +119,7 @@ const MonthlyCalendar = memo(() => {
   ];
 
   return (
-    <div className={"flex"}>
+    <div className="flex">
       {!isMobile && (
         <Calendar
           mode="single"
@@ -137,7 +137,8 @@ const MonthlyCalendar = memo(() => {
           <div
             className={cn(
               "shrink-0 transition-all duration-300",
-              isScrolled && "sticky top-0 z-20 h-fit w-full origin-top-left scale-75 bg-white",
+              isScrolled &&
+                "sticky top-0 z-20 w-full origin-top-left scale-75 bg-white [margin-bottom:-20%]",
             )}
           >
             <Calendar
@@ -171,7 +172,14 @@ const MonthlyCalendar = memo(() => {
           </div>
           <ScrollArea
             ref={scrollAreaRef}
-            className={cn("relative", isMobile ? "h-[calc(100vh-320px)]" : "h-[calc(100vh-200px)]")}
+            className={cn(
+              "relative",
+              isMobile
+                ? isScrolled
+                  ? "h-[calc(100vh-320px)]"
+                  : "h-[calc(100vh-390px)]"
+                : "h-[calc(100vh-150px)]",
+            )}
           >
             {monthlyIsPending || todayIsFetching ? (
               <Loading />

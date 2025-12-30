@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import TooltipText from "../../components/TooltipText";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import BadgeList from "../../components/BadgeList";
 
 interface PetCardProps {
   date: string;
@@ -70,13 +71,12 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
           })
           .map((pet, index) => {
             const isEgg = pet.type === PetDtoType.EGG;
-            const morphs = pet.morphs?.join(" | ");
-            const traits = pet.traits?.join(" | ");
+
             return (
               <Link href={`/pet/${pet.petId}`} key={pet.petId} className="w-full">
                 <div
                   className={cn(
-                    "flex w-full flex-1 items-center p-2 text-[14px] hover:rounded-xl hover:bg-gray-100",
+                    "flex w-full flex-1 items-center justify-between p-2 text-[14px] hover:rounded-xl hover:bg-gray-100",
                   )}
                 >
                   <div className="flex">
@@ -84,7 +84,7 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                       {index === 0 && date ? format(parseISO(date), "dd EE", { locale: ko }) : ""}
                     </div>
 
-                    <div className="flex flex-col px-1 py-1.5">
+                    <div className="flex flex-col gap-1 px-1 py-1.5">
                       <div className="flex gap-1 font-semibold">
                         {pet.type === PetDtoType.PET ? (
                           <div className="flex items-center gap-1">
@@ -143,8 +143,14 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                           </div>
                         )}
                       </div>
-                      {morphs ? <span className="text-[12px] text-gray-500"> {morphs}</span> : null}
-                      {traits ? <span className="text-[12px] text-gray-500"> {traits}</span> : null}
+
+                      <BadgeList items={pet.morphs} />
+                      <BadgeList
+                        items={pet.traits}
+                        variant="outline"
+                        badgeClassName="bg-white text-black"
+                      />
+
                       {pet?.desc && <div className="text-gray-800">{pet.desc}</div>}
                     </div>
                   </div>

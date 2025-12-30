@@ -11,8 +11,8 @@ import { Card } from "@/components/ui/card";
 import EditAdoptionForm from "./EditAdoptionForm";
 import AdoptionReceipt from "../../pet/[petId]/(펫카드)/components/AdoptionReceipt";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import PetThumbnail from "@/components/common/PetThumbnail";
+import BadgeList from "../../components/BadgeList";
 
 interface AdoptionDetailModalProps {
   isOpen: boolean;
@@ -76,18 +76,8 @@ const PetInfoCard = ({
             )}
           </div>
           <div className="flex flex-col gap-2 text-sm text-gray-600">
-            {morphs && morphs.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {morphs.map((morph) => (
-                  <Badge key={morph}>{morph}</Badge>
-                ))}
-              </div>
-            )}
-            {traits && traits.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {traits.map((trait: string) => `#${trait}`).join(" ")}
-              </div>
-            )}
+            <BadgeList items={morphs} />
+            <BadgeList items={traits} variant="outline" badgeClassName="bg-white text-black" />
             {hatchingDate && <p className="text-blue-600">{hatchingDate}</p>}
           </div>
         </div>

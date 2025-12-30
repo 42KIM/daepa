@@ -3,7 +3,7 @@
 import { Lock, LockOpen } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { BadgeCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import BadgeList from "../../components/BadgeList";
 import {
   GENDER_KOREAN_INFO,
   GROWTH_KOREAN_INFO,
@@ -119,32 +119,18 @@ export const columns: ColumnDef<PetDto>[] = [
   {
     accessorKey: "morphs",
     header: TABLE_HEADER.morphs,
-    cell: ({ row }) => {
-      const morphs = row.original.morphs;
-
-      return (
-        <div className="flex flex-wrap gap-1">
-          {morphs?.map((morph) => <Badge key={morph}>{morph}</Badge>)}
-        </div>
-      );
-    },
+    cell: ({ row }) => <BadgeList items={row.original.morphs} />,
   },
   {
     accessorKey: "traits",
     header: TABLE_HEADER.traits,
-    cell: ({ row }) => {
-      const traits = row.original.traits;
-
-      return (
-        <div className="flex flex-wrap gap-1">
-          {traits?.map((trait) => (
-            <Badge key={trait} variant="outline">
-              {trait}
-            </Badge>
-          ))}
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <BadgeList
+        items={row.original.traits}
+        variant="outline"
+        badgeClassName="bg-white text-black"
+      />
+    ),
   },
   {
     accessorKey: "sex",

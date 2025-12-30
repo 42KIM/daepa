@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Cookie, Info } from "lucide-react";
 import Image from "next/image";
 import PetThumbnail from "@/components/common/PetThumbnail";
+import BadgeList from "../BadgeList";
 
 interface RecentlyViewedPet {
   petId: string;
@@ -93,31 +94,16 @@ const RecentlyViewedList = () => {
                   </div>
                 )}
                 <div className="flex flex-1 justify-between gap-2 overflow-hidden">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex w-20 max-w-20 items-center justify-between gap-2">
                     <span className="truncate font-bold dark:text-gray-100">{item.name}</span>
                   </div>
-                  <div>
+                  <div className="flex-1">
                     {item.species && (
                       <span className="text-muted-foreground truncate text-xs dark:text-gray-400">
                         {SPECIES_KOREAN_INFO[item.species]}
                       </span>
                     )}
-                    {item.morphs && item.morphs.length > 0 && (
-                      <div className="flex flex-wrap">
-                        {item.morphs.map((morph, index) => {
-                          const length = item.morphs?.length ?? 0;
-                          return (
-                            <div
-                              key={morph}
-                              className="text-[12px] text-blue-600 dark:text-blue-400"
-                            >
-                              <span>{morph}</span>
-                              {length - 1 > index && <span> |</span>}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                    <BadgeList items={item.morphs} />
                   </div>
                 </div>
               </Link>
