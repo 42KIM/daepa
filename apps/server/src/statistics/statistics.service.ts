@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DateTime } from 'luxon';
 import { PairEntity } from 'src/pair/pair.entity';
 import { MatingEntity } from 'src/mating/mating.entity';
 import { LayingEntity } from 'src/laying/laying.entity';
@@ -467,7 +468,7 @@ export class StatisticsService {
     for (const pet of pets) {
       const layingDate = pet.laying?.layingDate;
       if (layingDate) {
-        const month = new Date(layingDate).getMonth() + 1;
+        const month = DateTime.fromJSDate(new Date(layingDate)).month;
         const data = monthlyData.get(month)!;
         const eggStatus = pet.eggDetail?.status;
 
@@ -845,7 +846,9 @@ export class StatisticsService {
     // 월별 데이터 집계
     for (const adoption of adoptions) {
       if (adoption.adoptionDate) {
-        const month = new Date(adoption.adoptionDate).getMonth() + 1;
+        const month = DateTime.fromJSDate(
+          new Date(adoption.adoptionDate),
+        ).month;
         const data = monthlyData.get(month)!;
         data.count++;
         data.revenue += adoption.price ?? 0;
@@ -879,7 +882,8 @@ export class StatisticsService {
     // 요일별 데이터 집계
     for (const adoption of adoptions) {
       if (adoption.adoptionDate) {
-        const dayOfWeek = new Date(adoption.adoptionDate).getDay();
+        const dayOfWeek =
+          DateTime.fromJSDate(new Date(adoption.adoptionDate)).weekday % 7;
         const data = dayOfWeekData.get(dayOfWeek)!;
         data.count++;
         data.revenue += adoption.price ?? 0;
