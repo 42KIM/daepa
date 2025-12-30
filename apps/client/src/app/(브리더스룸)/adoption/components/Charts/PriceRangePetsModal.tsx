@@ -83,7 +83,7 @@ const PriceRangePetsModal = ({
           }}
         >
           <div className="text-center">
-            <p className="text-sm text-gray-500">총 수익</p>
+            <p className="text-sm text-gray-500">총 분양가</p>
             <p className="text-lg font-bold text-emerald-600">{formatPrice(priceRange.revenue)}</p>
           </div>
           <div className="text-center">
@@ -93,7 +93,7 @@ const PriceRangePetsModal = ({
             </p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-500">비율</p>
+            <p className="text-sm text-gray-500">전체 분양 대비</p>
             <p className="text-lg font-bold text-purple-600">{priceRange.percentage}%</p>
           </div>
         </div>

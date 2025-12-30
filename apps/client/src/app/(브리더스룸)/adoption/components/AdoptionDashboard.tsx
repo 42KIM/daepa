@@ -70,7 +70,7 @@ const MONTH_OPTIONS: CustomSelectOption[] = [
 const SEX_LABELS: Record<string, string> = {
   male: "수컷",
   female: "암컷",
-  unknown: "미확인",
+  unknown: "미구분",
 };
 
 // 성별 색상
@@ -85,9 +85,9 @@ const getSexColor = (sex: string): string => {
 
 // 분양 방식 한글 변환
 const METHOD_LABELS: Record<string, string> = {
-  NONE: "미정",
+  NONE: "알 수 없음",
   PICKUP: "직거래",
-  DELIVERY: "택배",
+  DELIVERY: "배송",
   WHOLESALE: "도매",
   EXPORT: "수출",
 };
@@ -238,13 +238,13 @@ const AdoptionDashboard = memo(() => {
   const sexChartConfig: ChartConfig = {
     male: { label: "수컷", color: STATISTICS_COLORS.male },
     female: { label: "암컷", color: STATISTICS_COLORS.female },
-    unknown: { label: "미확인", color: STATISTICS_COLORS.unknown },
+    unknown: { label: "미구분", color: STATISTICS_COLORS.unknown },
   };
 
   const methodChartConfig: ChartConfig = {
-    none: { label: "미정", color: ADOPTION_STATISTICS_COLORS.none },
+    none: { label: "알 수 없음", color: ADOPTION_STATISTICS_COLORS.none },
     pickup: { label: "직거래", color: ADOPTION_STATISTICS_COLORS.pickup },
-    delivery: { label: "택배", color: ADOPTION_STATISTICS_COLORS.delivery },
+    delivery: { label: "배송", color: ADOPTION_STATISTICS_COLORS.delivery },
     wholesale: { label: "도매", color: ADOPTION_STATISTICS_COLORS.wholesale },
     export: { label: "수출", color: ADOPTION_STATISTICS_COLORS.export },
   };
@@ -386,7 +386,7 @@ const AdoptionDashboard = memo(() => {
                     }}
                   >
                     <span className="text-center text-[14px] font-[500] text-gray-900">
-                      막대를 클릭하면 해당 가격대의 분양 목록을 확인할 수 있습니다.
+                      막대 차트를 클릭하면 해당 가격대의 분양 개체 목록을 확인할 수 있습니다.
                     </span>
                     <div className="mt-1 flex gap-1 text-[13px] text-red-500">
                       <AlertCircle size={15} />

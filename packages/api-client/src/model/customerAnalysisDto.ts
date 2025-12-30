@@ -14,16 +14,12 @@ export interface CustomerAnalysisDto {
   repeatCustomers: number;
   /** 재구매율 (%) */
   repeatRate: number;
-  /** 단골 고객 수 (3회 이상 구매) */
-  loyalCustomers: number;
   /** 고객당 평균 구매 횟수 */
   averagePurchaseCount: number;
   /** 고객당 평균 구매 금액 */
   averageCustomerSpending: number;
-  /** 상위 고객 목록 (구매금액 순) */
+  /** top 10 상위 고객 목록 (구매금액 순) */
   topCustomers?: CustomerDetailDto[];
-  /** 재구매 고객 목록 */
+  /** top 10 재구매 고객 목록 */
   repeatCustomerList?: CustomerDetailDto[];
-  /** 단골 고객 목록 */
-  loyalCustomerList?: CustomerDetailDto[];
 }

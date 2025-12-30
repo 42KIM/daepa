@@ -318,8 +318,8 @@ class StatisticsQueryBaseDto {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  species?: string;
+  @IsEnum(PET_SPECIES)
+  species?: PET_SPECIES;
 
   @ApiProperty({
     description: '부 개체 ID',
@@ -502,10 +502,6 @@ export class CustomerAnalysisDto {
   @IsNumber()
   repeatRate: number;
 
-  @ApiProperty({ description: '단골 고객 수 (3회 이상 구매)', example: 5 })
-  @IsNumber()
-  loyalCustomers: number;
-
   @ApiProperty({ description: '고객당 평균 구매 횟수', example: 1.5 })
   @IsNumber()
   averagePurchaseCount: number;
@@ -515,7 +511,7 @@ export class CustomerAnalysisDto {
   averageCustomerSpending: number;
 
   @ApiProperty({
-    description: '상위 고객 목록 (구매금액 순)',
+    description: 'top 10 상위 고객 목록 (구매금액 순)',
     type: [CustomerDetailDto],
     required: false,
   })
@@ -526,7 +522,7 @@ export class CustomerAnalysisDto {
   topCustomers?: CustomerDetailDto[];
 
   @ApiProperty({
-    description: '재구매 고객 목록',
+    description: 'top 10 재구매 고객 목록',
     type: [CustomerDetailDto],
     required: false,
   })
@@ -535,17 +531,6 @@ export class CustomerAnalysisDto {
   @IsObject({ each: true })
   @Type(() => CustomerDetailDto)
   repeatCustomerList?: CustomerDetailDto[];
-
-  @ApiProperty({
-    description: '단골 고객 목록',
-    type: [CustomerDetailDto],
-    required: false,
-  })
-  @IsOptional()
-  @IsArray()
-  @IsObject({ each: true })
-  @Type(() => CustomerDetailDto)
-  loyalCustomerList?: CustomerDetailDto[];
 }
 
 /** 분양 통계 응답 DTO */

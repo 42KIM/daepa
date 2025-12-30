@@ -19,11 +19,14 @@ interface PriceRangeChartProps {
 }
 
 const PRICE_RANGE_COLORS = [
-  "#60a5fa", // 10만원 이하 (밝은 파랑)
-  "#3b82f6", // 10-30만원
-  "#2563eb", // 30-50만원
-  "#1d4ed8", // 50-100만원
-  "#1e40af", // 100만원 이상 (진한 파랑)
+  "#bfdbfe", // 10만원 미만 (blue-200)
+  "#93c5fd", // 10-30만원 (blue-300)
+  "#60a5fa", // 30-60만원 (blue-400)
+  "#3b82f6", // 60-100만원 (blue-500)
+  "#2563eb", // 100-200만원 (blue-600)
+  "#1d4ed8", // 200-400만원 (blue-700)
+  "#1e40af", // 400-1000만원 (blue-800)
+  "#1e3a8a", // 1000만원 이상 (blue-900)
 ];
 
 const PriceRangeChart = ({ data, onRangeClick }: PriceRangeChartProps) => {
@@ -62,7 +65,12 @@ const PriceRangeChart = ({ data, onRangeClick }: PriceRangeChartProps) => {
             tickLine={false}
             axisLine={false}
           />
-          <YAxis tick={{ fontSize: 12, fontWeight: 600 }} tickLine={false} axisLine={false} />
+          <YAxis
+            tick={{ fontSize: 12, fontWeight: 600 }}
+            tickLine={false}
+            axisLine={false}
+            allowDecimals={false}
+          />
           <ChartTooltip
             content={
               <ChartTooltipContent

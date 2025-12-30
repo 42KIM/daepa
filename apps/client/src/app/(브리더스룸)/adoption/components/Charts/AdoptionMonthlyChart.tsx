@@ -78,6 +78,7 @@ const AdoptionMonthlyChart = ({ data }: AdoptionMonthlyChartProps) => {
             tick={{ fontSize: 12, fontWeight: 600 }}
             tickLine={false}
             axisLine={false}
+            allowDecimals={false}
             tickFormatter={(value) => `${value}`}
           />
           <YAxis

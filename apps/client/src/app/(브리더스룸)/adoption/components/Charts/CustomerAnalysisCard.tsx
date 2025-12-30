@@ -35,11 +35,10 @@ const CustomerAnalysisCard = ({ data }: CustomerAnalysisCardProps) => {
             </span>
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <AnalysisItem label="총 고객 수" value={`${data.totalCustomers}명`} />
-          <AnalysisItem label="재구매 고객" value={`${data.repeatCustomers}명`} />
-          <AnalysisItem label="단골 고객 (3회+)" value={`${data.loyalCustomers}명`} />
-          <AnalysisItem label="재구매율" value={`${data.repeatRate}%`} />
+          <AnalysisItem label="재입양 고객" value={`${data.repeatCustomers}명`} />
+          <AnalysisItem label="재입양율" value={`${data.repeatRate}%`} />
         </div>
 
         {/* 고객 목록 섹션 */}
@@ -47,7 +46,7 @@ const CustomerAnalysisCard = ({ data }: CustomerAnalysisCardProps) => {
           {/* 상위 고객 */}
           {data.topCustomers && data.topCustomers.length > 0 && (
             <CustomerSection
-              title="상위 고객"
+              title="분양가 기준 고객 TOP 10"
               icon={<Image src="/assets/lizard_face.png" alt="lizard" width={30} height={30} />}
               customers={data.topCustomers}
               isExpanded={expandedSection === "top"}
@@ -59,22 +58,11 @@ const CustomerAnalysisCard = ({ data }: CustomerAnalysisCardProps) => {
           {/* 재구매 고객 */}
           {data.repeatCustomerList && data.repeatCustomerList.length > 0 && (
             <CustomerSection
-              title="재구매 고객"
+              title="재입양 고객 TOP 10"
               icon={<Image src="/assets/lizard_face_2.png" alt="lizard" width={30} height={30} />}
               customers={data.repeatCustomerList}
               isExpanded={expandedSection === "repeat"}
               onToggle={() => toggleSection("repeat")}
-            />
-          )}
-
-          {/* 단골 고객 */}
-          {data.loyalCustomerList && data.loyalCustomerList.length > 0 && (
-            <CustomerSection
-              title="단골 고객"
-              icon={<Image src="/assets/lizard_face.png" alt="lizard" width={30} height={30} />}
-              customers={data.loyalCustomerList}
-              isExpanded={expandedSection === "loyal"}
-              onToggle={() => toggleSection("loyal")}
             />
           )}
         </div>
