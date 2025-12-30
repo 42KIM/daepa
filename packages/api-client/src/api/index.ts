@@ -3140,10 +3140,20 @@ export const getUserControllerGetUserListSimpleResponseMock = (
   overrideResponse: Partial<UserControllerGetUserListSimple200> = {},
 ): UserControllerGetUserListSimple200 => ({
   data: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    userId: faker.string.alpha(20),
-    name: faker.string.alpha(20),
-    email: faker.string.alpha(20),
-    isBiz: faker.datatype.boolean(),
+    status: faker.helpers.arrayElement([
+      "pending",
+      "active",
+      "inactive",
+      "suspended",
+      "deleted",
+    ] as const),
+    userId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+    name: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+    role: faker.helpers.arrayElement([
+      faker.helpers.arrayElement(["user", "breeder", "admin"] as const),
+      undefined,
+    ]),
+    isBiz: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   })),
   meta: {
     page: faker.number.int({ min: undefined, max: undefined }),
