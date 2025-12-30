@@ -27,6 +27,8 @@ import type {
   PetControllerFindAllParams,
   PetControllerGetDeletedPetsParams,
   SaveFilesDto,
+  StatisticsControllerGetAdoptionStatisticsParams,
+  StatisticsControllerGetPairStatisticsParams,
   UnlinkParentDto,
   UpdateAdoptionDto,
   UpdateLayingDto,
@@ -48,6 +50,7 @@ import { HttpResponse, delay, http } from "msw";
 
 import type {
   AdoptionDetailResponseDto,
+  AdoptionStatisticsDto,
   BrAdoptionControllerGetAllAdoptions200,
   BrMatingControllerFindAll200,
   BrPetControllerFindAll200,
@@ -61,6 +64,7 @@ import type {
   PairDetailDto,
   PairDto,
   ParentLinkDetailJson,
+  ParentStatisticsDto,
   PetControllerFindAll200,
   PetControllerGetDeletedPets200,
   PetHiddenStatusDto,
@@ -510,6 +514,32 @@ export const petImageControllerSavePetImages = (petId: string, saveFilesDto: Sav
   });
 };
 
+/**
+ * @summary 부모 개체 통계 조회 (부 또는 모 개체 기준)
+ */
+export const statisticsControllerGetPairStatistics = (
+  params?: StatisticsControllerGetPairStatisticsParams,
+) => {
+  return useCustomInstance<ParentStatisticsDto>({
+    url: `/api/v1/statistics/pairs`,
+    method: "GET",
+    params,
+  });
+};
+
+/**
+ * @summary 분양 통계 조회
+ */
+export const statisticsControllerGetAdoptionStatistics = (
+  params?: StatisticsControllerGetAdoptionStatisticsParams,
+) => {
+  return useCustomInstance<AdoptionStatisticsDto>({
+    url: `/api/v1/statistics/adoptions`,
+    method: "GET",
+    params,
+  });
+};
+
 export type PetControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof petControllerFindAll>>
 >;
@@ -665,6 +695,12 @@ export type PetImageControllerFindOneResult = NonNullable<
 >;
 export type PetImageControllerSavePetImagesResult = NonNullable<
   Awaited<ReturnType<typeof petImageControllerSavePetImages>>
+>;
+export type StatisticsControllerGetPairStatisticsResult = NonNullable<
+  Awaited<ReturnType<typeof statisticsControllerGetPairStatistics>>
+>;
+export type StatisticsControllerGetAdoptionStatisticsResult = NonNullable<
+  Awaited<ReturnType<typeof statisticsControllerGetAdoptionStatistics>>
 >;
 
 export const getPetControllerFindAllResponsePetParentDtoMock = (
@@ -4087,6 +4123,212 @@ export const getPetImageControllerSavePetImagesResponseMock = (
   ...overrideResponse,
 });
 
+export const getStatisticsControllerGetPairStatisticsResponseMock = (
+  overrideResponse: Partial<ParentStatisticsDto> = {},
+): ParentStatisticsDto => ({
+  period: {
+    ...{
+      type: faker.helpers.arrayElement(["ALL", "SEASON", "YEAR_MONTH"] as const),
+      season: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+      year: faker.helpers.arrayElement([
+        faker.number.int({ min: undefined, max: undefined }),
+        undefined,
+      ]),
+      month: faker.helpers.arrayElement([
+        faker.number.int({ min: undefined, max: undefined }),
+        undefined,
+      ]),
+    },
+  },
+  egg: {
+    ...{
+      total: faker.number.int({ min: undefined, max: undefined }),
+      fertilized: faker.number.int({ min: undefined, max: undefined }),
+      unfertilized: faker.number.int({ min: undefined, max: undefined }),
+      hatched: faker.number.int({ min: undefined, max: undefined }),
+      dead: faker.number.int({ min: undefined, max: undefined }),
+      pending: faker.number.int({ min: undefined, max: undefined }),
+      fertilizedRate: faker.number.int({ min: undefined, max: undefined }),
+      hatchingRate: faker.number.int({ min: undefined, max: undefined }),
+    },
+  },
+  morphs: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  traits: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  sex: {
+    ...{
+      male: faker.number.int({ min: undefined, max: undefined }),
+      female: faker.number.int({ min: undefined, max: undefined }),
+      unknown: faker.number.int({ min: undefined, max: undefined }),
+      maleRate: faker.number.int({ min: undefined, max: undefined }),
+      femaleRate: faker.number.int({ min: undefined, max: undefined }),
+    },
+  },
+  meta: {
+    ...{
+      totalMatings: faker.number.int({ min: undefined, max: undefined }),
+      totalLayings: faker.number.int({ min: undefined, max: undefined }),
+    },
+  },
+  monthlyStats: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      month: faker.number.int({ min: undefined, max: undefined }),
+      total: faker.number.int({ min: undefined, max: undefined }),
+      fertilized: faker.number.int({ min: undefined, max: undefined }),
+      unfertilized: faker.number.int({ min: undefined, max: undefined }),
+      dead: faker.number.int({ min: undefined, max: undefined }),
+      pending: faker.number.int({ min: undefined, max: undefined }),
+      hatched: faker.number.int({ min: undefined, max: undefined }),
+    })),
+    undefined,
+  ]),
+  fatherId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  motherId: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  ...overrideResponse,
+});
+
+export const getStatisticsControllerGetAdoptionStatisticsResponseMock = (
+  overrideResponse: Partial<AdoptionStatisticsDto> = {},
+): AdoptionStatisticsDto => ({
+  period: {
+    ...{
+      type: faker.helpers.arrayElement(["ALL", "SEASON", "YEAR_MONTH"] as const),
+      season: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+      year: faker.helpers.arrayElement([
+        faker.number.int({ min: undefined, max: undefined }),
+        undefined,
+      ]),
+      month: faker.helpers.arrayElement([
+        faker.number.int({ min: undefined, max: undefined }),
+        undefined,
+      ]),
+    },
+  },
+  totalCount: faker.number.int({ min: undefined, max: undefined }),
+  revenue: {
+    ...{
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+      minPrice: faker.number.int({ min: undefined, max: undefined }),
+      maxPrice: faker.number.int({ min: undefined, max: undefined }),
+    },
+  },
+  sex: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    key: faker.string.alpha(20),
+    count: faker.number.int({ min: undefined, max: undefined }),
+    rate: faker.number.int({ min: undefined, max: undefined }),
+    revenue: faker.number.int({ min: undefined, max: undefined }),
+    averagePrice: faker.number.int({ min: undefined, max: undefined }),
+  })),
+  morphs: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  traits: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  methods: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => ({
+      key: faker.string.alpha(20),
+      count: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      totalRevenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+    }),
+  ),
+  monthlyStats: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      count: faker.number.int({ min: undefined, max: undefined }),
+      revenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+      month: faker.number.int({ min: undefined, max: undefined }),
+    })),
+    undefined,
+  ]),
+  dayOfWeekStats: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      count: faker.number.int({ min: undefined, max: undefined }),
+      revenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+      dayOfWeek: faker.number.int({ min: undefined, max: undefined }),
+    })),
+    undefined,
+  ]),
+  customerAnalysis: faker.helpers.arrayElement([
+    {
+      ...{
+        totalCustomers: faker.number.int({ min: undefined, max: undefined }),
+        repeatCustomers: faker.number.int({ min: undefined, max: undefined }),
+        repeatRate: faker.number.int({ min: undefined, max: undefined }),
+        averagePurchaseCount: faker.number.int({ min: undefined, max: undefined }),
+        averageCustomerSpending: faker.number.int({ min: undefined, max: undefined }),
+        topCustomers: faker.helpers.arrayElement([
+          Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+            () => ({
+              userId: faker.string.alpha(20),
+              name: faker.string.alpha(20),
+              purchaseCount: faker.number.int({ min: undefined, max: undefined }),
+              totalSpending: faker.number.int({ min: undefined, max: undefined }),
+            }),
+          ),
+          undefined,
+        ]),
+        repeatCustomerList: faker.helpers.arrayElement([
+          Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+            () => ({
+              userId: faker.string.alpha(20),
+              name: faker.string.alpha(20),
+              purchaseCount: faker.number.int({ min: undefined, max: undefined }),
+              totalSpending: faker.number.int({ min: undefined, max: undefined }),
+            }),
+          ),
+          undefined,
+        ]),
+      },
+    },
+    undefined,
+  ]),
+  priceRangeStats: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      count: faker.number.int({ min: undefined, max: undefined }),
+      revenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+      label: faker.string.alpha(20),
+      minPrice: faker.number.int({ min: undefined, max: undefined }),
+      maxPrice: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      adoptionIds: Array.from(
+        { length: faker.number.int({ min: 1, max: 10 }) },
+        (_, i) => i + 1,
+      ).map(() => faker.string.alpha(20)),
+    })),
+    undefined,
+  ]),
+  ...overrideResponse,
+});
+
 export const getPetControllerFindAllMockHandler = (
   overrideResponse?:
     | PetControllerFindAll200
@@ -5262,6 +5504,52 @@ export const getPetImageControllerSavePetImagesMockHandler = (
     );
   });
 };
+
+export const getStatisticsControllerGetPairStatisticsMockHandler = (
+  overrideResponse?:
+    | ParentStatisticsDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<ParentStatisticsDto> | ParentStatisticsDto),
+) => {
+  return http.get("*/api/v1/statistics/pairs", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getStatisticsControllerGetPairStatisticsResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
+export const getStatisticsControllerGetAdoptionStatisticsMockHandler = (
+  overrideResponse?:
+    | AdoptionStatisticsDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<AdoptionStatisticsDto> | AdoptionStatisticsDto),
+) => {
+  return http.get("*/api/v1/statistics/adoptions", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getStatisticsControllerGetAdoptionStatisticsResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
 export const getProjectDaepaAPIMock = () => [
   getPetControllerFindAllMockHandler(),
   getPetControllerCreateMockHandler(),
@@ -5315,4 +5603,6 @@ export const getProjectDaepaAPIMock = () => [
   getPetImageControllerFindThumbnailMockHandler(),
   getPetImageControllerFindOneMockHandler(),
   getPetImageControllerSavePetImagesMockHandler(),
+  getStatisticsControllerGetPairStatisticsMockHandler(),
+  getStatisticsControllerGetAdoptionStatisticsMockHandler(),
 ];

@@ -8,11 +8,13 @@ import { useIsMobile } from "@/hooks/useMobile";
 interface HorizontalScrollSectionProps {
   children: ReactNode;
   className?: string;
+  gradientColor?: string;
 }
 
 export default function HorizontalScrollSection({
   children,
   className,
+  gradientColor = "from-gray-100",
 }: HorizontalScrollSectionProps) {
   const isMobile = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,12 @@ export default function HorizontalScrollSection({
       {/* 왼쪽 그라데이션 + 화살표 */}
       {canScrollLeft && (
         <>
-          <div className="pointer-events-none absolute left-0 top-0 z-[5] h-full w-12 bg-gradient-to-r from-gray-100 to-transparent" />
+          <div
+            className={cn(
+              "pointer-events-none absolute left-0 top-0 z-[5] h-full w-20 bg-gradient-to-r to-transparent",
+              gradientColor,
+            )}
+          />
           {!isMobile && (
             <button
               type="button"
@@ -89,7 +96,12 @@ export default function HorizontalScrollSection({
       {/* 오른쪽 그라데이션 + 화살표 */}
       {canScrollRight && (
         <>
-          <div className="pointer-events-none absolute right-0 top-0 z-[5] h-full w-12 bg-gradient-to-l from-gray-100 to-transparent" />
+          <div
+            className={cn(
+              "pointer-events-none absolute right-0 top-0 z-[5] h-full w-20 bg-gradient-to-l to-transparent",
+              gradientColor,
+            )}
+          />
           {!isMobile && (
             <button
               type="button"

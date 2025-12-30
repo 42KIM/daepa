@@ -3,6 +3,7 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AdoptionTable from "./components/AdoptionTable";
+import AdoptionDashboard from "./components/AdoptionDashboard";
 
 const AdoptionPage = () => {
   const router = useRouter();
@@ -30,7 +31,9 @@ const AdoptionPage = () => {
         <TabsContent value="list">
           <AdoptionTable />
         </TabsContent>
-        <TabsContent value="dashboard">{/* <AdoptionDashboard data={data} /> */}</TabsContent>
+        <TabsContent value="dashboard">
+          <AdoptionDashboard />
+        </TabsContent>
       </Tabs>
     </div>
   );

@@ -241,3 +241,11 @@ export function getChangedFields<
 
   return changedFields as Result;
 }
+
+// 가격 포맷터
+export const formatPrice = (price: number): string => {
+  if (price >= 10000) {
+    return `${Math.round(price / 10000).toLocaleString()}만원`;
+  }
+  return `${price.toLocaleString()}원`;
+};

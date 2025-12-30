@@ -11,7 +11,7 @@ import type { UserProfilePublicDto } from "./userProfilePublicDto";
 import type { PetSummaryAdoptionDto } from "./petSummaryAdoptionDto";
 
 export interface AdoptionDto {
-  /** 분양 ID */
+  /** 분양정보 ID */
   adoptionId: string;
   /** 펫 ID */
   petId: string;

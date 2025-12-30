@@ -2,9 +2,9 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import PairList from "./components/PairList";
-import Dashboard from "./components/Dashboard";
 import MonthlyCalendar from "./components/MonthlyCalendar";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import PairStatisticsDashboard from "./components/PairStatisticsDashboard";
 
 const HatchingPage = () => {
   const router = useRouter();
@@ -22,7 +22,7 @@ const HatchingPage = () => {
           params.set("tab", v);
           router.replace(`${pathname}?${params.toString()}`);
         }}
-        className="flex flex-col gap-4"
+        className="flex flex-col"
       >
         <TabsList>
           <TabsTrigger value="pair">페어 리스트</TabsTrigger>
@@ -37,7 +37,7 @@ const HatchingPage = () => {
           <MonthlyCalendar />
         </TabsContent>
         <TabsContent value="dashboard">
-          <Dashboard />
+          <PairStatisticsDashboard />
         </TabsContent>
       </Tabs>
     </div>
