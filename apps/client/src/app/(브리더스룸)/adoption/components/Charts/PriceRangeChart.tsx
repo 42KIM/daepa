@@ -65,7 +65,12 @@ const PriceRangeChart = ({ data, onRangeClick }: PriceRangeChartProps) => {
             tickLine={false}
             axisLine={false}
           />
-          <YAxis tick={{ fontSize: 12, fontWeight: 600 }} tickLine={false} axisLine={false} />
+          <YAxis
+            tick={{ fontSize: 12, fontWeight: 600 }}
+            tickLine={false}
+            axisLine={false}
+            allowDecimals={false}
+          />
           <ChartTooltip
             content={
               <ChartTooltipContent
