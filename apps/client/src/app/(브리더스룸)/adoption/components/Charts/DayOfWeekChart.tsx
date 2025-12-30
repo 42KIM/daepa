@@ -51,7 +51,12 @@ const DayOfWeekChart = ({ data }: DayOfWeekChartProps) => {
             tickLine={false}
             axisLine={false}
           />
-          <YAxis tick={{ fontSize: 12, fontWeight: 600 }} tickLine={false} axisLine={false} />
+          <YAxis
+            tick={{ fontSize: 12, fontWeight: 600 }}
+            tickLine={false}
+            axisLine={false}
+            allowDecimals={false}
+          />
           <ChartTooltip
             content={<ChartTooltipContent />}
             formatter={(value, name) => {
