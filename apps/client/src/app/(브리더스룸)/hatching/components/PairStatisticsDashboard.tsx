@@ -56,12 +56,14 @@ const MONTH_OPTIONS: CustomSelectOption[] = [
 ];
 
 const PairStatisticsDashboard = memo(() => {
+  const currentYear = String(new Date().getFullYear());
+
   const [species, setSpecies] = useState<PairControllerGetPairListSpecies>(
     PairControllerGetPairListSpecies.CR,
   );
   const [father, setFather] = useState<PetParentDto | undefined>(undefined);
   const [mother, setMother] = useState<PetParentDto | undefined>(undefined);
-  const [selectedYear, setSelectedYear] = useState<string>("2025");
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
 
   const yearOptions = useMemo(() => generateYearOptions(), []);
@@ -247,13 +249,18 @@ const PairStatisticsDashboard = memo(() => {
         <div>
           {/* 메타 정보 */}
           <div
-            className="my-4 grid grid-cols-2 rounded-2xl p-4 sm:grid-cols-4"
+            className="my-4 grid grid-cols-2 rounded-2xl p-4 sm:grid-cols-3 lg:grid-cols-5"
             style={{
               background:
                 "linear-gradient(90deg, rgba(182, 210, 247, .25), rgba(245, 223, 255, .25))",
             }}
           >
-            <StatCard label="총 알" value={statistics.egg.total} />
+            <StatCard label="산란된 알" value={statistics.egg.total} />
+            <StatCard
+              label="인큐베이팅 중"
+              value={statistics.egg.fertilized}
+              valueClassName="text-[#3b82f6]"
+            />
             <StatCard
               label="유정란 비율"
               value={`${statistics.egg.fertilizedRate.toFixed(1)}%`}
@@ -264,10 +271,8 @@ const PairStatisticsDashboard = memo(() => {
               value={`${statistics.egg.hatchingRate.toFixed(1)}%`}
               valueClassName="text-[#1b9648ff]"
             />
-            <StatCard
-              label="메이팅 / 산란"
-              value={`${statistics.meta.totalMatings} / ${statistics.meta.totalLayings}`}
-            />
+            <StatCard label="메이팅 횟수" value={statistics.meta.totalMatings} />
+            <StatCard label="산란 횟수" value={statistics.meta.totalLayings} />
           </div>
 
           {/* 월별 통계 차트 (연도만 선택된 경우) */}

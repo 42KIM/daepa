@@ -42,8 +42,6 @@ interface SiblingPetCardProps {
   price?: number;
   /** 분양일 표시 */
   adoptionDate?: string;
-  /** 클릭 시 콜백 (Link 대신 사용) */
-  onClick?: () => void;
   /** 카드 너비 (vertical 모드) */
   width?: number;
 }
@@ -78,7 +76,6 @@ export default function SiblingPetCard({
   variant = "vertical",
   price,
   adoptionDate,
-  onClick,
   width = 160,
 }: SiblingPetCardProps) {
   const { user } = useUserStore();
@@ -279,15 +276,6 @@ export default function SiblingPetCard({
         </div>
       </div>
     );
-
-  // onClick이 있으면 div로, 없으면 Link로 래핑
-  if (onClick) {
-    return (
-      <div onClick={onClick} className="cursor-pointer">
-        {cardContent}
-      </div>
-    );
-  }
 
   return (
     <Link href={`/pet/${pet.petId}`} className={cn(isDeleted && "pointer-events-none")}>

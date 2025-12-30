@@ -328,7 +328,9 @@ export class StatisticsService {
     const total = pets.length;
 
     const fertilized = pets.filter(
-      (p) => p.eggDetail?.status === EGG_STATUS.FERTILIZED,
+      (p) =>
+        p.eggDetail?.status === EGG_STATUS.FERTILIZED ||
+        p.eggDetail?.status === EGG_STATUS.HATCHED,
     ).length;
 
     const unfertilized = pets.filter(
@@ -499,23 +501,27 @@ export class StatisticsService {
   }
 
   /**
-   * 연도/월 기준 날짜 범위 계산
+   * 연도/월 기준 날짜 범위 계산 (문자열 YYYY-MM-DD 형식)
+   * timezone 문제 방지를 위해 문자열로 반환
    */
   private getYearMonthDateRange(
     year: number,
     month?: number,
-  ): { start: Date; end: Date } {
+  ): { start: string; end: string } {
     if (month) {
       // 특정 월 선택 시: 해당 월의 1일부터 말일까지
-      const start = new Date(year, month - 1, 1);
-      const end = new Date(year, month, 0); // 다음 달 0일 = 해당 월 말일
-      return { start, end };
+      const lastDay = new Date(year, month, 0).getDate(); // 해당 월의 마지막 날
+      const monthStr = String(month).padStart(2, '0');
+      return {
+        start: `${year}-${monthStr}-01`,
+        end: `${year}-${monthStr}-${String(lastDay).padStart(2, '0')}`,
+      };
     }
 
     // 연도만 선택 시: 해당 연도 1월 1일부터 12월 31일까지
     return {
-      start: new Date(year, 0, 1),
-      end: new Date(year, 11, 31),
+      start: `${year}-01-01`,
+      end: `${year}-12-31`,
     };
   }
 

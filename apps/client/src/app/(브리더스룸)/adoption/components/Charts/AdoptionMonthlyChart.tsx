@@ -49,7 +49,7 @@ const AdoptionMonthlyChart = ({ data }: AdoptionMonthlyChartProps) => {
   if (!hasData) return null;
 
   const chartData = data.map((item) => ({
-    name: MONTH_NAMES[item.month - 1],
+    name: item.month >= 1 && item.month <= 12 ? MONTH_NAMES[item.month - 1] : "-",
     분양수: item.count,
     수익: item.revenue,
     평균분양가: item.averagePrice,

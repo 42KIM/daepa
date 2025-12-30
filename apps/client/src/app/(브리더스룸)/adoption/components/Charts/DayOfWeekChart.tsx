@@ -29,7 +29,7 @@ const DayOfWeekChart = ({ data }: DayOfWeekChartProps) => {
   if (!hasData) return null;
 
   const chartData = data.map((item) => ({
-    name: DAY_NAMES[item.dayOfWeek],
+    name: DAY_NAMES[item.dayOfWeek] ?? "-",
     분양수: item.count,
     수익: item.revenue,
     평균분양가: item.averagePrice,

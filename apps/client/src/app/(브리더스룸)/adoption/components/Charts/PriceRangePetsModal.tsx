@@ -8,6 +8,7 @@ import {
   brAdoptionControllerGetAllAdoptions,
   PriceRangeItemDto,
   BrAdoptionControllerGetAllAdoptionsStatus,
+  BrAdoptionControllerGetAllAdoptionsSpecies,
 } from "@repo/api-client";
 import { formatPrice } from "@/lib/utils";
 import Loading from "@/components/common/Loading";
@@ -19,7 +20,7 @@ interface PriceRangePetsModalProps {
   isOpen: boolean;
   onClose: () => void;
   priceRange: PriceRangeItemDto | null;
-  species?: string;
+  species?: BrAdoptionControllerGetAllAdoptionsSpecies;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -40,7 +41,7 @@ const PriceRangePetsModal = ({
         itemPerPage: ITEMS_PER_PAGE,
         minPrice: priceRange?.minPrice,
         maxPrice: priceRange?.maxPrice === -1 ? undefined : priceRange?.maxPrice,
-        species: species as never,
+        species,
         status: BrAdoptionControllerGetAllAdoptionsStatus.SOLD,
         order: "DESC",
       }),
