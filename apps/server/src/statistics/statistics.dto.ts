@@ -318,8 +318,8 @@ class StatisticsQueryBaseDto {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  species?: string;
+  @IsEnum(PET_SPECIES)
+  species?: PET_SPECIES;
 
   @ApiProperty({
     description: '부 개체 ID',
