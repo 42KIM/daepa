@@ -1,7 +1,5 @@
 import {
   adoptionControllerUpdate,
-  adoptionControllerCreateAdoption,
-  CreateAdoptionDto,
   PetAdoptionDto,
   PetAdoptionDtoStatus,
   UpdateAdoptionDto,
@@ -13,7 +11,6 @@ import { AxiosError } from "axios";
 import FormItem from "./FormItem";
 import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePetStore } from "@/app/(브리더스룸)/pet/store/pet";
 import { useAdoptionStore } from "@/app/(브리더스룸)/pet/store/adoption";
 import { cn, getChangedFields } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,8 +23,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Loading from "@/components/common/Loading";
-import { useRouter } from "next/navigation";
 import { useIsMyPet } from "@/hooks/useIsMyPet";
+import { useRouter } from "next/navigation";
 
 interface AdoptionInfoProps {
   petId: string;
@@ -36,11 +33,10 @@ interface AdoptionInfoProps {
 
 const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
   const router = useRouter();
-
-  const { formData, setFormData } = usePetStore();
   const { setAdoption } = useAdoptionStore();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [adoptionData, setAdoptionData] = useState<Partial<PetAdoptionDto>>({});
 
   const isViewingMyPet = useIsMyPet(ownerId);
 
@@ -50,11 +46,6 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
     enabled: !!petId,
     select: (response) => response.data.data,
   });
-
-  const adoptionData = useMemo<Partial<PetAdoptionDto>>(
-    () => formData?.adoption ?? {},
-    [formData?.adoption],
-  );
 
   useEffect(() => {
     if (adoption) {
@@ -69,10 +60,6 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
   const { mutateAsync: updateAdoption } = useMutation({
     mutationFn: ({ adoptionId, data }: { adoptionId: string; data: UpdateAdoptionDto }) =>
       adoptionControllerUpdate(adoptionId, data),
-  });
-
-  const { mutateAsync: createAdoption } = useMutation({
-    mutationFn: (data: CreateAdoptionDto) => adoptionControllerCreateAdoption(data),
   });
 
   // 변경된 필드 추출을 위한 설정
@@ -108,27 +95,24 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
         delete changedFields["buyer"];
       }
 
-      return changedFields as UpdateAdoptionDto;
+      return changedFields;
     },
     [],
   );
 
   const resetAdoption = useCallback(() => {
     if (isNil(adoption)) {
-      setFormData((prev) => ({
-        ...prev,
-        adoption: {
-          status: PetAdoptionDtoStatus.ON_SALE,
-          method: PetAdoptionDtoMethod.PICKUP,
-          price: 0,
-          adoptionDate: new Date().toISOString(),
-          memo: "",
-        },
-      }));
+      setAdoptionData({
+        status: PetAdoptionDtoStatus.ON_SALE,
+        method: PetAdoptionDtoMethod.PICKUP,
+        price: 0,
+        adoptionDate: new Date().toISOString(),
+        memo: "",
+      });
     } else {
-      setFormData((prev) => ({ ...prev, adoption }));
+      setAdoptionData(adoption);
     }
-  }, [adoption, setFormData]);
+  }, [adoption]);
 
   useEffect(() => {
     resetAdoption();
@@ -140,104 +124,87 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
       return;
     }
 
-    const adoptionId = adoptionData?.adoptionId;
+    const adoptionId = adoptionData.adoptionId;
+    if (!adoptionId) return toast.error("분양할 수 없는 개체입니다. 관리자에게 문의해 주세요.");
 
     try {
       setIsProcessing(true);
 
-      if (adoptionId) {
-        // 업데이트 경우: 변경된 필드만 추출
-        const changedFields = getChangedFieldsForAdoption(adoption, adoptionData);
+      // 업데이트 경우: 변경된 필드만 추출
+      const changedFields = getChangedFieldsForAdoption(adoption, adoptionData);
 
-        // 변경사항이 없으면 API 호출하지 않음
-        if (Object.keys(changedFields).length === 0) {
-          toast.info("변경된 사항이 없습니다.");
-          setIsEditMode(false);
+      // 변경사항이 없으면 API 호출하지 않음
+      if (Object.keys(changedFields).length === 0) {
+        toast.info("변경된 사항이 없습니다.");
+        setIsEditMode(false);
+        return;
+      }
+
+      if (adoptionData.status === PetAdoptionDtoStatus.SOLD) {
+        // 판매완료 확인 모달
+        const confirmed = await new Promise<boolean>((resolve) => {
+          overlay.open(({ isOpen, close }) => (
+            <Dialog
+              open={isOpen}
+              onOpenChange={() => {
+                resolve(false);
+                close();
+              }}
+            >
+              <DialogContent className="rounded-3xl p-6">
+                <DialogTitle className="text-sm font-semibold text-red-500">주의!</DialogTitle>
+                <div className="flex flex-col py-2 text-gray-600">
+                  <span className={"font-semibold"}>정말 분양완료 처리하시겠습니까?</span>
+                  <span className={"text-sm"}>
+                    - 분양완료 후에는 개체의 소유권이 완전히 이전됩니다.
+                  </span>
+                  <span className={"text-sm"}>
+                    - 더이상 개체 정보를 수정하거나 삭제할 수 없습니다.
+                  </span>
+                  <span className={"text-sm text-red-500 underline"}>
+                    - 이 펫과 관련된 처리되지 않은 부모 요청이 있는 경우, 완료 처리가 불가능합니다.
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1"
+                    variant="outline"
+                    onClick={() => {
+                      resolve(false);
+                      close();
+                    }}
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    className="flex-1 bg-red-600 hover:bg-red-700"
+                    onClick={() => {
+                      resolve(true);
+                      close();
+                    }}
+                  >
+                    확인
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          ));
+        });
+
+        if (!confirmed) {
+          setIsProcessing(false);
           return;
         }
-
-        if (adoptionData.status === PetAdoptionDtoStatus.SOLD) {
-          // 판매완료 확인 모달
-          const confirmed = await new Promise<boolean>((resolve) => {
-            overlay.open(({ isOpen, close }) => (
-              <Dialog
-                open={isOpen}
-                onOpenChange={() => {
-                  resolve(false);
-                  close();
-                }}
-              >
-                <DialogContent className="rounded-3xl p-6">
-                  <DialogTitle className="text-sm font-semibold text-red-500">주의!</DialogTitle>
-                  <div className="flex flex-col py-2 text-gray-600">
-                    <span className={"font-semibold"}>정말 분양완료 처리하시겠습니까?</span>
-                    <span className={"text-sm"}>
-                      - 분양완료 후에는 개체의 소유권이 완전히 이전됩니다.
-                    </span>
-                    <span className={"text-sm"}>
-                      - 더이상 개체 정보를 수정하거나 삭제할 수 없습니다.
-                    </span>
-                    <span className={"text-sm text-red-500 underline"}>
-                      - 이 펫과 관련된 처리되지 않은 부모 요청이 있는 경우, 완료 처리가
-                      불가능합니다.
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      className="flex-1"
-                      variant="outline"
-                      onClick={() => {
-                        resolve(false);
-                        close();
-                      }}
-                    >
-                      취소
-                    </Button>
-                    <Button
-                      className="flex-1 bg-red-600 hover:bg-red-700"
-                      onClick={() => {
-                        resolve(true);
-                        close();
-                      }}
-                    >
-                      확인
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ));
-          });
-
-          if (!confirmed) {
-            setIsProcessing(false);
-            return;
-          }
-        }
-
-        await updateAdoption({ adoptionId, data: changedFields });
-      } else {
-        // 생성 경우: 모든 필드 포함
-        const newAdoptionDto = omitBy(
-          {
-            petId,
-            price: adoptionData.price ? Number(adoptionData.price) : undefined,
-            adoptionDate: adoptionData.adoptionDate,
-            memo: adoptionData.memo,
-            method: adoptionData.method,
-            buyerId: adoptionData.buyer?.userId,
-            status: adoptionData.status,
-          },
-          isUndefined,
-        );
-        await createAdoption({ ...newAdoptionDto, petId });
       }
+
+      await updateAdoption({ adoptionId, data: changedFields });
 
       setIsEditMode(false);
 
       // 판매완료인 경우, 더 이상 본인 펫이 아님
       if (adoptionData.status === PetAdoptionDtoStatus.SOLD) {
-        toast.success("분양 완료! 분양룸으로 이동합니다.");
-        void router.replace("/adoption");
+        toast.success("분양이 성공적으로 완료되었습니다!");
+        router.replace("/pet");
       } else {
         await refetch();
         toast.success("분양 정보가 성공적으로 업데이트되었습니다.");
@@ -255,16 +222,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [
-    updateAdoption,
-    createAdoption,
-    adoptionData,
-    petId,
-    refetch,
-    router,
-    adoption,
-    getChangedFieldsForAdoption,
-  ]);
+  }, [updateAdoption, adoptionData, petId, refetch, router, adoption, getChangedFieldsForAdoption]);
 
   const handleSelectBuyer = useCallback(() => {
     if (!isEditMode) return;
@@ -278,9 +236,9 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
           <UserList
             selectedUserId={adoptionData.buyer?.userId}
             onSelect={(user) => {
-              setFormData((prev) => ({
+              setAdoptionData((prev) => ({
                 ...prev,
-                adoption: { ...(prev.adoption ?? {}), buyer: user },
+                buyer: user,
               }));
               close();
             }}
@@ -288,7 +246,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
         </DialogContent>
       </Dialog>
     ));
-  }, [adoptionData.buyer?.userId, setFormData, isEditMode]);
+  }, [adoptionData.buyer?.userId, isEditMode]);
 
   const showAdoptionInfo = useMemo(() => {
     return !(isNil(adoption) && !isEditMode);
@@ -300,6 +258,8 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
       adoptionData.status === PetAdoptionDtoStatus.SOLD
     );
   }, [adoptionData.status]);
+
+  if (!adoption?.adoptionId) return null;
 
   return (
     <div className="shadow-xs flex flex-1 flex-col gap-2 rounded-2xl bg-white p-3">
@@ -325,21 +285,16 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   !isEditMode && isNil(adoption) ? undefined : (adoptionData.status ?? "NONE")
                 }
                 onSelect={(item) => {
-                  setFormData((prev) => {
+                  setAdoptionData((prev) => {
                     const nextStatus = item as PetAdoptionDtoStatus;
                     const isNextStatusReservedOrSold =
                       nextStatus === PetAdoptionDtoStatus.ON_RESERVATION ||
                       nextStatus === PetAdoptionDtoStatus.SOLD;
                     return {
                       ...prev,
-                      adoption: {
-                        ...(prev.adoption ?? {}),
-                        status: nextStatus,
-                        buyer: isNextStatusReservedOrSold ? prev.adoption?.buyer : undefined,
-                        adoptionDate: isNextStatusReservedOrSold
-                          ? prev.adoption?.adoptionDate
-                          : undefined,
-                      },
+                      status: nextStatus,
+                      buyer: isNextStatusReservedOrSold ? prev.buyer : undefined,
+                      adoptionDate: isNextStatusReservedOrSold ? prev.adoptionDate : undefined,
                     };
                   });
                 }}
@@ -362,12 +317,9 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                       : "-"
                 }
                 setValue={(value) => {
-                  setFormData((prev) => ({
+                  setAdoptionData((prev) => ({
                     ...prev,
-                    adoption: {
-                      ...(prev.adoption ?? {}),
-                      price: value.value === "" ? undefined : Number(value.value),
-                    },
+                    price: value.value === "" ? undefined : Number(value.value),
                   }));
                 }}
                 inputClassName={cn(
@@ -389,9 +341,9 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   editable={isEditMode && isAdoptionReservedOrSold}
                   value={adoptionData.adoptionDate}
                   onSelect={(date) => {
-                    setFormData((prev) => ({
+                    setAdoptionData((prev) => ({
                       ...prev,
-                      adoption: { ...(prev.adoption ?? {}), adoptionDate: date?.toISOString() },
+                      adoptionDate: date?.toISOString(),
                     }));
                   }}
                 />
@@ -453,12 +405,9 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   !isEditMode && isNil(adoption) ? undefined : (adoptionData.method ?? "NONE")
                 }
                 onSelect={(item) => {
-                  setFormData((prev) => ({
+                  setAdoptionData((prev) => ({
                     ...prev,
-                    adoption: {
-                      ...(prev.adoption ?? {}),
-                      method: item as PetAdoptionDtoMethod,
-                    },
+                    method: item,
                   }));
                 }}
               />
@@ -474,9 +423,9 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   value={String(adoptionData.memo || "")}
                   maxLength={500}
                   onChange={(e) =>
-                    setFormData((prev) => ({
+                    setAdoptionData((prev) => ({
                       ...prev,
-                      adoption: { ...(prev.adoption ?? {}), memo: e.target.value },
+                      memo: e.target.value,
                     }))
                   }
                   disabled={!isEditMode}
