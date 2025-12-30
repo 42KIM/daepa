@@ -337,7 +337,7 @@ const AdoptionDashboard = memo(() => {
             <StatCard
               label="총 수익"
               value={formatPrice(statistics.revenue.totalRevenue)}
-              valueClassName="text-[#10b981]"
+              valueClassName="text-red-600"
             />
             <StatCard
               label="평균 분양가"

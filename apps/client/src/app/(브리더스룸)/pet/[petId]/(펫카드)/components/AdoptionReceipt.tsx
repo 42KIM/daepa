@@ -138,7 +138,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
             style={{ animationDelay: "0.8s" }}
           >
             <span className="text-sm text-gray-600 dark:text-gray-400">분양 가격</span>
-            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+            <span className="text-sm font-bold text-red-600 dark:text-gray-200">
               {isNotNil(adoption?.price) ? `${adoption.price.toLocaleString()}원` : "-"}
             </span>
           </div>
