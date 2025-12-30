@@ -386,7 +386,7 @@ const AdoptionDashboard = memo(() => {
                     }}
                   >
                     <span className="text-center text-[14px] font-[500] text-gray-900">
-                      막대를 클릭하면 해당 가격대의 분양 목록을 확인할 수 있습니다.
+                      막대 차트를 클릭하면 해당 가격대의 분양 개체 목록을 확인할 수 있습니다.
                     </span>
                     <div className="mt-1 flex gap-1 text-[13px] text-red-500">
                       <AlertCircle size={15} />

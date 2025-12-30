@@ -83,7 +83,7 @@ const PriceRangePetsModal = ({
           }}
         >
           <div className="text-center">
-            <p className="text-sm text-gray-500">총 수익</p>
+            <p className="text-sm text-gray-500">합계</p>
             <p className="text-lg font-bold text-emerald-600">{formatPrice(priceRange.revenue)}</p>
           </div>
           <div className="text-center">
