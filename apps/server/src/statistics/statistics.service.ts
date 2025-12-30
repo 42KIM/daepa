@@ -1020,11 +1020,14 @@ export class StatisticsService {
   ): PriceRangeItemDto[] {
     // 가격대 정의 (단위: 원)
     const priceRanges = [
-      { label: '10만원 이하', minPrice: 0, maxPrice: 100000 },
-      { label: '10-30만원', minPrice: 100001, maxPrice: 300000 },
-      { label: '30-50만원', minPrice: 300001, maxPrice: 500000 },
-      { label: '50-100만원', minPrice: 500001, maxPrice: 1000000 },
-      { label: '100만원 이상', minPrice: 1000001, maxPrice: Infinity },
+      { label: '10만원 미만', minPrice: 0, maxPrice: 100000 },
+      { label: '10-30만원', minPrice: 100000, maxPrice: 300000 },
+      { label: '30-60만원', minPrice: 300000, maxPrice: 600000 },
+      { label: '60-100만원', minPrice: 600000, maxPrice: 1000000 },
+      { label: '100-200만원', minPrice: 1000000, maxPrice: 2000000 },
+      { label: '200-400만원', minPrice: 2000000, maxPrice: 4000000 },
+      { label: '400-1000만원', minPrice: 4000000, maxPrice: 10000000 },
+      { label: '1000만원 이상', minPrice: 10000000, maxPrice: Infinity },
     ];
 
     const total = adoptions.length;
@@ -1033,7 +1036,7 @@ export class StatisticsService {
       .map(({ label, minPrice, maxPrice }) => {
         const filtered = adoptions.filter((a) => {
           const price = a.price ?? -1;
-          return price >= minPrice && price <= maxPrice;
+          return price >= minPrice && price < maxPrice;
         });
 
         const count = filtered.length;
