@@ -970,13 +970,12 @@ export class StatisticsService {
       .sort((a, b) => b.totalSpending - a.totalSpending)
       .slice(0, 10);
 
-    // 재구매 고객 목록 (2회 이상 구매, 구매횟수 순, 최대 10명)
+    // 재구매 고객 목록 (2회 이상 구매, 구매횟수 순)
     const repeatCustomerList = allCustomerDetails
       .filter((c) => c.purchaseCount >= 2)
-      .sort((a, b) => b.purchaseCount - a.purchaseCount)
-      .slice(0, 10);
+      .sort((a, b) => b.purchaseCount - a.purchaseCount);
 
-    // 재구매 고객 수
+    // 전체 재구매 고객 수
     const repeatCustomersCount = repeatCustomerList.length;
 
     // 고객당 평균 구매 횟수
@@ -1001,7 +1000,7 @@ export class StatisticsService {
       averagePurchaseCount,
       averageCustomerSpending,
       topCustomers,
-      repeatCustomerList,
+      repeatCustomerList: repeatCustomerList.slice(0, 10), // 최대 10명
     });
   }
 

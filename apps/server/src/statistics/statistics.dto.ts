@@ -511,7 +511,7 @@ export class CustomerAnalysisDto {
   averageCustomerSpending: number;
 
   @ApiProperty({
-    description: '상위 고객 목록 (구매금액 순)',
+    description: 'top 10 상위 고객 목록 (구매금액 순)',
     type: [CustomerDetailDto],
     required: false,
   })
@@ -522,7 +522,7 @@ export class CustomerAnalysisDto {
   topCustomers?: CustomerDetailDto[];
 
   @ApiProperty({
-    description: '재구매 고객 목록',
+    description: 'top 10 재구매 고객 목록',
     type: [CustomerDetailDto],
     required: false,
   })
