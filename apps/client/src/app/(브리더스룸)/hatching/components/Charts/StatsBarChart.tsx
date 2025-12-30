@@ -25,10 +25,14 @@ const StatsBarChart = ({
   minHeight = 200,
   mode = "count",
 }: StatsBarChartProps) => {
-  if (data.length === 0) return null;
+  // revenue 모드에서 totalRevenue가 0인 항목 제외
+  const filteredData =
+    mode === "revenue" ? data.filter((item) => item.totalRevenue && item.totalRevenue > 0) : data;
+
+  if (filteredData.length === 0) return null;
 
   // 데이터 길이에 따라 높이 계산
-  const calculatedHeight = Math.max(data.length * itemHeight, minHeight);
+  const calculatedHeight = Math.max(filteredData.length * itemHeight, minHeight);
 
   const dataKey = mode === "revenue" ? "totalRevenue" : "count";
   const label = mode === "revenue" ? "분양가" : "개수";
@@ -36,13 +40,13 @@ const StatsBarChart = ({
   return (
     <ChartContainer
       config={{
-        [dataKey]: { label, color: data[0]?.fill ?? "#3b82f6" },
+        [dataKey]: { label, color: filteredData[0]?.fill ?? "#3b82f6" },
       }}
       className="w-full"
       style={{ height: calculatedHeight }}
     >
       <BarChart
-        data={data}
+        data={filteredData}
         layout="vertical"
         margin={{ top: 20, right: mode === "revenue" ? 50 : 20 }}
       >
@@ -80,7 +84,7 @@ const StatsBarChart = ({
           }}
         />
         <Bar dataKey={dataKey} radius={[12, 12, 12, 12]}>
-          {data.map((entry, index) => (
+          {filteredData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.fill} />
           ))}
           <LabelList
