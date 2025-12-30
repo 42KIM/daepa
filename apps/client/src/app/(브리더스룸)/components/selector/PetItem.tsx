@@ -31,9 +31,11 @@ const PetItem = ({
           <PetThumbnail petId={item.petId} alt={item.name} maxSize={90} />
         </div>
         <div className="flex w-full flex-col gap-1">
-          <span className="relative text-center font-semibold after:absolute after:-bottom-[1px] after:left-1 after:h-[12px] after:w-full after:bg-transparent after:opacity-40 after:content-[''] group-hover:after:bg-[#247DFE]">
-            {item.name}
-          </span>
+          <div className="text-center">
+            <span className="relative text-center font-semibold after:absolute after:-bottom-[1px] after:left-1 after:h-[12px] after:w-full after:bg-transparent after:opacity-40 after:content-[''] group-hover:after:bg-[#247DFE]">
+              {item.name}
+            </span>
+          </div>
 
           <BadgeList items={item.morphs} />
           <BadgeList items={item.traits} variant="outline" badgeClassName="bg-white text-black" />
