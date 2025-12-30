@@ -8,6 +8,8 @@ import { PetEntity } from 'src/pet/pet.entity';
 import { EggDetailEntity } from 'src/egg_detail/egg_detail.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
 import { AdoptionEntity } from 'src/adoption/adoption.entity';
+import { PetRelationEntity } from 'src/pet_relation/pet_relation.entity';
+import { UserEntity } from 'src/user/user.entity';
 import { EGG_STATUS } from 'src/egg_detail/egg_detail.constants';
 import { ADOPTION_SALE_STATUS, PET_SEX } from 'src/pet/pet.constants';
 import {
@@ -26,6 +28,7 @@ import {
   AdoptionSexItemDto,
   AdoptionDayOfWeekItemDto,
   CustomerAnalysisDto,
+  PriceRangeItemDto,
   ParentStatisticsQueryDto,
 } from './statistics.dto';
 
@@ -528,6 +531,8 @@ export class StatisticsService {
     species?: string,
     year?: number,
     month?: number,
+    fatherId?: string,
+    motherId?: string,
   ): Promise<AdoptionStatisticsDto> {
     // 1) 분양 완료된 데이터 조회
     let query = this.dataSource
@@ -543,6 +548,11 @@ export class StatisticsService {
         PetDetailEntity,
         'petDetail',
         'petDetail.petId = adoption.petId',
+      )
+      .leftJoin(
+        PetRelationEntity,
+        'petRelation',
+        'petRelation.petId = adoption.petId',
       )
       .where('adoption.sellerId = :userId', { userId })
       .andWhere('adoption.status = :status', {
@@ -573,6 +583,14 @@ export class StatisticsService {
       });
     }
 
+    // 부모 개체 필터링 (pet_relations 테이블 사용)
+    if (fatherId) {
+      query = query.andWhere('petRelation.fatherId = :fatherId', { fatherId });
+    }
+    if (motherId) {
+      query = query.andWhere('petRelation.motherId = :motherId', { motherId });
+    }
+
     const adoptions = await query.getMany();
 
     if (adoptions.length === 0) {
@@ -580,17 +598,17 @@ export class StatisticsService {
     }
 
     // 2) 통계 계산
-    return this.buildAdoptionStatistics(adoptions, year, month);
+    return await this.buildAdoptionStatistics(adoptions, year, month);
   }
 
   /**
    * 분양 통계 데이터 생성
    */
-  private buildAdoptionStatistics(
+  private async buildAdoptionStatistics(
     adoptions: AdoptionEntity[],
     year?: number,
     month?: number,
-  ): AdoptionStatisticsDto {
+  ): Promise<AdoptionStatisticsDto> {
     const period = this.buildPeriod(year, month);
     const totalCount = adoptions.length;
 
@@ -626,7 +644,10 @@ export class StatisticsService {
     const dayOfWeekStats = this.buildDayOfWeekStatistics(adoptions);
 
     // 고객 분석
-    const customerAnalysis = this.buildCustomerAnalysis(adoptions);
+    const customerAnalysis = await this.buildCustomerAnalysis(adoptions);
+
+    // 가격대별 통계
+    const priceRangeStats = this.buildPriceRangeStatistics(adoptions);
 
     return plainToInstance(AdoptionStatisticsDto, {
       period,
@@ -639,6 +660,7 @@ export class StatisticsService {
       monthlyStats,
       dayOfWeekStats,
       customerAnalysis,
+      priceRangeStats,
     });
   }
 
@@ -872,9 +894,9 @@ export class StatisticsService {
   /**
    * 고객 분석 통계 생성
    */
-  private buildCustomerAnalysis(
+  private async buildCustomerAnalysis(
     adoptions: AdoptionEntity[],
-  ): CustomerAnalysisDto {
+  ): Promise<CustomerAnalysisDto> {
     // buyerId별 구매 횟수와 총 금액 집계
     const customerStats = new Map<
       string,
@@ -883,10 +905,6 @@ export class StatisticsService {
 
     for (const adoption of adoptions) {
       const buyerId = adoption.buyerId;
-      console.log(
-        '🚀 ~ StatisticsService ~ buildCustomerAnalysis ~ buyerId:',
-        buyerId,
-      );
       if (buyerId) {
         const current = customerStats.get(buyerId) || {
           purchaseCount: 0,
@@ -908,18 +926,57 @@ export class StatisticsService {
         loyalCustomers: 0,
         averagePurchaseCount: 0,
         averageCustomerSpending: 0,
+        topCustomers: [],
+        repeatCustomerList: [],
+        loyalCustomerList: [],
       });
     }
 
-    // 재구매 고객 (2회 이상 구매)
-    const repeatCustomers = Array.from(customerStats.values()).filter(
-      (c) => c.purchaseCount >= 2,
-    ).length;
+    // 고객 ID 목록 추출
+    const buyerIds = Array.from(customerStats.keys());
 
-    // 단골 고객 (3회 이상 구매)
-    const loyalCustomers = Array.from(customerStats.values()).filter(
-      (c) => c.purchaseCount >= 3,
-    ).length;
+    // 사용자 이름 조회
+    const users = await this.dataSource
+      .createQueryBuilder(UserEntity, 'user')
+      .where('user.userId IN (:...buyerIds)', { buyerIds })
+      .select(['user.userId', 'user.name'])
+      .getMany();
+
+    const userNameMap = new Map<string, string>();
+    for (const user of users) {
+      userNameMap.set(user.userId, user.name);
+    }
+
+    // 고객 상세 정보 배열 생성
+    const allCustomerDetails = Array.from(customerStats.entries()).map(
+      ([visitorId, stats]) => ({
+        userId: visitorId,
+        name: userNameMap.get(visitorId) ?? '알 수 없음',
+        purchaseCount: stats.purchaseCount,
+        totalSpending: stats.totalSpending,
+      }),
+    );
+
+    // 상위 고객 (구매금액 순, 최대 10명)
+    const topCustomers = [...allCustomerDetails]
+      .sort((a, b) => b.totalSpending - a.totalSpending)
+      .slice(0, 10);
+
+    // 재구매 고객 목록 (2회 이상 구매, 구매횟수 순)
+    const repeatCustomerList = allCustomerDetails
+      .filter((c) => c.purchaseCount >= 2)
+      .sort((a, b) => b.purchaseCount - a.purchaseCount);
+
+    // 단골 고객 목록 (3회 이상 구매, 구매횟수 순)
+    const loyalCustomerList = allCustomerDetails
+      .filter((c) => c.purchaseCount >= 3)
+      .sort((a, b) => b.purchaseCount - a.purchaseCount);
+
+    // 재구매 고객 수
+    const repeatCustomersCount = repeatCustomerList.length;
+
+    // 단골 고객 수
+    const loyalCustomersCount = loyalCustomerList.length;
 
     // 고객당 평균 구매 횟수
     const totalPurchases = Array.from(customerStats.values()).reduce(
@@ -938,11 +995,56 @@ export class StatisticsService {
 
     return plainToInstance(CustomerAnalysisDto, {
       totalCustomers,
-      repeatCustomers,
-      repeatRate: this.calculateRate(repeatCustomers, totalCustomers),
-      loyalCustomers,
+      repeatCustomers: repeatCustomersCount,
+      repeatRate: this.calculateRate(repeatCustomersCount, totalCustomers),
+      loyalCustomers: loyalCustomersCount,
       averagePurchaseCount,
       averageCustomerSpending,
+      topCustomers,
+      repeatCustomerList,
+      loyalCustomerList,
     });
+  }
+
+  /**
+   * 가격대별 분양 통계 생성
+   */
+  private buildPriceRangeStatistics(
+    adoptions: AdoptionEntity[],
+  ): PriceRangeItemDto[] {
+    // 가격대 정의 (단위: 원)
+    const priceRanges = [
+      { label: '10만원 이하', minPrice: 0, maxPrice: 100000 },
+      { label: '10-30만원', minPrice: 100001, maxPrice: 300000 },
+      { label: '30-50만원', minPrice: 300001, maxPrice: 500000 },
+      { label: '50-100만원', minPrice: 500001, maxPrice: 1000000 },
+      { label: '100만원 이상', minPrice: 1000001, maxPrice: Infinity },
+    ];
+
+    const total = adoptions.length;
+
+    return priceRanges
+      .map(({ label, minPrice, maxPrice }) => {
+        const filtered = adoptions.filter((a) => {
+          const price = a.price ?? -1;
+          return price >= minPrice && price <= maxPrice;
+        });
+
+        const count = filtered.length;
+        const revenue = filtered.reduce((sum, a) => sum + (a.price ?? 0), 0);
+        const adoptionIds = filtered.map((a) => a.adoptionId);
+
+        return plainToInstance(PriceRangeItemDto, {
+          label,
+          minPrice,
+          maxPrice: maxPrice === Infinity ? -1 : maxPrice, // Infinity를 -1로 변환
+          count,
+          revenue,
+          averagePrice: count > 0 ? Math.round(revenue / count) : 0,
+          percentage: this.calculateRate(count, total),
+          adoptionIds,
+        });
+      })
+      .filter((item) => item.count > 0);
   }
 }

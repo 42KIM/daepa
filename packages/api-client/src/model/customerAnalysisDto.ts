@@ -5,6 +5,7 @@
  * Project Daepa API description
  * OpenAPI spec version: 1.0
  */
+import type { CustomerDetailDto } from "./customerDetailDto";
 
 export interface CustomerAnalysisDto {
   /** 총 고객 수 (구매자) */
@@ -19,4 +20,10 @@ export interface CustomerAnalysisDto {
   averagePurchaseCount: number;
   /** 고객당 평균 구매 금액 */
   averageCustomerSpending: number;
+  /** 상위 고객 목록 (구매금액 순) */
+  topCustomers?: CustomerDetailDto[];
+  /** 재구매 고객 목록 */
+  repeatCustomerList?: CustomerDetailDto[];
+  /** 단골 고객 목록 */
+  loyalCustomerList?: CustomerDetailDto[];
 }

@@ -442,6 +442,52 @@ export class AdoptionDayOfWeekItemDto extends AdoptionRevenueBaseDto {
   dayOfWeek: number;
 }
 
+/** 가격대별 분양 통계 DTO */
+export class PriceRangeItemDto extends AdoptionRevenueBaseDto {
+  @ApiProperty({ description: '가격대 라벨', example: '10-30만원' })
+  @IsString()
+  label: string;
+
+  @ApiProperty({ description: '최소 가격', example: 100000 })
+  @IsNumber()
+  minPrice: number;
+
+  @ApiProperty({ description: '최대 가격', example: 300000 })
+  @IsNumber()
+  maxPrice: number;
+
+  @ApiProperty({ description: '비율 (%)', example: 35.5 })
+  @IsNumber()
+  percentage: number;
+
+  @ApiProperty({
+    description: '해당 가격대 분양 ID 목록',
+    example: ['adoption-1', 'adoption-2'],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  adoptionIds: string[];
+}
+
+/** 고객 상세 정보 DTO */
+export class CustomerDetailDto {
+  @ApiProperty({ description: '고객 ID', example: 'user-123' })
+  @IsString()
+  userId: string;
+
+  @ApiProperty({ description: '고객 이름', example: '홍길동' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: '구매 횟수', example: 3 })
+  @IsNumber()
+  purchaseCount: number;
+
+  @ApiProperty({ description: '총 구매 금액', example: 1500000 })
+  @IsNumber()
+  totalSpending: number;
+}
+
 /** 고객 분석 통계 DTO */
 export class CustomerAnalysisDto {
   @ApiProperty({ description: '총 고객 수 (구매자)', example: 50 })
@@ -467,6 +513,39 @@ export class CustomerAnalysisDto {
   @ApiProperty({ description: '고객당 평균 구매 금액', example: 500000 })
   @IsNumber()
   averageCustomerSpending: number;
+
+  @ApiProperty({
+    description: '상위 고객 목록 (구매금액 순)',
+    type: [CustomerDetailDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => CustomerDetailDto)
+  topCustomers?: CustomerDetailDto[];
+
+  @ApiProperty({
+    description: '재구매 고객 목록',
+    type: [CustomerDetailDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => CustomerDetailDto)
+  repeatCustomerList?: CustomerDetailDto[];
+
+  @ApiProperty({
+    description: '단골 고객 목록',
+    type: [CustomerDetailDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => CustomerDetailDto)
+  loyalCustomerList?: CustomerDetailDto[];
 }
 
 /** 분양 통계 응답 DTO */
@@ -476,7 +555,9 @@ export class CustomerAnalysisDto {
   AdoptionRevenueDto,
   AdoptionMonthlyItemDto,
   AdoptionDayOfWeekItemDto,
+  PriceRangeItemDto,
   CustomerAnalysisDto,
+  CustomerDetailDto,
 )
 export class AdoptionStatisticsDto {
   @ApiProperty({
@@ -566,9 +647,20 @@ export class AdoptionStatisticsDto {
   @IsObject()
   @Type(() => CustomerAnalysisDto)
   customerAnalysis?: CustomerAnalysisDto;
+
+  @ApiProperty({
+    description: '가격대별 통계',
+    type: [PriceRangeItemDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  @Type(() => PriceRangeItemDto)
+  priceRangeStats?: PriceRangeItemDto[];
 }
 
 export class AdoptionStatisticsQueryDto extends PickType(
   StatisticsQueryBaseDto,
-  ['year', 'month', 'species'],
+  ['year', 'month', 'species', 'fatherId', 'motherId'],
 ) {}

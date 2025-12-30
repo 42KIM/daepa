@@ -20,4 +20,12 @@ export type StatisticsControllerGetAdoptionStatisticsParams = {
    * 종
    */
   species?: StatisticsControllerGetAdoptionStatisticsSpecies;
+  /**
+   * 부 개체 ID
+   */
+  fatherId?: string;
+  /**
+   * 모 개체 ID
+   */
+  motherId?: string;
 };

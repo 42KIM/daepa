@@ -4285,8 +4285,57 @@ export const getStatisticsControllerGetAdoptionStatisticsResponseMock = (
         loyalCustomers: faker.number.int({ min: undefined, max: undefined }),
         averagePurchaseCount: faker.number.int({ min: undefined, max: undefined }),
         averageCustomerSpending: faker.number.int({ min: undefined, max: undefined }),
+        topCustomers: faker.helpers.arrayElement([
+          Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+            () => ({
+              userId: faker.string.alpha(20),
+              name: faker.string.alpha(20),
+              purchaseCount: faker.number.int({ min: undefined, max: undefined }),
+              totalSpending: faker.number.int({ min: undefined, max: undefined }),
+            }),
+          ),
+          undefined,
+        ]),
+        repeatCustomerList: faker.helpers.arrayElement([
+          Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+            () => ({
+              userId: faker.string.alpha(20),
+              name: faker.string.alpha(20),
+              purchaseCount: faker.number.int({ min: undefined, max: undefined }),
+              totalSpending: faker.number.int({ min: undefined, max: undefined }),
+            }),
+          ),
+          undefined,
+        ]),
+        loyalCustomerList: faker.helpers.arrayElement([
+          Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+            () => ({
+              userId: faker.string.alpha(20),
+              name: faker.string.alpha(20),
+              purchaseCount: faker.number.int({ min: undefined, max: undefined }),
+              totalSpending: faker.number.int({ min: undefined, max: undefined }),
+            }),
+          ),
+          undefined,
+        ]),
       },
     },
+    undefined,
+  ]),
+  priceRangeStats: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      count: faker.number.int({ min: undefined, max: undefined }),
+      revenue: faker.number.int({ min: undefined, max: undefined }),
+      averagePrice: faker.number.int({ min: undefined, max: undefined }),
+      label: faker.string.alpha(20),
+      minPrice: faker.number.int({ min: undefined, max: undefined }),
+      maxPrice: faker.number.int({ min: undefined, max: undefined }),
+      percentage: faker.number.int({ min: undefined, max: undefined }),
+      adoptionIds: Array.from(
+        { length: faker.number.int({ min: 1, max: 10 }) },
+        (_, i) => i + 1,
+      ).map(() => faker.string.alpha(20)),
+    })),
     undefined,
   ]),
   ...overrideResponse,

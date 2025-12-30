@@ -12,6 +12,7 @@ import type { AdoptionDistributionItemDto } from "./adoptionDistributionItemDto"
 import type { AdoptionMonthlyItemDto } from "./adoptionMonthlyItemDto";
 import type { AdoptionDayOfWeekItemDto } from "./adoptionDayOfWeekItemDto";
 import type { CustomerAnalysisDto } from "./customerAnalysisDto";
+import type { PriceRangeItemDto } from "./priceRangeItemDto";
 
 export interface AdoptionStatisticsDto {
   /** 기간 정보 */
@@ -34,4 +35,6 @@ export interface AdoptionStatisticsDto {
   dayOfWeekStats?: AdoptionDayOfWeekItemDto[];
   /** 고객 분석 */
   customerAnalysis?: CustomerAnalysisDto;
+  /** 가격대별 통계 */
+  priceRangeStats?: PriceRangeItemDto[];
 }

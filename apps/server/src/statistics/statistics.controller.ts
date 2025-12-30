@@ -47,6 +47,8 @@ export class StatisticsController {
       query.species,
       query.year,
       query.month,
+      query.fatherId,
+      query.motherId,
     );
   }
 }
