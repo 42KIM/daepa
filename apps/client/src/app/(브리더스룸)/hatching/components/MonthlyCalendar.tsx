@@ -17,7 +17,8 @@ import { DateTime } from "luxon";
 
 const MonthlyCalendar = memo(() => {
   const isMobile = useIsMobile();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const groupRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,13 +29,13 @@ const MonthlyCalendar = memo(() => {
   const { data: monthlyData, isPending: monthlyIsPending } = useQuery({
     queryKey: [
       brPetControllerGetPetsByMonth.name,
-      (selectedDate ?? new Date()).getFullYear(),
-      (selectedDate ?? new Date()).getMonth(),
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
     ],
     queryFn: () =>
       brPetControllerGetPetsByMonth({
-        year: (selectedDate ?? new Date()).getFullYear().toString(),
-        month: (selectedDate ?? new Date()).getMonth().toString(),
+        year: currentMonth.getFullYear().toString(),
+        month: currentMonth.getMonth().toString(),
       }),
     select: (data) => data.data.data,
   });
@@ -123,11 +124,12 @@ const MonthlyCalendar = memo(() => {
       {!isMobile && (
         <Calendar
           mode="single"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
+          selected={selectedDate}
           onSelect={(date) => {
             if (!date) return;
             setSelectedDate(date);
           }}
+          onMonthChange={(month) => setCurrentMonth(month)}
           eggCounts={petCounts}
         />
       )}
@@ -143,11 +145,12 @@ const MonthlyCalendar = memo(() => {
           >
             <Calendar
               mode="single"
-              selected={selectedDate ? new Date(selectedDate) : undefined}
+              selected={selectedDate}
               onSelect={(date) => {
                 if (!date) return;
                 setSelectedDate(date);
               }}
+              onMonthChange={(month) => setCurrentMonth(month)}
               eggCounts={petCounts}
             />
           </div>
@@ -186,7 +189,7 @@ const MonthlyCalendar = memo(() => {
             ) : (
               weeklyGroups.map((group) => (
                 <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
-                  <div className="sticky top-0 z-10 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
+                  <div className="sticky top-0 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
                     {group.label}
                   </div>
                   {group.items

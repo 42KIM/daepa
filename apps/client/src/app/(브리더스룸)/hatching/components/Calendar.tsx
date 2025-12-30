@@ -70,15 +70,19 @@ function Calendar({
           activeModifiers,
         }: {
           date: Date;
-          activeModifiers?: { outside?: boolean; disabled?: boolean };
+          activeModifiers?: { outside?: boolean; disabled?: boolean; selected?: boolean };
         }) => {
           const isDisabled = !!activeModifiers?.disabled;
           const isOutside = !!activeModifiers?.outside;
-          const colorClass = isDisabled
-            ? isOutside
-              ? "text-gray-300"
-              : "text-gray-500"
-            : undefined;
+          const isSelected = !!activeModifiers?.selected;
+
+          const colorClass = isSelected
+            ? "text-blue-600"
+            : isDisabled
+              ? isOutside
+                ? "text-gray-300"
+                : "text-gray-500"
+              : undefined;
 
           return (
             <div
