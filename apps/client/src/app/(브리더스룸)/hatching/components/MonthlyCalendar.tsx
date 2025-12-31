@@ -10,10 +10,10 @@ import { brPetControllerGetPetsByMonth, PetDto, PetDtoType } from "@repo/api-cli
 import HatchingPetCard from "./HatchingPetCard";
 
 import { Calendar } from "./Calendar";
-import { format, getWeekOfMonth } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
 import { DateTime } from "luxon";
+import Image from "next/image";
 
 const MonthlyCalendar = memo(() => {
   const isMobile = useIsMobile();
@@ -30,12 +30,12 @@ const MonthlyCalendar = memo(() => {
     queryKey: [
       brPetControllerGetPetsByMonth.name,
       currentMonth.getFullYear(),
-      currentMonth.getMonth(),
+      currentMonth.getMonth() + 1,
     ],
     queryFn: () =>
       brPetControllerGetPetsByMonth({
         year: currentMonth.getFullYear().toString(),
-        month: currentMonth.getMonth().toString(),
+        month: (currentMonth.getMonth() + 1).toString(),
       }),
     select: (data) => data.data.data,
   });
@@ -77,10 +77,12 @@ const MonthlyCalendar = memo(() => {
     const groups: Array<{ weekKey: string; label: string; items: Array<[string, PetDto[]]> }> = [];
     let currentKey: string | null = null;
     for (const [date, pets] of sortedEntries) {
-      const d = new Date(date);
-      const week = getWeekOfMonth(d, { weekStartsOn: 1 });
-      const label = `${format(d, "MM월 ")}${week}주차`;
-      const key = `${format(d, "yyyy-MM")}-w${week}`;
+      const dt = DateTime.fromISO(date);
+      // 주차 계산 (월요일 시작 기준)
+      const firstDayOfMonth = dt.startOf("month");
+      const week = Math.ceil((dt.day + firstDayOfMonth.weekday - 1) / 7);
+      const label = `${dt.toFormat("MM")}월 ${week}주차`;
+      const key = `${dt.toFormat("yyyy-MM")}-w${week}`;
       if (key !== currentKey) {
         groups.push({ weekKey: key, label, items: [] });
         currentKey = key;
@@ -156,7 +158,7 @@ const MonthlyCalendar = memo(() => {
           </div>
         )}
 
-        <div>
+        <div className="w-full">
           <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
             {tabs.map(({ key, label }) => {
               return (
@@ -173,6 +175,7 @@ const MonthlyCalendar = memo(() => {
               );
             })}
           </div>
+
           <ScrollArea
             ref={scrollAreaRef}
             className={cn(
@@ -186,6 +189,16 @@ const MonthlyCalendar = memo(() => {
           >
             {monthlyIsPending || todayIsFetching ? (
               <Loading />
+            ) : weeklyGroups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center pt-10 text-gray-700">
+                <Image
+                  src="/assets/lizard.png"
+                  alt="해칭 캘린더 도마뱀 이미지"
+                  width={100}
+                  height={100}
+                />
+                조회된 해칭 내역이 없습니다.
+              </div>
             ) : (
               weeklyGroups.map((group) => (
                 <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>

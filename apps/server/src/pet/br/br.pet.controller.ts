@@ -79,8 +79,8 @@ export class BrPetController {
   })
   @ApiQuery({
     name: 'month',
-    description: '월 (0-11)',
-    example: 0,
+    description: '월 (1-12)',
+    example: 1,
   })
   @ApiResponse({
     status: 200,
@@ -92,7 +92,8 @@ export class BrPetController {
     @Query('year') year: string,
     @Query('month') month: string,
   ): Promise<FilterPetListResponseDto> {
-    const monthDate = new Date(Number(year), Number(month), 1);
+    const monthDate = new Date(Number(year), Number(month) - 1, 1);
+
     const data = await this.petService.getPetListByMonth(
       monthDate,
       token.userId,
