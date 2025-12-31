@@ -29,7 +29,16 @@ const StatsBarChart = ({
   const filteredData =
     mode === "revenue" ? data.filter((item) => item.totalRevenue && item.totalRevenue > 0) : data;
 
-  if (filteredData.length === 0) return null;
+  if (filteredData.length === 0) {
+    return (
+      <div
+        className="my-5 flex w-full items-center justify-center text-sm text-gray-400"
+        style={{ height: minHeight }}
+      >
+        데이터가 없습니다
+      </div>
+    );
+  }
 
   // 데이터 길이에 따라 높이 계산
   const calculatedHeight = Math.max(filteredData.length * itemHeight, minHeight);
