@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface BadgeListProps {
@@ -19,7 +20,8 @@ const BadgeList = ({
   if (!items || items.length === 0) return null;
 
   const displayItems = items.slice(0, maxDisplay);
-  const remaining = items.length - maxDisplay;
+  const remainingItems = items.slice(maxDisplay);
+  const remaining = remainingItems.length;
 
   return (
     <div className="flex flex-wrap gap-1">
@@ -28,7 +30,22 @@ const BadgeList = ({
           {item}
         </Badge>
       ))}
-      {remaining > 0 && <Badge variant="secondary">+{remaining}</Badge>}
+      {remaining > 0 && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="secondary" className="cursor-pointer">
+              +{remaining}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="flex flex-col gap-1">
+              {remainingItems.map((item, index) => (
+                <span key={`remaining-${item}-${index}`}>{item}</span>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      )}
     </div>
   );
 };
