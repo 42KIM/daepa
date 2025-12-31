@@ -26,7 +26,7 @@ const SelectStep = ({
     <div className="h-full overflow-y-auto">
       <div>
         <ScrollArea className="h-[calc(100vh-200px)]">
-          <div className="mb-10 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+          <div className="mb-10 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {pets
               ?.filter((pet) =>
                 searchType === PetListType.MY
