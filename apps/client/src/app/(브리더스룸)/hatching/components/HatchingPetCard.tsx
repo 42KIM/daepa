@@ -1,5 +1,5 @@
 "use client";
-import { format, isValid, parseISO } from "date-fns";
+import { DateTime } from "luxon";
 import {
   EGG_STATUS_KOREAN_INFO,
   GENDER_KOREAN_INFO,
@@ -16,7 +16,6 @@ import {
 } from "@repo/api-client";
 
 import { cn, getEggDDayText } from "@/lib/utils";
-import { ko } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import TooltipText from "../../components/TooltipText";
 import { useEffect, useRef } from "react";
@@ -81,7 +80,9 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                 >
                   <div className="flex">
                     <div className="flex w-[56px] items-center justify-center font-semibold text-gray-500">
-                      {index === 0 && date ? format(parseISO(date), "dd EE", { locale: ko }) : ""}
+                      {index === 0 && date
+                        ? DateTime.fromISO(date).setLocale("ko").toFormat("dd EEE")
+                        : ""}
                     </div>
 
                     <div className="flex flex-col gap-1 px-1 py-1.5">
@@ -180,8 +181,8 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                           return EGG_STATUS_KOREAN_INFO[status];
                         })()
                       : (() => {
-                          const d = parseISO(pet.hatchingDate ?? "");
-                          return isValid(d) ? format(d, "MM/dd 해칭", { locale: ko }) : "";
+                          const d = DateTime.fromISO(pet.hatchingDate ?? "");
+                          return d.isValid ? `${d.toFormat("MM/dd")} 해칭` : "";
                         })()}
                   </div>
                 </div>

@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useState, useCallback } from "react";
-import { format, isBefore } from "date-fns";
+import { DateTime } from "luxon";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,7 +63,7 @@ const CompleteHatchingModal = ({
   }, [clutch, clutchOrder, fatherName, motherName]);
 
   const [formData, setFormData] = useState<CompleteHatchingDto>({
-    hatchingDate: format(new Date(), "yyyy-MM-dd"),
+    hatchingDate: DateTime.now().toFormat("yyyy-MM-dd"),
     name: generateAutoName() || "",
     desc: "",
   });
@@ -115,15 +115,20 @@ const CompleteHatchingModal = ({
                 type="edit"
                 triggerText={
                   formData.hatchingDate
-                    ? format(new Date(formData.hatchingDate), "yyyy-MM-dd")
+                    ? DateTime.fromJSDate(new Date(formData.hatchingDate)).toFormat("yyyy-MM-dd")
                     : "해칭일"
                 }
                 onConfirm={(date) => {
                   if (!date) return;
-                  setFormData((prev) => ({ ...prev, hatchingDate: format(date, "yyyy-MM-dd") }));
+                  setFormData((prev) => ({
+                    ...prev,
+                    hatchingDate: DateTime.fromISO(date).toFormat("yyyy-MM-dd"),
+                  }));
                 }}
                 initialDate={formData.hatchingDate}
-                disabled={(date) => isBefore(date, new Date(layingDate))}
+                disabled={(date) =>
+                  DateTime.fromJSDate(date) < DateTime.fromJSDate(new Date(layingDate))
+                }
               />
             </div>
           </div>

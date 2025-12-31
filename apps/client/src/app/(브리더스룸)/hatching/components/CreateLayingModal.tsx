@@ -11,7 +11,7 @@ import {
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Info } from "lucide-react";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import {
@@ -109,7 +109,7 @@ const CreateLayingModal = ({
     try {
       await createLaying({
         matingId,
-        layingDate: format(new Date(formData.layingDate), "yyyy-MM-dd"),
+        layingDate: DateTime.fromJSDate(new Date(formData.layingDate)).toFormat("yyyy-MM-dd"),
         temperature: formData.temperature ? parseFloat(formData.temperature) : undefined,
         species: formData.species,
         clutchCount: parseInt(formData.clutchCount, 10),
@@ -131,7 +131,7 @@ const CreateLayingModal = ({
 
   // 날짜 제한 함수
   const isDateDisabled = (date: Date) => {
-    const selectedDate = new Date(format(date, "yyyy-MM-dd"));
+    const selectedDate = new Date(DateTime.fromJSDate(date).toFormat("yyyy-MM-dd"));
 
     // matingDate 이후 조건
     if (matingDate) {
@@ -189,7 +189,7 @@ const CreateLayingModal = ({
                 type="edit"
                 triggerText={
                   formData.layingDate
-                    ? format(new Date(formData.layingDate), "yyyy년 MM월 dd일")
+                    ? DateTime.fromJSDate(new Date(formData.layingDate)).toFormat("yyyy년 MM월 dd일")
                     : "산란일"
                 }
                 confirmButtonText="선택 완료"
@@ -212,12 +212,11 @@ const CreateLayingModal = ({
                   </div>
                   <div className="font-semibold text-blue-500">
                     마지막 산란일:{" "}
-                    {format(
+                    {DateTime.fromJSDate(
                       new Date(
                         lastLayingDate.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"),
                       ),
-                      "yyyy년 MM월 dd일",
-                    )}
+                    ).toFormat("yyyy년 MM월 dd일")}
                   </div>
                 </div>
               )}

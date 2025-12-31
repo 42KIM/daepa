@@ -10,7 +10,7 @@ import InfoItem from "@/app/(브리더스룸)/components/Form/InfoItem";
 import ParentLink from "../../../components/ParentLink";
 import { PetDto, PetDtoGrowth, PetDtoSex, PetDtoSpecies } from "@repo/api-client";
 import { FormStep } from "@/app/(브리더스룸)/pet/types/form.type";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 interface ExtendedPetDto extends PetDto {
   [key: string]: any;
 }
@@ -72,7 +72,7 @@ const ShortsBack = ({ pet, onFlip }: CardBackProps) => {
           </div>
         );
       case "date":
-        return <div>{format(pet[field.name] as Date, "yy.MM.dd")}</div>;
+        return <div>{DateTime.fromJSDate(pet[field.name] as Date).toFormat("yy.MM.dd")}</div>;
       default:
         return <div>{pet[field.name]}</div>;
     }

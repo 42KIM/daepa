@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
-import { format, parseISO } from "date-fns";
-import { ko } from "date-fns/locale";
+import { DateTime } from "luxon";
 import { SPECIES_KOREAN_INFO } from "../../constants";
 import {
   AdoptionDtoStatus,
@@ -218,13 +217,10 @@ const EditAdoptionModal = ({
                 )}
                 {selectedPet?.hatchingDate && (
                   <p className="text-blue-600">
-                    {format(
-                      typeof selectedPet.hatchingDate === "string"
-                        ? parseISO(selectedPet.hatchingDate)
-                        : selectedPet.hatchingDate,
-                      "yyyy. MM. dd",
-                      { locale: ko },
-                    )}{" "}
+                    {(typeof selectedPet.hatchingDate === "string"
+                      ? DateTime.fromISO(selectedPet.hatchingDate)
+                      : DateTime.fromJSDate(selectedPet.hatchingDate)
+                    ).toFormat("yyyy. MM. dd")}{" "}
                   </p>
                 )}
               </div>

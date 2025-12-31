@@ -9,7 +9,7 @@ import { Expand, Shrink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildR2TransformedUrl, cn, getNumberToDate } from "@/lib/utils";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, EffectFade } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -215,12 +215,11 @@ const CardFront = ({ pet, qrCodeDataUrl }: { pet: PetDto; qrCodeDataUrl?: string
                 {pet.hatchingDate && (
                   <span className="inline-flex items-center gap-1">
                     <span>
-                      {format(
+                      {DateTime.fromJSDate(
                         typeof pet.hatchingDate === "number"
                           ? getNumberToDate(pet.hatchingDate)
                           : new Date(pet.hatchingDate),
-                        "yy.MM.dd",
-                      )}
+                      ).toFormat("yy.MM.dd")}
                     </span>
                   </span>
                 )}

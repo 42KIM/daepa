@@ -12,7 +12,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import CalendarInput from "./CalendarInput";
 import ParentLink from "../../pet/components/ParentLink";
 import { PetParentDtoWithMessage } from "../../pet/store/parentLink";
@@ -23,7 +23,7 @@ import SingleSelect from "../../components/selector/SingleSelect";
 const getInitialFormData = () => ({
   father: undefined,
   mother: undefined,
-  matingDate: format(new Date(), "yyyy-MM-dd"),
+  matingDate: DateTime.now().toFormat("yyyy-MM-dd"),
   species: PetDtoSpecies.CRESTED,
 });
 
@@ -172,7 +172,7 @@ const CreateMatingForm = ({ onClose }: CreateMatingFormProps) => {
               if (!date) return;
               setFormData((prev) => ({
                 ...prev,
-                matingDate: format(date, "yyyy-MM-dd"),
+                matingDate: DateTime.fromJSDate(date).toFormat("yyyy-MM-dd"),
               }));
             }}
           />

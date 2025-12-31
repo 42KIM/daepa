@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { UpdateMatingDto } from "@repo/api-client";
 import CalendarInput from "./CalendarInput";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 
 interface EditMatingModalProps {
   isOpen: boolean;
@@ -78,14 +78,19 @@ const EditMatingModal = ({
               onSelect={(date) => {
                 if (!date) return;
 
-                const dateString = format(date, "yyyyMMdd");
-                const matingDateStrings = matingDates?.map((d) => format(d, "yyyyMMdd")) ?? [];
+                const dateString = DateTime.fromJSDate(date).toFormat("yyyyMMdd");
+                const matingDateStrings =
+                  matingDates?.map((d) => DateTime.fromJSDate(new Date(d)).toFormat("yyyyMMdd")) ??
+                  [];
 
                 if (matingDateStrings.includes(dateString)) {
                   toast.error("이미 메이팅이 등록된 날짜입니다.");
                   return;
                 }
-                setFormData((prev) => ({ ...prev, matingDate: format(date, "yyyy-MM-dd") }));
+                setFormData((prev) => ({
+                  ...prev,
+                  matingDate: DateTime.fromJSDate(date).toFormat("yyyy-MM-dd"),
+                }));
               }}
               modifiers={{
                 hasMating: matingDates?.map((d) => new Date(d)) ?? [],

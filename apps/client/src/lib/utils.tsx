@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import QRCode from "qrcode";
-import { format, parse } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import {
   AdoptionDtoStatus,
@@ -40,15 +39,6 @@ export const generateQRCode = async (url: string) => {
     console.error("QR 코드 생성 실패:", err);
     throw err;
   }
-};
-
-export const formatDateToYYYYMMDDString = (
-  dateNumber: number,
-  formatType: string = "yyyy-MM-dd",
-): string => {
-  const parsedDate = parse(dateNumber.toString(), "yyyyMMdd", new Date());
-  const formattedDate = format(parsedDate, formatType);
-  return formattedDate;
 };
 
 export const getStatusBadge = (status?: AdoptionDtoStatus) => {

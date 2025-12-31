@@ -17,7 +17,7 @@ import { useRegisterForm } from "../../hooks/useRegisterForm";
 import { useCallback, useEffect } from "react";
 import { useSelect } from "../../hooks/useSelect";
 import Loading from "@/components/common/Loading";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { useUserStore } from "../../../store/user";
 import { BaseFormData } from "../../../pet/store/base";
 
@@ -92,7 +92,7 @@ const EggRegisterPage = () => {
       return {
         species: newFormData.species,
         ...(newFormData.layingDate && {
-          layingDate: format(newFormData.layingDate, "yyyyMMdd"),
+          layingDate: DateTime.fromJSDate(new Date(newFormData.layingDate)).toFormat("yyyyMMdd"),
         }),
         ...(newFormData.father?.petId && {
           father: {

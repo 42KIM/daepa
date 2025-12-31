@@ -1,6 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format, isValid } from "date-fns";
+import { DateTime } from "luxon";
 import { Calendar } from "@/components/ui/calendar";
 import { ChevronDown } from "lucide-react";
 import { DayModifiers, ModifiersStyles } from "react-day-picker";
@@ -49,7 +49,9 @@ const CalendarInput = ({
       >
         <button type="button" disabled={!editable}>
           {!value && placeholder}
-          {value && isValid(new Date(value)) && `${format(new Date(value), formatString)}`}
+          {value &&
+            DateTime.fromISO(value).isValid &&
+            DateTime.fromJSDate(new Date(value)).toFormat(formatString)}
           {editable && <ChevronDown className="h-4 w-4 text-blue-600" />}
         </button>
       </PopoverTrigger>

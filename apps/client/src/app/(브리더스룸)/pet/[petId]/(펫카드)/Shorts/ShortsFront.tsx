@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { GENDER_KOREAN_INFO, SPECIES_KOREAN_INFO } from "@/app/(브리더스룸)/constants";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 
 const ShortsFront = ({
   pet,
@@ -140,7 +140,9 @@ const ShortsFront = ({
               <div className="whitespace-nowrap text-sm text-gray-300">
                 <div>
                   {pet.weight && `${pet.weight}g / `}
-                  {pet.hatchingDate ? format(pet.hatchingDate, "yy.MM.dd") : "-"}
+                  {pet.hatchingDate
+                    ? DateTime.fromJSDate(new Date(pet.hatchingDate)).toFormat("yy.MM.dd")
+                    : "-"}
                 </div>
                 {SPECIES_KOREAN_INFO[pet.species]} / {GENDER_KOREAN_INFO[pet.sex ?? PetDtoSex.NON]}
               </div>

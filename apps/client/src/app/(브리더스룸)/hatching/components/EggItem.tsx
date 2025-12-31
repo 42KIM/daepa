@@ -129,9 +129,7 @@ const EggItem = ({
         </div>
       ) : (
         <div className="font-[600] text-blue-700">
-          {pet.hatchingDate
-            ? DateTime.fromISO(pet.hatchingDate).toFormat("MM/dd 해칭")
-            : "해칭 완료"}
+          {pet.hatchingDate ? DateTime.fromISO(pet.hatchingDate).toFormat("M/d 해칭") : "해칭 완료"}
         </div>
       )}
     </div>
