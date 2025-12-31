@@ -37,8 +37,14 @@ const PetItem = ({
             </span>
           </div>
 
-          <BadgeList items={item.morphs} />
-          <BadgeList items={item.traits} variant="outline" badgeClassName="bg-white text-black" />
+          <BadgeList items={item.morphs} badgeSize={"sm"} maxDisplay={3} />
+          <BadgeList
+            items={item.traits}
+            badgeSize={"sm"}
+            maxDisplay={3}
+            variant="outline"
+            badgeClassName="bg-white text-black"
+          />
         </div>
       </div>
     </button>

@@ -8,6 +8,7 @@ interface BadgeListProps {
   items?: string[];
   maxDisplay?: number;
   variant?: "default" | "secondary" | "outline" | "destructive";
+  badgeSize?: "sm" | "md";
   badgeClassName?: string;
 }
 
@@ -15,6 +16,7 @@ const BadgeList = ({
   items,
   maxDisplay = 5,
   variant = "default",
+  badgeSize = "md",
   badgeClassName,
 }: BadgeListProps) => {
   if (!items || items.length === 0) return null;
@@ -26,14 +28,19 @@ const BadgeList = ({
   return (
     <div className="flex flex-wrap gap-1">
       {displayItems.map((item, index) => (
-        <Badge key={`${item}-${index}`} variant={variant} className={cn(badgeClassName)}>
+        <Badge
+          key={`${item}-${index}`}
+          variant={variant}
+          size={badgeSize}
+          className={cn(badgeClassName)}
+        >
           {item}
         </Badge>
       ))}
       {remaining > 0 && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge variant="secondary" className="cursor-pointer">
+            <Badge variant="secondary" size={badgeSize} className="cursor-pointer">
               +{remaining}
             </Badge>
           </TooltipTrigger>
