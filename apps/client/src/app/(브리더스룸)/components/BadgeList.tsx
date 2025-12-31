@@ -23,8 +23,8 @@ const BadgeList = ({
 
   return (
     <div className="flex flex-wrap gap-1">
-      {displayItems.map((item) => (
-        <Badge key={item} variant={variant} className={cn(badgeClassName)}>
+      {displayItems.map((item, index) => (
+        <Badge key={`${item}-${index}`} variant={variant} className={cn(badgeClassName)}>
           {item}
         </Badge>
       ))}

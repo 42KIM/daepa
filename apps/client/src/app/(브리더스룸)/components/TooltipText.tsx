@@ -21,7 +21,7 @@ const TooltipText = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={cn("cursor-pointer font-[500] text-gray-800", className)}>
+        <span className={cn("font-[500] text-gray-800", className)}>
           {text?.length > displayTextLength ? `${text.slice(0, displayTextLength)}...` : text}
         </span>
       </TooltipTrigger>
