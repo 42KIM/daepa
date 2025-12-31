@@ -246,7 +246,8 @@ export const formatPrice = (price: number): string => {
 // 25°C 기준: 약 60일
 // 1°C 오를 때마다 10일 감소, 1°C 내릴때마다 10일 추가
 export const getIncubationDays = (temperature = 25) => {
-  return 60 - (temperature - 25) * 10;
+  const clampedTemp = Math.max(20, Math.min(30, temperature));
+  return 60 - (clampedTemp - 25) * 10;
 };
 
 /**
@@ -256,8 +257,10 @@ export const getIncubationDays = (temperature = 25) => {
  * @returns D-day 텍스트 (예: "D-10", "D-Day", "D+5")
  */
 export const getEggDDayText = (layingDate: string, temperature = 25): string => {
-  const incubationDays = getIncubationDays(temperature);
   const laying = DateTime.fromFormat(layingDate, "yyyy-MM-dd");
+  if (!laying.isValid) return "";
+
+  const incubationDays = getIncubationDays(temperature);
   const expectedHatchDate = laying.plus({ days: incubationDays });
   const today = DateTime.now().startOf("day");
   const daysRemaining = Math.floor(expectedHatchDate.diff(today, "days").days);
