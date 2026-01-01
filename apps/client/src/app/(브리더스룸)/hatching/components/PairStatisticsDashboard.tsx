@@ -141,7 +141,7 @@ const PairStatisticsDashboard = memo(() => {
       { name: "유정란", value: fertilized, fill: STATISTICS_COLORS.fertilized },
       { name: "무정란", value: unfertilized, fill: STATISTICS_COLORS.unfertilized },
       { name: "부화완료", value: hatched, fill: STATISTICS_COLORS.hatched },
-      { name: "중지", value: dead, fill: STATISTICS_COLORS.dead },
+      { name: "중지란", value: dead, fill: STATISTICS_COLORS.dead },
       { name: "미정", value: pending, fill: STATISTICS_COLORS.pending },
     ].filter((item) => item.value > 0);
   }, [statistics]);
@@ -183,7 +183,7 @@ const PairStatisticsDashboard = memo(() => {
     fertilized: { label: "유정란", color: STATISTICS_COLORS.fertilized },
     unfertilized: { label: "무정란", color: STATISTICS_COLORS.unfertilized },
     hatched: { label: "부화완료", color: STATISTICS_COLORS.hatched },
-    dead: { label: "중지", color: STATISTICS_COLORS.dead },
+    dead: { label: "중지란", color: STATISTICS_COLORS.dead },
     pending: { label: "미정", color: STATISTICS_COLORS.pending },
   };
 

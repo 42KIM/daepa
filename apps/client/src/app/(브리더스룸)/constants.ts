@@ -472,7 +472,7 @@ export const EGG_STATUS_KOREAN_INFO: Record<EggDetailDtoStatus, string> = {
   UNFERTILIZED: "무정란",
   FERTILIZED: "유정란",
   HATCHED: "해칭완료",
-  DEAD: "중지",
+  DEAD: "중지란",
 };
 
 export const FOOD_KOREAN_INFO: Record<string, string> = {
@@ -608,7 +608,7 @@ export const SELECTOR_CONFIGS: Record<
       },
       {
         key: "DEAD",
-        value: "중지",
+        value: "중지란",
       },
     ],
   },

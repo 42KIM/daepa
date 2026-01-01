@@ -50,7 +50,7 @@ const MonthlyStatsChart = ({ data }: MonthlyStatsChartProps) => {
       name: monthName,
       유정란: item.fertilized,
       무정란: item.unfertilized,
-      중지: item.dead,
+      중지란: item.dead,
       미정: item.pending,
       해칭: item.hatched,
     };
@@ -61,7 +61,7 @@ const MonthlyStatsChart = ({ data }: MonthlyStatsChartProps) => {
       config={{
         유정란: { label: "유정란", color: STATISTICS_COLORS.fertilized },
         무정란: { label: "무정란", color: STATISTICS_COLORS.unfertilized },
-        중지: { label: "중지", color: STATISTICS_COLORS.dead },
+        중지란: { label: "중지란", color: STATISTICS_COLORS.dead },
         미정: { label: "미정", color: STATISTICS_COLORS.pending },
         해칭: { label: "해칭", color: STATISTICS_COLORS.hatched },
       }}
@@ -88,7 +88,7 @@ const MonthlyStatsChart = ({ data }: MonthlyStatsChartProps) => {
           <Legend />
           <Bar dataKey="유정란" stackId="eggs" fill={STATISTICS_COLORS.fertilized} />
           <Bar dataKey="무정란" stackId="eggs" fill={STATISTICS_COLORS.unfertilized} />
-          <Bar dataKey="중지" stackId="eggs" fill={STATISTICS_COLORS.dead} />
+          <Bar dataKey="중지란" stackId="eggs" fill={STATISTICS_COLORS.dead} />
           <Bar
             dataKey="미정"
             stackId="eggs"
