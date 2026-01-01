@@ -50,8 +50,10 @@ const CalendarInput = ({
         <button type="button" disabled={!editable}>
           {!value && placeholder}
           {value &&
-            DateTime.fromISO(value).isValid &&
-            DateTime.fromJSDate(new Date(value)).toFormat(formatString)}
+            (() => {
+              const dt = DateTime.fromISO(value);
+              return dt.isValid ? dt.toFormat(formatString) : null;
+            })()}
           {editable && <ChevronDown className="h-4 w-4 text-blue-600" />}
         </button>
       </PopoverTrigger>

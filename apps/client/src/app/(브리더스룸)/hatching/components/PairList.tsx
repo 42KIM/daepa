@@ -52,10 +52,15 @@ const PairList = memo(() => {
         eggStatus,
       ],
       queryFn: ({ pageParam = 1 }) => {
-        const startYmd = startDate
-          ? DateTime.fromISO(startDate).toFormat("yyyy-MM-dd")
-          : undefined;
-        const endYmd = endDate ? DateTime.fromISO(endDate).toFormat("yyyy-MM-dd") : undefined;
+        const startYmd =
+          startDate && DateTime.fromISO(startDate).isValid
+            ? DateTime.fromISO(startDate).toFormat("yyyy-MM-dd")
+            : undefined;
+        const endYmd =
+          endDate && DateTime.fromISO(endDate).isValid
+            ? DateTime.fromISO(endDate).toFormat("yyyy-MM-dd")
+            : undefined;
+
         const filter = omitBy(
           {
             species: species ?? undefined,

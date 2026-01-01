@@ -217,10 +217,13 @@ const EditAdoptionModal = ({
                 )}
                 {selectedPet?.hatchingDate && (
                   <p className="text-blue-600">
-                    {(typeof selectedPet.hatchingDate === "string"
-                      ? DateTime.fromISO(selectedPet.hatchingDate)
-                      : DateTime.fromJSDate(selectedPet.hatchingDate)
-                    ).toFormat("yyyy. MM. dd")}{" "}
+                    {(() => {
+                      const dt =
+                        typeof selectedPet.hatchingDate === "string"
+                          ? DateTime.fromISO(selectedPet.hatchingDate)
+                          : DateTime.fromJSDate(selectedPet.hatchingDate);
+                      return dt.isValid ? dt.toFormat("yyyy. MM. dd") : "날짜 형식 오류";
+                    })()}{" "}
                   </p>
                 )}
               </div>

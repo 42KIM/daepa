@@ -131,21 +131,21 @@ const CreateLayingModal = ({
 
   // 날짜 제한 함수
   const isDateDisabled = (date: Date) => {
-    const selectedDate = new Date(DateTime.fromJSDate(date).toFormat("yyyy-MM-dd"));
+    const selectedDate = DateTime.fromJSDate(date).startOf("day");
 
     // matingDate 이후 조건
     if (matingDate) {
-      const matingDateString = matingDate.toString();
-      const matingDateObj = new Date(matingDateString.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
-      if (selectedDate < matingDateObj) {
+      const matingDateTime = DateTime.fromFormat(matingDate, "yyyy-MM-dd").startOf("day");
+      if (selectedDate <= matingDateTime) {
         return true;
       }
     }
 
     // lastLayingDate 이후 조건
     if (lastLayingDate) {
-      const lastLayingDateObj = new Date(lastLayingDate);
-      if (selectedDate <= lastLayingDateObj) {
+      const lastLayingDateTime = DateTime.fromFormat(lastLayingDate, "yyyy-MM-dd").startOf("day");
+
+      if (selectedDate <= lastLayingDateTime) {
         return true;
       }
     }
@@ -189,7 +189,9 @@ const CreateLayingModal = ({
                 type="edit"
                 triggerText={
                   formData.layingDate
-                    ? DateTime.fromJSDate(new Date(formData.layingDate)).toFormat("yyyy년 MM월 dd일")
+                    ? DateTime.fromJSDate(new Date(formData.layingDate)).toFormat(
+                        "yyyy년 MM월 dd일",
+                      )
                     : "산란일"
                 }
                 confirmButtonText="선택 완료"

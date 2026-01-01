@@ -44,7 +44,11 @@ const NotificationHeader = ({ item, isOpen }: NotificationHeaderProps) => {
           <span className="font-bold">{detailData?.childPet?.name}</span>
           {NOTIFICATION_MESSAGE[item.type]}
           <span className="text-muted-foreground pl-1">
-            {DateTime.fromISO(item.createdAt).setLocale("ko").toRelative()}
+            {(() => {
+              if (!item.createdAt) return "";
+              const dt = DateTime.fromISO(item.createdAt);
+              return dt.isValid ? dt.setLocale("ko").toRelative() : "";
+            })()}
           </span>
           {item.status === UserNotificationDtoStatus.UNREAD && (
             <span className="ml-1 inline-block h-2 w-2 rounded-full bg-red-500" />
