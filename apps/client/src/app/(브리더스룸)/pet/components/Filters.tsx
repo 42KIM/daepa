@@ -66,6 +66,7 @@ export function Filters({ showPublicFilter = true }: FiltersProps) {
             ...searchFilters,
             species: item,
             morphs: undefined,
+            traits: undefined,
           });
         }}
       />
