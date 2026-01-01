@@ -492,14 +492,7 @@ export const ADOPTION_METHOD_KOREAN_INFO: Record<PetAdoptionDtoMethod, string> =
 };
 
 export const SELECTOR_CONFIGS: Record<
-  | "species"
-  | "growth"
-  | "sex"
-  | "foods"
-  | "eggStatus"
-  | "traits"
-  | "adoptionStatus"
-  | "adoptionMethod",
+  "species" | "growth" | "sex" | "foods" | "eggStatus" | "adoptionStatus" | "adoptionMethod",
   { title: string; selectList: { key: string; value: string }[] }
 > = {
   species: {
@@ -594,43 +587,6 @@ export const SELECTOR_CONFIGS: Record<
       {
         key: "지렙 인섹트",
         value: "지렙 인섹트",
-      },
-    ],
-  },
-  traits: {
-    title: "형질",
-    selectList: [
-      {
-        key: "트익할",
-        value: "트익할",
-      },
-      {
-        key: "풀핀",
-        value: "풀핀",
-      },
-      {
-        key: "노멀",
-        value: "노멀",
-      },
-      {
-        key: "하리퀸",
-        value: "하리퀸",
-      },
-      {
-        key: "다크",
-        value: "다크",
-      },
-      {
-        key: "파이어",
-        value: "파이어",
-      },
-      {
-        key: "트라이컬러",
-        value: "트라이컬러",
-      },
-      {
-        key: "기타",
-        value: "기타",
       },
     ],
   },
