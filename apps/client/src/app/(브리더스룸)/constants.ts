@@ -341,6 +341,7 @@ export const TRAIT_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>
     엠티백: "엠티백",
     SS: "SS",
     SPT: "SPT",
+    퓨어화이트: "퓨어화이트",
     화이트포트홀: "화이트포트홀",
     크림: "크림",
     크림시클: "크림시클",
