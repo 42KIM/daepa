@@ -5,6 +5,7 @@ import {
   GROWTH_KOREAN_INFO,
   MORPH_LIST_BY_SPECIES,
   SALE_STATUS_KOREAN_INFO,
+  TRAIT_LIST_BY_SPECIES,
 } from "../../constants";
 import SelectFilter from "../../components/selector/SingleSelect";
 import { cn } from "@/lib/utils";
@@ -54,26 +55,34 @@ export function Filters({ showPublicFilter = true }: FiltersProps) {
 
       <SelectFilter
         showTitle
+        showSelectAll
         type="species"
         initialItem={searchFilters.species}
         saveASAP
         onSelect={(item) => {
           if (item === searchFilters.species) return;
 
-          // TODO!: 종 변경 시 부, 모 개체 초기화(해칭룸)
           setSearchFilters({
             ...searchFilters,
             species: item,
             morphs: undefined,
+            traits: undefined,
           });
         }}
       />
       {searchFilters.species && (
-        <MultiSelectFilter
-          type="morphs"
-          title="모프"
-          displayMap={MORPH_LIST_BY_SPECIES[searchFilters.species]}
-        />
+        <>
+          <MultiSelectFilter
+            type="morphs"
+            title="모프"
+            displayMap={MORPH_LIST_BY_SPECIES[searchFilters.species]}
+          />
+          <MultiSelectFilter
+            type="traits"
+            title="형질"
+            displayMap={TRAIT_LIST_BY_SPECIES[searchFilters.species]}
+          />
+        </>
       )}
       <MultiSelectFilter type="growth" title="크기" displayMap={GROWTH_KOREAN_INFO} />
       <MultiSelectFilter type="sex" title="성별" displayMap={GENDER_KOREAN_INFO} />

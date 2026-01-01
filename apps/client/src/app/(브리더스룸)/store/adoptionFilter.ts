@@ -18,7 +18,14 @@ export const useAdoptionFilterStore = create<AdoptionFilterState>()((set) => ({
 
   // Actions
   setSearchFilters: (filters) => set({ searchFilters: filters }),
-  resetFilters: () => set({ searchFilters: {}, father: null, mother: null }),
+  resetFilters: () =>
+    set({
+      searchFilters: {
+        species: "CR",
+      },
+      father: null,
+      mother: null,
+    }),
   setFather: (father) =>
     set((state) => ({
       father,

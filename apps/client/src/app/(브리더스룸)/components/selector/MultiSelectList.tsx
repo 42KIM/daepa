@@ -9,6 +9,7 @@ interface MultiSelectListProps {
   initialValue: string[];
   displayMap: Record<string, string>;
   title?: string;
+  maxSelection?: number;
   onCloseAction: () => void;
   onSelectAction: (selectedItems: string[]) => void;
   onExit: () => void;
@@ -19,6 +20,7 @@ export default function MultiSelectList({
   initialValue,
   displayMap,
   title = "선택",
+  maxSelection = 5,
   onCloseAction,
   onSelectAction,
   onExit,
@@ -42,8 +44,8 @@ export default function MultiSelectList({
       if (prev.includes(item)) {
         return prev.filter((m) => m !== item);
       }
-      if (prev.length >= 5) {
-        toast.error("최대 5개까지 선택할 수 있습니다.");
+      if (maxSelection && prev.length >= maxSelection) {
+        toast.error(`최대 ${maxSelection}개까지 선택할 수 있습니다.`);
         return prev;
       }
       return [...prev, item];
@@ -66,7 +68,9 @@ export default function MultiSelectList({
       <div className="space-y-4" onKeyDown={handleKeyPress}>
         <div className="flex items-center gap-2">
           <h2 className="pl-4 text-xl font-bold">{title}</h2>
-          <span className="text-sm text-gray-500">{selectedItems.length}/5 선택됨</span>
+          <span className="text-sm text-gray-500">
+            {maxSelection ? `${selectedItems.length}/${maxSelection} 선택됨` : `${selectedItems.length}개 선택됨`}
+          </span>
         </div>
         <div className="max-h-[50vh] overflow-y-auto">
           {selectList?.map((key) => (
