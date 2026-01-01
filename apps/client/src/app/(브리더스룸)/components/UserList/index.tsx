@@ -1,7 +1,7 @@
 import Loading from "@/components/common/Loading";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { userControllerGetUserListSimple, UserSimpleDto } from "@repo/api-client";
+import { userControllerGetUserListSimple, UserProfilePublicDto } from "@repo/api-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -10,7 +10,7 @@ import UserItem from "./UserItem";
 
 interface UserListProps {
   selectedUserId?: string;
-  onSelect: (user: UserSimpleDto) => void;
+  onSelect: (user: UserProfilePublicDto) => void;
 }
 
 const UserList = ({ selectedUserId, onSelect }: UserListProps) => {

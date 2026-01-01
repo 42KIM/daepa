@@ -1,7 +1,7 @@
-import { Badge } from "@/components/ui/badge";
 import { PetParentDtoWithMessage } from "@/app/(브리더스룸)/pet/store/parentLink";
 import { cn } from "@/lib/utils";
 import PetThumbnail from "@/components/common/PetThumbnail";
+import BadgeList from "../BadgeList";
 
 const PetItem = ({
   item,
@@ -30,25 +30,21 @@ const PetItem = ({
         <div className="relative aspect-square w-full overflow-hidden rounded-lg">
           <PetThumbnail petId={item.petId} alt={item.name} maxSize={90} />
         </div>
-        <div className="flex w-full flex-col items-center gap-1">
-          <div className="relative">
-            <span className="relative font-semibold after:absolute after:-bottom-[1px] after:left-1 after:h-[12px] after:w-full after:bg-transparent after:opacity-40 after:content-[''] group-hover:after:bg-[#247DFE]">
+        <div className="flex w-full flex-col gap-1">
+          <div className="text-center">
+            <span className="relative text-center font-semibold after:absolute after:-bottom-[1px] after:left-1 after:h-[12px] after:w-full after:bg-transparent after:opacity-40 after:content-[''] group-hover:after:bg-[#247DFE]">
               {item.name}
             </span>
           </div>
-          <div className="flex flex-wrap justify-center gap-1">
-            {item.morphs?.map((morph) => (
-              <Badge key={morph} className="bg-blue-800 text-white">
-                {morph}
-              </Badge>
-            ))}
 
-            {item.traits?.map((trait) => (
-              <Badge variant="outline" key={trait} className="bg-white text-black dark:bg-blue-100">
-                {trait}
-              </Badge>
-            ))}
-          </div>
+          <BadgeList items={item.morphs} badgeSize={"sm"} maxDisplay={3} />
+          <BadgeList
+            items={item.traits}
+            badgeSize={"sm"}
+            maxDisplay={3}
+            variant="outline"
+            badgeClassName="bg-white text-black"
+          />
         </div>
       </div>
     </button>

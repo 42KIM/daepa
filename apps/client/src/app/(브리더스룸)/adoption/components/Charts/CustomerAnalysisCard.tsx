@@ -113,7 +113,6 @@ const CustomerSection = ({
         <div className="flex items-center gap-2 font-semibold">
           {icon}
           <span className="text-[15px] text-gray-800">{title}</span>
-          <span className="text-sm text-gray-400">{customers.length}명</span>
         </div>
         <ChevronDown
           className={`h-4 w-4 text-gray-500 transition-transform duration-300 ease-in-out ${

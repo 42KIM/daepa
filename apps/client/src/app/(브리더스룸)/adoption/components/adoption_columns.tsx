@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge";
 import {
   AdoptionDto,
   PetHiddenStatusDtoHiddenStatus,
@@ -21,6 +20,7 @@ import { isNotNil } from "es-toolkit";
 import LinkButton from "../../components/LinkButton";
 import { BadgeCheck, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import BadgeList from "../../components/BadgeList";
 
 export const columns: ColumnDef<AdoptionDto>[] = [
   {
@@ -67,11 +67,8 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     header: "모프",
     cell: ({ row }) => {
       const morphs = row.original.pet.morphs;
-      return (
-        <div className="flex flex-wrap gap-1">
-          {morphs?.map((morph) => <Badge key={morph}>{morph}</Badge>)}
-        </div>
-      );
+
+      return <BadgeList items={morphs} />;
     },
   },
   {
@@ -79,11 +76,8 @@ export const columns: ColumnDef<AdoptionDto>[] = [
     header: "형질",
     cell: ({ row }) => {
       const traits = row.original.pet.traits;
-      return (
-        <div className="flex flex-wrap gap-1">
-          {traits?.map((trait) => <Badge key={trait}>{trait}</Badge>)}
-        </div>
-      );
+
+      return <BadgeList items={traits} variant="outline" badgeClassName="bg-white text-black" />;
     },
   },
   {

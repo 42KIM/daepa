@@ -12,7 +12,7 @@ export type BrPetControllerGetPetsByMonthParams = {
    */
   year: string;
   /**
-   * 월 (0-11)
+   * 월 (1-12)
    */
   month: string;
 };

@@ -1,7 +1,7 @@
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdoptionDto, AdoptionDtoStatus } from "@repo/api-client";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { Info } from "lucide-react";
 import { useMemo } from "react";
 
@@ -24,7 +24,9 @@ const AdoptionCalendar = ({ data, selectedYear, selectedMonth }: AdoptionCalenda
 
     // 해당 월의 모든 날짜에 대해 초기값 설정
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateKey = format(new Date(selectedYear, selectedMonth - 1, day), "yyyyMMdd");
+      const dateKey = DateTime.fromJSDate(
+        new Date(selectedYear, selectedMonth - 1, day),
+      ).toFormat("yyyyMMdd");
       dailyData[dateKey] = { sold: 0, onSale: 0, onReservation: 0, total: 0 };
     }
 
@@ -33,7 +35,7 @@ const AdoptionCalendar = ({ data, selectedYear, selectedMonth }: AdoptionCalenda
       if (adoption.adoptionDate) {
         const date = new Date(adoption.adoptionDate);
         if (date.getFullYear() === selectedYear && date.getMonth() === selectedMonth - 1) {
-          const dateKey = format(date, "yyyyMMdd");
+          const dateKey = DateTime.fromJSDate(date).toFormat("yyyyMMdd");
           if (dailyData[dateKey]) {
             switch (adoption.status) {
               case AdoptionDtoStatus.SOLD:
@@ -80,7 +82,7 @@ const AdoptionCalendar = ({ data, selectedYear, selectedMonth }: AdoptionCalenda
       }}
       components={{
         DayContent: ({ date }: { date: Date }) => {
-          const dateKey = format(date, "yyyyMMdd");
+          const dateKey = DateTime.fromJSDate(date).toFormat("yyyyMMdd");
           const count = dailyAdoptionData[dateKey] ?? {
             sold: 0,
             onSale: 0,

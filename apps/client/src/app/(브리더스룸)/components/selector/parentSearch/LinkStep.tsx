@@ -8,6 +8,7 @@ import FloatingButton from "../../FloatingButton";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
 import PetThumbnail from "@/components/common/PetThumbnail";
+import BadgeList from "../../BadgeList";
 
 interface LinkStepProps {
   selectedPet: PetParentDtoWithMessage;
@@ -60,13 +61,7 @@ const LinkStep = ({ selectedPet, onSelect, onClose }: LinkStepProps) => {
               <div className="space-y-1">
                 <div>
                   <h4 className="mb-1.5 text-[12px] font-medium text-gray-500">모프</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedPet.morphs?.map((morph) => (
-                      <Badge key={morph} className="bg-blue-800 text-white">
-                        {morph}
-                      </Badge>
-                    ))}
-                  </div>
+                  <BadgeList items={selectedPet.morphs} />
                 </div>
 
                 <div>

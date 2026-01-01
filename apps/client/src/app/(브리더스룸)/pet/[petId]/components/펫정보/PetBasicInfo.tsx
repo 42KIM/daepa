@@ -2,7 +2,7 @@ import NameDuplicateCheckInput from "@/app/(브리더스룸)/components/NameDupl
 import CalendarInput from "@/app/(브리더스룸)/hatching/components/CalendarInput";
 import SingleSelect from "@/app/(브리더스룸)/components/selector/SingleSelect";
 import FormItem from "../FormItem";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { PetDtoSpecies } from "@repo/api-client";
 import { Info } from "lucide-react";
 
@@ -56,7 +56,7 @@ export const PetBasicInfo = ({
               value={formData.hatchingDate}
               onSelect={(date) => {
                 if (!date) return;
-                onHatchingDateChange(format(date, "yyyy-MM-dd"));
+                onHatchingDateChange(DateTime.fromJSDate(date).toFormat("yyyy-MM-dd"));
               }}
             />
           }

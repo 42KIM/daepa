@@ -10,14 +10,15 @@ import { brPetControllerGetPetsByMonth, PetDto, PetDtoType } from "@repo/api-cli
 import HatchingPetCard from "./HatchingPetCard";
 
 import { Calendar } from "./Calendar";
-import { format, getWeekOfMonth } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
 import { DateTime } from "luxon";
+import Image from "next/image";
 
 const MonthlyCalendar = memo(() => {
   const isMobile = useIsMobile();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const groupRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,13 +29,13 @@ const MonthlyCalendar = memo(() => {
   const { data: monthlyData, isPending: monthlyIsPending } = useQuery({
     queryKey: [
       brPetControllerGetPetsByMonth.name,
-      (selectedDate ?? new Date()).getFullYear(),
-      (selectedDate ?? new Date()).getMonth(),
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
     ],
     queryFn: () =>
       brPetControllerGetPetsByMonth({
-        year: (selectedDate ?? new Date()).getFullYear().toString(),
-        month: (selectedDate ?? new Date()).getMonth().toString(),
+        year: currentMonth.getFullYear().toString(),
+        month: (currentMonth.getMonth() + 1).toString(),
       }),
     select: (data) => data.data.data,
   });
@@ -76,10 +77,12 @@ const MonthlyCalendar = memo(() => {
     const groups: Array<{ weekKey: string; label: string; items: Array<[string, PetDto[]]> }> = [];
     let currentKey: string | null = null;
     for (const [date, pets] of sortedEntries) {
-      const d = new Date(date);
-      const week = getWeekOfMonth(d, { weekStartsOn: 1 });
-      const label = `${format(d, "MM월 ")}${week}주차`;
-      const key = `${format(d, "yyyy-MM")}-w${week}`;
+      const dt = DateTime.fromISO(date);
+      // 주차 계산 (월요일 시작 기준)
+      const firstDayOfMonth = dt.startOf("month");
+      const week = Math.ceil((dt.day + firstDayOfMonth.weekday - 1) / 7);
+      const label = `${dt.toFormat("MM")}월 ${week}주차`;
+      const key = `${dt.toFormat("yyyy-MM")}-w${week}`;
       if (key !== currentKey) {
         groups.push({ weekKey: key, label, items: [] });
         currentKey = key;
@@ -119,15 +122,16 @@ const MonthlyCalendar = memo(() => {
   ];
 
   return (
-    <div className={"flex"}>
+    <div className="flex">
       {!isMobile && (
         <Calendar
           mode="single"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
+          selected={selectedDate}
           onSelect={(date) => {
             if (!date) return;
             setSelectedDate(date);
           }}
+          onMonthChange={(month) => setCurrentMonth(month)}
           eggCounts={petCounts}
         />
       )}
@@ -137,22 +141,24 @@ const MonthlyCalendar = memo(() => {
           <div
             className={cn(
               "shrink-0 transition-all duration-300",
-              isScrolled && "sticky top-0 z-20 h-fit w-full origin-top-left scale-75 bg-white",
+              isScrolled &&
+                "sticky top-0 z-20 w-full origin-top-left scale-75 bg-white [margin-bottom:-20%]",
             )}
           >
             <Calendar
               mode="single"
-              selected={selectedDate ? new Date(selectedDate) : undefined}
+              selected={selectedDate}
               onSelect={(date) => {
                 if (!date) return;
                 setSelectedDate(date);
               }}
+              onMonthChange={(month) => setCurrentMonth(month)}
               eggCounts={petCounts}
             />
           </div>
         )}
 
-        <div>
+        <div className="w-full">
           <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1">
             {tabs.map(({ key, label }) => {
               return (
@@ -169,16 +175,34 @@ const MonthlyCalendar = memo(() => {
               );
             })}
           </div>
+
           <ScrollArea
             ref={scrollAreaRef}
-            className={cn("relative", isMobile ? "h-[calc(100vh-320px)]" : "h-[calc(100vh-200px)]")}
+            className={cn(
+              "relative",
+              isMobile
+                ? isScrolled
+                  ? "h-[calc(100vh-320px)]"
+                  : "h-[calc(100vh-390px)]"
+                : "h-[calc(100vh-150px)]",
+            )}
           >
             {monthlyIsPending || todayIsFetching ? (
               <Loading />
+            ) : weeklyGroups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center pt-10 text-gray-700">
+                <Image
+                  src="/assets/lizard.png"
+                  alt="해칭 캘린더 도마뱀 이미지"
+                  width={100}
+                  height={100}
+                />
+                조회된 해칭 내역이 없습니다.
+              </div>
             ) : (
               weeklyGroups.map((group) => (
                 <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
-                  <div className="sticky top-0 z-10 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
+                  <div className="sticky top-0 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60">
                     {group.label}
                   </div>
                   {group.items

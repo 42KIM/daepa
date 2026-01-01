@@ -15,7 +15,7 @@ import { useSelect } from "../../register/hooks/useSelect";
 import { PetParentDtoWithMessage } from "../../pet/store/parentLink";
 import { usePathname } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { Calendar } from "@/components/ui/calendar";
 import {
   EggDetailDtoStatus,
@@ -238,7 +238,7 @@ export const FormField = ({
                   value && "text-black",
                 )}
               >
-                {value ? format(new Date(value), "yyyy년 MM월 dd일") : placeholder}
+                {value ? DateTime.fromJSDate(new Date(value)).toFormat("yyyy년 MM월 dd일") : placeholder}
                 {!disabled && <CalendarIcon className="h-4 w-4 opacity-50" />}
               </button>
             </PopoverTrigger>

@@ -11,7 +11,7 @@ import {
   CreateInitUserInfoDto,
   UserDto,
   UserFilterDto,
-  UserSimpleDto,
+  UserProfilePublicDto,
 } from './user.dto';
 import { ProviderInfo } from 'src/auth/auth.types';
 import { USER_ROLE, USER_STATUS } from './user.constant';
@@ -83,11 +83,12 @@ export class UserService {
     };
   }
 
-  private toUserSimpleDto(entity: UserEntity): UserSimpleDto {
+  private toUserSimpleDto(entity: UserEntity): UserProfilePublicDto {
     return {
+      status: entity.status,
       userId: entity.userId,
       name: entity.name,
-      email: entity.email,
+      role: entity.role,
       isBiz: entity.isBiz,
     };
   }
@@ -227,7 +228,7 @@ export class UserService {
   async getUserListSimple(
     query: UserFilterDto,
     userId: string,
-  ): Promise<PageDto<UserSimpleDto>> {
+  ): Promise<PageDto<UserProfilePublicDto>> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('users')
       .where('users.status = :status', {

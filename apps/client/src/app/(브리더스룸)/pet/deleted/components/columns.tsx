@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { SPECIES_KOREAN_ALIAS_INFO, SPECIES_KOREAN_INFO, TABLE_HEADER } from "../../../constants";
 import { DeletedPetDto, PetDtoSpecies } from "@repo/api-client";
-import { format, isValid, parseISO } from "date-fns";
+import { DateTime } from "luxon";
 import TooltipText from "../../../components/TooltipText";
 import { RestorePetButton } from "./RestorePetButton";
 
@@ -39,8 +39,8 @@ export const columns: ColumnDef<DeletedPetDto>[] = [
       if (!hatchingDate) return <div className="text-center">-</div>;
 
       const raw = hatchingDate as string | Date;
-      const d = typeof raw === "string" ? parseISO(raw) : raw;
-      return <div className="text-center">{isValid(d) ? format(d, "yyyy-MM-dd") : "-"}</div>;
+      const d = typeof raw === "string" ? DateTime.fromISO(raw) : DateTime.fromJSDate(raw);
+      return <div className="text-center">{d.isValid ? d.toFormat("yyyy-MM-dd") : "-"}</div>;
     },
   },
   {
@@ -51,10 +51,10 @@ export const columns: ColumnDef<DeletedPetDto>[] = [
       if (!deletedAt) return <div className="text-center">-</div>;
 
       const raw = deletedAt as string | Date;
-      const d = typeof raw === "string" ? parseISO(raw) : raw;
+      const d = typeof raw === "string" ? DateTime.fromISO(raw) : DateTime.fromJSDate(raw);
       return (
         <div className="text-center text-sm text-gray-500">
-          {isValid(d) ? format(d, "yyyy-MM-dd HH:mm") : "-"}
+          {d.isValid ? d.toFormat("yyyy-MM-dd HH:mm") : "-"}
         </div>
       );
     },

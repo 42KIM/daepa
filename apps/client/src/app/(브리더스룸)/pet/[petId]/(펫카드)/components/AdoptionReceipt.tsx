@@ -5,8 +5,7 @@ import {
   PetAdoptionDtoStatus,
   petControllerFindPetByPetId,
 } from "@repo/api-client";
-import { format, parseISO } from "date-fns";
-import { ko } from "date-fns/locale";
+import { DateTime } from "luxon";
 import { useState, memo, useCallback, useMemo } from "react";
 import { PencilIcon } from "lucide-react";
 import AdoptionDetailModal from "@/app/(브리더스룸)/adoption/components/AdoptionDetailModal";
@@ -38,11 +37,9 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
   }, [adoption?.status]);
 
   const adoptionDateText = useMemo(() => {
-    return adoption?.adoptionDate
-      ? format(parseISO(adoption.adoptionDate?.toString() ?? ""), "yyyy년 MM월 dd일", {
-          locale: ko,
-        })
-      : "미정";
+    if (!adoption?.adoptionDate) return "미정";
+    const dt = DateTime.fromISO(adoption.adoptionDate.toString());
+    return dt.isValid ? dt.toFormat("yyyy년 MM월 dd일") : "미정";
   }, [adoption?.adoptionDate]);
 
   const animationDelay = useMemo(() => {
@@ -138,7 +135,7 @@ const AdoptionReceipt = memo(({ adoption, isEditable = true }: AdoptionReceiptPr
             style={{ animationDelay: "0.8s" }}
           >
             <span className="text-sm text-gray-600 dark:text-gray-400">분양 가격</span>
-            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+            <span className="text-sm font-bold text-green-600 dark:text-gray-200">
               {isNotNil(adoption?.price) ? `${adoption.price.toLocaleString()}원` : "-"}
             </span>
           </div>

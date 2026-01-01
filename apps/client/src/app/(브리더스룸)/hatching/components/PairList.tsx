@@ -15,7 +15,7 @@ import { AxiosError } from "axios";
 import { useInView } from "react-intersection-observer";
 import Filters from "./Filters";
 import { useMatingFilterStore } from "../../store/matingFilter";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { isNil, omitBy } from "es-toolkit";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -52,8 +52,15 @@ const PairList = memo(() => {
         eggStatus,
       ],
       queryFn: ({ pageParam = 1 }) => {
-        const startYmd = startDate ? format(startDate, "yyyy-MM-dd") : undefined;
-        const endYmd = endDate ? format(endDate, "yyyy-MM-dd") : undefined;
+        const startYmd =
+          startDate && DateTime.fromISO(startDate).isValid
+            ? DateTime.fromISO(startDate).toFormat("yyyy-MM-dd")
+            : undefined;
+        const endYmd =
+          endDate && DateTime.fromISO(endDate).isValid
+            ? DateTime.fromISO(endDate).toFormat("yyyy-MM-dd")
+            : undefined;
+
         const filter = omitBy(
           {
             species: species ?? undefined,

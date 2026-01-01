@@ -1,5 +1,5 @@
 "use client";
-import { format, isValid, parseISO } from "date-fns";
+import { DateTime } from "luxon";
 import {
   EGG_STATUS_KOREAN_INFO,
   GENDER_KOREAN_INFO,
@@ -15,12 +15,12 @@ import {
   PetHiddenStatusDtoHiddenStatus,
 } from "@repo/api-client";
 
-import { cn } from "@/lib/utils";
-import { ko } from "date-fns/locale";
+import { cn, getEggDDayText } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import TooltipText from "../../components/TooltipText";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import BadgeList from "../../components/BadgeList";
 
 interface PetCardProps {
   date: string;
@@ -70,21 +70,22 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
           })
           .map((pet, index) => {
             const isEgg = pet.type === PetDtoType.EGG;
-            const morphs = pet.morphs?.join(" | ");
-            const traits = pet.traits?.join(" | ");
+
             return (
               <Link href={`/pet/${pet.petId}`} key={pet.petId} className="w-full">
                 <div
                   className={cn(
-                    "flex w-full flex-1 items-center p-2 text-[14px] hover:rounded-xl hover:bg-gray-100",
+                    "flex w-full flex-1 items-center justify-between p-2 text-[14px] hover:rounded-xl hover:bg-gray-100",
                   )}
                 >
                   <div className="flex">
                     <div className="flex w-[56px] items-center justify-center font-semibold text-gray-500">
-                      {index === 0 && date ? format(parseISO(date), "dd EE", { locale: ko }) : ""}
+                      {index === 0 && date
+                        ? DateTime.fromISO(date).setLocale("ko").toFormat("dd EEE")
+                        : ""}
                     </div>
 
-                    <div className="flex flex-col px-1 py-1.5">
+                    <div className="flex flex-col gap-1 px-1 py-1.5">
                       <div className="flex gap-1 font-semibold">
                         {pet.type === PetDtoType.PET ? (
                           <div className="flex items-center gap-1">
@@ -143,24 +144,45 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                           </div>
                         )}
                       </div>
-                      {morphs ? <span className="text-[12px] text-gray-500"> {morphs}</span> : null}
-                      {traits ? <span className="text-[12px] text-gray-500"> {traits}</span> : null}
+
+                      <BadgeList items={pet.morphs} />
+                      <BadgeList
+                        items={pet.traits}
+                        variant="outline"
+                        badgeClassName="bg-white text-black"
+                      />
+
                       {pet?.desc && <div className="text-gray-800">{pet.desc}</div>}
                     </div>
                   </div>
 
                   <div
-                    className={cn("text-gray-600", pet.type === PetDtoType.PET && "text-blue-700")}
+                    className={cn(
+                      "font-[600] text-gray-600",
+                      pet.type === PetDtoType.PET && "text-blue-700",
+                    )}
                   >
                     {pet.type === PetDtoType.EGG
-                      ? pet.eggDetail?.status
-                        ? EGG_STATUS_KOREAN_INFO[
-                            pet.eggDetail?.status ?? PetDtoEggStatus.UNFERTILIZED
-                          ]
-                        : ""
+                      ? (() => {
+                          const status = pet.eggDetail?.status;
+                          if (!status) return "";
+
+                          // 유정란인 경우 D-day 표시
+                          if (status === PetDtoEggStatus.FERTILIZED && date) {
+                            const dDayText = getEggDDayText(date, pet.temperature ?? 25);
+                            const colorClass = dDayText.startsWith("D-")
+                              ? "text-green-600"
+                              : dDayText.startsWith("D+")
+                                ? "text-red-500"
+                                : "text-blue-600";
+                            return <span className={colorClass}>{dDayText}</span>;
+                          }
+
+                          return EGG_STATUS_KOREAN_INFO[status];
+                        })()
                       : (() => {
-                          const d = parseISO(pet.hatchingDate ?? "");
-                          return isValid(d) ? format(d, "MM/dd 해칭", { locale: ko }) : "";
+                          const d = DateTime.fromISO(pet.hatchingDate ?? "");
+                          return d.isValid ? `${d.toFormat("MM/dd")} 해칭` : "";
                         })()}
                   </div>
                 </div>

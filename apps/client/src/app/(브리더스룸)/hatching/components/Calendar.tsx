@@ -7,7 +7,7 @@ import { DayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { useEffect } from "react";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 type EggCounts = Record<string, { hatched: number; egg: number; total: number }>;
 
 function Calendar({
@@ -32,7 +32,7 @@ function Calendar({
   return (
     <DayPicker
       disabled={(date) => {
-        const dateKey = format(date, "yyyy-MM-dd");
+        const dateKey = DateTime.fromJSDate(date).toFormat("yyyy-MM-dd");
         const count = eggCounts?.[dateKey];
         return !count || (count.egg === 0 && count.hatched === 0);
       }}
@@ -70,15 +70,19 @@ function Calendar({
           activeModifiers,
         }: {
           date: Date;
-          activeModifiers?: { outside?: boolean; disabled?: boolean };
+          activeModifiers?: { outside?: boolean; disabled?: boolean; selected?: boolean };
         }) => {
           const isDisabled = !!activeModifiers?.disabled;
           const isOutside = !!activeModifiers?.outside;
-          const colorClass = isDisabled
-            ? isOutside
-              ? "text-gray-300"
-              : "text-gray-500"
-            : undefined;
+          const isSelected = !!activeModifiers?.selected;
+
+          const colorClass = isSelected
+            ? "text-blue-600"
+            : isDisabled
+              ? isOutside
+                ? "text-gray-300"
+                : "text-gray-500"
+              : undefined;
 
           return (
             <div

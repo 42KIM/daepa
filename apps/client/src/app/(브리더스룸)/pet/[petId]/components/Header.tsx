@@ -129,7 +129,7 @@ const Header = ({ pet, tabs, activeTab, onTabClick }: HeaderProps) => {
 
           <div
             className={cn(
-              "font-semibold text-gray-800 transition-all max-[480px]:text-[16px]",
+              "font-semibold text-green-600 transition-all max-[480px]:text-[16px]",
               isScrolled ? "text-[16px]" : "text-[18px]",
             )}
           >

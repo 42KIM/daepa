@@ -1,4 +1,10 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
 import { PetService } from '../pet.service';
 import { PageMetaDto, PageDto } from 'src/common/page.dto';
 import {
@@ -79,8 +85,8 @@ export class BrPetController {
   })
   @ApiQuery({
     name: 'month',
-    description: '월 (0-11)',
-    example: 0,
+    description: '월 (1-12)',
+    example: 1,
   })
   @ApiResponse({
     status: 200,
@@ -92,7 +98,13 @@ export class BrPetController {
     @Query('year') year: string,
     @Query('month') month: string,
   ): Promise<FilterPetListResponseDto> {
-    const monthDate = new Date(Number(year), Number(month), 1);
+    const monthNum = Number(month);
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      throw new BadRequestException('월은 1부터 12 사이의 값이어야 합니다.');
+    }
+
+    const monthDate = new Date(Number(year), Number(month) - 1, 1);
+
     const data = await this.petService.getPetListByMonth(
       monthDate,
       token.userId,

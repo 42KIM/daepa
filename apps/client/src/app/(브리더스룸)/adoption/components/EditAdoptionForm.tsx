@@ -14,8 +14,7 @@ import {
 } from "@repo/api-client";
 import { useForm, useWatch } from "react-hook-form";
 import { cn, getChangedFields } from "@/lib/utils";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { DateTime } from "luxon";
 import { Calendar } from "@/components/ui/calendar";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -291,7 +290,7 @@ const EditAdoptionForm = ({ adoptionData, onSubmit, onCancel }: EditAdoptionForm
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP", { locale: ko })
+                          DateTime.fromJSDate(field.value).toFormat("yyyy년 M월 d일")
                         ) : (
                           <span>
                             {isAdoptionReservedOrSold

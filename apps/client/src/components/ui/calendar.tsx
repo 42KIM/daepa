@@ -3,7 +3,7 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -69,14 +69,14 @@ function Calendar({
         day_selected: "bg-zinc-800 text-zinc-100 focus:bg-zinc-800 focus:text-zinc-100",
         day_today: "bg-accent text-accent-foreground border-[1.8px] border-zinc-200",
         day_outside: "day-outside text-gray-200 aria-selected:text-blue-500",
-        day_disabled: "text-muted-foreground opacity-50",
+        day_disabled: "text-muted-foreground opacity-50 cursor-not-allowed",
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
         ...classNames,
       }}
       components={{
         DayContent: ({ date }: { date: Date }) => {
-          const dateKey = format(date, "yyyy-MM-dd");
+          const dateKey = DateTime.fromJSDate(date).toFormat("yyyy-MM-dd");
           const count = eggCounts?.[dateKey] ?? { hatched: 0, egg: 0, total: 0 };
 
           return (

@@ -10,9 +10,9 @@ import { DateTime } from "luxon";
 import { EyeOff, Lock, ScanFace } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { useUserStore } from "@/app/(브리더스룸)/store/user";
 import { cn, formatPrice } from "@/lib/utils";
+import BadgeList from "@/app/(브리더스룸)/components/BadgeList";
 
 /** 기본 펫 정보 인터페이스 */
 interface BasePetInfo {
@@ -165,19 +165,8 @@ export default function SiblingPetCard({
             )}
           </div>
 
-          {pet.morphs && pet.morphs.length > 0 && (
-            <div className="text-[14px] font-bold">{pet.morphs.join(" ")}</div>
-          )}
-
-          {pet.traits && pet.traits.length > 0 && (
-            <div className="flex flex-wrap gap-0.5">
-              {pet.traits.map((trait) => (
-                <Badge variant="outline" size="sm" key={trait}>
-                  {trait}
-                </Badge>
-              ))}
-            </div>
-          )}
+          <BadgeList items={pet.morphs} />
+          <BadgeList items={pet.traits} variant="outline" badgeClassName="bg-white text-black" />
 
           {pet.hatchingDate && (
             <span className="mt-2 text-[11px] font-[600] text-gray-500">
@@ -237,26 +226,8 @@ export default function SiblingPetCard({
             )}
           </div>
 
-          {pet.morphs && pet.morphs.length > 0 && (
-            <div className="mt-0.5 flex flex-wrap gap-1">
-              {pet.morphs.slice(0, 3).map((morph) => (
-                <Badge key={morph} variant="outline" className="text-xs">
-                  {morph}
-                </Badge>
-              ))}
-              {pet.morphs.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{pet.morphs.length - 3}
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {pet.traits && pet.traits.length > 0 && (
-            <div className="mt-0.5 text-[11px] text-gray-500">
-              {pet.traits.map((t) => `#${t}`).join(" ")}
-            </div>
-          )}
+          <BadgeList items={pet.morphs} />
+          <BadgeList items={pet.traits} variant="outline" badgeClassName="bg-white text-black" />
         </div>
 
         <div className="shrink-0 text-right">

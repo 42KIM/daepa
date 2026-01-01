@@ -9,10 +9,10 @@ import {
 import { UserService } from './user.service';
 import {
   CreateInitUserInfoDto,
-  UserSimpleDto,
   UserFilterDto,
   UserProfileResponseDto,
   VerifyNameDto,
+  UserProfilePublicDto,
 } from './user.dto';
 import { CommonResponseDto } from 'src/common/response.dto';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
@@ -26,7 +26,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/simple')
-  @ApiExtraModels(UserSimpleDto, PageMetaDto)
+  @ApiExtraModels(UserProfilePublicDto, PageMetaDto)
   @ApiResponse({
     status: 200,
     description: '사용자 간단정보 목록 조회',
@@ -36,7 +36,7 @@ export class UserController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: getSchemaPath(UserSimpleDto) },
+          items: { $ref: getSchemaPath(UserProfilePublicDto) },
         },
         meta: { $ref: getSchemaPath(PageMetaDto) },
       },
@@ -45,7 +45,7 @@ export class UserController {
   async getUserListSimple(
     @Query() query: UserFilterDto,
     @JwtUser() token: JwtUserPayload,
-  ): Promise<PageDto<UserSimpleDto>> {
+  ): Promise<PageDto<UserProfilePublicDto>> {
     return this.userService.getUserListSimple(query, token.userId);
   }
 

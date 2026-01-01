@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import QRCode from "qrcode";
-import { format, parse } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import {
   AdoptionDtoStatus,
@@ -10,6 +9,7 @@ import {
 } from "@repo/api-client";
 import { isEqual, isPlainObject, isUndefined, pick, uniq } from "es-toolkit";
 import { IMAGE_TRANSFORMS } from "@/app/constants";
+import { DateTime } from "luxon";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -39,15 +39,6 @@ export const generateQRCode = async (url: string) => {
     console.error("QR 코드 생성 실패:", err);
     throw err;
   }
-};
-
-export const formatDateToYYYYMMDDString = (
-  dateNumber: number,
-  formatType: string = "yyyy-MM-dd",
-): string => {
-  const parsedDate = parse(dateNumber.toString(), "yyyyMMdd", new Date());
-  const formattedDate = format(parsedDate, formatType);
-  return formattedDate;
 };
 
 export const getStatusBadge = (status?: AdoptionDtoStatus) => {
@@ -248,4 +239,33 @@ export const formatPrice = (price: number): string => {
     return `${Math.round(price / 10000).toLocaleString()}만원`;
   }
   return `${price.toLocaleString()}원`;
+};
+
+// 온도 기반 해칭 기간 계산 (일 단위)
+// 파충류(크레스티드 게코) 기준: 온도에 따라 부화 기간이 달라짐
+// 25°C 기준: 약 60일
+// 1°C 오를 때마다 10일 감소, 1°C 내릴때마다 10일 추가
+export const getIncubationDays = (temperature = 25) => {
+  const clampedTemp = Math.max(20, Math.min(30, temperature));
+  return 60 - (clampedTemp - 25) * 10;
+};
+
+/**
+ * 유정란의 D-day 텍스트를 계산합니다.
+ * @param layingDate - 산란일 (yyyy-MM-dd 형식)
+ * @param temperature - 인큐베이션 온도 (기본값: 25)
+ * @returns D-day 텍스트 (예: "D-10", "D-Day", "D+5")
+ */
+export const getEggDDayText = (layingDate: string, temperature = 25): string => {
+  const laying = DateTime.fromFormat(layingDate, "yyyy-MM-dd");
+  if (!laying.isValid) return "";
+
+  const incubationDays = getIncubationDays(temperature);
+  const expectedHatchDate = laying.plus({ days: incubationDays });
+  const today = DateTime.now().startOf("day");
+  const daysRemaining = Math.floor(expectedHatchDate.diff(today, "days").days);
+
+  if (daysRemaining > 0) return `D-${daysRemaining}`;
+  if (daysRemaining < 0) return `D+${Math.abs(daysRemaining)}`;
+  return "D-Day";
 };
