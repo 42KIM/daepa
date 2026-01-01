@@ -18,7 +18,7 @@ interface MatingFilterStore {
 }
 
 export const useMatingFilterStore = create<MatingFilterStore>((set) => ({
-  species: null,
+  species: "CR",
   father: null,
   mother: null,
   eggStatus: null,
