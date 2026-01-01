@@ -18,7 +18,7 @@ interface MatingFilterStore {
 }
 
 export const useMatingFilterStore = create<MatingFilterStore>((set) => ({
-  species: null,
+  species: "CR",
   father: null,
   mother: null,
   eggStatus: null,
@@ -30,7 +30,7 @@ export const useMatingFilterStore = create<MatingFilterStore>((set) => ({
   setEndDate: (endDate) => set({ endDate }),
   reset: () =>
     set({
-      species: null,
+      species: "CR",
       father: null,
       mother: null,
       startDate: undefined,

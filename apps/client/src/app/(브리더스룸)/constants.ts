@@ -256,25 +256,34 @@ export const EGG_EDIT_STEPS: FormStep[] = [
 export const MORPH_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>> = {
   CR: {
     노멀: "노멀",
-    하리퀸: "하리퀸",
-    다크: "다크",
-    파이어: "파이어",
-    트라이컬러: "트라이컬러",
-    기타: "기타",
-    "릴리 세이블": "릴리 세이블",
     릴리화이트: "릴리화이트",
-    "릴리100%헷아잔틱": "릴리100%헷아잔틱",
-    릴잔틱: "릴잔틱",
-    세이블: "세이블",
-    "슈퍼페이블 릴리": "슈퍼페이블 릴리",
-    "슈퍼 세이블": "슈퍼 세이블",
     아잔틱: "아잔틱",
-    초초: "초초",
+    릴리아잔틱: "릴리아잔틱",
     카푸치노: "카푸치노",
     프라푸치노: "프라푸치노",
+    세이블: "세이블",
+    릴리세이블: "릴리세이블",
+    초초: "초초",
+    릴리초초: "릴리초초",
     하이포: "하이포",
+    파이드: "파이드",
+    마블링: "마블링",
+    모노크롬: "모노크롬",
+    카푸치노아잔틱: "카푸치노아잔틱",
+    세이블아잔틱: "세이블아잔틱",
+    슈퍼카푸치노: "슈퍼카푸치노",
+    슈퍼세이블: "슈퍼세이블",
+    슈퍼세이블릴리: "슈퍼세이블릴리",
+    루왁: "루왁",
+    루왁릴리: "루왁릴리",
+    설악: "설악",
+    슈퍼하이포: "슈퍼하이포",
     "100%헷아잔틱": "100%헷아잔틱",
+    "66%헷아잔틱": "66%헷아잔틱",
+    "50%헷아잔틱": "50%헷아잔틱",
     "100%헷초초": "100%헷초초",
+    "66%헷초초": "66%헷초초",
+    "50%헷초초": "50%헷초초",
   },
   LE: {
     노멀: "노멀",
@@ -320,22 +329,37 @@ export const MORPH_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>
 
 export const TRAIT_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>> = {
   CR: {
-    트라이: "트라이",
-    익스트림할리퀸: "익스트림할리퀸",
+    트익할: "트익할",
+    차콜: "차콜",
+    팬텀: "팬텀",
     풀핀: "풀핀",
     쿼드: "쿼드",
-    크림: "크림",
-    크림시클: "크림시클",
-    레드: "레드",
-    챠콜: "챠콜",
-    엠티백: "엠티백",
-    솔리드백: "솔리드백",
-    슈퍼스트라이프: "슈퍼스트라이프",
-    브린들: "브린들",
-    달마시안: "달마시안",
+    핀스트라이프: "핀스트라이프",
     드리피: "드리피",
     화이트스팟: "화이트스팟",
+    솔리드백: "솔리드백",
+    엠티백: "엠티백",
+    SS: "SS",
+    SPT: "SPT",
+    퓨어화이트: "퓨어화이트",
+    화이트포트홀: "화이트포트홀",
+    크림: "크림",
+    크림시클: "크림시클",
+    달마시안: "달마시안",
+    슈퍼달마시안: "슈퍼달마시안",
+    트라이: "트라이",
+    할리퀸: "할리퀸",
+    익스트림할리퀸: "익스트림할리퀸",
+    바이: "바이",
+    레드: "레드",
     탠저린: "탠저린",
+    스트로베리: "스트로베리",
+    옐로우: "옐로우",
+    패턴리스: "패턴리스",
+    브린들: "브린들",
+    벅스킨: "벅스킨",
+    플레임: "플레임",
+    할로윈: "할로윈",
   },
   LE: {
     노멀: "노멀",
@@ -469,14 +493,7 @@ export const ADOPTION_METHOD_KOREAN_INFO: Record<PetAdoptionDtoMethod, string> =
 };
 
 export const SELECTOR_CONFIGS: Record<
-  | "species"
-  | "growth"
-  | "sex"
-  | "foods"
-  | "eggStatus"
-  | "traits"
-  | "adoptionStatus"
-  | "adoptionMethod",
+  "species" | "growth" | "sex" | "foods" | "eggStatus" | "adoptionStatus" | "adoptionMethod",
   { title: string; selectList: { key: string; value: string }[] }
 > = {
   species: {
@@ -486,26 +503,27 @@ export const SELECTOR_CONFIGS: Record<
         key: "CR",
         value: "크레스티드 게코",
       },
-      {
-        key: "LE",
-        value: "레오파드 게코",
-      },
-      {
-        key: "FT",
-        value: "펫테일 게코",
-      },
-      {
-        key: "KN",
-        value: "납테일 게코",
-      },
-      {
-        key: "LC",
-        value: "리키에너스",
-      },
-      {
-        key: "GG",
-        value: "가고일 게코",
-      },
+      // TODO!: 추후 다른 종도 노출
+      // {
+      //   key: "LE",
+      //   value: "레오파드 게코",
+      // },
+      // {
+      //   key: "FT",
+      //   value: "펫테일 게코",
+      // },
+      // {
+      //   key: "KN",
+      //   value: "납테일 게코",
+      // },
+      // {
+      //   key: "LC",
+      //   value: "리키에너스",
+      // },
+      // {
+      //   key: "GG",
+      //   value: "가고일 게코",
+      // },
     ],
   },
   growth: {
@@ -570,43 +588,6 @@ export const SELECTOR_CONFIGS: Record<
       {
         key: "지렙 인섹트",
         value: "지렙 인섹트",
-      },
-    ],
-  },
-  traits: {
-    title: "형질",
-    selectList: [
-      {
-        key: "트익할",
-        value: "트익할",
-      },
-      {
-        key: "풀핀",
-        value: "풀핀",
-      },
-      {
-        key: "노멀",
-        value: "노멀",
-      },
-      {
-        key: "하리퀸",
-        value: "하리퀸",
-      },
-      {
-        key: "다크",
-        value: "다크",
-      },
-      {
-        key: "파이어",
-        value: "파이어",
-      },
-      {
-        key: "트라이컬러",
-        value: "트라이컬러",
-      },
-      {
-        key: "기타",
-        value: "기타",
       },
     ],
   },

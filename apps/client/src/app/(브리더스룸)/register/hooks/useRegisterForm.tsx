@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { DUPLICATE_CHECK_STATUS } from "../../constants";
+import { DUPLICATE_CHECK_STATUS, TRAIT_LIST_BY_SPECIES } from "../../constants";
 import { FormFieldName, FormStep } from "../../pet/types/form.type";
 import {
   MORPH_LIST_BY_SPECIES,
@@ -158,6 +158,9 @@ export const useRegisterForm = ({
         case "morphs": {
           return MORPH_LIST_BY_SPECIES[formData.species as PetDtoSpecies];
         }
+        case "traits": {
+          return TRAIT_LIST_BY_SPECIES[formData.species as PetDtoSpecies];
+        }
         default: {
           const config = SELECTOR_CONFIGS[type as SELECTOR_TYPE];
           if (!config) return {};
@@ -190,6 +193,7 @@ export const useRegisterForm = ({
           displayMap={displayMap}
           initialValue={formData[type]}
           onExit={unmount}
+          maxSelection={type === "traits" ? 10 : 5}
         />
       ));
     },
