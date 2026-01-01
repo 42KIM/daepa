@@ -264,6 +264,7 @@ export const MORPH_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>
     세이블: "세이블",
     릴리세이블: "릴리세이블",
     초초: "초초",
+    릴리초초: "릴리초초",
     하이포: "하이포",
     파이드: "파이드",
     마블링: "마블링",
