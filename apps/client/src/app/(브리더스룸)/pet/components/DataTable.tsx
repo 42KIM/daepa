@@ -29,6 +29,7 @@ import Link from "next/link";
 import SearchInput from "../../components/SearchInput";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useSearchKeywordStore } from "../../store/searchKeyword";
+import Image from "next/image";
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -40,6 +41,7 @@ interface DataTableProps<TData> {
   hasFilter?: boolean;
   isClickable?: boolean;
   refetch: () => Promise<unknown> | void;
+  isEmpty?: boolean;
 }
 
 export const DataTable = ({
@@ -52,6 +54,7 @@ export const DataTable = ({
   hasFilter = true,
   isClickable = true,
   refetch,
+  isEmpty = false,
 }: DataTableProps<PetDto>) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { sorting, rowSelection, setSorting, setRowSelection } = useTableStore();
@@ -195,8 +198,28 @@ export const DataTable = ({
               </>
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  개체가 없습니다.
+                <TableCell
+                  colSpan={columns.length}
+                  onClick={() => {
+                    if (!isEmpty) return;
+
+                    router.push("/register/1");
+                  }}
+                >
+                  <div className="flex h-full w-full cursor-pointer flex-col items-center justify-center py-5 text-center text-gray-700">
+                    <Image
+                      src="/assets/lizard.png"
+                      alt="브리더스룸 로그인 로고"
+                      width={200}
+                      height={200}
+                    />
+                    개체가 없습니다.
+                    {isEmpty && (
+                      <div className="font-semibold text-blue-500">
+                        개체를 추가해 관리를 시작해보세요!
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}

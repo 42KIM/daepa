@@ -1,5 +1,5 @@
 import { MatingByParentsDto, PetDtoEggStatus } from "@repo/api-client";
-import { cn, getIncubationDays } from "@/lib/utils";
+import { getIncubationDays } from "@/lib/utils";
 import { Egg, Baby, CalendarCheck, CalendarHeart, CircleCheck, StickyNote } from "lucide-react";
 import { DateTime } from "luxon";
 
@@ -20,12 +20,6 @@ interface HatchingInfo {
 }
 
 const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
-  // 총 산란 횟수 계산
-  const totalLayings =
-    pair.matingsByDate?.reduce((acc, mating) => {
-      return acc + (mating.layingsByDate?.length ?? 0);
-    }, 0) ?? 0;
-
   // 총 유정란 개수 계산 (eggStatus가 'FERTILIZED'인 경우만)
   const totalEggs =
     pair.matingsByDate?.reduce((acc, mating) => {
@@ -130,27 +124,11 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
   // (부화한 알 개수 / 전체 알 개수) * 100
   const progress = totalAllEggs > 0 ? Math.round((totalHatched / totalAllEggs) * 100) : 0;
 
-  // 상태 결정 -> 해칭 대기중 , 첫 시즌
-  const getStatus = () => {
-    if (totalEggs > 0) return { label: "부화 대기", color: "bg-yellow-500" };
-    if (totalLayings > 0) return { label: "산란 완료", color: "bg-blue-500" };
-    return { label: "메이팅 완료", color: "bg-green-500" };
-  };
-
-  const status = getStatus();
-
   return (
     <div
       onClick={onClick}
       className="group relative flex cursor-pointer flex-col gap-3 rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800"
     >
-      {/* 상태 배지 */}
-      <div className="absolute left-1 top-1 z-10 flex items-center justify-between">
-        <span className={cn("rounded-lg px-3 py-1 text-xs font-semibold text-white", status.color)}>
-          {status.label}
-        </span>
-      </div>
-
       {/* 부모 정보 */}
       <div className="flex flex-1 items-center gap-2">
         <ParentCard parent={pair.father} />

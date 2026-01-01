@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CalendarSelect from "./CalendarSelect";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MatingByDateDto, MatingByParentsDto } from "@repo/api-client";
 import { cn } from "@/lib/utils";
 import { compact } from "es-toolkit";
@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, AlertCircle } from "lucide-react";
 import { overlay } from "overlay-kit";
 import EditMatingModal from "./EditMatingModal";
 import DeleteMatingModal from "./DeleteMatingModal";
@@ -49,12 +49,11 @@ const MatingDetailDialog = ({
 
   const [selectedMatingId, setSelectedMatingId] = useState<number | null>(null);
 
-  // Dialog 오픈/클로즈 상태 감지
   useEffect(() => {
     if (isOpen && matingGroup?.matingsByDate?.[0]) {
       setSelectedMatingId(matingGroup.matingsByDate[0].id);
     }
-  }, [isOpen, matingGroup?.matingsByDate]);
+  }, [isOpen]);
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -102,41 +101,56 @@ const MatingDetailDialog = ({
       <DialogContent
         className={cn("p-13 flex w-full flex-col rounded-3xl sm:max-w-[860px]", isMobile && "p-4")}
       >
-        <DialogTitle
-          className={cn("flex items-center gap-1 text-[28px]", isMobile && "pt-3 text-[18px]")}
-        >
-          {matingGroup.father?.petId ? (
-            matingGroup.father?.isDeleted ? (
-              <>
-                <span className="cursor-not-allowed line-through decoration-red-500">
+        <DialogTitle className="flex flex-col gap-2">
+          <div
+            className={cn("flex items-center gap-1 text-[28px]", isMobile && "pt-3 text-[18px]")}
+          >
+            {matingGroup.father?.petId ? (
+              matingGroup.father?.isDeleted ? (
+                <>
+                  <span className="cursor-not-allowed line-through decoration-red-500">
+                    {matingGroup.father?.name}
+                  </span>
+                  <span className="text-[12px] text-red-500">[삭제됨]</span>
+                </>
+              ) : (
+                <Link
+                  href={`/pet/${matingGroup.father?.petId}`}
+                  className="text-blue-600 underline"
+                >
                   {matingGroup.father?.name}
-                </span>
-                <span className="text-[12px] text-red-500">[삭제됨]</span>
-              </>
+                </Link>
+              )
             ) : (
-              <Link href={`/pet/${matingGroup.father?.petId}`} className="text-blue-600 underline">
-                {matingGroup.father?.name}
-              </Link>
-            )
-          ) : (
-            <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
-          )}
-          x
-          {matingGroup.mother?.petId ? (
-            matingGroup.mother?.isDeleted ? (
-              <>
-                <span className="cursor-not-allowed line-through decoration-red-500">
+              <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
+            )}
+            x
+            {matingGroup.mother?.petId ? (
+              matingGroup.mother?.isDeleted ? (
+                <>
+                  <span className="cursor-not-allowed line-through decoration-red-500">
+                    {matingGroup.mother?.name}
+                  </span>
+                  <span className="text-[12px] text-red-500">[삭제됨]</span>
+                </>
+              ) : (
+                <Link
+                  href={`/pet/${matingGroup.mother?.petId}`}
+                  className="text-blue-600 underline"
+                >
                   {matingGroup.mother?.name}
-                </span>
-                <span className="text-[12px] text-red-500">[삭제됨]</span>
-              </>
+                </Link>
+              )
             ) : (
-              <Link href={`/pet/${matingGroup.mother?.petId}`} className="text-blue-600 underline">
-                {matingGroup.mother?.name}
-              </Link>
-            )
-          ) : (
-            <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
+              <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
+            )}
+          </div>
+
+          {!isEditable && (
+            <div className="flex items-center gap-1 text-sm font-[500] text-red-600">
+              <AlertCircle size={15} />
+              부/모가 모두 삭제된 경우 산란을 추가할 수 없습니다.
+            </div>
           )}
         </DialogTitle>
 

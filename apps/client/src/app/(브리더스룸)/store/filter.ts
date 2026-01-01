@@ -14,5 +14,10 @@ export const useFilterStore = create<FilterStore<PetControllerFindAllParams>>()(
 
   // Actions
   setSearchFilters: (filters) => set({ searchFilters: filters }),
-  resetFilters: () => set({ searchFilters: {} }),
+  resetFilters: () =>
+    set({
+      searchFilters: {
+        species: "CR",
+      },
+    }),
 }));

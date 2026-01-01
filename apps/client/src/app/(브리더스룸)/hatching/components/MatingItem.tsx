@@ -17,6 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface MatingItemProps {
   mating: MatingByDateDto;
@@ -26,6 +27,7 @@ interface MatingItemProps {
 
 const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
   const queryClient = useQueryClient();
+  const isEditable = !father?.isDeleted && !mother?.isDeleted;
 
   const { mutateAsync: updateLayingDate } = useMutation({
     mutationFn: ({ id, newLayingDate }: { id: number; newLayingDate: string }) =>
@@ -156,13 +158,15 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
     <div className="relative flex h-[calc(100vh-300px)] w-full flex-col">
       <div className="flex flex-col justify-center gap-1">
         <div className="sticky top-0 z-20 flex items-center gap-1 overflow-x-auto bg-white pb-2">
-          <button
-            type="button"
-            onClick={handleAddLayingClick}
-            className="flex w-fit shrink-0 items-center gap-1 rounded-lg bg-blue-100 px-2 py-0.5 text-[14px] text-blue-600"
-          >
-            {sortedLayingsByDate.length === 0 && "산란 추가 "}+
-          </button>
+          {isEditable && (
+            <button
+              type="button"
+              onClick={handleAddLayingClick}
+              className="flex w-fit shrink-0 items-center gap-1 rounded-lg bg-blue-100 px-2 py-0.5 text-[14px] text-blue-600"
+            >
+              {sortedLayingsByDate.length === 0 && "산란 추가 "}+
+            </button>
+          )}
           {sortedLayingsByDate && sortedLayingsByDate.length > 0 && (
             <div className="flex gap-1">
               {sortedLayingsByDate.map((layingData) => (
@@ -186,8 +190,7 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
       </div>
 
       <ScrollArea className="relative flex h-[calc(100vh-350px)] w-full flex-col px-2">
-        {sortedLayingsByDate &&
-          sortedLayingsByDate.length > 0 &&
+        {sortedLayingsByDate && sortedLayingsByDate.length > 0 ? (
           sortedLayingsByDate.map((layingData) => (
             <div
               key={layingData.layingId}
@@ -231,7 +234,13 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
                 />
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700">
+            <Image src="/assets/lizard.png" alt="브리더스룸 로그인 로고" width={150} height={150} />
+            산란된 알이 없습니다.
+          </div>
+        )}
         <div className="h-30" />
       </ScrollArea>
     </div>

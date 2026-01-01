@@ -98,7 +98,7 @@ function SiblingsPage({ params }: PetDetailPageProps) {
   return (
     <div className={cn("flex flex-col gap-6 p-4", isMobile && "p-2")}>
       {/* 1. 부모 프로필 */}
-      {(siblingsData.father || siblingsData.mother) && (
+      {siblingsData.father || siblingsData.mother ? (
         <section>
           <h2 className="mb-3 text-[16px] font-bold text-gray-900">부모</h2>
           <HorizontalScrollSection>
@@ -116,6 +116,13 @@ function SiblingsPage({ params }: PetDetailPageProps) {
             )}
           </HorizontalScrollSection>
         </section>
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700">
+          <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={200} height={200} />
+          등록된 부/모 정보가 없습니다.
+          <br />
+          부/모를 등록해 펫의 관계도를 확인해보세요!
+        </div>
       )}
       <div className="flex gap-4">
         {/* 2. 내 프로필 */}
@@ -152,9 +159,13 @@ function SiblingsPage({ params }: PetDetailPageProps) {
       )}
 
       {/* 형제가 없는 경우 */}
-      {sameClutchSiblings.length === 0 && otherClutchSiblings.length === 0 && (
-        <div className="flex h-32 items-center justify-center text-gray-500">형제가 없습니다.</div>
-      )}
+      {(siblingsData.father || siblingsData.mother) &&
+        sameClutchSiblings.length === 0 &&
+        otherClutchSiblings.length === 0 && (
+          <div className="flex h-32 items-center justify-center text-[14px] text-gray-500">
+            등록된 형제가 없습니다.
+          </div>
+        )}
     </div>
   );
 }

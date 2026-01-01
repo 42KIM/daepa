@@ -9,6 +9,7 @@ import {
   AdoptionDtoStatus,
   brPetControllerFindAll,
   BrPetControllerFindAllOrder,
+  PetAdoptionDtoStatus,
   PetControllerFindAllFilterType,
   PetDto,
 } from "@repo/api-client";
@@ -23,9 +24,9 @@ import { Button } from "@/components/ui/button";
 import Header from "../../components/selector/parentSearch/Header";
 import { toast } from "sonner";
 import PetItem from "../../components/selector/PetItem";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tabs } from "@/components/ui/tabs";
 import Loading from "@/components/common/Loading";
+import SingleSelect from "../../components/selector/SingleSelect";
+import Image from "next/image";
 
 const CREATE_ADOPTION_MODAL_STEP = {
   PET_SELECT: 1,
@@ -56,7 +57,7 @@ const EditAdoptionModal = ({
   const [keyword, setKeyword] = useState("");
   const { ref, inView } = useInView();
   const itemPerPage = 10;
-  const [tab, setTab] = useState<"male" | "female">("male");
+  const [tab, setTab] = useState<"M" | "F">("M");
   const {
     data: pets,
     fetchNextPage,
@@ -96,7 +97,8 @@ const EditAdoptionModal = ({
   };
 
   const handlePetSelect = (pet: PetDto) => {
-    if (pet.adoption?.adoptionId) {
+    console.log("🚀 ~ handlePetSelect ~ pet:", pet.adoption);
+    if (pet.adoption?.status === PetAdoptionDtoStatus.NONE) {
       toast.error("이미 분양 정보가 있습니다.");
       return;
     }
@@ -133,7 +135,8 @@ const EditAdoptionModal = ({
               setStep={setStep}
               selectedPetName={selectedPet?.name ?? ""}
               setSearchQuery={setKeyword}
-              searchType={PetControllerFindAllFilterType.ALL}
+              searchType={PetControllerFindAllFilterType.MY}
+              allowMyPetOnly
               setSearchType={() => {}}
               className="py-0"
             />
@@ -143,32 +146,23 @@ const EditAdoptionModal = ({
         {step === CREATE_ADOPTION_MODAL_STEP.PET_SELECT ? (
           // 1단계: 펫 선택
           <div className="space-y-4">
-            <Tabs
-              defaultValue="male"
-              className="w-full"
-              onValueChange={(value) => {
-                setTab(value as "male" | "female");
-              }}
-            >
-              <TabsList className="grid h-12 w-full grid-cols-2 rounded-full p-1">
-                <TabsTrigger
-                  value="male"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
-                >
-                  수컷
-                </TabsTrigger>
-                <TabsTrigger
-                  value="female"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full text-sm text-zinc-600 data-[state=active]:font-bold dark:text-zinc-200"
-                >
-                  암컷
-                </TabsTrigger>
-              </TabsList>
+            <SingleSelect
+              type="sex"
+              initialItem={tab}
+              onSelect={(value) => setTab(value as "M" | "F")}
+              saveASAP
+            />
 
-              <ScrollArea className="h-[400px]">
+            <ScrollArea className="h-[400px]">
+              {pets?.filter((pet) => pet.sex === tab).length === 0 ? (
+                <div className="flex h-[300px] flex-col items-center justify-center text-sm text-gray-500">
+                  <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={200} height={200} />
+                  조회된 펫이 없습니다.
+                </div>
+              ) : (
                 <div className="mb-10 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                   {pets
-                    ?.filter((pet) => (tab === "male" ? pet.sex === "M" : pet.sex === "F"))
+                    ?.filter((pet) => pet.sex === tab)
                     .map((pet) => {
                       const disabled = adoptionData?.some(
                         (adoption) => adoption.petId === pet.petId,
@@ -194,8 +188,8 @@ const EditAdoptionModal = ({
                     </div>
                   )}
                 </div>
-              </ScrollArea>
-            </Tabs>
+              )}
+            </ScrollArea>
           </div>
         ) : selectedPet ? (
           // 2단계: 분양 정보 입력

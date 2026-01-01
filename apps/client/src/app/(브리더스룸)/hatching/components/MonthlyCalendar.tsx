@@ -190,13 +190,16 @@ const MonthlyCalendar = memo(() => {
             {monthlyIsPending || todayIsFetching ? (
               <Loading />
             ) : weeklyGroups.length === 0 ? (
-              <div className="flex flex-col items-center justify-center pt-10 text-gray-700">
+              <div className="flex flex-col items-center justify-center pt-10 text-[14px] text-gray-700">
                 <Image
                   src="/assets/lizard.png"
                   alt="해칭 캘린더 도마뱀 이미지"
-                  width={100}
-                  height={100}
+                  width={200}
+                  height={200}
                 />
+                <span className="font-semibold text-black">
+                  {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
+                </span>
                 조회된 해칭 내역이 없습니다.
               </div>
             ) : (

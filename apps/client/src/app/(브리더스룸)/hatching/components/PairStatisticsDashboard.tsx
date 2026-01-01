@@ -325,8 +325,8 @@ const PairStatisticsDashboard = memo(() => {
         </div>
       ) : (
         <div className="text-muted-foreground mt-6 flex flex-col items-center text-sm">
-          <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={100} height={100} />
-          선택한 기간에 해당하는 데이터가 없습니다.
+          <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={200} height={200} />
+          조회된 해칭 내역이 없습니다.
         </div>
       )}
     </div>

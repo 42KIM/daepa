@@ -33,7 +33,7 @@ import Image from "next/image";
 import { STATISTICS_COLORS, ADOPTION_STATISTICS_COLORS } from "../../constants";
 import { cn, formatPrice } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronDown } from "lucide-react";
 import SiblingPetCard from "../../pet/[petId]/relation/components/SiblingPetCard";
 
 // 연도 옵션 생성 (최근 5년)
@@ -114,6 +114,7 @@ const AdoptionDashboard = memo(() => {
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeItemDto | null>(null);
+  const [isParentSectionOpen, setIsParentSectionOpen] = useState(false);
 
   const yearOptions = useMemo(() => generateYearOptions(), []);
 
@@ -296,20 +297,66 @@ const AdoptionDashboard = memo(() => {
 
       {/* 선택된 부모 개체 표시 */}
       {(father || mother) && (
-        <div className="my-4 flex flex-wrap justify-center gap-3">
-          {father && (
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold text-blue-600">부</span>
-              <SiblingPetCard pet={father} width={140} />
-            </div>
-          )}
+        <div
+          className="my-2 rounded-2xl p-[1px]"
+          style={{
+            background: "linear-gradient(90deg, rgba(182, 210, 247, .5), rgba(230, 200, 240, .5))",
+          }}
+        >
+          <div className="relative overflow-hidden rounded-2xl bg-white py-2">
+            <div
+              className="pointer-events-none absolute inset-0 rounded-2xl"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(182, 210, 247, .25), rgba(245, 223, 255, .25))",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setIsParentSectionOpen(!isParentSectionOpen)}
+              className="relative flex w-full items-center justify-center gap-1 text-sm font-medium text-gray-600"
+            >
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: "linear-gradient(90deg, #3b82f6, #a855f7)",
+                }}
+              >
+                선택된 부모 개체
+              </span>
+              <ChevronDown
+                size={16}
+                className={cn(
+                  "text-[#a855f7] transition-transform duration-200",
+                  isParentSectionOpen && "rotate-180",
+                )}
+              />
+            </button>
+            <div
+              className={cn(
+                "relative grid transition-all duration-200",
+                isParentSectionOpen
+                  ? "mt-4 grid-rows-[1fr] opacity-100"
+                  : "grid-rows-[0fr] opacity-0",
+              )}
+            >
+              <div className="overflow-hidden">
+                <div className="flex flex-wrap justify-center gap-3 pt-2">
+                  {father && (
+                    <div className="mb-2 flex flex-col gap-1">
+                      <SiblingPetCard pet={father} width={140} />
+                    </div>
+                  )}
 
-          {mother && (
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold text-pink-500">모 </span>
-              <SiblingPetCard pet={mother} width={140} />
+                  {mother && (
+                    <div className="mb-2 flex flex-col gap-1">
+                      <SiblingPetCard pet={mother} width={140} />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -517,8 +564,8 @@ const AdoptionDashboard = memo(() => {
         </div>
       ) : (
         <div className="text-muted-foreground mt-6 flex flex-col items-center text-sm">
-          <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={100} height={100} />
-          선택한 기간에 해당하는 분양 데이터가 없습니다.
+          <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={200} height={200} />
+          조회된 분양 내역이 없습니다.
         </div>
       )}
 
