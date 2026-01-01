@@ -55,6 +55,7 @@ export function Filters({ showPublicFilter = true }: FiltersProps) {
 
       <SelectFilter
         showTitle
+        showSelectAll
         type="species"
         initialItem={searchFilters.species}
         saveASAP

@@ -509,26 +509,27 @@ export const SELECTOR_CONFIGS: Record<
         key: "CR",
         value: "크레스티드 게코",
       },
-      {
-        key: "LE",
-        value: "레오파드 게코",
-      },
-      {
-        key: "FT",
-        value: "펫테일 게코",
-      },
-      {
-        key: "KN",
-        value: "납테일 게코",
-      },
-      {
-        key: "LC",
-        value: "리키에너스",
-      },
-      {
-        key: "GG",
-        value: "가고일 게코",
-      },
+      // TODO!: 추후 다른 종도 노출
+      // {
+      //   key: "LE",
+      //   value: "레오파드 게코",
+      // },
+      // {
+      //   key: "FT",
+      //   value: "펫테일 게코",
+      // },
+      // {
+      //   key: "KN",
+      //   value: "납테일 게코",
+      // },
+      // {
+      //   key: "LC",
+      //   value: "리키에너스",
+      // },
+      // {
+      //   key: "GG",
+      //   value: "가고일 게코",
+      // },
     ],
   },
   growth: {
