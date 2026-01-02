@@ -100,17 +100,17 @@ function SiblingsPage({ params }: PetDetailPageProps) {
       {/* 1. 부모 프로필 */}
       {siblingsData.father || siblingsData.mother ? (
         <section>
-          <h2 className="mb-3 text-[16px] font-bold text-gray-900">부모</h2>
+          <h2 className="mb-3 text-[16px] font-bold text-gray-900 dark:text-gray-300">부모</h2>
           <HorizontalScrollSection>
             {siblingsData.father && (
               <div className="flex flex-col gap-1">
-                <span className="text-[12px] font-medium text-blue-600">부</span>
+                <span className="text-[12px] font-medium text-blue-600 dark:text-blue-800">부</span>
                 <SiblingPetCard pet={siblingsData.father} />
               </div>
             )}
             {siblingsData.mother && (
               <div className="flex flex-col gap-1">
-                <span className="text-[12px] font-medium text-red-600">모</span>
+                <span className="text-[12px] font-medium text-red-600 dark:text-red-800">모</span>
                 <SiblingPetCard pet={siblingsData.mother} />
               </div>
             )}

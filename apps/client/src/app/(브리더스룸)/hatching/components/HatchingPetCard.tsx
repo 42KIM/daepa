@@ -89,7 +89,7 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                       <div className="flex gap-1 font-semibold">
                         {pet.type === PetDtoType.PET ? (
                           <div className="flex items-center gap-1">
-                            <div className="text-gray-800">{pet?.name}</div>
+                            <div className="text-gray-800 dark:text-gray-300">{pet?.name}</div>
                             <div className="text-[12px] text-gray-500">
                               | {SPECIES_KOREAN_ALIAS_INFO[pet.species]}
                             </div>

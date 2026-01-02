@@ -25,10 +25,10 @@ interface CalendarEvent {
 }
 
 const EVENT_COLORS = {
-  mating: "bg-blue-200 text-blue-700 dark:bg-blue-800",
-  laying: "bg-amber-200 text-amber-800 dark:bg-amber-800",
-  hatching: "bg-green-200 text-green-800 dark:bg-green-800",
-  hatched: "bg-purple-200 text-purple-800 dark:bg-purple-800",
+  mating: "bg-blue-200 text-blue-700 dark:bg-blue-800 dark:text-blue-200",
+  laying: "bg-amber-200 text-amber-800 dark:bg-amber-600 dark:text-amber-200",
+  hatching: "bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200",
+  hatched: "bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200",
 };
 
 const PairMiniCalendar = ({ matingsByDate, onDateClick }: PairMiniCalendarProps) => {
@@ -151,7 +151,7 @@ const PairMiniCalendar = ({ matingsByDate, onDateClick }: PairMiniCalendarProps)
 
   if (!dateRange || events.length === 0) {
     return (
-      <div className="flex items-center justify-center py-4 text-sm text-gray-500">
+      <div className="flex items-center justify-center py-4 text-sm text-gray-500 dark:text-gray-400">
         메이팅 정보가 없습니다.
       </div>
     );
@@ -217,7 +217,7 @@ const PairMiniCalendar = ({ matingsByDate, onDateClick }: PairMiniCalendarProps)
       {/* 달력 테이블 */}
       <div className="overflow-hidden border border-gray-200 dark:border-gray-700">
         {/* 요일 헤더 */}
-        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center text-[10px] text-gray-500 dark:border-gray-700 dark:bg-gray-800">
+        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center text-[10px] text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
           {weekdays.map((day) => (
             <div key={day} className="py-1.5">
               {day}
@@ -245,8 +245,8 @@ const PairMiniCalendar = ({ matingsByDate, onDateClick }: PairMiniCalendarProps)
                 // 여러 이벤트가 겹치는 경우 그라데이션
                 const hasHatched = eventTypes.types.has(EGG_STATUS.HATCHED);
                 bgClass = hasHatched
-                  ? "bg-gradient-to-br from-blue-300 via-amber-300 to-purple-300"
-                  : "bg-gradient-to-br from-blue-200 via-amber-200 to-green-200";
+                  ? "bg-gradient-to-br from-blue-300 via-amber-300 to-purple-300 dark:from-blue-800 dark:via-amber-600 dark:to-purple-800"
+                  : "bg-gradient-to-br from-blue-200 via-amber-200 to-green-200 dark:from-blue-800 dark:via-amber-700 dark:to-green-800";
               }
             }
 
