@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import {
   User,
-  Bell,
+  // Bell,
   Shield,
   Palette,
   Moon,
@@ -47,11 +47,11 @@ const SettingsPage = () => {
   const queryClient = useQueryClient();
   const { logout } = useLogout();
   const { theme, setTheme } = useTheme();
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    marketing: false,
-  });
+  // const [notifications, setNotifications] = useState({
+  //   email: true,
+  //   push: true,
+  //   marketing: false,
+  // });
 
   // 닉네임 수정 관련 상태
   const [isEditingNickname, setIsEditingNickname] = useState(false);
@@ -74,12 +74,12 @@ const SettingsPage = () => {
     mutationFn: userControllerVerifyName,
   });
 
-  const toggleNotification = (type: keyof typeof notifications) => {
-    setNotifications((prev) => ({
-      ...prev,
-      [type]: !prev[type],
-    }));
-  };
+  // const toggleNotification = (type: keyof typeof notifications) => {
+  //   setNotifications((prev) => ({
+  //     ...prev,
+  //     [type]: !prev[type],
+  //   }));
+  // };
 
   const handleThemeChange = (isDark: boolean) => {
     setTheme(isDark ? "dark" : "light");
