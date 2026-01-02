@@ -26,8 +26,8 @@ const Menubar = ({ unreadCount }: { unreadCount: number }) => {
     >
       <div className="flex items-center">
         {!isMobile && (
-          <Link href="/pet" className="mr-10 font-bold">
-            <Image src="/assets/logo.png" alt="브리더스룸 로고" width={100} height={40} />
+          <Link href="/pet" className="mr-5 font-bold">
+            <Image src="/assets/logo.png" alt="브리더스룸 로고" width={60} height={60} />
           </Link>
         )}
         {SIDEBAR_ITEMS.map((item) => (

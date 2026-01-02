@@ -1,17 +1,18 @@
 import { MatingByParentsDto, PetDtoEggStatus } from "@repo/api-client";
 import { getIncubationDays } from "@/lib/utils";
-import { Egg, Baby, CalendarCheck, CalendarHeart, CircleCheck, StickyNote } from "lucide-react";
+import { StickyNote } from "lucide-react";
 import { DateTime } from "luxon";
 
 import { updatePairProps } from "./PairList";
 import ParentCard from "./ParentCard";
 import TooltipText from "../../components/TooltipText";
-import { useMemo } from "react";
-import { orderBy } from "es-toolkit";
+import PairMiniCalendar from "./PairMiniCalendar";
+
 interface PairCardProps {
   pair: MatingByParentsDto;
   onClickUpdateDesc: (data: updatePairProps) => void;
   onClick: () => void;
+  onDateClick?: (matingId: number) => void;
 }
 
 interface HatchingInfo {
@@ -19,7 +20,7 @@ interface HatchingInfo {
   matingIndex: number;
 }
 
-const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
+const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardProps) => {
   // 총 유정란 개수 계산 (eggStatus가 'FERTILIZED'인 경우만)
   const totalEggs =
     pair.matingsByDate?.reduce((acc, mating) => {
@@ -54,27 +55,6 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
         }, 0) ?? 0;
       return acc + hatchedCount;
     }, 0) ?? 0;
-
-  // 가장 최근 메이팅 정보 (1차)
-  const latestMating = pair.matingsByDate?.[0];
-  const latestMatingDate = latestMating?.matingDate;
-  const latestMatingIndex = pair.matingsByDate?.length ?? 1;
-
-  // 가장 최근 메이팅(시즌) 내에서 가장 최근 산란 정보 찾기
-  const latestLaying = useMemo(() => {
-    if (!latestMating?.layingsByDate || latestMating.layingsByDate.length === 0) {
-      return null;
-    }
-
-    const layingsOrdersByDesc = orderBy(latestMating.layingsByDate, ["layingDate"], ["desc"]);
-    const latestLayingDate = layingsOrdersByDesc[0]?.layingDate;
-    const latestLayingIndex = layingsOrdersByDesc.length;
-
-    return {
-      date: latestLayingDate,
-      layingIndex: latestLayingIndex,
-    };
-  }, [latestMating?.layingsByDate]);
 
   // 해칭 임박한 알 찾기: 아직 부화하지 않은 유정란 중 가장 가까운 예상 해칭일
   const today = DateTime.now();
@@ -120,100 +100,47 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
       );
     }, null) ?? null;
 
-  // 진행률 계산: 전체 알 개수 중 부화한 알의 퍼센테이지
-  // (부화한 알 개수 / 전체 알 개수) * 100
-  const progress = totalAllEggs > 0 ? Math.round((totalHatched / totalAllEggs) * 100) : 0;
-
   return (
-    <div
-      onClick={onClick}
-      className="group relative flex cursor-pointer flex-col gap-3 rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800"
-    >
+    <div className="group relative flex flex-col rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
       {/* 부모 정보 */}
       <div className="flex flex-1 items-center gap-2">
         <ParentCard parent={pair.father} />
         <ParentCard parent={pair.mother} />
       </div>
 
-      {/* 구분선 */}
-      <div className="h-px bg-gray-200 dark:bg-gray-700" />
+      {/* 미니 캘린더 */}
+      <PairMiniCalendar
+        matingsByDate={pair.matingsByDate ?? []}
+        onDateClick={(matingId) => {
+          onClick();
+          onDateClick?.(matingId);
+        }}
+      />
 
-      {/* 메이팅 정보 */}
-      <div className="flex flex-col gap-2 text-xs">
-        {latestMatingDate && (
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <CalendarHeart className="h-4 w-4" />
-            <span>
-              최근 메이팅:
-              <span className="font-[600] text-gray-900">
-                {" "}
-                {DateTime.fromFormat(latestMatingDate, "yyyy-MM-dd").toFormat("yy년 M월 d일")} (
-                {latestMatingIndex}시즌)
-              </span>
-            </span>
-          </div>
-        )}
-        {latestLaying && (
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <CalendarCheck className="h-4 w-4" />
-            <span>
-              최근 산란:
-              <span className="font-[600] text-gray-900">
-                {" "}
-                {latestLaying.date
-                  ? DateTime.fromFormat(latestLaying.date, "yyyy-MM-dd").toFormat("yy년 M월 d일")
-                  : "?"}{" "}
-                ({latestLaying.layingIndex}차)
-              </span>
-            </span>
-          </div>
-        )}
-        {totalEggs > 0 && (
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <Egg className="h-4 w-4" />
-            <span>
-              유정란:
-              <span className="font-[600] text-gray-900"> 총 {totalEggs}개</span>
-            </span>
-          </div>
-        )}
+      {/* 요약 정보 */}
+      <div className="mt-1 flex flex-col items-center gap-1">
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-1">
+            <span>유정란/전체</span>
 
-        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-          <CircleCheck className="h-4 w-4" />
-          <span>
-            해칭된 알 :
-            {totalHatched > 0 ? (
-              <span className="font-[600] text-gray-900"> 총 {totalHatched}개</span>
-            ) : (
-              <span> 없음</span>
-            )}
-          </span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
+              {totalEggs}/{totalAllEggs}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <span>
+              해칭{" "}
+              <span className="font-semibold text-gray-900 dark:text-gray-100">{totalHatched}</span>
+            </span>
+          </div>
         </div>
 
         {closestHatching && (
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <Baby className="h-4 w-4" />
-            <span>
-              해칭 임박:
-              <span className="font-[600] text-gray-900">
-                {" "}
-                {closestHatching.date.toFormat("yy.MM.dd")} ({closestHatching.matingIndex}차)
-              </span>
-            </span>
-          </div>
+          <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+            {closestHatching.date.toFormat("M/d")} 해칭예정
+          </span>
         )}
-      </div>
-
-      {/* 진행률 바 */}
-
-      <div className="flex flex-col gap-1">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-          <div
-            className="h-full bg-gradient-to-r from-yellow-100 to-yellow-600 transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <span className="text-right text-[10px] text-gray-500">{progress}%</span>
       </div>
 
       {/* 메모 영역 */}
@@ -226,7 +153,7 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc }: PairCardProps) => {
             desc: pair.desc,
           });
         }}
-        className="group/memo dark:to-gray-750 relative cursor-pointer rounded-lg border border-gray-200 bg-gradient-to-br from-amber-50/50 to-orange-50/30 px-3 transition-all hover:border-orange-300 hover:shadow-md dark:border-gray-700 dark:from-gray-800"
+        className="group/memo dark:to-gray-750 relative mt-3 cursor-pointer rounded-lg border border-gray-200 bg-gradient-to-br from-amber-50/50 to-orange-50/30 px-3 transition-all hover:border-orange-300 hover:shadow-md dark:border-gray-700 dark:from-gray-800"
       >
         <div className="flex items-center gap-2">
           <StickyNote className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-500" />

@@ -25,6 +25,7 @@ interface MatingDetailDialogProps {
   onClose: () => void;
   matingGroup: MatingByParentsDto | null;
   onConfirmAdd: (matingDate: string) => void;
+  initialMatingId?: number | null;
 }
 
 const MatingDetailDialog = ({
@@ -32,6 +33,7 @@ const MatingDetailDialog = ({
   onClose,
   matingGroup,
   onConfirmAdd,
+  initialMatingId,
 }: MatingDetailDialogProps) => {
   const isMobile = useIsMobile();
   const isEditable = !matingGroup?.father?.isDeleted && !matingGroup?.mother?.isDeleted;
@@ -50,10 +52,21 @@ const MatingDetailDialog = ({
   const [selectedMatingId, setSelectedMatingId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (isOpen && matingGroup?.matingsByDate?.[0]) {
-      setSelectedMatingId(matingGroup.matingsByDate[0].id);
+    if (isOpen && matingGroup?.matingsByDate) {
+      // initialMatingId가 있으면 해당 메이팅으로 포커스
+      if (initialMatingId) {
+        const matingExists = matingGroup.matingsByDate.some((m) => m.id === initialMatingId);
+        if (matingExists) {
+          setSelectedMatingId(initialMatingId);
+          return;
+        }
+      }
+      // 기본값: 첫 번째 메이팅 선택
+      if (matingGroup.matingsByDate[0]) {
+        setSelectedMatingId(matingGroup.matingsByDate[0].id);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialMatingId, matingGroup?.matingsByDate]);
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -211,26 +224,24 @@ const MatingDetailDialog = ({
                   </Select>
 
                   {/* 수정/삭제 버튼 */}
-                  {isEditable && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100"
-                        aria-label="교배 정보 수정"
-                        onClick={handleEditClick}
-                      >
-                        <Pencil className="h-4 w-4 text-blue-500" />
-                      </button>
-                      <button
-                        type="button"
-                        className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100"
-                        aria-label="교배 정보 삭제"
-                        onClick={handleDeleteClick}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100"
+                      aria-label="교배 정보 수정"
+                      onClick={handleEditClick}
+                    >
+                      <Pencil className="h-4 w-4 text-blue-500" />
+                    </button>
+                    <button
+                      type="button"
+                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100"
+                      aria-label="교배 정보 삭제"
+                      onClick={handleDeleteClick}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* 메이팅 추가 */}
