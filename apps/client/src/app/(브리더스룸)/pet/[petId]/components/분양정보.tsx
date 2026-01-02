@@ -151,9 +151,9 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                 close();
               }}
             >
-              <DialogContent className="rounded-3xl p-6">
+              <DialogContent className="rounded-3xl p-6 dark:bg-neutral-900">
                 <DialogTitle className="text-sm font-semibold text-red-500">주의!</DialogTitle>
-                <div className="flex flex-col py-2 text-gray-600">
+                <div className="flex flex-col py-2 text-gray-600 dark:text-gray-400">
                   <span className={"font-semibold"}>정말 분양완료 처리하시겠습니까?</span>
                   <span className={"text-sm"}>
                     - 분양완료 후에는 개체의 소유권이 완전히 이전됩니다.
@@ -229,8 +229,8 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
 
     overlay.open(({ isOpen, close }) => (
       <Dialog open={isOpen} onOpenChange={close}>
-        <DialogContent className="rounded-3xl p-4">
-          <DialogTitle className="h-4 text-base font-semibold text-gray-800">
+        <DialogContent className="rounded-3xl p-4 dark:bg-neutral-900">
+          <DialogTitle className="h-4 text-base font-semibold text-gray-800 dark:text-gray-200">
             입양자를 선택해주세요.
           </DialogTitle>
           <UserList
@@ -323,7 +323,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   }));
                 }}
                 inputClassName={cn(
-                  " h-[32px] font-[600] w-full rounded-md border border-gray-200  placeholder:font-[500] pl-2",
+                  " h-[32px] font-[600] w-full rounded-md border border-gray-200 dark:border-gray-700 placeholder:font-[500] pl-2",
                   !isEditMode && "border-none",
                 )}
                 field={{ name: "adoption.price", unit: "원", type: "number" }}
@@ -364,8 +364,10 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                 {!(isNil(adoptionData.buyer?.userId) && isEditMode) && (
                   <div
                     className={cn(
-                      "flex h-[32px] w-fit items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
-                      adoptionData.buyer?.userId ? "bg-blue-100 text-blue-600" : "",
+                      "mr-1 flex h-[32px] w-fit items-center gap-1 rounded-lg px-2 py-1 text-[14px] font-[500]",
+                      adoptionData.buyer?.userId
+                        ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400"
+                        : "",
                     )}
                   >
                     {isNil(adoptionData.buyer?.userId) ? (
@@ -380,7 +382,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   (adoptionData.status === PetAdoptionDtoStatus.ON_RESERVATION ||
                   adoptionData.status === PetAdoptionDtoStatus.SOLD ? (
                     <Button
-                      className="h-8 cursor-pointer rounded-lg px-2 text-[12px] font-[600] text-white"
+                      className="h-8 cursor-pointer rounded-lg px-2 text-[12px] font-[600] text-white dark:bg-neutral-800/70"
                       onClick={handleSelectBuyer}
                     >
                       {isNil(adoptionData.buyer?.userId) ? "입양자 선택" : "변경"}
@@ -419,7 +421,10 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
             content={
               <div className="relative w-full pt-2">
                 <textarea
-                  className={`min-h-[100px] w-full rounded-xl bg-gray-100 p-3 text-left text-[14px] focus:outline-none focus:ring-0 dark:bg-neutral-900 dark:text-white`}
+                  className={cn(
+                    `min-h-[100px] w-full rounded-xl bg-gray-100 p-3 text-left text-[14px] focus:outline-none focus:ring-0 dark:bg-neutral-800 dark:text-white`,
+                    !isEditMode && "dark:bg-neutral-900",
+                  )}
                   value={String(adoptionData.memo || "")}
                   maxLength={500}
                   onChange={(e) =>
@@ -437,7 +442,7 @@ const AdoptionInfo = ({ petId, ownerId }: AdoptionInfoProps) => {
                   }}
                 />
                 {isEditMode && (
-                  <div className="absolute bottom-4 right-4 text-[12px] text-gray-500">
+                  <div className="absolute bottom-4 right-4 text-[12px] text-gray-500 dark:text-gray-400">
                     {adoptionData.memo?.length ?? 0}/{500}
                   </div>
                 )}
