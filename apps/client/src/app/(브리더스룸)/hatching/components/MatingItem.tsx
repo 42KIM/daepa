@@ -157,12 +157,12 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
   return (
     <div className="relative flex h-[calc(100vh-300px)] w-full flex-col">
       <div className="flex flex-col justify-center gap-1">
-        <div className="sticky top-0 z-20 flex items-center gap-1 overflow-x-auto bg-white pb-2">
+        <div className="dark:bg-background sticky top-0 z-20 flex items-center gap-1 overflow-x-auto bg-white pb-2">
           {isEditable && (
             <button
               type="button"
               onClick={handleAddLayingClick}
-              className="flex w-fit shrink-0 items-center gap-1 rounded-lg bg-blue-100 px-2 py-0.5 text-[14px] text-blue-600"
+              className="flex w-fit shrink-0 items-center gap-1 rounded-lg bg-blue-100 px-2 py-0.5 text-[14px] text-blue-600 dark:bg-blue-900/50 dark:text-blue-400"
             >
               {sortedLayingsByDate.length === 0 && "산란 추가 "}+
             </button>
@@ -177,8 +177,8 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
                   className={cn(
                     "shrink-0 rounded-lg px-2 py-0.5 text-[14px] font-medium transition-colors",
                     selectedLayingId === layingData.layingId
-                      ? "bg-black font-[700] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                      ? "bg-black font-[700] text-white dark:bg-blue-700"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600",
                   )}
                 >
                   {layingData.layings[0]?.clutch}차
@@ -203,12 +203,12 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
               }}
               className="mb-7"
             >
-              <div className="sticky top-0 mb-1 flex bg-white text-[15px] font-semibold text-gray-700">
+              <div className="dark:bg-background sticky top-0 mb-1 flex bg-white text-[15px] font-semibold text-gray-700 dark:text-gray-300">
                 <span className="mr-1 font-bold">{layingData.layings[0]?.clutch}차</span>
 
                 <CalendarSelect
                   type="edit"
-                  triggerTextClassName="text-gray-600 text-sm"
+                  triggerTextClassName="text-gray-600 text-sm dark:text-gray-400"
                   disabledDates={layingDates}
                   triggerText={DateTime.fromFormat(layingData.layingDate, "yyyy-MM-dd").toFormat(
                     "M월 d일",
@@ -223,7 +223,7 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
               <div
                 className={cn(
                   selectedLayingId === layingData.layingId &&
-                    "rounded-xl border-[1.5px] border-blue-200 shadow-md",
+                    "rounded-xl border-[1.5px] border-blue-200 shadow-md dark:border-blue-700",
                 )}
               >
                 <LayingItem
@@ -236,7 +236,7 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
             </div>
           ))
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700">
+          <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700 dark:text-gray-400">
             <Image src="/assets/lizard.png" alt="브리더스룸 로그인 로고" width={150} height={150} />
             산란된 알이 없습니다.
           </div>

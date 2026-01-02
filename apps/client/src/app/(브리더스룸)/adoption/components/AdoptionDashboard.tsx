@@ -297,24 +297,13 @@ const AdoptionDashboard = memo(() => {
 
       {/* 선택된 부모 개체 표시 */}
       {(father || mother) && (
-        <div
-          className="my-2 rounded-2xl p-[1px]"
-          style={{
-            background: "linear-gradient(90deg, rgba(182, 210, 247, .5), rgba(230, 200, 240, .5))",
-          }}
-        >
-          <div className="relative overflow-hidden rounded-2xl bg-white py-2">
-            <div
-              className="pointer-events-none absolute inset-0 rounded-2xl"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(182, 210, 247, .25), rgba(245, 223, 255, .25))",
-              }}
-            />
+        <div className="my-2 rounded-2xl bg-gradient-to-r from-blue-300/50 to-purple-300/50 p-[1px] dark:from-blue-600/40 dark:to-purple-600/40">
+          <div className="relative overflow-hidden rounded-2xl bg-white py-2 dark:bg-gray-900">
+            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-200/25 to-purple-200/25 dark:from-blue-800/20 dark:to-purple-800/20" />
             <button
               type="button"
               onClick={() => setIsParentSectionOpen(!isParentSectionOpen)}
-              className="relative flex w-full items-center justify-center gap-1 text-sm font-medium text-gray-600"
+              className="relative flex w-full items-center justify-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-300"
             >
               <span
                 className="bg-clip-text text-transparent"
@@ -372,13 +361,9 @@ const AdoptionDashboard = memo(() => {
           {/* 메타 정보 */}
           <div
             className={cn(
-              "my-4 grid grid-cols-2 rounded-2xl p-4 sm:grid-cols-4",
+              "my-4 grid grid-cols-2 rounded-2xl bg-gradient-to-r from-blue-200/25 to-purple-200/25 p-4 sm:grid-cols-4 dark:from-blue-900/30 dark:to-purple-900/30",
               isMobile && "px-0",
             )}
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(182, 210, 247, .25), rgba(245, 223, 255, .25))",
-            }}
           >
             <StatCard label="총 분양" value={statistics.totalCount} />
             <StatCard
@@ -425,17 +410,11 @@ const AdoptionDashboard = memo(() => {
               <ChartCard
                 title="가격대별 분양 분포"
                 footer={
-                  <div
-                    className="flex flex-col items-center justify-center rounded-2xl px-2 py-4"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, rgba(182, 210, 247, 0.5), rgba(245, 223, 255, 0.64))",
-                    }}
-                  >
-                    <span className="text-center text-[14px] font-[500] text-gray-900">
+                  <div className="flex flex-col items-center justify-center rounded-2xl bg-gradient-to-r from-blue-200/50 to-purple-200/65 px-2 py-4 dark:from-blue-900/40 dark:to-purple-900/50">
+                    <span className="text-center text-[14px] font-[500] text-gray-900 dark:text-purple-200">
                       막대 차트를 클릭하면 해당 가격대의 분양 개체 목록을 확인할 수 있습니다.
                     </span>
-                    <div className="mt-1 flex gap-1 text-[13px] text-red-500">
+                    <div className="mt-1 flex gap-1 text-[13px] text-red-500 dark:text-purple-300/90">
                       <AlertCircle size={15} />
                       <span>가격을 등록하지 않은 분양은 제외됩니다.</span>
                     </div>
@@ -454,7 +433,7 @@ const AdoptionDashboard = memo(() => {
               <ChartCard
                 title="성별 분포 (분양가 기준)"
                 footer={
-                  <div className="flex flex-col flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-gray-700">
+                  <div className="flex flex-col flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-gray-700 dark:text-gray-300">
                     <div>
                       {statistics.sex.map((item) => (
                         <div key={item.key}>
@@ -463,12 +442,14 @@ const AdoptionDashboard = memo(() => {
                             style={{ backgroundColor: getSexColor(item.key) }}
                           />
                           <span className="font-bold">{formatPrice(item.revenue)}</span>{" "}
-                          <span className="font-[500] text-gray-500">({item.count}마리)</span>
+                          <span className="font-[500] text-gray-500 dark:text-gray-400">
+                            ({item.count}마리)
+                          </span>
                         </div>
                       ))}
                     </div>
 
-                    <div className="mt-3 font-[500] text-gray-500">
+                    <div className="mt-3 font-[500] text-gray-500 dark:text-gray-400">
                       평균:{" "}
                       {statistics.sex.map((item, index) => (
                         <span key={item.key}>
@@ -492,7 +473,7 @@ const AdoptionDashboard = memo(() => {
               <ChartCard
                 title="분양 방식 분포 (분양가 기준)"
                 footer={
-                  <div className="flex flex-col flex-wrap items-center text-[13px] text-gray-700">
+                  <div className="flex flex-col flex-wrap items-center text-[13px] text-gray-700 dark:text-gray-300">
                     <div>
                       {statistics.methods.map((method) => (
                         <span key={method.key} className="flex items-center gap-1 font-[600]">
@@ -502,7 +483,9 @@ const AdoptionDashboard = memo(() => {
                           />
                           {METHOD_LABELS[method.key] || method.key}:{" "}
                           {formatPrice(method.totalRevenue)}
-                          <span className="font-[500] text-gray-500">({method.count}마리)</span>
+                          <span className="font-[500] text-gray-500 dark:text-gray-400">
+                            ({method.count}마리)
+                          </span>
                         </span>
                       ))}
                     </div>
@@ -527,7 +510,9 @@ const AdoptionDashboard = memo(() => {
                         />
                         {morph.name}:
                         <span className="font-bold"> {formatPrice(morph.totalRevenue)}</span>
-                        <span className="font-[500] text-gray-500">({morph.count}마리)</span>
+                        <span className="font-[500] text-gray-500 dark:text-gray-400">
+                          ({morph.count}마리)
+                        </span>
                       </span>
                     ))}
                   </div>
@@ -542,7 +527,7 @@ const AdoptionDashboard = memo(() => {
               <ChartCard
                 title="형질 분포 (분양가 기준)"
                 footer={
-                  <div className="mt-7 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-700">
+                  <div className="mt-7 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-700 dark:text-gray-300">
                     {traitChartData.slice(0, 5).map((trait) => (
                       <span key={trait.name} className="flex items-center gap-1 font-[500]">
                         <span
@@ -551,7 +536,9 @@ const AdoptionDashboard = memo(() => {
                         />
                         {trait.name}:
                         <span className="font-bold"> {formatPrice(trait.totalRevenue)}</span>
-                        <span className="font-[500] text-gray-500">({trait.count}마리)</span>
+                        <span className="font-[500] text-gray-500 dark:text-gray-400">
+                          ({trait.count}마리)
+                        </span>
                       </span>
                     ))}
                   </div>

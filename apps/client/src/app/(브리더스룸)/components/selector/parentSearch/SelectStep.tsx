@@ -32,7 +32,7 @@ const SelectStep = ({
               ? pet.owner?.userId === user?.userId
               : pet.owner?.userId !== user?.userId,
           ).length === 0 ? (
-            <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700">
+            <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700 dark:text-gray-300">
               <Image
                 src="/assets/lizard.png"
                 alt="브리더스룸 로그인 로고"

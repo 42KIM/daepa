@@ -129,13 +129,13 @@ const MatingDetailDialog = ({
               ) : (
                 <Link
                   href={`/pet/${matingGroup.father?.petId}`}
-                  className="text-blue-600 underline"
+                  className="text-blue-600 underline dark:text-blue-400"
                 >
                   {matingGroup.father?.name}
                 </Link>
               )
             ) : (
-              <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
+              <span className="text-[14px] font-[500] text-gray-500 dark:text-gray-400">정보없음</span>
             )}
             x
             {matingGroup.mother?.petId ? (
@@ -149,13 +149,13 @@ const MatingDetailDialog = ({
               ) : (
                 <Link
                   href={`/pet/${matingGroup.mother?.petId}`}
-                  className="text-blue-600 underline"
+                  className="text-blue-600 underline dark:text-blue-400"
                 >
                   {matingGroup.mother?.name}
                 </Link>
               )
             ) : (
-              <span className="text-[14px] font-[500] text-gray-500">정보없음</span>
+              <span className="text-[14px] font-[500] text-gray-500 dark:text-gray-400">정보없음</span>
             )}
           </div>
 
@@ -177,7 +177,7 @@ const MatingDetailDialog = ({
                     value={String(selectedMatingId)}
                     onValueChange={(v) => setSelectedMatingId(Number(v))}
                   >
-                    <SelectTrigger className="rounded-none border-0 border-b-[1.5px] border-b-gray-300 p-0 text-[18px] font-[600]">
+                    <SelectTrigger className="rounded-none border-0 border-b-[1.5px] border-b-gray-300 p-0 text-[18px] font-[600] dark:border-b-gray-600">
                       {selectedMatingId ? (
                         <div className="flex items-center gap-1 pl-1">
                           {(() => {
@@ -189,7 +189,7 @@ const MatingDetailDialog = ({
 
                             return (
                               <>
-                                <span className="rounded-lg bg-gray-100 p-1 px-2 text-[12px] text-gray-700">
+                                <span className="rounded-lg bg-gray-100 p-1 px-2 text-[12px] text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                   {season}시즌
                                 </span>
                                 {selectedMating?.matingDate
@@ -227,19 +227,19 @@ const MatingDetailDialog = ({
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100"
+                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50"
                       aria-label="교배 정보 수정"
                       onClick={handleEditClick}
                     >
-                      <Pencil className="h-4 w-4 text-blue-500" />
+                      <Pencil className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                     </button>
                     <button
                       type="button"
-                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100"
+                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/50"
                       aria-label="교배 정보 삭제"
                       onClick={handleDeleteClick}
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
                     </button>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ const MatingDetailDialog = ({
               })()}
             </div>
           ) : (
-            <div className="text-sm text-gray-500">메이팅이 없습니다.</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">메이팅이 없습니다.</div>
           )}
         </div>
       </DialogContent>

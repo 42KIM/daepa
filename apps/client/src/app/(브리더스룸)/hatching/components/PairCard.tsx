@@ -101,7 +101,7 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
     }, null) ?? null;
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
+    <div className="group relative flex flex-col rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-neutral-800">
       {/* 부모 정보 */}
       <div className="flex flex-1 items-center gap-2">
         <ParentCard parent={pair.father} />
@@ -153,19 +153,15 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
             desc: pair.desc,
           });
         }}
-        className="group/memo dark:to-gray-750 relative mt-3 cursor-pointer rounded-lg border border-gray-200 bg-gradient-to-br from-amber-50/50 to-orange-50/30 px-3 transition-all hover:border-orange-300 hover:shadow-md dark:border-gray-700 dark:from-gray-800"
+        className="group/memo relative mt-3 cursor-pointer rounded-lg border border-gray-200 bg-gradient-to-br from-amber-50/50 to-orange-50/30 px-3 transition-all hover:border-orange-300 hover:shadow-md dark:border-gray-700 dark:from-neutral-800 dark:to-neutral-800"
       >
         <div className="flex items-center gap-2">
           <StickyNote className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-500" />
-          <div className="flex-1">
+          <div className="flex-1 py-3">
             {pair.desc ? (
-              <TooltipText
-                text={pair.desc}
-                className="w-full py-3 text-sm"
-                displayTextLength={50}
-              />
+              <TooltipText text={pair.desc} className="w-full text-sm" displayTextLength={50} />
             ) : (
-              <p className="py-3 text-sm text-gray-400 dark:text-gray-500">
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 메모를 추가하려면 클릭하세요
               </p>
             )}
