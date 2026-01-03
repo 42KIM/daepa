@@ -91,6 +91,7 @@ const ENTITIES = [
       entities: ENTITIES,
       synchronize: true,
       namingStrategy: new SnakeNamingStrategy(),
+      timezone: '+09:00',
     }),
     TypeOrmModule.forFeature(ENTITIES),
     PassportModule,

@@ -96,7 +96,7 @@ const EggItem = ({
           <Select
             value={pet.eggStatus}
             handleValueChange={handleUpdate}
-            selectItems={{ FERTILIZED: "유정란", UNFERTILIZED: "무정란", DEAD: "중지" }}
+            selectItems={{ FERTILIZED: "유정란", UNFERTILIZED: "무정란", DEAD: "중지란" }}
             triggerClassName={
               pet.eggStatus === "FERTILIZED"
                 ? "bg-yellow-700/80 text-yellow-100 border-none font-[600]"

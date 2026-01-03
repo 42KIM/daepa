@@ -258,7 +258,7 @@ export const MORPH_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>
     노멀: "노멀",
     릴리화이트: "릴리화이트",
     아잔틱: "아잔틱",
-    릴리아잔틱: "릴리아잔틱",
+    릴잔틱: "릴잔틱",
     카푸치노: "카푸치노",
     프라푸치노: "프라푸치노",
     세이블: "세이블",
@@ -269,7 +269,7 @@ export const MORPH_LIST_BY_SPECIES: Record<PetDtoSpecies, Record<string, string>
     파이드: "파이드",
     마블링: "마블링",
     모노크롬: "모노크롬",
-    카푸치노아잔틱: "카푸치노아잔틱",
+    카푸아잔틱: "카푸아잔틱",
     세이블아잔틱: "세이블아잔틱",
     슈퍼카푸치노: "슈퍼카푸치노",
     슈퍼세이블: "슈퍼세이블",
@@ -472,7 +472,7 @@ export const EGG_STATUS_KOREAN_INFO: Record<EggDetailDtoStatus, string> = {
   UNFERTILIZED: "무정란",
   FERTILIZED: "유정란",
   HATCHED: "해칭완료",
-  DEAD: "중지",
+  DEAD: "중지란",
 };
 
 export const FOOD_KOREAN_INFO: Record<string, string> = {
@@ -608,7 +608,7 @@ export const SELECTOR_CONFIGS: Record<
       },
       {
         key: "DEAD",
-        value: "중지",
+        value: "중지란",
       },
     ],
   },
