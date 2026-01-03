@@ -21,6 +21,7 @@ import { OauthDto } from './oauth/oauth.dto';
 import { UserDto } from 'src/user/user.dto';
 import { DataSource, EntityManager } from 'typeorm';
 import { OAUTH_PROVIDER } from './auth.constants';
+import { DateTime } from 'luxon';
 
 export type ValidatedUser = {
   userId: string;
@@ -281,25 +282,10 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    // TODO: refresh token 해싱 하여 저장 필요
+    // refresh token 해싱
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
-    // TODO: expire date의 end of day 계산하여 저장
-    // TODO: duration을 환경변수화
-    // Calculate expiration date
-    const expiresIn = '1y'; // e.g., '7d'
-    const expiresAt = new Date();
-    // A simple way to parse expiration (you might need a more robust parser for '15m', '7d', etc.)
-    // For simplicity, let's assume '7d' means adding 7 days.
-    const duration = parseInt(expiresIn.slice(0, -1));
-    const unit = expiresIn.slice(-1);
-
-    if (unit === 'd') expiresAt.setDate(expiresAt.getDate() + duration);
-    else if (unit === 'h') expiresAt.setHours(expiresAt.getHours() + duration);
-    else if (unit === 'm')
-      expiresAt.setMinutes(expiresAt.getMinutes() + duration);
-    else if (unit === 'y')
-      expiresAt.setFullYear(expiresAt.getFullYear() + duration);
+    const expiresAt = DateTime.now().plus({ years: 1 }).endOf('day').toJSDate();
 
     await this.userService.update(user.userId, {
       refreshToken: hashedRefreshToken,
