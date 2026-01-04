@@ -38,7 +38,7 @@ const EditActionButtons = ({
         disabled={isProcessing}
         className={cn(
           "h-10 flex-[2] cursor-pointer rounded-lg font-bold",
-          isEditMode && "dark:bg-blue-00 bg-blue-700 hover:bg-blue-700/90 dark:text-gray-100",
+          isEditMode && "bg-blue-700 hover:bg-blue-700/90 dark:bg-blue-800 dark:text-gray-100",
           isProcessing && "bg-gray-300",
         )}
         onClick={onSubmit}

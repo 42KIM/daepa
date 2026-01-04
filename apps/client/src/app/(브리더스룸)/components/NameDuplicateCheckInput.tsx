@@ -156,7 +156,7 @@ const NameDuplicateCheckInput = ({
           )}
 
           {duplicateCheckStatus === DUPLICATE_CHECK_STATUS.DUPLICATE && (
-            <div className="dark:tex-red-600 flex items-center gap-1 text-[12px] text-red-500">
+            <div className="flex items-center gap-1 text-[12px] text-red-500 dark:text-red-600">
               <CircleX className="h-4 w-4" />
               이미 사용중인 이름입니다
             </div>

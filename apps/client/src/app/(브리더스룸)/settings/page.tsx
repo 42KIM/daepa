@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-// import { Separator } from "@/components/ui/separator";
 import {
   User,
-  // Bell,
   Shield,
   Palette,
   Moon,
@@ -47,11 +45,6 @@ const SettingsPage = () => {
   const queryClient = useQueryClient();
   const { logout } = useLogout();
   const { theme, setTheme } = useTheme();
-  // const [notifications, setNotifications] = useState({
-  //   email: true,
-  //   push: true,
-  //   marketing: false,
-  // });
 
   // 닉네임 수정 관련 상태
   const [isEditingNickname, setIsEditingNickname] = useState(false);
@@ -73,13 +66,6 @@ const SettingsPage = () => {
   const { mutateAsync: verifyName, isPending: isVerifyingName } = useMutation({
     mutationFn: userControllerVerifyName,
   });
-
-  // const toggleNotification = (type: keyof typeof notifications) => {
-  //   setNotifications((prev) => ({
-  //     ...prev,
-  //     [type]: !prev[type],
-  //   }));
-  // };
 
   const handleThemeChange = (isDark: boolean) => {
     setTheme(isDark ? "dark" : "light");
@@ -350,51 +336,6 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
-        {/* 알림 설정 */}
-        {/* <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              알림 설정
-            </CardTitle>
-            <CardDescription>원하는 알림 유형을 선택하세요</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium">이메일 알림</Label>
-                <p className="text-xs text-gray-500">중요한 업데이트 및 보안 알림</p>
-              </div>
-              <Switch
-                checked={notifications.email}
-                onCheckedChange={() => toggleNotification("email")}
-              />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium">푸시 알림</Label>
-                <p className="text-xs text-gray-500">실시간 알림 및 메시지</p>
-              </div>
-              <Switch
-                checked={notifications.push}
-                onCheckedChange={() => toggleNotification("push")}
-              />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium">마케팅 알림</Label>
-                <p className="text-xs text-gray-500">새로운 기능 및 이벤트 정보</p>
-              </div>
-              <Switch
-                checked={notifications.marketing}
-                onCheckedChange={() => toggleNotification("marketing")}
-              />
-            </div>
-          </CardContent>
-        </Card> */}
-
         {/* 개인정보 보호 */}
         <Card>
           <CardHeader>
@@ -425,16 +366,6 @@ const SettingsPage = () => {
                 {userProfile?.isBiz ? "사업자" : "일반 사용자"}
               </Badge>
             </div>
-            {/* <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <div>
-                <Label className="text-sm font-medium">마지막 로그인</Label>
-                <p className="text-xs text-gray-500">
-                  {userProfile?.lastLoginAt
-                    ? new Date(userProfile.lastLoginAt).toLocaleString()
-                    : "로그인 기록 없음"}
-                </p>
-              </div>
-            </div> */}
             <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-neutral-800">
               <div>
                 <Label className="text-sm font-medium">가입일</Label>
@@ -445,9 +376,6 @@ const SettingsPage = () => {
                 </p>
               </div>
             </div>
-            {/* <Button variant="outline" className="w-full">
-              비밀번호 변경
-            </Button> */}
           </CardContent>
         </Card>
 

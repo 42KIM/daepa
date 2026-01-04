@@ -192,7 +192,7 @@ const HatchingPetCard = ({ date, pets, tab, isSelected }: PetCardProps) => {
                             status === PetDtoEggStatus.UNFERTILIZED
                               ? "text-gray-500 dark:text-gray-400"
                               : status === PetDtoEggStatus.DEAD
-                                ? "text-red-500/80"
+                                ? "text-red-500/80 dark:text-red-400/80"
                                 : "";
                           return (
                             <span className={statusColorClass}>

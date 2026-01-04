@@ -149,7 +149,10 @@ export const DataTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead className="font-[400] text-gray-600 dark:text-gray-400" key={header.id}>
+                    <TableHead
+                      className="font-[400] text-gray-600 dark:text-gray-400"
+                      key={header.id}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -206,13 +209,13 @@ export const DataTable = ({
                     router.push("/register/1");
                   }}
                 >
-                  <div className="flex h-full w-full cursor-pointer flex-col items-center justify-center py-5 text-center text-gray-700 dark:text-gray-300">
-                    <Image
-                      src="/assets/lizard.png"
-                      alt="브리더스룸 로그인 로고"
-                      width={200}
-                      height={200}
-                    />
+                  <div
+                    className={cn(
+                      "flex h-full w-full flex-col items-center justify-center py-5 text-center text-gray-700 dark:text-gray-300",
+                      isEmpty && "cursor-pointer",
+                    )}
+                  >
+                    <Image src="/assets/lizard.png" alt="빈 펫 목록" width={200} height={200} />
                     개체가 없습니다.
                     {isEmpty && (
                       <div className="font-semibold text-blue-500 dark:text-blue-400">

@@ -237,7 +237,7 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
           ))
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700 dark:text-gray-400">
-            <Image src="/assets/lizard.png" alt="브리더스룸 로그인 로고" width={150} height={150} />
+            <Image src="/assets/lizard.png" alt="산란 데이터 없음" width={150} height={150} />
             산란된 알이 없습니다.
           </div>
         )}

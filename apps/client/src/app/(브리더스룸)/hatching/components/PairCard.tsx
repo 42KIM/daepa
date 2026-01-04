@@ -70,7 +70,7 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
           if (!hasFertilizedEggs) return innerClosest;
 
           // 온도 기반 해칭일 계산 (기본 25°C)
-          const incubationDays = getIncubationDays(25);
+          const incubationDays = getIncubationDays(laying.layings[0]?.temperature);
           const expectedDate = DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd").plus({
             days: incubationDays,
           });
@@ -99,6 +99,7 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
         }, closest) ?? closest
       );
     }, null) ?? null;
+  console.log("🚀 ~ PairCard ~ closestHatching:", closestHatching);
 
   return (
     <div className="group relative flex flex-col rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-neutral-800">
@@ -137,9 +138,21 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
         </div>
 
         {closestHatching && (
-          <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-            {closestHatching.date.toFormat("M/d")} 해칭예정
-          </span>
+          <div className="flex w-full items-center justify-between rounded-lg bg-green-100 px-3 py-2 dark:bg-green-900/50">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                해칭 예정일
+              </span>
+              <span className="text-sm font-semibold text-green-800 dark:text-green-200">
+                {closestHatching.date.toFormat("M월 d일")}
+              </span>
+            </div>
+            <span className="text-xs font-bold text-green-600 dark:text-green-400">
+              {Math.ceil(closestHatching.date.diff(today, "days").days) === 0
+                ? "D-Day"
+                : `D-${Math.ceil(closestHatching.date.diff(today, "days").days)}`}
+            </span>
+          </div>
         )}
       </div>
 

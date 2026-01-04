@@ -226,7 +226,7 @@ const AdoptionTable = () => {
                   <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-gray-700">
                     <Image
                       src="/assets/lizard.png"
-                      alt="브리더스룸 로그인 로고"
+                      alt="분양 테이블 정보 없음"
                       width={200}
                       height={200}
                     />

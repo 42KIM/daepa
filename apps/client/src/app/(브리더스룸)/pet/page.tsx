@@ -5,7 +5,7 @@ import { columns } from "./components/columns";
 import DataTable from "./components/DataTable";
 import { brPetControllerFindAll } from "@repo/api-client";
 import { useInView } from "react-intersection-observer";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useFilterStore } from "../store/filter";
 import { useSearchKeywordStore } from "../store/searchKeyword";
@@ -45,6 +45,21 @@ export default function PetPage() {
 
   const { items, totalCount } = data ?? {};
 
+  const isEmpty = useMemo(
+    () =>
+      items?.length === 0 &&
+      Object.keys(searchFilters).filter((key) => {
+        if (key === "species") return false;
+        const value = searchFilters[key as keyof typeof searchFilters];
+        // 배열: 길이 확인, 숫자: undefined/null 체크, 문자열: trim 후 체크
+        if (Array.isArray(value)) return value.length > 0;
+        if (typeof value === "number") return value !== undefined && value !== null;
+        return !!value?.toString?.().trim?.();
+      }).length === 0 &&
+      !searchKeyword?.trim(),
+    [items?.length, searchFilters, searchKeyword],
+  );
+
   // 무한 스크롤 처리
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -53,13 +68,6 @@ export default function PetPage() {
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading) return <Loading />;
-
-  const isEmpty =
-    items?.length === 0 &&
-    Object.keys(searchFilters).filter(
-      (key) => key !== "species" && !!searchFilters[key as keyof typeof searchFilters],
-    ).length === 0 &&
-    !searchKeyword?.trim();
 
   return (
     <div className="space-y-4">

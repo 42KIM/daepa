@@ -61,7 +61,7 @@ const PairMiniCalendar = ({ matingsByDate, onDateClick }: PairMiniCalendarProps)
           );
 
           if (hasFertilizedEggs) {
-            const incubationDays = getIncubationDays(25); // 기본 25도
+            const incubationDays = getIncubationDays(laying.layings[0]?.temperature); // 기본 25도
             const hatchingDate = DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd")
               .plus({ days: incubationDays })
               .toFormat("yyyy-MM-dd");

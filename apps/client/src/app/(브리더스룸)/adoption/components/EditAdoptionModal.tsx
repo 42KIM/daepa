@@ -97,7 +97,6 @@ const EditAdoptionModal = ({
   };
 
   const handlePetSelect = (pet: PetDto) => {
-    console.log("🚀 ~ handlePetSelect ~ pet:", pet.adoption);
     if (pet.adoption?.status === PetAdoptionDtoStatus.NONE) {
       toast.error("이미 분양 정보가 있습니다.");
       return;
@@ -156,7 +155,7 @@ const EditAdoptionModal = ({
             <ScrollArea className="h-[400px]">
               {pets?.filter((pet) => pet.sex === tab).length === 0 ? (
                 <div className="flex h-[300px] flex-col items-center justify-center text-sm text-gray-500">
-                  <Image src="/assets/lizard.png" alt="통계 데이터 없음" width={200} height={200} />
+                  <Image src="/assets/lizard.png" alt="조회된 펫 없음" width={200} height={200} />
                   조회된 펫이 없습니다.
                 </div>
               ) : (

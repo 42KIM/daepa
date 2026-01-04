@@ -135,7 +135,9 @@ const MatingDetailDialog = ({
                 </Link>
               )
             ) : (
-              <span className="text-[14px] font-[500] text-gray-500 dark:text-gray-400">정보없음</span>
+              <span className="text-[14px] font-[500] text-gray-500 dark:text-gray-400">
+                정보없음
+              </span>
             )}
             x
             {matingGroup.mother?.petId ? (
@@ -155,14 +157,15 @@ const MatingDetailDialog = ({
                 </Link>
               )
             ) : (
-              <span className="text-[14px] font-[500] text-gray-500 dark:text-gray-400">정보없음</span>
+              <span className="text-[14px] font-[500] text-gray-500 dark:text-gray-400">
+                정보없음
+              </span>
             )}
           </div>
 
           {!isEditable && (
             <div className="flex items-center gap-1 text-sm font-[500] text-red-600">
-              <AlertCircle size={15} />
-              부/모가 모두 삭제된 경우 산란을 추가할 수 없습니다.
+              <AlertCircle size={15} />부 또는 모가 삭제된 경우 산란을 추가할 수 없습니다.
             </div>
           )}
         </DialogTitle>
