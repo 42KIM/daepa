@@ -1,7 +1,5 @@
 import { MatingByParentsDto, PetDtoEggStatus } from "@repo/api-client";
-import { getIncubationDays } from "@/lib/utils";
 import { StickyNote } from "lucide-react";
-import { DateTime } from "luxon";
 
 import { updatePairProps } from "./PairList";
 import ParentCard from "./ParentCard";
@@ -13,11 +11,6 @@ interface PairCardProps {
   onClickUpdateDesc: (data: updatePairProps) => void;
   onClick: () => void;
   onDateClick?: (matingId: number) => void;
-}
-
-interface HatchingInfo {
-  date: DateTime;
-  matingIndex: number;
 }
 
 const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardProps) => {
@@ -56,51 +49,6 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
       return acc + hatchedCount;
     }, 0) ?? 0;
 
-  // 해칭 임박한 알 찾기: 아직 부화하지 않은 유정란 중 가장 가까운 예상 해칭일
-  const today = DateTime.now();
-  const closestHatching: HatchingInfo | null =
-    pair.matingsByDate?.reduce<HatchingInfo | null>((closest, mating, matingIdx) => {
-      return (
-        mating.layingsByDate?.reduce<HatchingInfo | null>((innerClosest, laying) => {
-          // 아직 부화하지 않은 유정란이 있는지 확인
-          const hasFertilizedEggs = laying.layings?.some(
-            (egg) => egg.eggStatus === PetDtoEggStatus.FERTILIZED,
-          );
-
-          if (!hasFertilizedEggs) return innerClosest;
-
-          // 온도 기반 해칭일 계산 (기본 25°C)
-          const incubationDays = getIncubationDays(laying.layings[0]?.temperature);
-          const expectedDate = DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd").plus({
-            days: incubationDays,
-          });
-
-          // 미래 날짜만 고려 (이미 지난 예상 해칭일은 제외)
-          if (expectedDate < today) return innerClosest;
-
-          const diff = expectedDate.diff(today).as("milliseconds");
-
-          if (!innerClosest) {
-            return {
-              date: expectedDate,
-              matingIndex: matingIdx + 1,
-            };
-          }
-
-          const currentDiff = innerClosest.date.diff(today).as("milliseconds");
-          if (diff < currentDiff && diff >= 0) {
-            return {
-              date: expectedDate,
-              matingIndex: matingIdx + 1,
-            };
-          }
-
-          return innerClosest;
-        }, closest) ?? closest
-      );
-    }, null) ?? null;
-  console.log("🚀 ~ PairCard ~ closestHatching:", closestHatching);
-
   return (
     <div className="group relative flex flex-col rounded-2xl border border-gray-200/50 bg-white p-2 shadow-lg transition-all hover:border-gray-300 hover:bg-gray-100/20 hover:shadow-xl dark:border-gray-700 dark:bg-neutral-800">
       {/* 부모 정보 */}
@@ -119,41 +67,21 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
       />
 
       {/* 요약 정보 */}
-      <div className="mt-1 flex flex-col items-center gap-1">
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-          <div className="flex items-center gap-1">
-            <span>유정란/전체</span>
+      <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+        <div className="flex items-center gap-1">
+          <span>유정란/전체</span>
 
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
-              {totalEggs}/{totalAllEggs}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <span>
-              해칭{" "}
-              <span className="font-semibold text-gray-900 dark:text-gray-100">{totalHatched}</span>
-            </span>
-          </div>
+          <span className="font-semibold text-gray-900 dark:text-gray-100">
+            {totalEggs}/{totalAllEggs}
+          </span>
         </div>
 
-        {closestHatching && (
-          <div className="flex w-full items-center justify-between rounded-lg bg-green-100 px-3 py-2 dark:bg-green-900/50">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-green-700 dark:text-green-300">
-                해칭 예정일
-              </span>
-              <span className="text-sm font-semibold text-green-800 dark:text-green-200">
-                {closestHatching.date.toFormat("M월 d일")}
-              </span>
-            </div>
-            <span className="text-xs font-bold text-green-600 dark:text-green-400">
-              {Math.ceil(closestHatching.date.diff(today, "days").days) === 0
-                ? "D-Day"
-                : `D-${Math.ceil(closestHatching.date.diff(today, "days").days)}`}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-1">
+          <span>
+            해칭{" "}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{totalHatched}</span>
+          </span>
+        </div>
       </div>
 
       {/* 메모 영역 */}
