@@ -236,9 +236,13 @@ export class AuthService {
         throw new UnauthorizedException('유효하지 않은 refresh token입니다.');
       }
 
+      const userRefreshTokenExpiresAt = user.refreshTokenExpiresAt
+        ? DateTime.fromJSDate(user.refreshTokenExpiresAt)
+        : null;
+
       if (
-        user.refreshTokenExpiresAt &&
-        user.refreshTokenExpiresAt < new Date()
+        userRefreshTokenExpiresAt &&
+        userRefreshTokenExpiresAt < DateTime.now()
       ) {
         throw new UnauthorizedException('refresh token이 만료되었습니다.');
       }
@@ -248,8 +252,10 @@ export class AuthService {
         role: user.role,
       });
 
-      const oneWeekFromNow = new Date();
-      oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+      const oneWeekFromNow = DateTime.now()
+        .plus({ week: 1 })
+        .endOf('day')
+        .toJSDate();
 
       let newRefreshToken: string | undefined;
       if (
