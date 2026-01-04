@@ -54,7 +54,7 @@ const ParentSearchSelector = ({
         page: pageParam,
         itemPerPage,
         order: "DESC",
-        filterType: allowMyPetOnly ? PetListType.MY : PetListType.ALL,
+        filterType: allowMyPetOnly ? PetListType.MY : petListType,
         keyword: searchQuery ?? "",
         species: species ?? undefined,
       }),
