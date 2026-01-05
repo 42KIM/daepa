@@ -105,24 +105,16 @@ const AdoptionPriceRangeFilter = () => {
           )}
         >
           <div
-            className={cn(
-              "font-[500] dark:text-gray-100",
-              isMobile ? "mb-2 text-[13px]" : "mb-4",
-            )}
+            className={cn("font-[500] dark:text-gray-100", isMobile ? "mb-2 text-[13px]" : "mb-4")}
           >
             분양 가격
           </div>
-          <div
-            className={cn(
-              "flex items-center gap-2",
-              isMobile ? "mb-2" : "mb-4",
-            )}
-          >
+          <div className={cn("flex items-center gap-2", isMobile ? "mb-2" : "mb-4")}>
             <div className="flex-1">
               <label
                 className={cn(
                   "mb-1 block text-gray-600 dark:text-gray-400",
-                  isMobile ? "text-[11px]" : "text-sm",
+                  isMobile ? "text-[12px]" : "text-sm",
                 )}
               >
                 최소 가격
@@ -146,26 +138,21 @@ const AdoptionPriceRangeFilter = () => {
                 <span
                   className={cn(
                     "absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400",
-                    isMobile ? "text-[11px]" : "text-sm",
+                    isMobile ? "text-[12px]" : "text-sm",
                   )}
                 >
                   원
                 </span>
               </div>
             </div>
-            <div
-              className={cn(
-                "text-gray-400 dark:text-gray-500",
-                isMobile ? "mt-4" : "mt-6",
-              )}
-            >
+            <div className={cn("text-gray-400 dark:text-gray-500", isMobile ? "mt-4" : "mt-6")}>
               ~
             </div>
             <div className="flex-1">
               <label
                 className={cn(
                   "mb-1 block text-gray-600 dark:text-gray-400",
-                  isMobile ? "text-[11px]" : "text-sm",
+                  isMobile ? "text-[12px]" : "text-sm",
                 )}
               >
                 최대 가격
@@ -189,7 +176,7 @@ const AdoptionPriceRangeFilter = () => {
                 <span
                   className={cn(
                     "absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400",
-                    isMobile ? "text-[11px]" : "text-sm",
+                    isMobile ? "text-[12px]" : "text-sm",
                   )}
                 >
                   원

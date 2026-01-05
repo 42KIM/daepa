@@ -124,24 +124,16 @@ const AdoptionDateRangeFilter = () => {
           )}
         >
           <div
-            className={cn(
-              "font-[500] dark:text-gray-100",
-              isMobile ? "mb-2 text-[13px]" : "mb-4",
-            )}
+            className={cn("font-[500] dark:text-gray-100", isMobile ? "mb-2 text-[13px]" : "mb-4")}
           >
             분양 날짜
           </div>
-          <div
-            className={cn(
-              "flex items-center gap-1",
-              isMobile ? "mb-2" : "mb-4",
-            )}
-          >
+          <div className={cn("flex items-center gap-1", isMobile ? "mb-2" : "mb-4")}>
             <div className="min-w-0 flex-1">
               <label
                 className={cn(
                   "mb-1 block text-gray-600 dark:text-gray-400",
-                  isMobile ? "text-[10px]" : "text-xs",
+                  isMobile ? "text-[12px]" : "text-xs",
                 )}
               >
                 시작
@@ -153,23 +145,18 @@ const AdoptionDateRangeFilter = () => {
                 onChange={(e) => setTempStartDate(e.target.value)}
                 className={cn(
                   "w-full rounded-lg border border-gray-200 bg-white px-1.5 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200",
-                  isMobile ? "h-[28px] text-[11px]" : "h-[32px] text-sm",
+                  isMobile ? "h-[28px] text-[12px]" : "h-[32px] text-sm",
                 )}
               />
             </div>
-            <div
-              className={cn(
-                "text-gray-400 dark:text-gray-500",
-                isMobile ? "mt-4" : "mt-5",
-              )}
-            >
+            <div className={cn("text-gray-400 dark:text-gray-500", isMobile ? "mt-4" : "mt-5")}>
               ~
             </div>
             <div className="min-w-0 flex-1">
               <label
                 className={cn(
                   "mb-1 block text-gray-600 dark:text-gray-400",
-                  isMobile ? "text-[10px]" : "text-xs",
+                  isMobile ? "text-[12px]" : "text-xs",
                 )}
               >
                 종료
@@ -181,7 +168,7 @@ const AdoptionDateRangeFilter = () => {
                 onChange={(e) => setTempEndDate(e.target.value)}
                 className={cn(
                   "w-full rounded-lg border border-gray-200 bg-white px-1.5 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200",
-                  isMobile ? "h-[28px] text-[11px]" : "h-[32px] text-sm",
+                  isMobile ? "h-[28px] text-[12px]" : "h-[32px] text-sm",
                 )}
               />
             </div>
