@@ -102,7 +102,7 @@ const MonthlyCalendar = memo(() => {
     const handleScroll = (e: Event) => {
       const target = e.target as HTMLElement;
       const scrollTop = target.scrollTop;
-      setIsScrolled(scrollTop > 50);
+      setIsScrolled(scrollTop > 5);
     };
 
     // ScrollArea의 실제 스크롤 가능한 요소 찾기
@@ -205,39 +205,45 @@ const MonthlyCalendar = memo(() => {
                 조회된 해칭 내역이 없습니다.
               </div>
             ) : (
-              weeklyGroups.map((group) => (
-                <div key={group.weekKey} ref={(el) => void (groupRefs.current[group.weekKey] = el)}>
-                  <div className="dark:supports-[backdrop-filter]:bg-background/60 sticky top-0 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60 dark:text-gray-100">
-                    {group.label}
-                  </div>
-                  {group.items
-                    .filter(([, pets]) => {
-                      if (tab === "all") return pets.length > 0;
-                      if (tab === PetDtoType.PET)
-                        return pets.filter((pet) => pet.type === PetDtoType.PET).length > 0;
-                      if (tab === PetDtoType.EGG)
-                        return pets.filter((pet) => pet.type === PetDtoType.EGG).length > 0;
-                    })
-                    .map(([date, pets]) => {
-                      const isSelected = selectedDate
-                        ? DateTime.fromJSDate(selectedDate).hasSame(
-                            DateTime.fromFormat(date, "yyyy-MM-dd"),
-                            "day",
-                          )
-                        : false;
+              <>
+                {weeklyGroups.map((group) => (
+                  <div
+                    key={group.weekKey}
+                    ref={(el) => void (groupRefs.current[group.weekKey] = el)}
+                  >
+                    <div className="dark:supports-[backdrop-filter]:bg-background/60 sticky top-0 bg-white/70 px-1 py-2 text-[15px] font-semibold supports-[backdrop-filter]:bg-white/60 dark:text-gray-100">
+                      {group.label}
+                    </div>
+                    {group.items
+                      .filter(([, pets]) => {
+                        if (tab === "all") return pets.length > 0;
+                        if (tab === PetDtoType.PET)
+                          return pets.filter((pet) => pet.type === PetDtoType.PET).length > 0;
+                        if (tab === PetDtoType.EGG)
+                          return pets.filter((pet) => pet.type === PetDtoType.EGG).length > 0;
+                      })
+                      .map(([date, pets]) => {
+                        const isSelected = selectedDate
+                          ? DateTime.fromJSDate(selectedDate).hasSame(
+                              DateTime.fromFormat(date, "yyyy-MM-dd"),
+                              "day",
+                            )
+                          : false;
 
-                      return (
-                        <HatchingPetCard
-                          key={date}
-                          isSelected={isSelected}
-                          date={date}
-                          pets={pets}
-                          tab={tab}
-                        />
-                      );
-                    })}
-                </div>
-              ))
+                        return (
+                          <HatchingPetCard
+                            key={date}
+                            isSelected={isSelected}
+                            date={date}
+                            pets={pets}
+                            tab={tab}
+                          />
+                        );
+                      })}
+                  </div>
+                ))}
+                <div className="h-30" />
+              </>
             )}
           </ScrollArea>
         </div>
