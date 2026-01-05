@@ -11,6 +11,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { memo, useEffect, useState } from "react";
 import CreateMatingForm from "./CreateMatingForm";
+import CreateLayingModal from "./CreateLayingModal";
 import { AxiosError } from "axios";
 import { useInView } from "react-intersection-observer";
 import Filters from "./Filters";
@@ -25,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import UpdatePairModal from "./UpdatePairModal";
 import Image from "next/image";
 import { isArray } from "es-toolkit/compat";
+import { CalendarEventDetail, EGG_STATUS } from "./PairMiniCalendar";
 
 export interface updatePairProps extends UpdatePairDto {
   pairId: number;
@@ -36,6 +38,7 @@ const PairList = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPairIndex, setSelectedPairIndex] = useState<number | null>(null);
   const [initialMatingId, setInitialMatingId] = useState<number | null>(null);
+  const [initialLayingId, setInitialLayingId] = useState<number | null>(null);
   const itemPerPage = 10;
 
   const hasFilter = !!father?.petId || !!mother?.petId || !!startDate || !!endDate || !!eggStatus;
@@ -77,7 +80,6 @@ const PairList = memo(() => {
         return brMatingControllerFindAll({
           page: pageParam,
           itemPerPage,
-          order: "DESC",
           ...filter,
         });
       },
@@ -251,8 +253,39 @@ const PairList = memo(() => {
                 setSelectedPairIndex(index);
                 setInitialMatingId(null);
               }}
-              onDateClick={(matingId) => {
-                setInitialMatingId(matingId);
+              onDateClick={(eventData: CalendarEventDetail) => {
+                setIsOpen(true);
+                setSelectedPairIndex(index);
+                setInitialMatingId(eventData.matingId);
+
+                // 이벤트 타입에 따라 포커스 대상 설정
+                if (eventData.eventType === EGG_STATUS.MATING) {
+                  // 메이팅 탭으로 포커스 (matingId만 설정)
+                  setInitialLayingId(null);
+                } else {
+                  // 산란으로 포커스
+                  setInitialLayingId(eventData.layingId ?? null);
+                }
+              }}
+              onAddMating={(date) => {
+                handleAddPairClick({
+                  species: pair.father?.species,
+                  fatherId: pair.father?.petId,
+                  motherId: pair.mother?.petId,
+                  matingDate: date,
+                });
+              }}
+              onAddLaying={(date) => {
+                overlay.open(({ isOpen, close }) => (
+                  <CreateLayingModal
+                    isOpen={isOpen}
+                    onClose={close}
+                    fatherId={pair.father?.petId}
+                    motherId={pair.mother?.petId}
+                    initialLayingDate={date}
+                    matingsByDate={pair.matingsByDate}
+                  />
+                ));
               }}
             />
           ))}
@@ -271,9 +304,11 @@ const PairList = memo(() => {
         onClose={() => {
           setIsOpen(false);
           setInitialMatingId(null);
+          setInitialLayingId(null);
         }}
         matingGroup={pair}
         initialMatingId={initialMatingId}
+        initialLayingId={initialLayingId}
         onConfirmAdd={async (matingDate) => {
           if (!pair?.father || !pair?.mother) {
             toast.error("부모 개체가 없습니다.");

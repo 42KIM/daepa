@@ -4,16 +4,25 @@ import { StickyNote } from "lucide-react";
 import { updatePairProps } from "./PairList";
 import ParentCard from "./ParentCard";
 import TooltipText from "../../components/TooltipText";
-import PairMiniCalendar from "./PairMiniCalendar";
+import PairMiniCalendar, { CalendarEventDetail } from "./PairMiniCalendar";
 
 interface PairCardProps {
   pair: MatingByParentsDto;
   onClickUpdateDesc: (data: updatePairProps) => void;
   onClick: () => void;
-  onDateClick?: (matingId: number) => void;
+  onDateClick?: (eventData: CalendarEventDetail) => void;
+  onAddMating?: (date: string) => void;
+  onAddLaying?: (date: string) => void;
 }
 
-const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardProps) => {
+const PairCard = ({
+  pair,
+  onClick,
+  onClickUpdateDesc,
+  onDateClick,
+  onAddMating,
+  onAddLaying,
+}: PairCardProps) => {
   // 총 유정란 개수 계산 (eggStatus가 'FERTILIZED'인 경우만)
   const totalEggs =
     pair.matingsByDate?.reduce((acc, mating) => {
@@ -60,10 +69,12 @@ const PairCard = ({ pair, onClick, onClickUpdateDesc, onDateClick }: PairCardPro
       {/* 미니 캘린더 */}
       <PairMiniCalendar
         matingsByDate={pair.matingsByDate ?? []}
-        onDateClick={(matingId) => {
+        onDateClick={(eventData) => {
           onClick();
-          onDateClick?.(matingId);
+          onDateClick?.(eventData);
         }}
+        onAddMating={onAddMating}
+        onAddLaying={onAddLaying}
       />
 
       {/* 요약 정보 */}

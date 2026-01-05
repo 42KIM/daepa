@@ -23,9 +23,10 @@ interface MatingItemProps {
   mating: MatingByDateDto;
   father?: PetSummaryLayingDto;
   mother?: PetSummaryLayingDto;
+  initialLayingId?: number | null;
 }
 
-const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
+const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps) => {
   const queryClient = useQueryClient();
   const isEditable = !father?.isDeleted && !mother?.isDeleted;
 
@@ -99,6 +100,18 @@ const MatingItem = ({ mating, father, mother }: MatingItemProps) => {
 
     prevMatingIdRef.current = mating.id;
   }, [mating.id, scrollToLaying, sortedLayingsByDate]);
+
+  // initialLayingId가 제공되면 해당 산란으로 스크롤
+  useEffect(() => {
+    if (initialLayingId && sortedLayingsByDate.length > 0) {
+      const layingExists = sortedLayingsByDate.some((l) => l.layingId === initialLayingId);
+      if (layingExists) {
+        setTimeout(() => {
+          scrollToLaying(initialLayingId);
+        }, 100);
+      }
+    }
+  }, [initialLayingId, sortedLayingsByDate, scrollToLaying]);
 
   const handleAddLayingClick = () => {
     overlay.open(({ isOpen, close }) => (

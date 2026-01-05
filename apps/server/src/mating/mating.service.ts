@@ -118,8 +118,10 @@ export class MatingService {
       });
     }
 
-    const order = (pageOptionsDto.order ?? 'DESC') as 'ASC' | 'DESC';
-    baseQb.orderBy('matings.id', order);
+    if (pageOptionsDto.order) {
+      const order = pageOptionsDto.order;
+      baseQb.orderBy('matings.id', order);
+    }
 
     const matingsEntities = await baseQb
       .skip(pageOptionsDto.skip)

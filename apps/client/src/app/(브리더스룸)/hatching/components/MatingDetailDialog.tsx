@@ -26,6 +26,7 @@ interface MatingDetailDialogProps {
   matingGroup: MatingByParentsDto | null;
   onConfirmAdd: (matingDate: string) => void;
   initialMatingId?: number | null;
+  initialLayingId?: number | null;
 }
 
 const MatingDetailDialog = ({
@@ -34,6 +35,7 @@ const MatingDetailDialog = ({
   matingGroup,
   onConfirmAdd,
   initialMatingId,
+  initialLayingId,
 }: MatingDetailDialogProps) => {
   const isMobile = useIsMobile();
   const isEditable = !matingGroup?.father?.isDeleted && !matingGroup?.mother?.isDeleted;
@@ -270,6 +272,7 @@ const MatingDetailDialog = ({
                     mating={selectedMating}
                     father={matingGroup.father}
                     mother={matingGroup.mother}
+                    initialLayingId={initialLayingId}
                   />
                 );
               })()}
