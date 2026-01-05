@@ -122,7 +122,7 @@ const MonthlyCalendar = memo(() => {
   ];
 
   return (
-    <div className="flex">
+    <div className={cn("flex", isMobile && "h-[100dvh] overflow-hidden")}>
       {!isMobile && (
         <Calendar
           mode="single"
@@ -140,7 +140,7 @@ const MonthlyCalendar = memo(() => {
         {isMobile && (
           <div
             className={cn(
-              "shrink-0 transition-all duration-300",
+              "shrink-0 touch-none transition-all duration-300",
               isScrolled &&
                 "dark:bg-background sticky top-0 z-20 w-full origin-top-left scale-75 bg-white [margin-bottom:-20%]",
             )}
@@ -181,11 +181,11 @@ const MonthlyCalendar = memo(() => {
           <ScrollArea
             ref={scrollAreaRef}
             className={cn(
-              "relative",
+              "relative border-2 [&>[data-radix-scroll-area-viewport]]:overscroll-contain",
               isMobile
                 ? isScrolled
-                  ? "h-[calc(100vh-320px)]"
-                  : "h-[calc(100vh-390px)]"
+                  ? "h-[calc(100dvh-340px)]"
+                  : "h-[calc(100dvh-400px)]"
                 : "h-[calc(100vh-150px)]",
             )}
           >
@@ -242,7 +242,6 @@ const MonthlyCalendar = memo(() => {
                       })}
                   </div>
                 ))}
-                <div className="h-30" />
               </>
             )}
           </ScrollArea>
