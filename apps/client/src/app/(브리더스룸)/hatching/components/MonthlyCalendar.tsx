@@ -122,7 +122,12 @@ const MonthlyCalendar = memo(() => {
   ];
 
   return (
-    <div className={cn("flex", isMobile && "h-[100dvh] overflow-hidden")}>
+    <div
+      className={cn(
+        "flex",
+        isMobile && "h-[calc(100dvh-92px)] overflow-hidden pb-[env(safe-area-inset-bottom)]",
+      )}
+    >
       {!isMobile && (
         <Calendar
           mode="single"
@@ -142,7 +147,7 @@ const MonthlyCalendar = memo(() => {
             className={cn(
               "shrink-0 touch-none transition-all duration-300",
               isScrolled &&
-                "dark:bg-background sticky top-0 z-20 w-full origin-top-left scale-75 bg-white [margin-bottom:-20%]",
+                "dark:bg-background sticky top-0 z-20 w-full origin-top-left scale-75 bg-white [margin-bottom:-24%]",
             )}
           >
             <Calendar
@@ -158,8 +163,8 @@ const MonthlyCalendar = memo(() => {
           </div>
         )}
 
-        <div className="w-full">
-          <div className="flex h-[32px] w-fit items-center gap-2 rounded-lg bg-gray-100 px-1 dark:bg-gray-800">
+        <div className={cn("w-full", isMobile && "flex min-h-0 flex-1 flex-col")}>
+          <div className="flex h-[32px] w-fit shrink-0 items-center gap-2 rounded-lg bg-gray-100 px-1 dark:bg-gray-800">
             {tabs.map(({ key, label }) => {
               return (
                 <button
@@ -181,12 +186,8 @@ const MonthlyCalendar = memo(() => {
           <ScrollArea
             ref={scrollAreaRef}
             className={cn(
-              "relative border-2 [&>[data-radix-scroll-area-viewport]]:overscroll-contain",
-              isMobile
-                ? isScrolled
-                  ? "h-[calc(100dvh-340px)]"
-                  : "h-[calc(100dvh-400px)]"
-                : "h-[calc(100vh-150px)]",
+              "relative [&>[data-radix-scroll-area-viewport]]:overscroll-contain",
+              isMobile ? "min-h-0 flex-1" : "h-[calc(100vh-150px)]",
             )}
           >
             {monthlyIsPending || todayIsFetching ? (
@@ -196,8 +197,8 @@ const MonthlyCalendar = memo(() => {
                 <Image
                   src="/assets/lizard.png"
                   alt="해칭 캘린더 도마뱀 이미지"
-                  width={200}
-                  height={200}
+                  width={150}
+                  height={150}
                 />
                 <span className="font-semibold text-black dark:text-gray-100">
                   {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
