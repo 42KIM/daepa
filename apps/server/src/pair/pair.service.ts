@@ -95,7 +95,7 @@ export class PairService {
       });
     }
 
-    const order = (pageOptionsDto.order ?? 'DESC') as 'ASC' | 'DESC';
+    const order = pageOptionsDto.order;
     baseQb.orderBy('pairs.id', order);
 
     // count 쿼리와 데이터 쿼리를 병렬로 실행

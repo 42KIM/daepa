@@ -316,6 +316,8 @@ export class MatingByParentsDto {
     type: PetSummaryLayingDto,
     required: false,
   })
+  @IsOptional()
+  @IsObject()
   father?: PetSummaryLayingDto;
 
   @ApiProperty({
@@ -323,6 +325,8 @@ export class MatingByParentsDto {
     type: PetSummaryLayingDto,
     required: false,
   })
+  @IsOptional()
+  @IsObject()
   mother?: PetSummaryLayingDto;
 
   @ApiProperty({
@@ -330,6 +334,7 @@ export class MatingByParentsDto {
     type: MatingByDateDto,
     isArray: true,
   })
+  @IsArray()
   matingsByDate: MatingByDateDto[];
 
   @ApiProperty({
