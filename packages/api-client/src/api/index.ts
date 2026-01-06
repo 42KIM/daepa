@@ -3821,10 +3821,7 @@ export const getPairControllerGetPairListResponseMock = (
       (_, i) => i + 1,
     ).map(() => ({
       id: faker.number.int({ min: undefined, max: undefined }),
-      matingDate: faker.helpers.arrayElement([
-        `${faker.date.past().toISOString().split(".")[0]}Z`,
-        undefined,
-      ]),
+      matingDate: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       layingsByDate: faker.helpers.arrayElement([
         Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
           layingId: faker.number.int({ min: undefined, max: undefined }),
