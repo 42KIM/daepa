@@ -9,7 +9,7 @@ import {
   PetDtoSpecies,
 } from "@repo/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Info } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 import { DateTime } from "luxon";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -46,8 +46,11 @@ const CreateLayingModal = ({
 }: CreateLayingModalProps) => {
   const queryClient = useQueryClient();
 
-  // 선택된 메이팅 ID (matingDate가 없고 matingsByDate가 있으면 선택 가능)
-  const [selectedMatingId, setSelectedMatingId] = useState<number | undefined>(matingId);
+  // 선택 모드에서만 사용하는 로컬 state
+  const [localSelectedMatingId, setLocalSelectedMatingId] = useState<number | undefined>(undefined);
+
+  // matingId prop이 있으면 그것을 사용, 없으면 로컬 state 사용
+  const selectedMatingId = matingId ?? localSelectedMatingId;
 
   // 선택된 메이팅의 데이터
   const selectedMating = useMemo(() => {
@@ -86,6 +89,20 @@ const CreateLayingModal = ({
       : new Date().toISOString();
   }, [lastLayingDate, initialLayingDate]);
 
+  const maxClutch = useMemo(() => {
+    if (!currentLayingData || currentLayingData.length === 0) return 0;
+
+    // layingData의 각 항목에서 clutch 값을 추출하여 최대값 찾기
+    const clutches = currentLayingData
+      .map((laying) => {
+        // LayingByDateDto 내의 layings 배열에서 첫 번째 항목의 clutch를 가져옴
+        return laying.layings?.[0]?.clutch as number | undefined;
+      })
+      .filter((clutch): clutch is number => clutch !== undefined && clutch !== null);
+
+    return clutches.length > 0 ? Math.max(...clutches) : 0;
+  }, [currentLayingData]);
+
   const [formData, setFormData] = useState<{
     species: PetDtoSpecies;
     layingDate: string;
@@ -97,34 +114,16 @@ const CreateLayingModal = ({
     layingDate: defaultLayingDate,
     clutchCount: "2",
     temperature: "25",
-    clutch: layingData?.length ? (layingData.length + 1).toString() : "1",
+    clutch: String(maxClutch + 1),
   });
 
-  const maxClutch = useMemo(() => {
-    if (!currentLayingData || currentLayingData.length === 0) {
-      setFormData((prev) => ({
-        ...prev,
-        clutch: "1",
-      }));
-      return 0;
-    }
-    // layingData의 각 항목에서 clutch 값을 추출하여 최대값 찾기
-    const clutches = currentLayingData
-      .map((laying) => {
-        // LayingByDateDto 내의 layings 배열에서 첫 번째 항목의 clutch를 가져옴
-        return laying.layings?.[0]?.clutch as number | undefined;
-      })
-      .filter((clutch): clutch is number => clutch !== undefined && clutch !== null);
-    const newMaxClutch = clutches.length > 0 ? Math.max(...clutches) : 0;
-
-    setFormData((prev) => ({
-      ...prev,
-      clutch: String(newMaxClutch + 1),
-    }));
-    return newMaxClutch;
-  }, [currentLayingData]);
-
   const handleSubmit = async () => {
+    // 선택 모드에서 메이팅이 선택되지 않은 경우
+    if (!matingDate && matingsByDate && !selectedMatingId) {
+      toast.error("메이팅을 선택해주세요.");
+      return;
+    }
+
     if (!formData.species) {
       toast.error("종은 필수 입력 항목입니다.");
       return;
@@ -250,11 +249,16 @@ const CreateLayingModal = ({
                         };
                       })}
                     selectedKey={String(selectedMatingId)}
-                    onChange={(value) => setSelectedMatingId(Number(value))}
+                    onChange={(value) => setLocalSelectedMatingId(Number(value))}
                   />
                   {!isLayingDateEditable && (
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       <Info className="h-4 w-4" /> 산란일 이전의 메이팅만 선택 가능합니다.
+                    </div>
+                  )}
+                  {!selectedMatingId && (
+                    <div className="flex items-center gap-1 text-sm text-red-600">
+                      <AlertCircle className="h-4 w-4" /> 산란을 기록할 메이팅 시즌을 선택해주세요.
                     </div>
                   )}
                 </div>
@@ -388,8 +392,9 @@ const CreateLayingModal = ({
             취소
           </button>
           <button
-            className="h-[32px] cursor-pointer rounded-lg bg-blue-500 px-3 text-sm font-semibold text-white hover:bg-blue-600"
+            className="h-[32px] cursor-pointer rounded-lg bg-blue-500 px-3 text-sm font-semibold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
             onClick={handleSubmit}
+            disabled={!matingDate && matingsByDate && !selectedMatingId}
           >
             추가
           </button>

@@ -307,6 +307,7 @@ class MatingByDateDto {
     type: LayingByDateDto,
   })
   @IsArray()
+  @IsOptional()
   layingsByDate?: LayingByDateDto[];
 }
 

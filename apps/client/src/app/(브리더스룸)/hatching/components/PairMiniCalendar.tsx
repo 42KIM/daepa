@@ -249,7 +249,7 @@ const PairMiniCalendar = ({
           );
 
           if (fertilizedEggs && fertilizedEggs.length > 0) {
-            const incubationDays = getIncubationDays(laying.layings[0]?.temperature ?? 25);
+            const incubationDays = getIncubationDays(fertilizedEggs[0]?.temperature ?? 25);
             const hatchingDate = DateTime.fromFormat(laying.layingDate, "yyyy-MM-dd")
               .plus({ days: incubationDays })
               .toFormat("yyyy-MM-dd");
