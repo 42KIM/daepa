@@ -74,7 +74,7 @@ const CreateLayingModal = ({
   const defaultLayingDate = useMemo(() => {
     // initialLayingDate가 있으면 우선 사용
     if (initialLayingDate) {
-      return new Date(initialLayingDate).toISOString();
+      return DateTime.fromFormat(initialLayingDate, "yyyy-MM-dd").toISO() ?? initialLayingDate;
     }
     return lastLayingDate
       ? new Date(
