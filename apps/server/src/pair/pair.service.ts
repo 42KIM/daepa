@@ -286,7 +286,6 @@ export class PairService {
           morphs: p.petDetail?.morphs ?? undefined,
           traits: p.petDetail?.traits ?? undefined,
           weight: p.petDetail?.weight ?? undefined,
-          growth: p.petDetail?.growth ?? undefined,
         }),
       );
     }

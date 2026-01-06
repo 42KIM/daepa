@@ -288,6 +288,7 @@ class MatingByDateDto {
     description: '메이팅 ID',
     example: 1,
   })
+  @IsNumber()
   id: number;
 
   @ApiProperty({
@@ -295,9 +296,9 @@ class MatingByDateDto {
     example: '2025-01-01',
     required: false,
   })
-  @IsDate()
+  @IsDateString()
   @IsOptional()
-  matingDate?: Date;
+  matingDate?: string;
 
   @ApiProperty({
     description: '산란 정보',
@@ -305,6 +306,7 @@ class MatingByDateDto {
     isArray: true,
     type: LayingByDateDto,
   })
+  @IsArray()
   layingsByDate?: LayingByDateDto[];
 }
 
@@ -341,7 +343,7 @@ export class MatingByParentsDto {
 
   @ApiProperty({
     description: '펫 쌍 ID',
-    example: '1',
+    example: 1,
   })
   @IsNumber()
   pairId: number;
