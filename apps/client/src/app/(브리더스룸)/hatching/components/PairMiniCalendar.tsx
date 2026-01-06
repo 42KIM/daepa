@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MatingByDateDto, PetDtoEggStatus } from "@repo/api-client";
 import { DateTime } from "luxon";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -58,6 +58,159 @@ const EVENT_LABELS = {
   hatching: "해칭예정",
   hatched: "해칭완료",
 };
+
+// 날짜별 이벤트 데이터 타입
+type EventDataByDate = {
+  eventsByType: Map<EGG_STATUS, CalendarEvent[]>;
+  matingId: number;
+};
+
+// CalendarDayCell props 타입
+interface CalendarDayCellProps {
+  day: DateTime;
+  dateKey: string;
+  eventData: EventDataByDate | undefined;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  onEventClick: (event: CalendarEvent) => void;
+  onAddMating?: (date: string) => void;
+  onAddLaying?: (date: string) => void;
+}
+
+// 메모이제이션된 날짜 셀 컴포넌트
+const CalendarDayCell = memo(function CalendarDayCell({
+  day,
+  dateKey,
+  eventData,
+  isCurrentMonth,
+  isToday,
+  onEventClick,
+  onAddMating,
+  onAddLaying,
+}: CalendarDayCellProps) {
+  const hasEvent = !!eventData;
+  const hasMultipleEventTypes = eventData && eventData.eventsByType.size > 1;
+  const eventTypeArray = eventData ? Array.from(eventData.eventsByType.entries()) : [];
+
+  // 이벤트 타입에 따른 배경색 결정
+  let bgClass = "";
+  if (eventData) {
+    if (eventData.eventsByType.size === 1) {
+      const type = Array.from(eventData.eventsByType.keys())[0];
+      if (type) {
+        bgClass = EVENT_COLORS[type];
+      }
+    } else {
+      bgClass = "bg-gray-100 dark:bg-gray-700";
+    }
+  }
+
+  const cellContent = (
+    <div
+      className={cn(
+        "flex h-8 w-full cursor-pointer flex-col items-center justify-center border-b border-r border-gray-100 text-[11px] dark:border-gray-700",
+        !isCurrentMonth && "text-gray-200 dark:text-gray-600",
+        isCurrentMonth && !hasEvent && "text-gray-800 dark:text-gray-500",
+        isToday && "font-bold ring-1 ring-inset ring-gray-400",
+        hasEvent && "font-[500] hover:opacity-80",
+        bgClass,
+      )}
+    >
+      <span>{day.day}</span>
+      {hasMultipleEventTypes && (
+        <div className="flex gap-0.5">
+          {eventTypeArray.map(([type]) => (
+            <div key={type} className={cn("h-2 w-2 rounded-full", DOT_COLORS[type])} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const popoverContent = (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-semibold">{day.toFormat("M월 d일")}</span>
+
+      {hasEvent && (
+        <div className="flex flex-col gap-1">
+          {eventTypeArray.map(([type, typeEvents]) => {
+            const firstEvent = typeEvents[0];
+            if (!firstEvent) return null;
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => onEventClick(firstEvent)}
+                className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <div className={cn("h-2 w-2 rounded-full", DOT_COLORS[type])} />
+                <span className="text-xs font-medium">
+                  {EVENT_LABELS[type]} {typeEvents.length}개
+                </span>
+                <ChevronRight className="ml-auto h-3 w-3 text-gray-400" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {(onAddMating || onAddLaying) &&
+        !eventData?.eventsByType.has(EGG_STATUS.MATING) &&
+        !eventData?.eventsByType.has(EGG_STATUS.LAYING) && (
+          <div className="flex flex-col gap-1 border-t border-gray-200 pt-1.5 dark:border-gray-600">
+            {onAddMating && (
+              <button
+                type="button"
+                onClick={() => onAddMating(dateKey)}
+                className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
+              >
+                <Plus className="h-3 w-3" />
+                <span className="text-xs font-medium">메이팅 추가</span>
+              </button>
+            )}
+            {onAddLaying && (
+              <button
+                type="button"
+                onClick={() => onAddLaying(dateKey)}
+                className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-amber-600 transition-colors hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/30"
+              >
+                <Plus className="h-3 w-3" />
+                <span className="text-xs font-medium">산란 추가</span>
+              </button>
+            )}
+          </div>
+        )}
+    </div>
+  );
+
+  // 메이팅 또는 산란만 있는 날짜는 바로 클릭 핸들러 실행
+  const hasMatingOnly = eventTypeArray.length === 1 && eventTypeArray[0]?.[0] === EGG_STATUS.MATING;
+  const hasLayingOnly = eventTypeArray.length === 1 && eventTypeArray[0]?.[0] === EGG_STATUS.LAYING;
+
+  if (hasMatingOnly || hasLayingOnly) {
+    const firstEvent = eventTypeArray[0]?.[1]?.[0];
+    if (firstEvent) {
+      return (
+        <div onClick={() => onEventClick(firstEvent)} className="cursor-pointer">
+          {cellContent}
+        </div>
+      );
+    }
+  }
+
+  // 그 외: Popover
+  return (
+    <Popover>
+      <PopoverTrigger asChild>{cellContent}</PopoverTrigger>
+      <PopoverContent
+        side="top"
+        className="w-auto min-w-[140px] p-2 dark:bg-gray-800 dark:text-gray-200"
+      >
+        {popoverContent}
+      </PopoverContent>
+    </Popover>
+  );
+});
 
 const PairMiniCalendar = ({
   matingsByDate,
@@ -194,6 +347,39 @@ const PairMiniCalendar = ({
     return days;
   }, [currentMonth]);
 
+  // 오늘 날짜를 한 번만 계산
+  const today = useMemo(() => DateTime.now().startOf("day"), []);
+
+  // 이벤트 클릭 핸들러 메모이제이션
+  const handleEventClick = useCallback(
+    (event: CalendarEvent) => {
+      if (onDateClick) {
+        onDateClick({
+          matingId: event.matingId,
+          eventType: event.type,
+          layingDate: event.layingDate,
+          layingId: event.layingId,
+          eggId: event.eggId,
+        });
+      }
+    },
+    [onDateClick],
+  );
+
+  // calendarDays와 eventsByDate를 결합한 데이터 미리 계산
+  const calendarDaysWithEvents = useMemo(() => {
+    return calendarDays.map((day) => {
+      const dateKey = day.toFormat("yyyy-MM-dd");
+      return {
+        day,
+        dateKey,
+        eventData: eventsByDate.get(dateKey),
+        isCurrentMonth: day.month === currentMonth.month,
+        isToday: day.hasSame(today, "day"),
+      };
+    });
+  }, [calendarDays, eventsByDate, currentMonth.month, today]);
+
   if (!dateRange || events.length === 0) {
     return (
       <div className="flex items-center justify-center py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -264,159 +450,19 @@ const PairMiniCalendar = ({
 
         {/* 달력 그리드 */}
         <div className="grid grid-cols-7">
-          {calendarDays.map((day) => {
-            const dateKey = day.toFormat("yyyy-MM-dd");
-            const eventData = eventsByDate.get(dateKey);
-            const isCurrentMonth = day.month === currentMonth.month;
-            const isToday = day.hasSame(DateTime.now(), "day");
-
-            // 이벤트 타입에 따른 배경색 결정
-            let bgClass = "";
-            const hasMultipleEventTypes = eventData && eventData.eventsByType.size > 1;
-
-            if (eventData) {
-              if (eventData.eventsByType.size === 1) {
-                const type = Array.from(eventData.eventsByType.keys())[0];
-                if (type) {
-                  bgClass = EVENT_COLORS[type];
-                }
-              } else {
-                // 여러 이벤트가 겹치는 경우 연한 회색 배경 (점으로 이벤트 표시)
-                bgClass = "bg-gray-100 dark:bg-gray-700";
-              }
-            }
-
-            const hasEvent = !!eventData;
-            // [type, events[]] 형태로 변환
-            const eventTypeArray = eventData ? Array.from(eventData.eventsByType.entries()) : [];
-
-            const handleEventClick = (event: CalendarEvent) => {
-              if (onDateClick) {
-                onDateClick({
-                  matingId: event.matingId,
-                  eventType: event.type,
-                  layingDate: event.layingDate,
-                  layingId: event.layingId,
-                  eggId: event.eggId,
-                });
-              }
-            };
-
-            const cellContent = (
-              <div
-                className={cn(
-                  "flex h-8 w-full cursor-pointer flex-col items-center justify-center border-b border-r border-gray-100 text-[11px] dark:border-gray-700",
-                  !isCurrentMonth && "text-gray-200 dark:text-gray-600",
-                  isCurrentMonth && !hasEvent && "text-gray-800 dark:text-gray-500",
-                  isToday && "font-bold ring-1 ring-inset ring-gray-400",
-                  hasEvent && "font-[500] hover:opacity-80",
-                  bgClass,
-                )}
-              >
-                <span>{day.day}</span>
-                {hasMultipleEventTypes && (
-                  <div className="flex gap-0.5">
-                    {eventTypeArray.map(([type]) => (
-                      <div key={type} className={cn("h-2 w-2 rounded-full", DOT_COLORS[type])} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-
-            // 팝오버/툴팁 컨텐츠 (이벤트 목록 + 추가 버튼)
-            const popoverContent = (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold">{day.toFormat("M월 d일")}</span>
-
-                {/* 기존 이벤트 목록 */}
-                {hasEvent && (
-                  <div className="flex flex-col gap-1">
-                    {eventTypeArray.map(([type, typeEvents]) => {
-                      const firstEvent = typeEvents[0];
-                      if (!firstEvent) return null;
-                      return (
-                        <button
-                          key={type}
-                          type="button"
-                          onClick={() => handleEventClick(firstEvent)}
-                          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          <div className={cn("h-2 w-2 rounded-full", DOT_COLORS[type])} />
-                          <span className="text-xs font-medium">
-                            {EVENT_LABELS[type]} {typeEvents.length}개
-                          </span>
-                          <ChevronRight className="ml-auto h-3 w-3 text-gray-400" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* 추가 버튼들 */}
-                {(onAddMating || onAddLaying) &&
-                  !eventData?.eventsByType.has(EGG_STATUS.MATING) &&
-                  !eventData?.eventsByType.has(EGG_STATUS.LAYING) && (
-                    <div className="flex flex-col gap-1 border-t border-gray-200 pt-1.5 dark:border-gray-600">
-                      {onAddMating && (
-                        <button
-                          type="button"
-                          onClick={() => onAddMating(dateKey)}
-                          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                        >
-                          <Plus className="h-3 w-3" />
-                          <span className="text-xs font-medium">메이팅 추가</span>
-                        </button>
-                      )}
-                      {onAddLaying && (
-                        <button
-                          type="button"
-                          onClick={() => onAddLaying(dateKey)}
-                          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-amber-600 transition-colors hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/30"
-                        >
-                          <Plus className="h-3 w-3" />
-                          <span className="text-xs font-medium">산란 추가</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-              </div>
-            );
-
-            // 메이팅 또는 산란만 있는 날짜는 바로 모달 열기
-            const hasMatingOnly =
-              eventTypeArray.length === 1 && eventTypeArray[0]?.[0] === EGG_STATUS.MATING;
-            const hasLayingOnly =
-              eventTypeArray.length === 1 && eventTypeArray[0]?.[0] === EGG_STATUS.LAYING;
-
-            if (hasMatingOnly || hasLayingOnly) {
-              const firstEvent = eventTypeArray[0]?.[1]?.[0];
-              if (firstEvent) {
-                return (
-                  <div
-                    key={dateKey}
-                    onClick={() => handleEventClick(firstEvent)}
-                    className="cursor-pointer"
-                  >
-                    {cellContent}
-                  </div>
-                );
-              }
-            }
-
-            // 그 외: Popover (여러 이벤트 타입이 있거나, 추가 버튼이 필요한 경우)
-            return (
-              <Popover key={dateKey}>
-                <PopoverTrigger asChild>{cellContent}</PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  className="w-auto min-w-[140px] p-2 dark:bg-gray-800 dark:text-gray-200"
-                >
-                  {popoverContent}
-                </PopoverContent>
-              </Popover>
-            );
-          })}
+          {calendarDaysWithEvents.map(({ day, dateKey, eventData, isCurrentMonth, isToday }) => (
+            <CalendarDayCell
+              key={dateKey}
+              day={day}
+              dateKey={dateKey}
+              eventData={eventData}
+              isCurrentMonth={isCurrentMonth}
+              isToday={isToday}
+              onEventClick={handleEventClick}
+              onAddMating={onAddMating}
+              onAddLaying={onAddLaying}
+            />
+          ))}
         </div>
       </div>
     </div>
