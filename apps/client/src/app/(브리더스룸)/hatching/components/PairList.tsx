@@ -7,7 +7,7 @@ import {
   UpdatePairDto,
 } from "@repo/api-client";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { HelpCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { memo, useEffect, useState } from "react";
 import CreateMatingForm from "./CreateMatingForm";
@@ -25,8 +25,8 @@ import { overlay } from "overlay-kit";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import UpdatePairModal from "./UpdatePairModal";
 import Image from "next/image";
-import { isArray } from "es-toolkit/compat";
 import { CalendarEventDetail, EGG_STATUS } from "./PairMiniCalendar";
+import { usePairCardTutorial } from "./PairCardTutorial";
 
 export interface updatePairProps extends UpdatePairDto {
   pairId: number;
@@ -39,6 +39,7 @@ const PairList = memo(() => {
   const [selectedPairIndex, setSelectedPairIndex] = useState<number | null>(null);
   const [initialMatingId, setInitialMatingId] = useState<number | null>(null);
   const [initialLayingId, setInitialLayingId] = useState<number | null>(null);
+  const { showTutorial, openTutorial, closeTutorial } = usePairCardTutorial();
   const itemPerPage = 10;
 
   const hasFilter = !!father?.petId || !!mother?.petId || !!startDate || !!endDate || !!eggStatus;
@@ -232,13 +233,18 @@ const PairList = memo(() => {
       </div>
       {/* 필터 */}
       <Filters />
-      <div className="m-2 text-sm text-gray-600 dark:text-gray-400">
-        검색된 페어 {data?.totalCount ?? "?"}쌍
-        {isArray(data?.items) && data.items.length > 0 && (
-          <div className="text-[12px] text-red-600 dark:text-red-400">
-            날짜를 선택하면 상세 정보 확인이 가능합니다.
-          </div>
-        )}
+      <div className="flex items-center">
+        <div className="m-2 text-sm text-gray-600 dark:text-gray-400">
+          검색된 페어 {data?.totalCount ?? "?"}쌍
+        </div>
+        <button
+          type="button"
+          onClick={openTutorial}
+          className="flex h-6 items-center gap-0.5 rounded-lg px-1 text-[13px] text-green-600 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-700/50"
+        >
+          <HelpCircle className="h-4 w-4" />
+          <span>사용법</span>
+        </button>
       </div>
 
       <ScrollArea>
@@ -288,6 +294,8 @@ const PairList = memo(() => {
                   />
                 ));
               }}
+              showTutorial={index === 0 && showTutorial}
+              onCloseTutorial={closeTutorial}
             />
           ))}
         </div>

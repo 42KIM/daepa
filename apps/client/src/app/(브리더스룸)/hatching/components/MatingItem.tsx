@@ -18,15 +18,18 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { TUTORIAL_TARGETS } from "./MatingDetailDialogTutorial";
+import TutorialMockLayingItem from "./TutorialMockLayingItem";
 
 interface MatingItemProps {
   mating: MatingByDateDto;
   father?: PetSummaryLayingDto;
   mother?: PetSummaryLayingDto;
   initialLayingId?: number | null;
+  showTutorial?: boolean;
 }
 
-const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps) => {
+const MatingItem = ({ mating, father, mother, initialLayingId, showTutorial }: MatingItemProps) => {
   const queryClient = useQueryClient();
   const isEditable = !father?.isDeleted && !mother?.isDeleted;
 
@@ -170,7 +173,10 @@ const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps
   return (
     <div className="relative flex h-[calc(100vh-300px)] w-full flex-col">
       <div className="flex flex-col justify-center gap-1">
-        <div className="dark:bg-background sticky top-0 z-20 flex items-center gap-1 overflow-x-auto bg-white pb-2">
+        <div
+          data-tutorial={TUTORIAL_TARGETS.CLUTCH_TABS}
+          className="dark:bg-background sticky top-0 z-20 flex items-center gap-1 overflow-x-auto bg-white pb-2"
+        >
           {isEditable && (
             <button
               type="button"
@@ -180,7 +186,7 @@ const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps
               {sortedLayingsByDate.length === 0 && "산란 추가 "}+
             </button>
           )}
-          {sortedLayingsByDate && sortedLayingsByDate.length > 0 && (
+          {sortedLayingsByDate && sortedLayingsByDate.length > 0 ? (
             <div className="flex gap-1">
               {sortedLayingsByDate.map((layingData) => (
                 <button
@@ -198,6 +204,18 @@ const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps
                 </button>
               ))}
             </div>
+          ) : (
+            // 튜토리얼용 가짜 차수 탭
+            showTutorial && (
+              <div className="flex gap-1">
+                <div className="shrink-0 rounded-lg bg-black px-2 py-0.5 text-[14px] font-[700] text-white dark:bg-blue-700">
+                  1차
+                </div>
+                <div className="shrink-0 rounded-lg bg-gray-100 px-2 py-0.5 text-[14px] font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                  2차
+                </div>
+              </div>
+            )
           )}
         </div>
       </div>
@@ -216,7 +234,14 @@ const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps
               }}
               className="mb-7"
             >
-              <div className="dark:bg-background sticky top-0 mb-1 flex bg-white text-[15px] font-semibold text-gray-700 dark:text-gray-300">
+              <div
+                data-tutorial={
+                  sortedLayingsByDate[0]?.layingId === layingData.layingId
+                    ? TUTORIAL_TARGETS.LAYING_DATE
+                    : undefined
+                }
+                className="dark:bg-background sticky top-0 mb-1 flex bg-white text-[15px] font-semibold text-gray-700 dark:text-gray-300"
+              >
                 <span className="mr-1 font-bold">{layingData.layings[0]?.clutch}차</span>
 
                 <CalendarSelect
@@ -244,10 +269,13 @@ const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps
                   layingData={layingData}
                   father={father}
                   mother={mother}
+                  showTutorial={sortedLayingsByDate[0]?.layingId === layingData.layingId && showTutorial}
                 />
               </div>
             </div>
           ))
+        ) : showTutorial ? (
+          <TutorialMockLayingItem />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center py-5 text-center text-[14px] text-gray-700 dark:text-gray-400">
             <Image src="/assets/lizard.png" alt="산란 데이터 없음" width={150} height={150} />

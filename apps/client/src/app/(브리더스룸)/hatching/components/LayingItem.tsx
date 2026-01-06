@@ -25,9 +25,10 @@ interface LayingItemProps {
   layingData: LayingByDateDto;
   father?: PetSummaryLayingDto;
   mother?: PetSummaryLayingDto;
+  showTutorial?: boolean;
 }
 
-const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: LayingItemProps) => {
+const LayingItem = ({ layingData: { layingDate, layings }, father, mother, showTutorial }: LayingItemProps) => {
   const queryClient = useQueryClient();
 
   const { mutateAsync: updateEggStatus } = useMutation({
@@ -121,7 +122,7 @@ const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: Lay
 
   return (
     <div className="flex flex-col">
-      {layings.map((pet) => (
+      {layings.map((pet, index) => (
         <EggItem
           key={pet.petId}
           pet={pet}
@@ -135,6 +136,7 @@ const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: Lay
               value,
             })
           }
+          showTutorial={index === 0 && showTutorial}
         />
       ))}
     </div>
