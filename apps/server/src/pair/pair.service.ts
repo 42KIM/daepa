@@ -4,7 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { PairEntity } from './pair.entity';
 import { PetEntity } from 'src/pet/pet.entity';
 import { PetDetailEntity } from 'src/pet_detail/pet_detail.entity';
-import { compact, isNil, omitBy, uniq } from 'es-toolkit';
+import { compact, isNil, omitBy } from 'es-toolkit';
 import { plainToInstance } from 'class-transformer';
 import {
   MatingByParentsDto,
@@ -98,20 +98,49 @@ export class PairService {
     const order = (pageOptionsDto.order ?? 'DESC') as 'ASC' | 'DESC';
     baseQb.orderBy('pairs.id', order);
 
-    const pairsEntities = await baseQb
-      .skip(pageOptionsDto.skip)
-      .take(pageOptionsDto.itemPerPage)
-      .getMany();
+    // count 쿼리와 데이터 쿼리를 병렬로 실행
+    const countQb = this.dataSource
+      .createQueryBuilder(PairEntity, 'pairs')
+      .innerJoin(MatingEntity, 'matings', 'matings.pairId = pairs.id')
+      .where('pairs.ownerId = :userId', { userId })
+      .andWhere(pageOptionsDto.species ? 'pairs.species = :species' : '1=1', {
+        species: pageOptionsDto.species,
+      })
+      .andWhere(
+        pageOptionsDto.startYmd ? 'matings.matingDate >= :startYmd' : '1=1',
+        { startYmd: pageOptionsDto.startYmd },
+      )
+      .andWhere(
+        pageOptionsDto.endYmd ? 'matings.matingDate <= :endYmd' : '1=1',
+        { endYmd: pageOptionsDto.endYmd },
+      )
+      .andWhere(
+        pageOptionsDto.fatherId ? 'pairs.fatherId = :fatherId' : '1=1',
+        { fatherId: pageOptionsDto.fatherId },
+      )
+      .andWhere(
+        pageOptionsDto.motherId ? 'pairs.motherId = :motherId' : '1=1',
+        { motherId: pageOptionsDto.motherId },
+      )
+      .select('COUNT(DISTINCT pairs.id)', 'count');
 
-    if (!pairsEntities.length) {
+    const [countResult, pairsEntities] = await Promise.all([
+      countQb.getRawOne<{ count: string }>(),
+      baseQb
+        .skip(pageOptionsDto.skip)
+        .take(pageOptionsDto.itemPerPage)
+        .getMany(),
+    ]);
+
+    const totalPairCount = parseInt(countResult?.count ?? '0', 10);
+
+    if (totalPairCount === 0 || !pairsEntities.length) {
       const pageMetaDto = new PageMetaDto({
         totalCount: 0,
         pageOptionsDto,
       });
       return new PageDto([], pageMetaDto);
     }
-
-    const totalPairCount = uniq(pairsEntities.map((pair) => pair.id)).length;
 
     const pairsWithMating: PairWithMating[] = pairsEntities.map((pair) => ({
       pairId: pair.id,

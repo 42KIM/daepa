@@ -341,8 +341,8 @@ export class MatingByParentsDto {
 
   @ApiProperty({
     description: '펫 쌍 ID',
-    example: 'PAIR_XXXXXXXX',
+    example: '1',
   })
-  @IsString()
+  @IsNumber()
   pairId: number;
 }
