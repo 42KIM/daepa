@@ -14,7 +14,7 @@ import AdoptionDateRangeFilter from "./AdoptionDateRangeFilter";
 import FilterItem from "./FilterItem";
 import { overlay } from "overlay-kit";
 import ParentSearchSelector from "../../components/selector/parentSearch";
-import { PetDtoSex, PetDtoSpecies } from "@repo/api-client";
+import { PetDtoSex } from "@repo/api-client";
 
 export function AdoptionFilters() {
   const { searchFilters, setSearchFilters, resetFilters, father, mother, setFather, setMother } =
@@ -66,14 +66,14 @@ export function AdoptionFilters() {
         <AdoptionMultiSelectFilter
           type="morphs"
           title="모프"
-          displayMap={MORPH_LIST_BY_SPECIES[searchFilters.species as PetDtoSpecies]}
+          displayMap={MORPH_LIST_BY_SPECIES[searchFilters.species]}
         />
       )}
       {searchFilters.species && (
         <AdoptionMultiSelectFilter
           type="traits"
           title="형질"
-          displayMap={TRAIT_LIST_BY_SPECIES[searchFilters.species as PetDtoSpecies]}
+          displayMap={TRAIT_LIST_BY_SPECIES[searchFilters.species]}
         />
       )}
       <AdoptionMultiSelectFilter type="sex" title="성별" displayMap={GENDER_KOREAN_INFO} />
