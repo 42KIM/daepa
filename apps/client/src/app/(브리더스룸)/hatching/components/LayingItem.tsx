@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  brMatingControllerFindAll,
+  pairControllerGetPairList,
   LayingByDateDto,
   PetSummaryLayingDto,
   UpdatePetDto,
@@ -53,7 +53,7 @@ const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: Lay
       });
       toast.success("상태가 변경되었습니다.");
       await queryClient.invalidateQueries({
-        queryKey: [brMatingControllerFindAll.name],
+        queryKey: [pairControllerGetPairList.name],
       });
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -67,7 +67,7 @@ const LayingItem = ({ layingData: { layingDate, layings }, father, mother }: Lay
   const handleDeleteEgg = async (eggId: string, onClose: () => void) => {
     try {
       await deleteEgg(eggId);
-      await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      await queryClient.invalidateQueries({ queryKey: [pairControllerGetPairList.name] });
       toast.success("삭제되었습니다.");
       onClose();
     } catch (error) {

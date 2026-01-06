@@ -1,8 +1,8 @@
 import Loading from "@/components/common/Loading";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  brMatingControllerFindAll,
   matingControllerCreateMating,
+  pairControllerGetPairList,
   PetDtoSpecies,
   UpdatePairDto,
 } from "@repo/api-client";
@@ -47,7 +47,7 @@ const PairList = memo(() => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch } =
     useInfiniteQuery({
       queryKey: [
-        brMatingControllerFindAll.name,
+        pairControllerGetPairList.name,
         species,
         father?.petId,
         mother?.petId,
@@ -77,7 +77,7 @@ const PairList = memo(() => {
           isNil,
         );
 
-        return brMatingControllerFindAll({
+        return pairControllerGetPairList({
           page: pageParam,
           itemPerPage,
           ...filter,
@@ -283,6 +283,7 @@ const PairList = memo(() => {
                     fatherId={pair.father?.petId}
                     motherId={pair.mother?.petId}
                     initialLayingDate={date}
+                    isLayingDateEditable={false}
                     matingsByDate={pair.matingsByDate}
                   />
                 ));

@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 import { useMemo, useState } from "react";
 import {
-  brMatingControllerFindAll,
+  pairControllerGetPairList,
   LayingByDateDto,
   layingControllerCreate,
   MatingByDateDto,
@@ -28,6 +28,7 @@ interface CreateLayingModalProps {
   motherId?: string;
   layingData?: LayingByDateDto[];
   initialLayingDate?: string;
+  isLayingDateEditable?: boolean;
   matingsByDate?: MatingByDateDto[];
 }
 
@@ -40,6 +41,7 @@ const CreateLayingModal = ({
   fatherId,
   motherId,
   initialLayingDate,
+  isLayingDateEditable = true,
   matingsByDate,
 }: CreateLayingModalProps) => {
   const queryClient = useQueryClient();
@@ -150,7 +152,7 @@ const CreateLayingModal = ({
         fatherId,
       });
       toast.success("산란이 추가되었습니다.");
-      await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+      await queryClient.invalidateQueries({ queryKey: [pairControllerGetPairList.name] });
       onClose();
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -189,7 +191,12 @@ const CreateLayingModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="rounded-3xl sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>산란 정보 추가</DialogTitle>
+          <DialogTitle>
+            {!isLayingDateEditable && (
+              <div>{DateTime.fromISO(formData.layingDate).toFormat("yy년 M월 dd일")}</div>
+            )}
+            <span className="text-[16px] font-[500] text-gray-600"> 산란 정보 추가</span>
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <FormItem
@@ -215,74 +222,95 @@ const CreateLayingModal = ({
             <FormItem
               label="메이팅"
               content={
-                <CustomSelect
-                  title="메이팅 선택"
-                  options={matingsByDate.map((mating, index) => {
-                    const season = matingsByDate?.length - index;
+                <div className="col-span-3 flex flex-col gap-1">
+                  <CustomSelect
+                    title="메이팅 선택"
+                    options={matingsByDate
+                      .filter((mating) => {
+                        // matingDate가 없거나 formData.layingDate보다 이전인 메이팅만 표시
+                        if (!mating.matingDate) return true;
+                        if (!formData.layingDate) return true;
+                        const matingDateTime = DateTime.fromFormat(
+                          mating.matingDate,
+                          "yyyy-MM-dd",
+                        ).startOf("day");
+                        const layingDateTime = DateTime.fromISO(formData.layingDate).startOf("day");
+                        return matingDateTime < layingDateTime;
+                      })
+                      .map((mating, index, filteredArray) => {
+                        const season = filteredArray.length - index;
 
-                    return {
-                      key: String(mating.id),
-                      value: mating.matingDate
-                        ? DateTime.fromFormat(mating.matingDate, "yyyy-MM-dd").toFormat(
-                            `[시즌${season}] M월 d일`,
-                          )
-                        : `시즌 ${season}`,
-                    };
-                  })}
-                  selectedKey={String(selectedMatingId)}
-                  onChange={(value) => setSelectedMatingId(Number(value))}
-                />
+                        return {
+                          key: String(mating.id),
+                          value: mating.matingDate
+                            ? DateTime.fromFormat(mating.matingDate, "yyyy-MM-dd").toFormat(
+                                `[시즌${season}] M월 d일`,
+                              )
+                            : `시즌 ${season}`,
+                        };
+                      })}
+                    selectedKey={String(selectedMatingId)}
+                    onChange={(value) => setSelectedMatingId(Number(value))}
+                  />
+                  {!isLayingDateEditable && (
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <Info className="h-4 w-4" /> 산란일 이전의 메이팅만 선택 가능합니다.
+                    </div>
+                  )}
+                </div>
               }
             />
           )}
           {selectedMatingId && (
             <>
-              <FormItem
-                label="산란일"
-                content={
-                  <div className="col-span-3">
-                    <CalendarSelect
-                      type="edit"
-                      triggerText={
-                        formData.layingDate
-                          ? DateTime.fromJSDate(new Date(formData.layingDate)).toFormat(
-                              "yyyy년 MM월 dd일",
-                            )
-                          : "산란일"
-                      }
-                      confirmButtonText="선택 완료"
-                      disabledDates={currentLayingData?.map((laying) => laying.layingDate) ?? []}
-                      onConfirm={(date) => {
-                        if (!date) return;
-                        setFormData((prev) => ({
-                          ...prev,
-                          layingDate: date,
-                        }));
-                      }}
-                      disabled={isDateDisabled}
-                      initialDate={formData.layingDate}
-                    />
+              {isLayingDateEditable && (
+                <FormItem
+                  label="산란일"
+                  content={
+                    <div className="col-span-3">
+                      <CalendarSelect
+                        type="edit"
+                        triggerText={
+                          formData.layingDate
+                            ? DateTime.fromJSDate(new Date(formData.layingDate)).toFormat(
+                                "yyyy년 MM월 dd일",
+                              )
+                            : "산란일"
+                        }
+                        confirmButtonText="선택 완료"
+                        disabledDates={currentLayingData?.map((laying) => laying.layingDate) ?? []}
+                        onConfirm={(date) => {
+                          if (!date) return;
+                          setFormData((prev) => ({
+                            ...prev,
+                            layingDate: date,
+                          }));
+                        }}
+                        disabled={isDateDisabled}
+                        initialDate={formData.layingDate}
+                      />
 
-                    {lastLayingDate && (
-                      <div className="mt-1 text-sm">
-                        <div className="flex items-center gap-1 text-gray-500">
-                          <Info className="h-4 w-4" /> 이전 산란일 이후 날짜만 선택 가능합니다.
+                      {lastLayingDate && (
+                        <div className="mt-1 text-sm">
+                          <div className="flex items-center gap-1 text-gray-500">
+                            <Info className="h-4 w-4" /> 이전 산란일 이후 날짜만 선택 가능합니다.
+                          </div>
+                          <div className="font-semibold text-blue-500">
+                            마지막 산란일:{" "}
+                            {DateTime.fromJSDate(
+                              new Date(
+                                lastLayingDate
+                                  .toString()
+                                  .replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"),
+                              ),
+                            ).toFormat("yyyy년 MM월 dd일")}
+                          </div>
                         </div>
-                        <div className="font-semibold text-blue-500">
-                          마지막 산란일:{" "}
-                          {DateTime.fromJSDate(
-                            new Date(
-                              lastLayingDate
-                                .toString()
-                                .replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"),
-                            ),
-                          ).toFormat("yyyy년 MM월 dd일")}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                }
-              />
+                      )}
+                    </div>
+                  }
+                />
+              )}
 
               <FormItem
                 label="차수"
@@ -327,7 +355,7 @@ const CreateLayingModal = ({
                     }
                     readOnly
                     min={1}
-                    max={2}
+                    max={4}
                     inputClassName="h-[32px] w-full rounded-md border border-gray-200 p-2 placeholder:font-[500]"
                   />
                 }

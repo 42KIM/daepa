@@ -1,5 +1,5 @@
 import {
-  brMatingControllerFindAll,
+  pairControllerGetPairList,
   layingControllerUpdate,
   MatingByDateDto,
   PetSummaryLayingDto,
@@ -155,7 +155,7 @@ const MatingItem = ({ mating, father, mother, initialLayingId }: MatingItemProps
           newLayingDate,
         });
         toast.success("산란일 수정에 성공했습니다.");
-        await queryClient.invalidateQueries({ queryKey: [brMatingControllerFindAll.name] });
+        await queryClient.invalidateQueries({ queryKey: [pairControllerGetPairList.name] });
       } catch (error) {
         if (error instanceof AxiosError) {
           toast.error(error.response?.data?.message ?? "산란일 수정에 실패했습니다.");

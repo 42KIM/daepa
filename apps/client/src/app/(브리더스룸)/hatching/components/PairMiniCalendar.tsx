@@ -153,17 +153,6 @@ const PairMiniCalendar = ({
     return map;
   }, [events]);
 
-  // 마지막 메이팅/산란 날짜 계산 (추가 버튼 표시 제한용)
-  const lastEventDate = useMemo(() => {
-    const matingAndLayingEvents = events.filter(
-      (e) => e.type === EGG_STATUS.MATING || e.type === EGG_STATUS.LAYING,
-    );
-    if (matingAndLayingEvents.length === 0) return null;
-
-    const dates = matingAndLayingEvents.map((e) => DateTime.fromFormat(e.date, "yyyy-MM-dd"));
-    return DateTime.max(...dates);
-  }, [events]);
-
   // 날짜 범위 계산 (첫 메이팅일 ~ 마지막 해칭예정일)
   const dateRange = useMemo(() => {
     if (events.length === 0) return null;
@@ -186,8 +175,6 @@ const PairMiniCalendar = ({
       isInitialized.current = true;
     }
   }, [dateRange?.end]);
-
-  const canGoPrev = dateRange?.start ? currentMonth > dateRange.start.startOf("month") : true;
 
   // 현재 월의 달력 데이터 생성
   const calendarDays = useMemo(() => {
@@ -250,11 +237,7 @@ const PairMiniCalendar = ({
           <button
             type="button"
             onClick={() => setCurrentMonth((prev) => prev.minus({ months: 1 }))}
-            disabled={!canGoPrev}
-            className={cn(
-              "rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700",
-              !canGoPrev && "cursor-not-allowed opacity-30",
-            )}
+            className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -307,8 +290,6 @@ const PairMiniCalendar = ({
             // [type, events[]] 형태로 변환
             const eventTypeArray = eventData ? Array.from(eventData.eventsByType.entries()) : [];
 
-            const isEditable = lastEventDate && day >= lastEventDate;
-
             const handleEventClick = (event: CalendarEvent) => {
               if (onDateClick) {
                 onDateClick({
@@ -325,11 +306,8 @@ const PairMiniCalendar = ({
               <div
                 className={cn(
                   "flex h-8 w-full cursor-pointer flex-col items-center justify-center border-b border-r border-gray-100 text-[11px] dark:border-gray-700",
-                  !isCurrentMonth && "cursor-not-allowed text-gray-200 dark:text-gray-600",
-                  isCurrentMonth &&
-                    !hasEvent &&
-                    !isEditable &&
-                    "cursor-not-allowed text-gray-400 dark:text-gray-500",
+                  !isCurrentMonth && "text-gray-200 dark:text-gray-600",
+                  isCurrentMonth && !hasEvent && "text-gray-800 dark:text-gray-500",
                   isToday && "font-bold ring-1 ring-inset ring-gray-400",
                   hasEvent && "font-[500] hover:opacity-80",
                   bgClass,
@@ -378,8 +356,7 @@ const PairMiniCalendar = ({
                 {/* 추가 버튼들 */}
                 {(onAddMating || onAddLaying) &&
                   !eventData?.eventsByType.has(EGG_STATUS.MATING) &&
-                  !eventData?.eventsByType.has(EGG_STATUS.LAYING) &&
-                  isEditable && (
+                  !eventData?.eventsByType.has(EGG_STATUS.LAYING) && (
                     <div className="flex flex-col gap-1 border-t border-gray-200 pt-1.5 dark:border-gray-600">
                       {onAddMating && (
                         <button
@@ -405,11 +382,6 @@ const PairMiniCalendar = ({
                   )}
               </div>
             );
-
-            // 현재 월의 날짜만 클릭 가능
-            if (!isCurrentMonth || (!hasEvent && !isEditable)) {
-              return <div key={dateKey}>{cellContent}</div>;
-            }
 
             // 메이팅 또는 산란만 있는 날짜는 바로 모달 열기
             const hasMatingOnly =
