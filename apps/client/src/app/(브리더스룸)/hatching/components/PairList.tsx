@@ -81,6 +81,7 @@ const PairList = memo(() => {
         return pairControllerGetPairList({
           page: pageParam,
           itemPerPage,
+          order: "DESC",
           ...filter,
         });
       },

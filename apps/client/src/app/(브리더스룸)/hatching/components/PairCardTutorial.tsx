@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, ReactNode, RefObject } from "react";
+import { useEffect, useState, useCallback, ReactNode, RefObject, useRef } from "react";
 import { X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -136,6 +136,9 @@ export function PairCardTutorialOverlay({ onClose, containerRef }: PairCardTutor
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
   const totalSteps = TUTORIAL_STEPS.length;
 
+  // 무한 루프 방지를 위한 방문 스텝 추적
+  const visitedStepsRef = useRef<Set<number>>(new Set());
+
   const currentStepData = TUTORIAL_STEPS[currentStep];
 
   const updateSpotlight = useCallback(() => {
@@ -146,12 +149,24 @@ export function PairCardTutorialOverlay({ onClose, containerRef }: PairCardTutor
     );
 
     if (!targetElement) {
+      // 현재 스텝을 방문 기록에 추가
+      visitedStepsRef.current.add(currentStep);
+
+      // 모든 스텝을 방문했는데도 타겟을 찾지 못하면 튜토리얼 종료
+      if (visitedStepsRef.current.size >= totalSteps) {
+        onClose();
+        return;
+      }
+
       // 타겟을 찾지 못하면 다음 스텝으로
       if (currentStep < totalSteps - 1) {
         setCurrentStep((prev) => prev + 1);
       }
       return;
     }
+
+    // 유효한 타겟을 찾으면 방문 기록 초기화
+    visitedStepsRef.current.clear();
 
     const containerRect = containerRef.current.getBoundingClientRect();
     const targetRect = targetElement.getBoundingClientRect();
@@ -207,7 +222,7 @@ export function PairCardTutorialOverlay({ onClose, containerRef }: PairCardTutor
     }
 
     setTooltipPosition({ top: tooltipTop, left: tooltipLeft });
-  }, [containerRef, currentStepData, currentStep, totalSteps]);
+  }, [containerRef, currentStepData, currentStep, totalSteps, onClose]);
 
   useEffect(() => {
     updateSpotlight();
