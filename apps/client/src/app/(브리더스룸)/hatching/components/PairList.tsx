@@ -93,7 +93,7 @@ const PairList = memo(() => {
       },
       select: (resp) => ({
         items: resp.pages.flatMap((p) => p.data.data),
-        totalCount: resp.pages[0]?.data.meta.totalCount,
+        totalCount: resp.pages[0]?.data.meta.totalCount ?? 0,
       }),
     });
 
@@ -215,6 +215,8 @@ const PairList = memo(() => {
     }
   };
 
+  if (!data) return null;
+
   return (
     <div className="flex flex-col px-2">
       {/* 헤더 영역 */}
@@ -235,16 +237,18 @@ const PairList = memo(() => {
       <Filters />
       <div className="flex items-center">
         <div className="m-2 text-sm text-gray-600 dark:text-gray-400">
-          검색된 페어 {data?.totalCount ?? "?"}쌍
+          검색된 페어 {data.totalCount}쌍
         </div>
-        <button
-          type="button"
-          onClick={openTutorial}
-          className="flex h-6 items-center gap-0.5 rounded-lg px-1 text-[13px] text-green-600 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-700/50"
-        >
-          <HelpCircle className="h-4 w-4" />
-          <span>사용법</span>
-        </button>
+        {data.totalCount > 0 && (
+          <button
+            type="button"
+            onClick={openTutorial}
+            className="flex h-6 items-center gap-0.5 rounded-lg px-1 text-[13px] text-green-600 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-700/50"
+          >
+            <HelpCircle className="h-4 w-4" />
+            <span>사용법</span>
+          </button>
+        )}
       </div>
 
       <ScrollArea>
