@@ -1,46 +1,18 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
-import { X, Plus, StickyNote } from "lucide-react";
+import { useEffect, useState, useCallback, ReactNode, RefObject } from "react";
+import { X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 const TUTORIAL_STORAGE_KEY = "pair-card-tutorial-seen";
 
-// 공통 스텝 레이아웃 컴포넌트
-interface TutorialStepLayoutProps {
-  visual: ReactNode;
-  title: string;
-  description: ReactNode;
-}
-
-function TutorialStepLayout({ visual, title, description }: TutorialStepLayoutProps) {
-  return (
-    <div className="flex flex-col items-center gap-3">
-      {visual}
-      <div className="text-center">
-        <h4 className="mb-1 text-sm font-semibold text-white">{title}</h4>
-        <p className="text-xs leading-relaxed text-white/80">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-// 모의 캘린더 셀 컴포넌트
-function MockCalendarCell({ day, highlighted }: { day: number; highlighted?: boolean }) {
-  return (
-    <div
-      className={cn(
-        "flex h-8 w-8 flex-col items-center justify-center rounded text-[11px]",
-        highlighted
-          ? "bg-blue-200 font-medium text-blue-700 ring-2 ring-white dark:bg-blue-300 dark:text-blue-800"
-          : "bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400",
-      )}
-    >
-      {day}
-    </div>
-  );
-}
+// 튜토리얼 스텝 정의
+export const PAIR_CARD_TUTORIAL_TARGETS = {
+  PARENT_CARDS: "tutorial-parent-cards",
+  MINI_CALENDAR: "tutorial-mini-calendar",
+  SUMMARY_INFO: "tutorial-summary-info",
+  MEMO_AREA: "tutorial-memo-area",
+} as const;
 
 // 모의 팝오버 버튼 컴포넌트
 function MockPopoverButton({
@@ -80,7 +52,7 @@ function MockPopover({
   highlightLaying?: boolean;
 }) {
   return (
-    <div className="rounded-lg bg-white p-2 shadow-lg dark:bg-gray-800">
+    <div className="rounded-lg border border-gray-300 bg-gray-50 p-2 shadow-md dark:bg-gray-700">
       <span className="mb-1.5 block text-xs font-semibold text-gray-800 dark:text-gray-200">
         {date}
       </span>
@@ -92,128 +64,159 @@ function MockPopover({
   );
 }
 
-// 모의 부모 카드 컴포넌트
-function MockParentCard({
-  sex,
-  label,
-  highlighted,
-}: {
-  sex: "male" | "female";
-  label: string;
-  highlighted?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center gap-1 rounded-lg bg-white/20 p-2 dark:bg-white/10",
-        highlighted && "ring-2 ring-white",
-      )}
-    >
-      <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-        <Image src="/assets/lizard.png" alt="펫 이미지" fill className="object-cover" />
-      </div>
-      <span
-        className={cn("text-[10px] font-medium", sex === "male" ? "text-blue-300" : "text-red-300")}
-      >
-        {sex === "male" ? "♂" : "♀"} {label}
-      </span>
-    </div>
-  );
+interface TutorialStep {
+  targetId: string;
+  title: string;
+  description: ReactNode;
+  position: "top" | "bottom" | "left" | "right";
+  mockContent?: ReactNode;
 }
 
-// 모의 메모 영역 컴포넌트
-function MockMemoArea() {
-  return (
-    <div className="w-full max-w-[200px] rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 px-3 py-2 ring-2 ring-white dark:border-amber-700 dark:from-neutral-700 dark:to-neutral-800">
-      <div className="flex items-center gap-2">
-        <StickyNote className="h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          메모를 추가하려면 클릭하세요
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// 튜토리얼 스텝 정의
-const TUTORIAL_STEPS = [
+const TUTORIAL_STEPS: TutorialStep[] = [
   {
-    visual: (
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex gap-1">
-          <MockCalendarCell day={14} />
-          <MockCalendarCell day={15} highlighted />
-          <MockCalendarCell day={16} />
-        </div>
-        <div className="animate-bounce text-white">↑</div>
-      </div>
-    ),
-    title: "날짜를 클릭하세요",
-    description: (
-      <>
-        색상이 있는 날짜를 클릭하면
-        <br />
-        상세 정보를 확인할 수 있어요
-      </>
-    ),
+    targetId: PAIR_CARD_TUTORIAL_TARGETS.PARENT_CARDS,
+    title: "부모 펫 정보",
+    description: "부모 이미지를 클릭하면 해당 펫의 상세 페이지로 이동해요",
+    position: "bottom",
   },
   {
-    visual: <MockPopover date="1월 15일" highlightMating />,
+    targetId: PAIR_CARD_TUTORIAL_TARGETS.MINI_CALENDAR,
+    title: "미니 캘린더",
+    description: "색상이 있는 날짜를 클릭하면 상세 정보를 확인할 수 있어요",
+    position: "top",
+  },
+  {
+    targetId: PAIR_CARD_TUTORIAL_TARGETS.MINI_CALENDAR,
     title: "메이팅 추가",
-    description: (
-      <>
-        빈 날짜를 클릭하면 팝업이 열리고
-        <br />
-        메이팅을 추가할 수 있어요
-      </>
-    ),
+    description: "날짜를 클릭하면 메이팅을 추가할 수 있어요",
+    position: "bottom",
+    mockContent: <MockPopover date="1월 15일" highlightMating />,
   },
   {
-    visual: <MockPopover date="1월 20일" highlightLaying />,
+    targetId: PAIR_CARD_TUTORIAL_TARGETS.MINI_CALENDAR,
     title: "산란 추가",
-    description: (
-      <>
-        같은 방식으로 산란도 기록할 수 있어요
-        <br />
-        산란일에 맞춰 해칭 예정일이 계산됩니다
-      </>
-    ),
+    description: "같은 방식으로 산란도 기록할 수 있어요",
+    position: "bottom",
+    mockContent: <MockPopover date="1월 20일" highlightLaying />,
   },
   {
-    visual: (
-      <div className="flex gap-2">
-        <MockParentCard sex="male" label="아빠" highlighted />
-        <MockParentCard sex="female" label="엄마" />
-      </div>
-    ),
-    title: "펫 상세 보기",
-    description: (
-      <>
-        부모 이미지를 클릭하면
-        <br />펫 상세 페이지로 이동해요
-      </>
-    ),
+    targetId: PAIR_CARD_TUTORIAL_TARGETS.SUMMARY_INFO,
+    title: "요약 정보",
+    description: "유정란 개수와 해칭 현황을 한눈에 확인할 수 있어요",
+    position: "top",
   },
   {
-    visual: <MockMemoArea />,
-    title: "메모 추가",
-    description: (
-      <>
-        메모 영역을 클릭하면
-        <br />
-        페어에 대한 메모를 남길 수 있어요
-      </>
-    ),
+    targetId: PAIR_CARD_TUTORIAL_TARGETS.MEMO_AREA,
+    title: "메모 영역",
+    description: "클릭하면 이 페어에 대한 메모를 작성할 수 있어요",
+    position: "top",
   },
 ];
 
-interface PairCardTutorialOverlayProps {
-  onClose: () => void;
+interface SpotlightRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
 }
 
-export function PairCardTutorialOverlay({ onClose }: PairCardTutorialOverlayProps) {
+interface TooltipPosition {
+  top: number;
+  left: number;
+}
+
+interface PairCardTutorialOverlayProps {
+  onClose: () => void;
+  containerRef?: RefObject<HTMLElement | null>;
+}
+
+export function PairCardTutorialOverlay({ onClose, containerRef }: PairCardTutorialOverlayProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
   const totalSteps = TUTORIAL_STEPS.length;
+
+  const currentStepData = TUTORIAL_STEPS[currentStep];
+
+  const updateSpotlight = useCallback(() => {
+    if (!containerRef?.current || !currentStepData) return;
+
+    const targetElement = containerRef.current.querySelector(
+      `[data-tutorial="${currentStepData.targetId}"]`,
+    );
+
+    if (!targetElement) {
+      // 타겟을 찾지 못하면 다음 스텝으로
+      if (currentStep < totalSteps - 1) {
+        setCurrentStep((prev) => prev + 1);
+      }
+      return;
+    }
+
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+
+    const padding = 4;
+    const relativeRect: SpotlightRect = {
+      top: targetRect.top - containerRect.top - padding,
+      left: targetRect.left - containerRect.left - padding,
+      width: targetRect.width + padding * 2,
+      height: targetRect.height + padding * 2,
+    };
+
+    setSpotlightRect(relativeRect);
+
+    // 툴팁 위치 계산 (mockContent가 있으면 더 큰 높이 사용)
+    const tooltipWidth = 200;
+    const tooltipHeight = currentStepData.mockContent ? 160 : 100;
+    const gap = 8;
+
+    let tooltipTop = 0;
+    let tooltipLeft = 0;
+
+    switch (currentStepData.position) {
+      case "top":
+        tooltipTop = relativeRect.top - tooltipHeight - gap - 40;
+        tooltipLeft = relativeRect.left + relativeRect.width / 2 - tooltipWidth / 2;
+        break;
+      case "bottom":
+        tooltipTop = relativeRect.top + relativeRect.height + gap;
+        tooltipLeft = relativeRect.left + relativeRect.width / 2 - tooltipWidth / 2;
+        break;
+      case "left":
+        tooltipTop = relativeRect.top + relativeRect.height / 2 - tooltipHeight / 2;
+        tooltipLeft = relativeRect.left - tooltipWidth - gap;
+        break;
+      case "right":
+        tooltipTop = relativeRect.top + relativeRect.height / 2 - tooltipHeight / 2;
+        tooltipLeft = relativeRect.left + relativeRect.width + gap;
+        break;
+    }
+
+    // 화면 밖으로 나가지 않도록 조정
+    const containerWidth = containerRect.width;
+    const containerHeight = containerRect.height;
+
+    if (tooltipLeft < 5) tooltipLeft = 5;
+    if (tooltipLeft + tooltipWidth > containerWidth - 5) {
+      tooltipLeft = containerWidth - tooltipWidth - 5;
+    }
+    if (tooltipTop < 5) tooltipTop = relativeRect.top + relativeRect.height + gap;
+    if (tooltipTop + tooltipHeight > containerHeight - 5) {
+      tooltipTop = relativeRect.top - tooltipHeight - gap;
+    }
+
+    setTooltipPosition({ top: tooltipTop, left: tooltipLeft });
+  }, [containerRef, currentStepData, currentStep, totalSteps]);
+
+  useEffect(() => {
+    updateSpotlight();
+
+    const handleResize = () => updateSpotlight();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [updateSpotlight]);
 
   const handleNext = () => {
     if (currentStep < totalSteps - 1) {
@@ -228,48 +231,106 @@ export function PairCardTutorialOverlay({ onClose }: PairCardTutorialOverlayProp
     localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
   };
 
-  const currentStepData = TUTORIAL_STEPS[currentStep];
+  if (!spotlightRect || !tooltipPosition) return null;
 
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-black/80 p-3 dark:bg-black/70">
+    <div className="absolute inset-0 z-20 overflow-hidden rounded-2xl">
+      {/* 배경 오버레이 (스포트라이트 구멍 제외) */}
+      <svg className="absolute inset-0 h-full w-full">
+        <defs>
+          <mask id="pair-card-spotlight-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            <rect
+              x={spotlightRect.left}
+              y={spotlightRect.top}
+              width={spotlightRect.width}
+              height={spotlightRect.height}
+              rx="8"
+              fill="black"
+            />
+          </mask>
+        </defs>
+        <rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="rgba(0, 0, 0, 0.8)"
+          mask="url(#pair-card-spotlight-mask)"
+        />
+      </svg>
+
+      {/* 스포트라이트 테두리 */}
+      <div
+        className="pointer-events-none absolute rounded-lg ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent"
+        style={{
+          top: spotlightRect.top,
+          left: spotlightRect.left,
+          width: spotlightRect.width,
+          height: spotlightRect.height,
+        }}
+      />
+
       {/* 닫기 버튼 */}
       <button
         onClick={handleClose}
-        className="absolute right-2 top-2 rounded-full p-1 text-white/70 hover:bg-white/20 hover:text-white"
+        className="absolute right-2 top-2 z-10 rounded-full bg-white/70 p-1 text-black/70 backdrop-blur-sm hover:bg-white/20 hover:text-white"
       >
         <X className="h-4 w-4" />
       </button>
 
-      {/* 스텝 인디케이터 (클릭 가능) */}
-      <div className="mb-3 flex gap-2">
-        {Array.from({ length: totalSteps }).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentStep(index)}
-            className={cn(
-              "h-2 rounded-full transition-all",
-              index === currentStep ? "w-5 bg-blue-400" : "w-2 bg-white/40 hover:bg-white/60",
-            )}
-          />
-        ))}
-      </div>
-
-      {/* 스텝 콘텐츠 */}
-      {currentStepData && (
-        <TutorialStepLayout
-          visual={currentStepData.visual}
-          title={currentStepData.title}
-          description={currentStepData.description}
-        />
-      )}
-
-      {/* 버튼 */}
-      <button
-        onClick={handleNext}
-        className="mt-4 rounded-lg bg-blue-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-600"
+      {/* 툴팁 */}
+      <div
+        className="absolute z-10 w-[200px] rounded-xl bg-white p-3 shadow-2xl dark:bg-gray-800"
+        style={{
+          top: tooltipPosition.top,
+          left: tooltipPosition.left,
+        }}
       >
-        {currentStep < totalSteps - 1 ? "다음" : "시작하기"}
-      </button>
+        {/* 스텝 인디케이터 */}
+        <div className="mb-2 flex gap-1">
+          {Array.from({ length: totalSteps }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentStep(index)}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                index === currentStep
+                  ? "w-3 bg-blue-500"
+                  : "w-1.5 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500",
+              )}
+            />
+          ))}
+        </div>
+
+        <h4 className="mb-1 text-xs font-bold text-gray-900 dark:text-white">
+          {currentStepData?.title}
+        </h4>
+
+        {/* 모의 콘텐츠 (있는 경우) */}
+        {currentStepData?.mockContent && (
+          <div className="mb-2 flex justify-center">{currentStepData.mockContent}</div>
+        )}
+
+        <p className="mb-2 text-[11px] font-[500] leading-relaxed text-gray-600 dark:text-gray-300">
+          {currentStepData?.description}
+        </p>
+
+        <div className="flex items-center justify-between">
+          <button
+            onClick={handleClose}
+            className="text-[10px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            건너뛰기
+          </button>
+          <button
+            onClick={handleNext}
+            className="rounded-lg bg-blue-500 px-2.5 py-1 text-[10px] font-medium text-white transition-colors hover:bg-blue-600"
+          >
+            {currentStep < totalSteps - 1 ? "다음" : "완료"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
