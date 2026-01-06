@@ -59,9 +59,19 @@ const MatingDetailDialog = ({
   );
 
   const [selectedMatingId, setSelectedMatingId] = useState<number | null>(null);
+  const prevMatingIdsRef = useRef<Set<number>>(new Set());
+  const isInitializedRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (isOpen && matingGroup?.matingsByDate) {
+    if (!matingGroup?.matingsByDate) return;
+
+    const currentIds = new Set(matingGroup.matingsByDate.map((m) => m.id));
+
+    // 다이얼로그가 열릴 때 초기화
+    if (isOpen && !isInitializedRef.current) {
+      isInitializedRef.current = true;
+      prevMatingIdsRef.current = currentIds;
+
       // initialMatingId가 있으면 해당 메이팅으로 포커스
       if (initialMatingId) {
         const matingExists = matingGroup.matingsByDate.some((m) => m.id === initialMatingId);
@@ -74,8 +84,44 @@ const MatingDetailDialog = ({
       if (matingGroup.matingsByDate[0]) {
         setSelectedMatingId(matingGroup.matingsByDate[0].id);
       }
+      return;
     }
-  }, [isOpen, initialMatingId, matingGroup?.matingsByDate]);
+
+    // 새로운 메이팅이 추가되었을 때 (이전에 없던 ID 찾기)
+    const newMatingId = matingGroup.matingsByDate.find(
+      (m) => !prevMatingIdsRef.current.has(m.id),
+    )?.id;
+
+    if (newMatingId) {
+      setSelectedMatingId(newMatingId);
+    }
+    // 선택된 메이팅이 삭제되었을 때 다음 시즌으로 포커스
+    else if (selectedMatingId && !currentIds.has(selectedMatingId)) {
+      // 이전 배열에서 삭제된 메이팅의 인덱스 찾기
+      const prevMatingIds = Array.from(prevMatingIdsRef.current);
+      const deletedIndex = prevMatingIds.indexOf(selectedMatingId);
+
+      // 현재 배열에서 같은 인덱스 또는 마지막 요소 선택
+      const nextIndex = Math.min(deletedIndex, matingGroup.matingsByDate.length - 1);
+      if (nextIndex >= 0 && matingGroup.matingsByDate[nextIndex]) {
+        setSelectedMatingId(matingGroup.matingsByDate[nextIndex].id);
+      } else if (matingGroup.matingsByDate[0]) {
+        setSelectedMatingId(matingGroup.matingsByDate[0].id);
+      } else {
+        setSelectedMatingId(null);
+      }
+    }
+
+    prevMatingIdsRef.current = currentIds;
+  }, [isOpen, initialMatingId, matingGroup?.matingsByDate, selectedMatingId]);
+
+  // 다이얼로그가 닫힐 때 초기화 상태 리셋
+  useEffect(() => {
+    if (!isOpen) {
+      isInitializedRef.current = false;
+      prevMatingIdsRef.current = new Set();
+    }
+  }, [isOpen]);
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
