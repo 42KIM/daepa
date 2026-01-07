@@ -296,8 +296,8 @@ class MatingByDateDto {
     example: '2025-01-01',
     required: false,
   })
-  @IsDateString()
   @IsOptional()
+  @IsDateString()
   matingDate?: string;
 
   @ApiProperty({
@@ -306,8 +306,8 @@ class MatingByDateDto {
     isArray: true,
     type: LayingByDateDto,
   })
-  @IsArray()
   @IsOptional()
+  @IsArray()
   layingsByDate?: LayingByDateDto[];
 }
 
